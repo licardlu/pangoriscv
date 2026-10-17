@@ -143,10 +143,21 @@ add_constraint $pcf_file
 # three threshold classes, in-route hold optimisation enabled, 50 iterations. This only
 # asks the placer/router for MORE hold fixing; no constraint, exception or clock period
 # is relaxed.
-pnr -fix_hold_violation_threshold 0 \
+# The default argument list below is the delivered flow. Set
+# PANGO_NATIVE_PNR_EXTRA to append hold-closure levers for an experiment
+# (-fix_hold_violation, -max_hold_violated_paths_num, -groute_seed, more
+# iterations, ...). Nothing in the list relaxes a constraint: no false path, no
+# multicycle, no reduced clock period - only MORE hold fixing is requested.
+set pnr_args [list \
+    -fix_hold_violation_threshold 0 \
     -fix_hold_violation_threshold_for_clk_tree 0 \
     -fix_hold_violation_threshold_for_clock_path_cross_srb 0 \
     -fix_hold_violation_iterations 50 \
-    -fix_hold_violation_in_route TRUE
+    -fix_hold_violation_in_route TRUE]
+if {[info exists ::env(PANGO_NATIVE_PNR_EXTRA)]} {
+    set pnr_args [concat $pnr_args $::env(PANGO_NATIVE_PNR_EXTRA)]
+    puts "PNR extra args: $::env(PANGO_NATIVE_PNR_EXTRA)"
+}
+eval pnr $pnr_args
 report_timing
 gen_bit_stream

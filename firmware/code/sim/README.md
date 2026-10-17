@@ -40,6 +40,11 @@ ModelSim work 库、编译、仿真，末行打印 `SUMMARY x / y PASS`，日志
 `halt-reset` 5/5）与 `run_isa_e2e.py`（端到端 ISA / CSR / 定时器 / 中断，`isa-e2e` 15/15）；
 `tools/run_coremark_ab.py` 用于 CoreMark A/B 对照。以上合计 13 个回归套件。
 
+`tools/run_fetch_ab.py` 是**同一镜像、同一测试台、两个 RTL 修订**的 CoreMark A/B：
+基线侧用 `git show <rev>:./<file>` 落到临时目录，工作区不被改动；两侧分别编译后并发仿真，
+输出 ticks / cycles / retires / IPC / 五项 CRC / 陷阱计数 / perf 计数器 / 存路径分解。
+取数命令见 `evidence/records/optimization/P7/measurement.md`。
+
 ## 3. 运行环境与产物
 
 - ModelSim 2020.4（`vlib` / `vlog` / `vsim`）：先用 `vlib` 建 work 库再 `vlog -work` 编译，

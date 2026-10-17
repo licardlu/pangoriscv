@@ -137,6 +137,8 @@ module tb_icache_axi;
     integer bursts_before = 0;
     reg [31:0] got_data = 0;
     reg [1:0] got_resp = 0;
+    integer k9 = 0;
+    reg [31:0] t9_base = 32'h0000_3400;
 
     task fail(input [255:0] what);
         begin
@@ -252,6 +254,37 @@ module tb_icache_axi;
         expect_word("T8 aliased tag A", 32'h0000_1400, mem[1280], 2'b00, 1);
         expect_word("T8 aliased tag B", 32'h0000_1800, mem[1536], 2'b00, 1);
         expect_word("T8 aliased tag A hit", 32'h0000_1400, mem[1280], 2'b00, 0);
+
+        // T9: back-to-back hits.  A lookup is accepted on the same edge the
+        // previous response is taken, so a run of in-line hits costs one cycle
+        // each.  The pre-T9 build parked in IC_RESP for an extra cycle and could
+        // only accept every other cycle, which this test catches immediately
+        // (the second word would not be answered when it is checked).
+        bursts_before = bursts;
+        expect_word("T9 line fill", t9_base, mem[t9_base[13:2]], 2'b00, 1);
+        @(negedge clk);
+        req_valid = 1; rsp_ready = 1; req_id = 4'h5;
+        req_addr = t9_base + 32'd4;
+        for(k9 = 1; k9 <= 7; k9 = k9 + 1) begin
+            @(negedge clk);
+            if(!rsp_valid) begin
+                errors = errors + 1;
+                $display("  FAIL T9 word %0d not answered in one cycle", k9);
+            end else if(rsp_data !== mem[t9_base[13:2] + k9]) begin
+                errors = errors + 1;
+                $display("  FAIL T9 word %0d data=%08x expected %08x",
+                         k9, rsp_data, mem[t9_base[13:2] + k9]);
+            end else begin
+                $display("  ok   T9 back-to-back word %0d data=%08x", k9, rsp_data);
+            end
+            if(k9 < 7) req_addr = t9_base + 32'd4 * (k9 + 1);
+        end
+        @(negedge clk);
+        req_valid = 0; rsp_ready = 0;
+        if((bursts - bursts_before) !== 1) begin
+            errors = errors + 1;
+            $display("  FAIL T9 unexpected burst count %0d", bursts - bursts_before);
+        end
 
         if(protocol_fault) begin
             errors = errors + 1;

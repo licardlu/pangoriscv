@@ -26,10 +26,12 @@
 // lost RID, a short burst or an invalidation landing while the burst is in
 // flight leaves the line invalid, so stale code can never be re-validated.
 //
-// Hit latency (T3): a hit is answered on the accept edge -- the word RAM is read
-// combinationally from the incoming request, so the engine sees rsp_valid one
-// cycle after the request handshake and the next request can be accepted the
-// cycle after that (2 cycles per lookup, was 4 with the separate read state).
+// Hit latency (T3/T9): a hit is answered on the accept edge -- the word RAM is
+// read combinationally from the incoming request, so the engine sees rsp_valid
+// one cycle after the request handshake.  A new lookup may be accepted on that
+// same edge (the edge the response is taken), so a run of hits sustains ONE
+// lookup per cycle; the older build parked in IC_RESP for an extra cycle and
+// accepted only every other cycle (2 cycles per lookup, was 4 before T3).
 // A miss keeps the original serialised AR/FILL/MISS_RD path.
 //
 // FENCE.I stays an illegal instruction (plan section 15 option), so the only
@@ -119,7 +121,12 @@ module icache_axi (
     wire beat_bad = (m_rresp!=`AXI_RESP_OKAY);
     wire line_bad = fill_bad_q || beat_bad;
 
-    assign req_ready = rst_n && state==IC_IDLE;
+    // T9 back-to-back hit path: a lookup may also be accepted on the edge the
+    // previous response is taken.  The output register is reloaded at that same
+    // edge, so the response the engine is taking now is never disturbed; a run
+    // of hits therefore sustains one lookup per cycle instead of one per two.
+    wire rsp_leaving = (state==IC_RESP) && rsp_valid && rsp_ready;
+    assign req_ready = rst_n && (state==IC_IDLE || rsp_leaving);
     assign m_arvalid = rst_n && state==IC_AR;
     assign m_araddr = line_addr;
     assign m_arid = id_q;
@@ -155,38 +162,55 @@ module icache_axi (
                 if(state==IC_AR || state==IC_FILL) fill_kill<=1;
             end
             case(state)
-                IC_IDLE: if(req_valid && req_ready) begin
-                    addr_q<=req_addr;
-                    id_q<=req_id;
-                    set_q<=req_addr[9:5];
-                    word_q<=req_addr[4:2];
-                    tag_q<=req_addr[31:10];
-                    if(hit0 || hit1) begin
-                        access_pulse<=1;
-                        way_q<=hit0 ? 1'b0 : 1'b1;
-                        lru_mem[req_addr[9:5]]<=hit0 ? 1'b1 : 1'b0;
-                        // Fast hit: answer on the accept edge (engine sees the
-                        // response one cycle after req_valid/req_ready). Both the
-                        // holding register and the output register are loaded so
-                        // the IC_RESP hold path stays correct if rsp_ready is late.
-                        rsp_data_q<=hit_word;
-                        rsp_resp_q<=`AXI_RESP_OKAY;
+                IC_IDLE, IC_RESP: begin
+                    // Parked with a response: keep re-asserting it until the
+                    // engine takes it.  One lookup produces exactly one engine
+                    // response because the register drops on the handshake edge.
+                    if(state==IC_RESP && !(rsp_valid && rsp_ready)) begin
                         rsp_valid<=1;
-                        rsp_data<=hit_word;
-                        rsp_resp<=`AXI_RESP_OKAY;
-                        rsp_id<=req_id;
-                        state<=IC_RESP;
-                    end else begin
-                        miss_pulse<=1;
-                        way_q<=miss_way;
-                        beat_q<=0;
-                        fill_bad_q<=0;
-                        fill_resp_q<=0;
-                        fill_kill<=0;
-                        state<=IC_AR;
+                        rsp_data<=rsp_data_q;
+                        rsp_resp<=rsp_resp_q;
+                        rsp_id<=id_q;
+                    end
+                    // Request acceptance.  req_ready is high in IC_IDLE, and in
+                    // IC_RESP only on the edge the pending response leaves, so
+                    // this branch never overwrites a response still on the wire.
+                    if(req_valid && req_ready) begin
+                        addr_q<=req_addr;
+                        id_q<=req_id;
+                        set_q<=req_addr[9:5];
+                        word_q<=req_addr[4:2];
+                        tag_q<=req_addr[31:10];
+                        if(hit0 || hit1) begin
+                            access_pulse<=1;
+                            way_q<=hit0 ? 1'b0 : 1'b1;
+                            lru_mem[req_addr[9:5]]<=hit0 ? 1'b1 : 1'b0;
+                            // Fast hit: answer on the accept edge (engine sees the
+                            // response one cycle after req_valid/req_ready). Both the
+                            // holding register and the output register are loaded so
+                            // the IC_RESP hold path stays correct if rsp_ready is late.
+                            rsp_data_q<=hit_word;
+                            rsp_resp_q<=`AXI_RESP_OKAY;
+                            rsp_valid<=1;
+                            rsp_data<=hit_word;
+                            rsp_resp<=`AXI_RESP_OKAY;
+                            rsp_id<=req_id;
+                            state<=IC_RESP;
+                        end else begin
+                            miss_pulse<=1;
+                            way_q<=miss_way;
+                            beat_q<=0;
+                            fill_bad_q<=0;
+                            fill_resp_q<=0;
+                            fill_kill<=0;
+                            // A response taken on this edge must not repeat.
+                            rsp_valid<=0;
+                            state<=IC_AR;
+                        end
+                    end else if(state==IC_RESP && rsp_valid && rsp_ready) begin
+                        state<=IC_IDLE;
                     end
                 end
-                IC_RESP: if(rsp_valid && rsp_ready) state<=IC_IDLE;
                 IC_AR: if(m_arvalid && m_arready) state<=IC_FILL;
                 IC_FILL: if(m_rvalid) begin
                     if(m_rid!=id_q) begin
@@ -231,15 +255,6 @@ module icache_axi (
                     state<=IC_FAULT;
                 end
             endcase
-            // The response register is asserted while parked in IC_RESP and drops
-            // in the same cycle its handshake completes, so one lookup produces
-            // exactly one engine response.
-            if(state==IC_RESP && !(rsp_valid && rsp_ready)) begin
-                rsp_valid<=1;
-                rsp_data<=rsp_data_q;
-                rsp_resp<=rsp_resp_q;
-                rsp_id<=id_q;
-            end
         end
     end
 endmodule

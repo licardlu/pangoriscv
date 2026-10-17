@@ -28,7 +28,7 @@ def main():
         "rtl/core/axi_read_engine.v", "rtl/core/ifu_axi.v", "tb/axi/tb_ifu_axi_engine.sv")]
     if args.negative_zero_inst:
         original = sources[1].read_text(encoding="ascii")
-        anchor = "inst_q<=eng_rsp_data;"
+        anchor = "q_inst[tail_q]<=eng_rsp_data;"
         if original.count(anchor) != 1:
             raise RuntimeError("IFU_ZERO_INST_MUTATION_ANCHOR_MISSING")
         mutant = work / "ifu_zero_inst.v"

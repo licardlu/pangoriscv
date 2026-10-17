@@ -91,7 +91,60 @@ void portable_init(core_portable *p, int *argc, char *argv[])
 	p->portable_id=1;
 }
 
+/* Porting : performance-counter dump (optimization plan P0.1)
+   The counters live in rtl/perips/perf_regs.v at 0x60002000 and only exist when
+   PERF_ENABLE is compiled in. core_main.c calls portable_fini() AFTER stop_time(),
+   so everything printed here is outside the timed region and cannot change
+   Total ticks. That property is verified by building the same iteration count
+   with and without -DPERF_DUMP and comparing the printed ticks.
+
+   Reads always return the snapshot bank, so CTRL.SNAP must be written first
+   (perf_regs.v: "otherwise reads return 0").
+*/
+#ifdef PERF_DUMP
+#define PERF_BASE_ADDR 0x60002000u
+#define PERF_REG(off)  (*((volatile ee_u32 *)(PERF_BASE_ADDR + (off))))
+
+#define PERF_CTRL      0x00u   /* W: bit0 SNAP */
+#define PERF_STATUS    0x04u   /* R: bit0 snapshot_valid */
+#define PERF_CYCLE_LO  0x10u
+#define PERF_CYCLE_HI  0x14u
+#define PERF_INST_LO   0x18u
+#define PERF_IFW_LO    0x20u
+#define PERF_LSUW_LO   0x28u
+#define PERF_IMS_LO    0x30u
+#define PERF_DMS_LO    0x38u
+#define PERF_CF_LO     0x40u
+#define PERF_MP_LO     0x48u
+
+static void perf_dump_counters(void)
+{
+	PERF_REG(PERF_CTRL) = 1u;		/* SNAP */
+	if ((PERF_REG(PERF_STATUS) & 1u) == 0u) {
+		ee_printf("PERF_NA\n");
+		return;
+	}
+	/* Deliberately compact: the 16 KiB flash has only a few hundred bytes of
+	   headroom, so this emits bare numbers in a fixed order documented here.
+	     P <cycle_lo> <instret> <if_wait> <lsu_wait>
+	       <i_miss> <d_miss> <ret_cf> <mispred>
+	   IF_WAIT and LSU_WAIT are overlapping views and must not be summed. */
+	ee_printf("P %lu %lu %lu %lu %lu %lu %lu %lu\n",
+	          PERF_REG(PERF_CYCLE_LO),
+	          PERF_REG(PERF_INST_LO),
+	          PERF_REG(PERF_IFW_LO),
+	          PERF_REG(PERF_LSUW_LO),
+	          PERF_REG(PERF_IMS_LO),
+	          PERF_REG(PERF_DMS_LO),
+	          PERF_REG(PERF_CF_LO),
+	          PERF_REG(PERF_MP_LO));
+}
+#endif /* PERF_DUMP */
+
 void portable_fini(core_portable *p)
 {
+#ifdef PERF_DUMP
+	perf_dump_counters();
+#endif
 	p->portable_id=0;
 }

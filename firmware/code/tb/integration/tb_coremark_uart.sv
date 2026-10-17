@@ -307,6 +307,27 @@ module tb_coremark_uart;
         end
     endtask
 
+    // ---- EX occupancy decomposition (optimization plan P1) --------------------
+    // perf_regs' LSU_WAIT only counts the pre-issue window (op_valid drops once
+    // `issued` is set), so the AXI round trip after a load/store leaves is not
+    // visible there. These testbench-only counters split EX occupancy instead.
+    // They are hierarchical probes: no RTL change, no image change.
+    integer ex_busy=0, ex_mem_post=0, ex_div_busy=0, lsu_nonidle=0;
+    integer mem_ops=0, mem_ld=0, mem_st=0;
+    always @(posedge clk) if(rst_n) begin
+        if(soc.core.cpu.ex_valid && !soc.core.cpu.ex_leave) ex_busy=ex_busy+1;
+        if(soc.core.cpu.ex_valid && soc.core.cpu.is_memory &&
+           soc.core.cpu.issued && !soc.core.cpu.ex_leave) ex_mem_post=ex_mem_post+1;
+        if(soc.core.cpu.ex_valid && soc.core.cpu.is_div &&
+           !soc.core.cpu.ex_leave) ex_div_busy=ex_div_busy+1;
+        if(soc.core.lsu.state!=3'd0) lsu_nonidle=lsu_nonidle+1;
+        // accepted memory operations, split into loads and stores
+        if(soc.core.cpu.op_valid && soc.core.cpu.op_ready) begin
+            mem_ops=mem_ops+1;
+            if(soc.core.cpu.is_store) mem_st=mem_st+1; else mem_ld=mem_ld+1;
+        end
+    end
+
     // ---- termination ---------------------------------------------------------
     initial begin
         selfcheck_mode=1; tx_line_rx=1;
@@ -327,7 +348,12 @@ module tb_coremark_uart;
             begin
                 wait(report_seen);
                 // Let the remaining report lines and the UART shift register drain.
-                repeat(12000) @(posedge clk);
+                // One character is 10 bit cells x BAUD_DIV(234) = 2340 cycles, so the
+                // original 12000 cycles covered only ~5 characters: that is why
+                // "Correct operation validated." and the PERF_DUMP line printed by
+                // core_portme.c after the report were being cut off. 250000 cycles
+                // covers ~106 characters, enough for both tails with margin.
+                repeat(250000) @(posedge clk);
             end
         join_any
         $display("");
@@ -335,6 +361,8 @@ module tb_coremark_uart;
         if(trace_fd) $fclose(trace_fd);
         $display("");
         $display("CORE_SUMMARY cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d txd_writes=%0d ctrl=%0d mispred=%0d", cycles, retired, traps, faults, chars, txd_writes, ctrl_retired, mispred_retired);
+        $display("EX_OCCUPANCY ex_busy=%0d ex_mem_post=%0d ex_div_busy=%0d lsu_nonidle=%0d", ex_busy, ex_mem_post, ex_div_busy, lsu_nonidle);
+        $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);
         if(txd_writes!=0 && chars==0) begin
             $display("TEST_FAIL UART_LOOPBACK no decoded byte although %0d TXDATA writes reached the UART",txd_writes);
             $fatal(1,"uat tx broken");

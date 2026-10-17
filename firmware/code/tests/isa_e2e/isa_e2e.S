@@ -182,11 +182,20 @@ test6:
 /* ------------------------------------------------------------------ test 7
  * mcycle/minstret: writable halves, read-only aliases, free running.
  * Expected: x2=1 x3=0 x5 = cycle low half, non-zero, even after the shift pair
+ *
+ * The wrap carry is only observable once at least one mcycle increment has
+ * elapsed after the write, so the NOP below is REQUIRED, not decoration: the
+ * two CSR instructions would otherwise issue on consecutive cycles, and the
+ * read would sample mcycleh in the very cycle the low half still holds
+ * 0xffffffff (carry not yet applied).  Without it the case depends on whether
+ * an instruction-fetch bubble happens to land between them, which any change to
+ * pipeline timing can flip -- that is a property of the test, not of the core.
  */
   .org 0x700
 test7:
   li    x1, -1
   csrw  0xb00, x1              /* mcycle = 0xffffffff */
+  nop                          /* let one increment carry into mcycleh */
   csrrs x2, 0xb80, x0         /* wraps: mcycleh = 1 */
   csrrc x0, 0xb00, x1          /* clear low half */
   csrrs x3, 0xb00, x0          /* x3 = 0 */

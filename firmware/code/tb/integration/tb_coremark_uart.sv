@@ -320,6 +320,24 @@ module tb_coremark_uart;
         if(soc.core.data_cache.state_q==4'd6) st_wr_hold=st_wr_hold+1;
     end
 
+    // ---- LSU path decomposition (optimization plan P8) ------------------------
+    // A load currently walks EMPTY -> REQUEST -> READ_WAIT -> COMPLETE.  The
+    // REQUEST state exists only to register the address before asking the
+    // engine, so it costs one cycle per memory operation.  Counting cycles per
+    // LSU state checks the claim "REQUEST cycles ~= memory operations" BEFORE
+    // the RTL is touched.  Testbench-only hierarchical probes, like STORE_PATH.
+    integer l_emp=0, l_req=0, l_wdat=0, l_rdwait=0, l_wrwait=0, l_comp=0;
+    always @(posedge clk) if(rst_n) begin
+        case(soc.core.lsu.state)
+            3'd0: l_emp   =l_emp   +1;
+            3'd1: l_req   =l_req   +1;
+            3'd2: l_wdat  =l_wdat  +1;
+            3'd3: l_rdwait=l_rdwait+1;
+            3'd4: l_wrwait=l_wrwait+1;
+            3'd5: l_comp  =l_comp  +1;
+        endcase
+    end
+
     // ---- EX occupancy decomposition (optimization plan P1) --------------------
     // perf_regs' LSU_WAIT only counts the pre-issue window (op_valid drops once
     // `issued` is set), so the AXI round trip after a load/store leaves is not
@@ -377,6 +395,7 @@ module tb_coremark_uart;
         $display("EX_OCCUPANCY ex_busy=%0d ex_mem_post=%0d ex_div_busy=%0d lsu_nonidle=%0d", ex_busy, ex_mem_post, ex_div_busy, lsu_nonidle);
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);
         $display("STORE_PATH st_wr_req=%0d st_wr_resp=%0d st_wr_hold=%0d st_total=%0d", st_wr_req, st_wr_resp, st_wr_hold, st_wr_req+st_wr_resp+st_wr_hold);
+        $display("LSU_PATH empty=%0d request=%0d wdata=%0d rdwait=%0d wrwait=%0d complete=%0d", l_emp, l_req, l_wdat, l_rdwait, l_wrwait, l_comp);
         if(txd_writes!=0 && chars==0) begin
             $display("TEST_FAIL UART_LOOPBACK no decoded byte although %0d TXDATA writes reached the UART",txd_writes);
             $fatal(1,"uat tx broken");

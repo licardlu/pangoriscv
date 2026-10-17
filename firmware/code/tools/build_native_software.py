@@ -150,7 +150,10 @@ def main():
     if args.application == "coremark":
         sources.extend(app / name for name in [
             "core_list_join.c", "core_main.c", "core_matrix.c",
-            "core_state.c", "core_util.c", "core_portme.c"])
+            "core_state.c", "core_util.c", "core_portme.c",
+            # ee_printf.c is the EEMBC formatter the board port uses for UART
+            # output (HAS_PRINTF 1 in tests/example/coremark/core_portme.h).
+            "ee_printf.c"])
     else:
         sources.extend(sorted(app.glob("*.c")))
     flags = ["-march=rv32im", "-mabi=ilp32", "-mcmodel=medlow", args.opt,

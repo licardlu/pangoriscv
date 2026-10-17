@@ -63,9 +63,16 @@ adv_sram_build/
 led_sram_build/
 pangoriscv_axi4/
 legacy/
+# 交付快照压缩包（原始备份按 LAYOUT.md 不入库）。
+archive/
 
 # ---- 例外：主动入库的产物（复现与上板必需） ----
 # 发布位流：保证拿到仓库就能直接上板，不必重跑综合。
 !bitstream/pangoriscv_i400.sbit
 # PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
 !firmware/code/platform/pango_native/*.pds
+
+# ---- 跑分数据：禁止入库、禁止上传 ----
+# 无物理开发板，仿真口径的 CoreMark 分数不是有效成绩。
+# 整段排除，避免被 git add / git push 带上去；说明见 SCORE-STATUS.txt。
+evidence/records/coremark-sim-*/

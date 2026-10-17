@@ -75,8 +75,11 @@ python sim/run_icache_tests.py --modelsim "<ModelSim 安装目录>"
 
 ## 5. 第三方说明
 
-本包**不含**第三方基准测试源码：CoreMark（EEMBC）仅作为外部基准程序运行，其源码不在本包内。
-EDA 厂商提供的辅助脚本（如 Pango 的 `BinToMem_CLI.py`）亦未纳入。示例固件中的格式化输出
+本包**收录** CoreMark v1.01（EEMBC）官方源码，位于 `tests/example/coremark/`，并随附其
+`LICENSE.md`。除裸机移植层 `core_portme.c`/`core_portme.h` 与本作品自行实现的格式化输出
+`ee_printf.c` 外，`core_*.c`、`coremark.h` 与官方发布版逐字节一致（SHA256 已核对），
+基准本体未做任何裁剪或修改。
+EDA 厂商提供的辅助脚本（如 Pango 的 `BinToMem_CLI.py`）未纳入。示例固件中的格式化输出
 （`tests/example/lib/xprintf.c`、`include/xprintf.h`）为本作品自行实现。
 
 ## 6. 许可与署名

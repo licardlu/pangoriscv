@@ -122,11 +122,11 @@ module tb_coremark_uart;
         if(cycles%500000==0) begin
             $display("PROGRESS cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d pc=%08x arch_next_pc=%08x halted=%b last_retire_cycle=%0d uart_ctrl=%08x uart_status=%08x uart_tx=%b",
                      cycles,retired,traps,faults,chars,retire_pc,arch_next_pc,halted,last_retire_cycle,
-                     soc.uart_inst.uart_ctrl,soc.uart_inst.uart_status,uart_tx);
+                     soc.uart_inst.ctrl_q,soc.uart_inst.stat_q,uart_tx);
         end
         if(cycles-last_retire_cycle > 200000 && cycles>200000) begin
             $display("STALL_DETECT cycles=%0d last_retire_cycle=%0d retires=%0d arch_next_pc=%08x retire_pc=%08x uart_ctrl=%08x uart_baud=%08x uart_status=%08x",
-                     cycles,last_retire_cycle,retired,arch_next_pc,retire_pc,soc.uart_inst.uart_ctrl,soc.uart_inst.uart_baud,soc.uart_inst.uart_status);
+                     cycles,last_retire_cycle,retired,arch_next_pc,retire_pc,soc.uart_inst.ctrl_q,soc.uart_inst.baud_q,soc.uart_inst.stat_q);
             $display("TEST_FAIL T_COREMARK_STALLED no retirement for 200000 cycles");
             $fatal(1,"retirement stalled");
         end
@@ -154,13 +154,13 @@ module tb_coremark_uart;
                          cycles,soc.core.lsu.fault_addr,soc.core.lsu.is_store,
                          soc.core.lsu.size_q,soc.core.lsu.pc_q,soc.core.lsu.rd_q);
         end
-        if(soc.uart_inst.we) begin
+        if(soc.uart_inst.wr_hit) begin
             uart_regw=uart_regw+1;
-            if(uart_regw<=12) $display("UART_REG_WRITE cycle=%0d off=%0d data=%08x",cycles,soc.uart_inst.wo,soc.uart_inst.wd);
+            if(uart_regw<=12) $display("UART_REG_WRITE cycle=%0d off=%0d data=%08x",cycles,soc.uart_inst.wr_off,soc.uart_inst.wr_data);
         end
-        if(soc.uart_inst.re) begin
+        if(soc.uart_inst.rd_hit) begin
             uart_regr=uart_regr+1;
-            if(uart_regr<=12) $display("UART_REG_READ cycle=%0d off=%0d",cycles,soc.uart_inst.ro);
+            if(uart_regr<=12) $display("UART_REG_READ cycle=%0d off=%0d",cycles,soc.uart_inst.rd_off);
         end
         if(cpu_d_arvalid && cpu_d_arready) begin
             d_ar=d_ar+1;
@@ -257,31 +257,31 @@ module tb_coremark_uart;
     end
 
     // Count TXDATA writes that actually reach the UART register file.
-    always @(posedge clk) if(rst_n && soc.uart_inst.we && soc.uart_inst.wo==12) begin
+    always @(posedge clk) if(rst_n && soc.uart_inst.wr_hit && soc.uart_inst.wr_off==12) begin
         txd_writes=txd_writes+1;
         if(txd_writes<8)
             $display("UART_TXD_WRITE cycle=%0d data=%02x ctrl=%08x status=%08x",
-                     cycles,soc.uart_inst.wd[7:0],soc.uart_inst.uart_ctrl,soc.uart_inst.uart_status);
+                     cycles,soc.uart_inst.wr_data[7:0],soc.uart_inst.ctrl_q,soc.uart_inst.stat_q);
     end
 
     // Any write reaching any peripheral or RAM endpoint (to separate "CPU never
     // stored" from "UART register never written").
     integer any_writes=0;
-    always @(posedge clk) if(rst_n && (soc.uart_inst.we || soc.gpio_inst.we || soc.timer_inst.we || soc.spi_inst.we)) begin
+    always @(posedge clk) if(rst_n && (soc.uart_inst.wr_hit || soc.gpio_inst.we || soc.timer_inst.we || soc.spi_inst.wr_hit)) begin
         any_writes=any_writes+1;
         if(any_writes<12)
             $display("PERIPH_WRITE cycle=%0d addr=%08x data=%08x strb=%b uart=%b gpio=%b timer=%b spi=%b",
-                     cycles, soc.uart_inst.we?32'h30000000+soc.uart_inst.wo:
+                     cycles, soc.uart_inst.wr_hit?32'h30000000+soc.uart_inst.wr_off:
                                soc.gpio_inst.we?32'h40000000+soc.gpio_inst.wo:
                                soc.timer_inst.we?32'h20000000+soc.timer_inst.wo:
-                               32'h50000000+soc.spi_inst.wo,
-                     soc.uart_inst.we?soc.uart_inst.wd:
+                               32'h50000000+soc.spi_inst.wr_off,
+                     soc.uart_inst.wr_hit?soc.uart_inst.wr_data:
                                soc.gpio_inst.we?soc.gpio_inst.wd:
-                               soc.timer_inst.we?soc.timer_inst.wd:soc.spi_inst.wd,
-                     soc.uart_inst.we?soc.uart_inst.ws:
+                               soc.timer_inst.we?soc.timer_inst.wd:soc.spi_inst.wr_data,
+                     soc.uart_inst.wr_hit?soc.uart_inst.wr_strb:
                                soc.gpio_inst.we?soc.gpio_inst.ws:
-                               soc.timer_inst.we?soc.timer_inst.ws:soc.spi_inst.ws,
-                     soc.uart_inst.we,soc.gpio_inst.we,soc.timer_inst.we,soc.spi_inst.we);
+                               soc.timer_inst.we?soc.timer_inst.ws:soc.spi_inst.wr_strb,
+                     soc.uart_inst.wr_hit,soc.gpio_inst.we,soc.timer_inst.we,soc.spi_inst.wr_hit);
     end
 
     // Read/write activity at the LSU level and on the AXI write channel.

@@ -99,5 +99,7 @@ if {[file isfile $compile_log]} {
 
 synthesize -ads -selected_syn_tool_opt 2
 dev_map
-add_constraint $pcf_file
+# The pin file is only needed before `pnr`; adding it here made pds_shell report
+# "E: Flow-0163: Failed to parse ... at line 87" while the flow still finished, so
+# it is deliberately omitted.  Resource utilisation is already fixed by dev_map.
 puts "RESOURCE_CHECK_DONE (no place and route)"

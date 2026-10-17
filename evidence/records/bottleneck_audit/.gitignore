@@ -1,0 +1,13 @@
+﻿# 瀹¤宸ヤ綔鍖轰笉鍏ュ簱锛堜綋绉ぇ涓斿彲鐢?commands.md 閲嶆柊鐢熸垚锛?work/
+# 鍙繚鐣欐湰鐩綍鐨?logs/ results/ scripts/ 涓庢姤鍛?
+# 基线构建副本（55 MB，可用 commands.md §3.6 重建；位流副本与身份清单单独入库）
+baseline_build/src/
+baseline_build/pds_build.log
+
+# provenance 下的源码镜像副本（与 HEAD 613fc88 的 firmware/code 相同，哈希见 baseline_src_sha256.tsv）
+baseline_build/provenance/firmware/
+
+
+# 基线位流副本要入库
+!baseline_build/artifacts/*.sbit
+

@@ -1,6 +1,6 @@
 # =============================================================================
-# pangoriscv — 作品仓库（RV32IM 处理器核 + 原生 AXI4 SoC）
-# 协作者：两人都可直接推 main。请先看 CONTRIBUTING.md 的「同时改同一份文件」约定。
+# pangoriscv — RV32IM 处理器核 + 原生 AXI4 SoC
+# 入库范围：作品代码、设计文档、验证证据（可再生的产物一律不入库）。
 # =============================================================================
 
 # ---- 编辑与系统垃圾 ----
@@ -17,7 +17,7 @@ $RECYCLE.BIN/
 *.orig
 *.rej
 
-# ---- 仿真与综合的中间产物（可再生成，不入库） ----
+# ---- 仿真与综合的中间产物（可再生成） ----
 work/
 *.wlf
 transcript
@@ -34,8 +34,6 @@ pds.prj
 *.sbit
 *.smsk
 *.bit
-*.bin
-!01_code/pangoriscv_own/tests/**/*.bin
 *.pds
 pds.log
 *.rtr
@@ -43,7 +41,6 @@ pds.log
 *.tsr
 *.pwr
 *.used_resources.txt
-!06_evidence/**/*.rtr
 
 # ---- Python ----
 __pycache__/
@@ -52,14 +49,23 @@ __pycache__/
 .venv/
 venv/
 
-# ---- 大件：验证结果归档与原始备份不入库，另存本地 / 网盘 ----
-# （体积与原因见 REPO_LAYOUT.md；如需归档请用 Git LFS 或发布 Release 附件）
+# ---- 不入库的大件（体积与原因见 docs/repo/LAYOUT.md） ----
+# 注意：这些规则不随目录迁移而失效，因此按“任意层级”匹配。
+# 历史工作树、历史构建目录与备份，散落在本地若干位置，一律忽略。
 09_validation_results/
 02_original_backups/
 10_codex_chats/
-01_code/adv_sram_build/
-01_code/led_sram_build/
-01_code/pangoriscv_axi4/
+07_board_references/
 log/
 logbackup/
-07_board_references/
+scratch_entry/
+adv_sram_build/
+led_sram_build/
+pangoriscv_axi4/
+legacy/
+
+# ---- 例外：主动入库的产物（复现与上板必需） ----
+# 发布位流：保证拿到仓库就能直接上板，不必重跑综合。
+!bitstream/pangoriscv_i400.sbit
+# PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
+!firmware/code/platform/pango_native/*.pds

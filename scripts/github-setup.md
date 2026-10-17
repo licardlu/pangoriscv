@@ -1,4 +1,4 @@
-# 把本地仓库推送到 GitHub 私有仓库（一次性）
+﻿# 把本地仓库推送到 GitHub 私有仓库（一次性）
 
 本机没有 `gh` CLI，所以远端仓库需要在浏览器里创建，剩下的步骤这里全包了。
 
@@ -51,7 +51,7 @@ git log --oneline -3
 git status          # 应为 "working tree clean"
 ```
 
-网页刷新仓库首页，应能看到 `README.md`、`CONTRIBUTING.md`、`01_code/` 等目录。
+网页刷新仓库首页，应能看到 `README.md`、`firmware/`、`docs/`、`evidence/`、`bitstream/` 等目录。
 
 ## 常见问题
 

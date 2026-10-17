@@ -122,7 +122,9 @@ module dcache_axi #(
                ST_WR_RESP   = 4'd5,
                ST_WR_HOLD   = 4'd6,
                ST_BYP_RESP  = 4'd7,
-               ST_FAULT     = 4'd8;
+               ST_FAULT     = 4'd8,
+               // Background drain of a write's B response (optimization P2').
+               ST_WR_DRAIN  = 4'd9;
 
     reg [3:0]  state_q;
     reg [TAGW-1:0] tag_q;
@@ -137,6 +139,13 @@ module dcache_axi #(
     reg [2:0]  word_q;
     reg [3:0]  id_q;
     reg        cached_q;
+    // Optimization P2': a store to the on-chip data RAM window can never fail, so
+    // its B response does not have to gate the CPU. Early release applies only
+    // there; every other address keeps the synchronous wait so that a store fault
+    // stays precise (ISA e2e case 11).
+    reg        early_q;           // this write may be released before B
+    reg        drain_q;           // a released write still owes an AXI B
+    reg        b_seen_q;          // B was already handed over by the write engine
     reg        hit_q;
     reg        hit_way_q;
     reg        fill_way_q;
@@ -196,7 +205,11 @@ module dcache_axi #(
     reg  [2:0]  i_req_size_r;
     reg  [7:0]  i_req_len_r;
     reg  [3:0]  i_req_id_r;
-    wire        i_b_ready   = (state_q==ST_WR_HOLD) && b_ready;
+    // The engine-facing B ready: while the CPU response is held it is gated by the
+    // CPU taking it; in the background drain state the CPU has already been served,
+    // so B must be accepted unconditionally or the handshake would hang.
+    wire        i_b_ready   = (state_q==ST_WR_DRAIN) ||
+                              ((state_q==ST_WR_HOLD) && b_ready);
 
     axi_data_engine inner (
         .clk(clk), .rst_n(rst_n),
@@ -270,6 +283,9 @@ module dcache_axi #(
             word_q      <= 3'd0;
             id_q        <= 4'd0;
             cached_q    <= 1'b0;
+            early_q     <= 1'b0;
+            drain_q     <= 1'b0;
+            b_seen_q    <= 1'b0;
             hit_q       <= 1'b0;
             hit_way_q   <= 1'b0;
             fill_way_q  <= 1'b0;
@@ -306,6 +322,7 @@ module dcache_axi #(
                     word_q    <= req_word;
                     id_q      <= req_id;
                     cached_q  <= req_in_cache;
+                    early_q   <= (req_addr >= 32'h1000_0000) && (req_addr < CACHED_LIMIT);
                     hit_q     <= hit_any;
                     hit_way_q <= hit_way;
                     if (req_write) begin
@@ -380,7 +397,17 @@ module dcache_axi #(
                 ST_WR_REQ: if (w_valid && w_ready) begin
                     wdata_q <= w_data;
                     wstrb_q <= w_strb;
-                    state_q <= ST_WR_RESP;
+                    if (early_q) begin
+                        // Data-RAM store: answer now, drain B in the background.
+                        // The write-through merge is applied when leaving ST_WR_HOLD,
+                        // because wstrb_q only becomes valid on this edge.
+                        resp_q   <= `AXI_RESP_OKAY;
+                        drain_q  <= 1'b1;
+                        b_seen_q <= 1'b0;   // B belongs to the write starting now
+                        state_q  <= ST_WR_HOLD;
+                    end else begin
+                        state_q <= ST_WR_RESP;
+                    end
                 end
                 ST_WR_RESP: if (i_b_valid) begin
                     resp_q <= i_b_resp;
@@ -394,7 +421,27 @@ module dcache_axi #(
                     end
                     state_q <= ST_WR_HOLD;
                 end
-                ST_WR_HOLD: if (b_valid && b_ready) state_q <= ST_IDLE;
+                ST_WR_HOLD: if (b_valid && b_ready) begin
+                    if (drain_q) begin
+                        // released write: apply the write-through merge, then let
+                        // the B handshake finish in the background
+                        if (cached_q && hit_q)
+                            data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_word;
+                        // B may already have been handed over while the response was
+                        // being held; only enter the drain state if it has not.
+                        state_q <= (b_seen_q || i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
+                    end else begin
+                        state_q <= ST_IDLE;
+                    end
+                end
+                // Background drain: no new request is served here, but the CPU has
+                // already been released, so this overlaps with non-memory work.
+                ST_WR_DRAIN: if (i_b_valid) begin
+                    if ((i_b_resp!==2'b00) && cached_q && hit_q)
+                        valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
+                    drain_q <= 1'b0;
+                    state_q <= ST_IDLE;
+                end
 
                 // ------------------------------------------ non-cacheable read
                 ST_BYP_RESP: if (rsp_valid && rsp_ready) state_q <= ST_IDLE;
@@ -402,6 +449,10 @@ module dcache_axi #(
                 ST_FAULT: ;
                 default: state_q <= ST_FAULT;
             endcase
+            // Latch "the write engine already handed B over". Without this the
+            // background drain could wait for a response that was consumed while
+            // the CPU response was being held (observed as an early deadlock).
+            if (i_b_valid) b_seen_q <= 1'b1;
         end
     end
 endmodule

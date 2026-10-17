@@ -307,6 +307,19 @@ module tb_coremark_uart;
         end
     endtask
 
+    // ---- store-path decomposition (optimization plan P2') ---------------------
+    // Where does a store's time go? dcache_axi parks in three write states:
+    //   ST_WR_REQ  =4 : waiting for the AXI write engine to accept AW/W
+    //   ST_WR_RESP =5 : waiting for the AXI B response
+    //   ST_WR_HOLD =6 : holding the response until the CPU takes it
+    // Counting cycles in each tells whether "not waiting for B" would buy anything.
+    integer st_wr_req=0, st_wr_resp=0, st_wr_hold=0;
+    always @(posedge clk) if(rst_n) begin
+        if(soc.core.data_cache.state_q==4'd4) st_wr_req =st_wr_req +1;
+        if(soc.core.data_cache.state_q==4'd5) st_wr_resp=st_wr_resp+1;
+        if(soc.core.data_cache.state_q==4'd6) st_wr_hold=st_wr_hold+1;
+    end
+
     // ---- EX occupancy decomposition (optimization plan P1) --------------------
     // perf_regs' LSU_WAIT only counts the pre-issue window (op_valid drops once
     // `issued` is set), so the AXI round trip after a load/store leaves is not
@@ -363,6 +376,7 @@ module tb_coremark_uart;
         $display("CORE_SUMMARY cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d txd_writes=%0d ctrl=%0d mispred=%0d", cycles, retired, traps, faults, chars, txd_writes, ctrl_retired, mispred_retired);
         $display("EX_OCCUPANCY ex_busy=%0d ex_mem_post=%0d ex_div_busy=%0d lsu_nonidle=%0d", ex_busy, ex_mem_post, ex_div_busy, lsu_nonidle);
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);
+        $display("STORE_PATH st_wr_req=%0d st_wr_resp=%0d st_wr_hold=%0d st_total=%0d", st_wr_req, st_wr_resp, st_wr_hold, st_wr_req+st_wr_resp+st_wr_hold);
         if(txd_writes!=0 && chars==0) begin
             $display("TEST_FAIL UART_LOOPBACK no decoded byte although %0d TXDATA writes reached the UART",txd_writes);
             $fatal(1,"uat tx broken");

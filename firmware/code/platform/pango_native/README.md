@@ -194,13 +194,20 @@ or the reset path with a blanket false-path constraint, so PDS reports
 `uart_rx`. Those warnings are the expected consequence of declaring only the real
 clock; they are not a timing failure.
 
-`build.tcl` runs `pnr` with an explicit hold-optimisation target:
+`build.tcl` runs `pnr` with an explicit hold-optimisation target, in the form of an
+argument list that an environment variable can extend:
 
-```
-pnr -fix_hold_violation_threshold 50 \
-    -fix_hold_violation_threshold_for_clk_tree 50 \
-    -fix_hold_violation_threshold_for_clock_path_cross_srb 50 \
-    -fix_hold_violation_iterations 20
+```tcl
+set pnr_args [list \
+    -fix_hold_violation_threshold 0 \
+    -fix_hold_violation_threshold_for_clk_tree 0 \
+    -fix_hold_violation_threshold_for_clock_path_cross_srb 0 \
+    -fix_hold_violation_iterations 50 \
+    -fix_hold_violation_in_route TRUE]
+if {[info exists ::env(PANGO_NATIVE_PNR_EXTRA)]} {
+    set pnr_args [concat $pnr_args $::env(PANGO_NATIVE_PNR_EXTRA)]
+}
+eval pnr $pnr_args
 ```
 
 The thresholds are **integer picoseconds** (`pnr -help` prints
@@ -208,16 +215,48 @@ The thresholds are **integer picoseconds** (`pnr -help` prints
 253 describes the option as optimising hold for paths whose slack is below the
 value). The plain `pnr` default left one hold endpoint at **-0.007 ns** under the
 real 37.037 ns constraint, because the router then only has to reach 0.000 ns and
-stopped after its six default iterations; with the 50 ps target it reaches
-**+0.023 ns** (`report_timing`: +0.031 ns) and the summary becomes
-`All Constraints Met`. This is not a relaxed constraint - no timing exception, no
-false path and no clock-period change are involved - but the resulting margin is
-small, so treat hold as the first suspect if the board ever misbehaves. An earlier
-attempt to reach the same goal by adding `set_clock_uncertainty -hold 0.05` to the
-FDC was **withdrawn**: it only raises the reported target the router cannot meet,
-so the report stays negative forever (evidence in
-`the project validation archive`
-section 5).
+stopped after its six default iterations; a 50 ps target reached **+0.023 ns**.
+No constraint is relaxed anywhere in this: no timing exception, no false path and
+no clock-period change. An earlier attempt to reach the same goal by adding
+`set_clock_uncertainty -hold 0.05` to the FDC was **withdrawn**: it only raises the
+reported target the router cannot meet, so the report stays negative forever
+(evidence in `the project validation archive` section 5).
+
+### Hold closure, 2026-10-18 (two-way caches + deeper fetch front end)
+
+With the two-way I/D caches in the netlist the default list above is no longer
+enough: the 27 MHz flow finished with setup WNS +16.521 ns and **four failing hold
+endpoints at -0.020 ns**, all on the I-cache distributed-RAM write ports
+(`instruction_cache/set_q[0] -> soc/m_araddr[5] -> data_mem_*/ram64x1d/WADDR[4]`).
+The cause is **clock-tree branch skew, not a long data path**: launch clock on
+`HCKBROUTE_2` arrives at 3.238 ns, capture clock on `HCKBROUTE_1` at 3.832 ns, in
+different columns; the 0.312 ns broadcast net on the data side is what eats the
+margin. Raising the target above zero gives the router a positive goal to chase:
+
+```powershell
+$env:PANGO_NATIVE_PNR_EXTRA = "-fix_hold_violation -fix_hold_violation_threshold 150 " +
+  "-fix_hold_violation_threshold_for_clk_tree 150 " +
+  "-fix_hold_violation_threshold_for_clock_path_cross_srb 150 " +
+  "-fix_hold_violation_iterations 400 -max_hold_violated_paths_num 4000 " +
+  "-groute_seed 23 -gplace_seed 23"
+```
+
+Result: `All Constraints Met`, setup WNS **+14.127 ns** and hold WHS **+0.154 ns
+(slow) / +0.113 ns (fast)**, 0 of 52,349 endpoints failing. This asks only for MORE
+hold fixing (a positive slack target plus different placement/routing seeds).
+
+### Resource check without place-and-route
+
+`resource_check.tcl` reuses the whole front end of `build.tcl` (same source list,
+include path, constraints and memory image, and the same "both images loaded"
+guard) but stops after `dev_map`. LUT / FF / DRAM are decided there, so this
+reproduces the delivered resource numbers in about three minutes, which is what
+makes an RTL-revision resource A/B practical. Set `RESOURCE_RUN_DIR` to a fresh
+directory name and, for the baseline side, `RESOURCE_BASELINE_DIR` +
+`RESOURCE_BASELINE_FILES` to stage in an older revision (the naming convention is
+the one `tools/run_fetch_ab.py` uses: `rtl/core/ifu_axi.v` becomes
+`rtl__core__ifu_axi.v`). Run it from a fresh empty directory for the same
+`$readmemh` reason as `build.tcl`.
 
 `pango_native_50mhz_overconstraint.fdc` is an **experiment-only** file (20 ns) kept
 so the frequency margin of the final RTL can be re-measured without pretending

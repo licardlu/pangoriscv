@@ -1,0 +1,18 @@
+CoreMark fetch A/B (image D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\firmware\code\build\native_software\coremark\performance\perf_on)
+baseline revision 99e8bdb; replaced files: rtl/core/ifu_axi.v, rtl/core/icache_axi.v
+wall clock 1.8 min
+
+base  PASS validated=False errors=True ticks=13940928 cycles=15866750 retires=6419341 IPC=0.4046
+      crc seed=0x55445f46 list=0xe714 matrix=0x1fd7 state=0x8e3a final=0x4983
+      traps=0 faults=0
+      store req=575828 resp=3808 hold=287914 total=867550
+work  PASS validated=False errors=True ticks=11887687 cycles=13809115 retires=6471148 IPC=0.4686
+      crc seed=0x55445f46 list=0xe714 matrix=0x1fd7 state=0x8e3a final=0x4983
+      traps=0 faults=0
+      store req=575822 resp=3765 hold=287911 total=867498
+
+ticks 13940928 -> 11887687 (-14.73%)
+cycles 15866750 -> 13809115 (-12.97%)
+CRC compared: seedcrc, crclist, crcmatrix, crcstate, crcfinal
+CRC differs: none
+architectural transparency: PASS

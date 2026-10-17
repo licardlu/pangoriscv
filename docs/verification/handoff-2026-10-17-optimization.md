@@ -1,5 +1,11 @@
 # pangoriscv 优化交接报告（2026-10-17 收尾）
 
+> **已被 `handoff-2026-10-18-ifu-done.md` 取代（本文保留作历史记录）。**
+> 本文"四、下一步：IFU 取指吞吐"已经在 2026-10-18 完成并验证：
+> 两笔未完成请求 + I-Cache 背靠背命中，周期 −12.97%、`if_wait` −77.3%、
+> 27 MHz 下 All Constraints Met。新的交付数字见新交接文档与
+> `evidence/records/optimization/P7/measurement.md`。
+
 > 用途：新会话直接从这里接手。所有结论都有实测数据和提交号支撑，不依赖对话历史。
 
 ---

@@ -1,0 +1,7 @@
+stage,config,iterations,ticks,ticks_per_iter,cycles,retires,ipc,if_wait,lsu_wait,i_miss,d_miss,mispred,coremark_per_mhz,total_lut,wns_ns,crc_ok,note
+S0-baseline,cache+predict+perf,400,306415752,766039,308000765,115803118,0.3760,,,,,,1.3054,12572,16.440,yes,evidence/records/coremark-sim-2026-10-17
+P2-store,store B-RESP drain,20,13940928,697046,15866750,6419312,0.4045,,,,,,1.4346,12572,17.920,yes,evidence/records/optimization/P2-store
+P7-base,99e8bdb re-measured (perf_on image),20,13940928,697046,15866750,6419341,0.4046,3269814,1560772,17679,4209,154321,1.4346,12622,14.127,yes,controlled 20-iteration A/B
+P7-new,2-deep request FIFO + I-cache back-to-back,20,11887687,594384,13809115,6471148,0.4686,742122,1560816,18474,4209,154315,1.6824,13018,14.127,yes,controlled 20-iteration A/B; if_wait -77.30%
+P7-base-512,99e8bdb on score512 (valid run),512,356993719,697253,358802946,148181914,0.4130,,,,,,1.4342,12622,14.127,yes,same image+iterations as delivered; crcfinal 0xdfc8
+P7-delivered,2-deep request FIFO + I-cache back-to-back,512,304495134,594717,306299998,148241731,0.4840,,,,,,1.6815,13018,14.127,yes,valid run: 11.28 s; PDS All Constraints Met; crcfinal 0xdfc8

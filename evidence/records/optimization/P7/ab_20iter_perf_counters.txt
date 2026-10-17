@@ -1,0 +1,17 @@
+﻿Perf counters, 20-iteration A/B (image perf_on, same testbench, RTL differs only in ifu_axi.v + icache_axi.v)
+
+base : # P 15617285 6320808 3269814 1560772 17679 4209 1401059 154321
+work : # P 13559672 6320940 742122 1560816 18474 4209 1401103 154315
+
+Field order (core_portme.c, PERF_DUMP): cycle_lo instret if_wait lsu_wait i_miss d_miss ret_cf mispred
+IF_WAIT and LSU_WAIT are overlapping views - never add them.
+
+        field      baseline   optimised     delta
+cycle          15617285   13559672    -13.18%
+instret         6320808    6320940      0.00%
+if_wait         3269814     742122    -77.30%
+lsu_wait        1560772    1560816      0.00%
+i_miss            17679      18474      4.50%
+d_miss             4209       4209      0.00%
+ret_cf          1401059    1401103      0.00%
+mispred          154321     154315      0.00%

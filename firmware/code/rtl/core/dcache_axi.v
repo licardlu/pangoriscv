@@ -108,6 +108,11 @@ module dcache_axi #(
 );
     localparam integer LINE_WORDS = 8;                 // 32 B / 4 B
     localparam [7:0]   REFILL_LEN = LINE_WORDS - 1;    // ARLEN=7 -> 8 beats
+    // Address slicing derived from SETS so the cache is resized by parameter
+    // alone (optimization plan P2.2). At SETS=32 this reproduces the previous
+    // hard-coded split exactly: tag=addr[31:10], set=addr[9:5], word=addr[4:2].
+    localparam integer IDXW = $clog2(SETS);            // 5 for 32 sets
+    localparam integer TAGW = 32 - 5 - IDXW;           // 22 for 32 sets
 
     localparam ST_IDLE      = 4'd0,
                ST_HIT       = 4'd1,
@@ -120,15 +125,15 @@ module dcache_axi #(
                ST_FAULT     = 4'd8;
 
     reg [3:0]  state_q;
-    reg [21:0] tag_q;
-    reg [4:0]  set_q;
+    reg [TAGW-1:0] tag_q;
+    reg [IDXW-1:0] set_q;
     // Physical duplicate of set_q, used only as the write address of the line
     // RAMs (tag/data/valid/lru).  Both registers load the same value on the
     // same clock edge, so behaviour is identical; the split exists so that the
     // placer can put this copy next to the distributed-RAM write ports and
     // close the hold path PDS reported in an early build on
     // soc/core/data_cache/set_q[4] -> tag_mem_*/ram64x1d/WADDR[4] (-0.027 ns).
-    reg [4:0]  set_wr_q;
+    reg [IDXW-1:0] set_wr_q;
     reg [2:0]  word_q;
     reg [3:0]  id_q;
     reg        cached_q;
@@ -149,7 +154,7 @@ module dcache_axi #(
     reg [1:0]  rresp_q;
 
     // ---- storage -----------------------------------------------------------
-    reg [21:0] tag_mem   [0:SETS*WAYS-1];
+    reg [TAGW-1:0] tag_mem   [0:SETS*WAYS-1];
     reg [31:0] data_mem  [0:SETS*WAYS*LINE_WORDS-1];
     reg        valid_mem [0:SETS*WAYS-1];
     reg        lru_mem   [0:SETS-1];
@@ -171,9 +176,9 @@ module dcache_axi #(
     endfunction
 
     // ---- combinational lookup for the incoming request ---------------------
-    wire [21:0] req_tag  = req_addr[31:10];
-    wire [4:0]  req_set  = req_addr[9:5];
-    wire [2:0]  req_word = req_addr[4:2];
+    wire [TAGW-1:0] req_tag  = req_addr[31:5+IDXW];
+    wire [IDXW-1:0] req_set  = req_addr[5+IDXW-1:5];
+    wire [2:0]      req_word = req_addr[4:2];
     wire req_in_cache = (req_addr < CACHED_LIMIT);
     wire hit0 = valid_mem[widx(0,req_set)] && (tag_mem[widx(0,req_set)]==req_tag);
     wire hit1 = valid_mem[widx(1,req_set)] && (tag_mem[widx(1,req_set)]==req_tag);
@@ -259,9 +264,9 @@ module dcache_axi #(
     always @(posedge clk) begin
         if (!rst_n) begin
             state_q     <= ST_IDLE;
-            tag_q       <= 22'd0;
-            set_q       <= 5'd0;
-            set_wr_q    <= 5'd0;
+            tag_q       <= {TAGW{1'b0}};
+            set_q       <= {IDXW{1'b0}};
+            set_wr_q    <= {IDXW{1'b0}};
             word_q      <= 3'd0;
             id_q        <= 4'd0;
             cached_q    <= 1'b0;

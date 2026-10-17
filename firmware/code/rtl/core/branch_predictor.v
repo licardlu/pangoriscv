@@ -32,7 +32,7 @@
 `include "defines.v"
 
 module branch_predictor #(
-    parameter integer ENTRIES = 32          // direct-mapped sets, index PC[6:2]
+    parameter integer ENTRIES = 128         // direct-mapped sets, index derived from ENTRIES
 )(
     input wire clk,
     input wire rst_n,

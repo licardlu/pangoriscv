@@ -386,6 +386,10 @@ SPECIAL_CASES = {7, 12, 13, 14, 15}
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--toolchain-bin", type=Path, default=DEFAULT_TOOLCHAIN)
+    ap.add_argument("--prefix", default="riscv32-unknown-elf-",
+                    help="toolchain program prefix (default: riscv32-unknown-elf-)")
+    ap.add_argument("--extra-flag", action="append", default=[], metavar="FLAG",
+                    help="extra compiler flag, repeatable (e.g. -march=rv32im_zicsr)")
     ap.add_argument("--modelsim", type=Path, default=DEFAULT_MODELSIM)
     ap.add_argument("--cases", default="all")
     ap.add_argument("--dump-expected", action="store_true",
@@ -399,9 +403,13 @@ def main() -> int:
     else:
         cases = [int(c) for c in re.split(r"[,\s]+", args.cases) if c]
 
-    gcc = args.toolchain_bin / "riscv32-unknown-elf-gcc.exe"
-    objcopy = args.toolchain_bin / "riscv32-unknown-elf-objcopy.exe"
-    objdump = args.toolchain_bin / "riscv32-unknown-elf-objdump.exe"
+    # The historical default is the OpenISA riscv32-unknown-elf-* toolchain. Modern
+    # xpack releases ship the riscv-none-elf-* prefix, which produces identical
+    # rv32im code, so the prefix and extra flags are parameters instead of
+    # constants (GCC 12+ also needs -march=rv32im_zicsr for csr instructions).
+    gcc = args.toolchain_bin / (args.prefix + "gcc.exe")
+    objcopy = args.toolchain_bin / (args.prefix + "objcopy.exe")
+    objdump = args.toolchain_bin / (args.prefix + "objdump.exe")
     for tool in (gcc, objcopy, objdump):
         if not tool.exists():
             print(f"BLOCKED: toolchain tool not found: {tool}")
@@ -421,7 +429,8 @@ def main() -> int:
     raw = work_dir / "isa_e2e.bin"
 
     print(f"work dir: {work_dir}")
-    rc = run([gcc, "-march=rv32im", "-mabi=ilp32", "-nostdlib", "-nostartfiles",
+    rc = run([gcc, "-march=rv32im", "-mabi=ilp32", *args.extra_flag,
+              "-nostdlib", "-nostartfiles",
               "-static", "-Wl,--no-relax", "-T", str(ROOT/"tests"/"isa_e2e"/"link.ld"),
               "-e", "_start",
               str(src), "-o", str(elf)], work_dir / "assemble.log")

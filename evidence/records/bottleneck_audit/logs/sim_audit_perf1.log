@@ -1,0 +1,197 @@
+# vsim -c -voptargs="+acc" tb_coremark_audit "+PROG=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/coremark/performance/program.hex" "+DATA=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/coremark/performance/data.hex" "+MAX_CYCLES=4000000" -do "run -all; quit -f" -l E:\file\pango\project\evidence\records\bottleneck_audit/logs/sim_audit_perf1.log 
+# Start time: 18:20:13 on Oct 17,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: E:/file/pango/project/evidence/records/bottleneck_audit/scripts/tb_coremark_audit.sv(54): (vopt-2685) [TFMPC] - Too few port connections for 'soc'.  Expected 35, found 34.
+# ** Warning: E:/file/pango/project/evidence/records/bottleneck_audit/scripts/tb_coremark_audit.sv(54): (vopt-2718) [TFMPC] - Missing connection for port 'trap_vector'.
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_interconnect(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "dcache_axi(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_ram(fast__1)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_ram(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_uart(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "icache_axi(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_data_engine(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "lsu_axi(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "div(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_read_engine(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_coremark_audit(fast)
+# Loading work.pangoriscv_axi_soc(fast)
+# Loading work.pangoriscv_axi_top(fast)
+# Loading work.pangoriscv(fast)
+# Loading work.branch_predictor(fast)
+# Loading work.csr_native(fast)
+# Loading work.ctrl(fast)
+# Loading work.pc_reg(fast)
+# Loading work.if_id(fast)
+# Loading work.pipe_slot(fast)
+# Loading work.regs(fast)
+# Loading work.id(fast)
+# Loading work.id_ex(fast)
+# Loading work.pipe_slot(fast__1)
+# Loading work.ex(fast)
+# Loading work.div_adapter(fast)
+# Loading work.div(fast)
+# Loading work.retire_ctrl(fast)
+# Loading work.ifu_axi(fast)
+# Loading work.icache_axi(fast)
+# Loading work.lsu_axi(fast)
+# Loading work.dcache_axi(fast)
+# Loading work.axi_data_engine(fast)
+# Loading work.axi_read_engine(fast)
+# Loading work.axi_interconnect(fast)
+# Loading work.axi_error_slave(fast)
+# Loading work.axi_ram(fast)
+# Loading work.axi_ram(fast__1)
+# Loading work.axi_timer(fast)
+# Loading work.axi_reg_slave(fast)
+# Loading work.axi_uart(fast)
+# Loading work.axi_reg_slave(fast__1)
+# Loading work.axi_gpio(fast)
+# Loading work.axi_reg_slave(fast__2)
+# Loading work.axi_spi(fast)
+# Loading work.axi_reg_slave(fast__3)
+# Loading work.irq_ctrl(fast)
+# Loading work.axi_reg_slave(fast__4)
+# Loading work.perf_regs(fast)
+# Loading work.axi_reg_slave(fast__5)
+# run -all
+# AUDIT_IMAGE prog=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/coremark/performance/program.hex data=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/coremark/performance/data.hex max_cycles=4000000
+# AUDIT_START cycle=57479 retire_pc=0000082c retire_inst=c0002573
+# PROGRESS cycles=500000 retires=189486 ipc=0.378972 chars=0 pc=00001f24
+# AUDIT_STOP  cycle=860709 retire_pc=0000082c retire_inst=c0002573 delta=803230
+# CPM_TICKS hi
+# AUDIT_SUMMARY cycles=891709 retires=331551 ipc=0.371815 traps=0 faults=0 chars=12 report_seen=0
+# AUDIT_RAW ifwait=160418 lsuwait=79238 imiss=514 dmiss=174 predmiss=11436 ctrl=75791 redirect=11436 fetch=0 issue=363817 rsp=363817
+# AUDIT_AXI i_ar=514 i_r=4112 d_ar=3400 d_r=4618 d_aw=18066 d_w=18066 d_b=18066
+# AUDIT_CLASS retires=331551 lsu=400063 div=160 ex=15 starve=159920 (sum=891709 vs cycles=891709)
+# AUDIT_MEM load=61172 store=18066 mdiv_issue=180
+# 
+# AUDIT_INTERVAL t_start=57479 t_stop=860709 span=803230
+# AUDIT_INT cycles=803230 retires=305069 ipc=0.379803
+# AUDIT_INT_RAW ifwait=153442 lsuwait=71510 imiss=397 dmiss=92 predmiss=10914 ctrl=68873 redirect=10914 fetch=0 issue=334459 rsp=334459
+# AUDIT_INT_AXI i_ar=397 i_r=3176 d_ar=92 d_r=736 d_aw=15687 d_w=15687 d_b=15687
+# AUDIT_INT_CLASS retires=305069 lsu=345164 div=0 ex=0 starve=152997 (sum=803230)
+# AUDIT_INT_MEM load=55823 store=15687 redirect=10914 flush_lost=0
+# AUDIT_INT_CACHE icache req=334459 miss=397 ar=397 r=3176 | dcache req=71510 miss=92 ar=92 single=0 r=736 | lsu_req=71510
+# 
+# AUDIT_HIST_IQUEUE 
+# AUDIT_OCC occ=0 cycles=179107
+# AUDIT_OCC occ=1 cycles=210347
+# AUDIT_OCC occ=2 cycles=42436
+# AUDIT_OCC occ=3 cycles=29196
+# AUDIT_OCC occ=4 cycles=30642
+# AUDIT_OCC occ=5 cycles=51078
+# AUDIT_OCC occ=6 cycles=94730
+# AUDIT_OCC occ=7 cycles=114655
+# AUDIT_OCC occ=8 cycles=139518
+# AUDIT_OCC occ=9 cycles=0
+# AUDIT_HIST_IGAP
+# AUDIT_IGAP gap=2 n=317707
+# AUDIT_IGAP gap=3 n=21935
+# AUDIT_IGAP gap=4 n=8160
+# AUDIT_IGAP gap=5 n=3702
+# AUDIT_IGAP gap=6 n=448
+# AUDIT_IGAP gap=7 n=793
+# AUDIT_IGAP gap=8 n=596
+# AUDIT_IGAP gap=9 n=762
+# AUDIT_IGAP gap=10 n=1314
+# AUDIT_IGAP gap=11 n=6592
+# AUDIT_IGAP gap=12 n=1141
+# AUDIT_IGAP gap=13 n=3
+# AUDIT_IGAP gap=14 n=5
+# AUDIT_IGAP gap=16 n=1
+# AUDIT_IGAP gap=17 n=42
+# AUDIT_IGAP gap=19 n=4
+# AUDIT_IGAP gap=20 n=5
+# AUDIT_IGAP gap=21 n=6
+# AUDIT_IGAP gap=22 n=1
+# AUDIT_IGAP gap=24 n=4
+# AUDIT_IGAP gap=25 n=6
+# AUDIT_IGAP gap=26 n=4
+# AUDIT_IGAP gap=27 n=8
+# AUDIT_IGAP gap=28 n=52
+# AUDIT_IGAP gap=30 n=6
+# AUDIT_IGAP gap=31 n=519
+# AUDIT_IGAP_TOTAL n=363816
+# AUDIT_HIST_ILAT
+# AUDIT_ILAT lat=1 n=363303
+# AUDIT_ILAT lat=30 n=461
+# AUDIT_ILAT lat=31 n=53
+# AUDIT_HIST_LLAT
+# AUDIT_LLAT lat=3 n=57772
+# AUDIT_LLAT lat=6 n=3226
+# AUDIT_LLAT lat=10 n=13
+# AUDIT_LLAT lat=11 n=17914
+# AUDIT_LLAT lat=26 n=3
+# AUDIT_LLAT lat=27 n=3
+# AUDIT_LLAT lat=29 n=3
+# AUDIT_LLAT lat=30 n=163
+# AUDIT_LLAT lat=31 n=19
+# AUDIT_LLAT lat=32 n=12
+# AUDIT_LLAT lat=33 n=20
+# AUDIT_LLAT lat=34 n=6
+# AUDIT_LLAT lat=35 n=41
+# AUDIT_LLAT lat=36 n=8
+# AUDIT_LLAT lat=37 n=20
+# AUDIT_LLAT lat=44 n=3
+# AUDIT_LLAT lat=47 n=1
+# AUDIT_LLAT lat=49 n=1
+# AUDIT_LLAT lat=52 n=4
+# AUDIT_LLAT lat=54 n=1
+# AUDIT_LLAT lat=56 n=4
+# AUDIT_LLAT lat=57 n=1
+# AUDIT_HIST_REC
+# AUDIT_REC lat=5 n=8084
+# AUDIT_REC lat=8 n=1549
+# AUDIT_REC lat=11 n=2
+# AUDIT_REC lat=15 n=12
+# AUDIT_REC lat=16 n=1592
+# AUDIT_REC lat=17 n=2
+# AUDIT_REC lat=25 n=1
+# AUDIT_REC lat=26 n=1
+# AUDIT_REC lat=27 n=2
+# AUDIT_REC lat=28 n=2
+# AUDIT_REC lat=29 n=6
+# AUDIT_REC lat=30 n=4
+# AUDIT_REC lat=31 n=7
+# AUDIT_REC lat=32 n=4
+# AUDIT_REC lat=33 n=14
+# AUDIT_REC lat=34 n=69
+# AUDIT_REC lat=35 n=14
+# AUDIT_REC lat=36 n=6
+# AUDIT_REC lat=37 n=21
+# AUDIT_REC lat=38 n=1
+# AUDIT_REC lat=40 n=8
+# AUDIT_REC lat=42 n=7
+# AUDIT_REC lat=43 n=1
+# AUDIT_REC lat=44 n=1
+# AUDIT_REC lat=58 n=2
+# AUDIT_REC lat=59 n=4
+# AUDIT_REC lat=60 n=2
+# AUDIT_REC lat=61 n=3
+# AUDIT_REC lat=62 n=6
+# AUDIT_REC lat=63 n=3
+# AUDIT_REC lat=65 n=1
+# AUDIT_REC lat=68 n=1
+# AUDIT_REC lat=69 n=1
+# AUDIT_REC lat=87 n=1
+# AUDIT_REC lat=90 n=2
+# 
+# TEST_FAIL T_COREMARK_AUDIT retires=331551 cycles=891709
+# ** Note: $finish    : E:/file/pango/project/evidence/records/bottleneck_audit/scripts/tb_coremark_audit.sv(420)
+#    Time: 891728500 ps  Iteration: 1  Instance: /tb_coremark_audit
+# End time: 18:20:36 on Oct 17,2026, Elapsed time: 0:00:23
+# Errors: 0, Warnings: 2

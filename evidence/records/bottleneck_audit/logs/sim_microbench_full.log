@@ -1,0 +1,143 @@
+# vsim -c -voptargs="+acc" tb_uart_run "+PROG=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/microbench/validation/program.hex" "+DATA=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/microbench/validation/data.hex" "+MAX_CYCLES=4000000" -do "run -all; quit -f" -l E:\file\pango\project\evidence\records\bottleneck_audit/logs/sim_microbench_full.log 
+# Start time: 18:00:35 on Oct 17,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2685) [TFMPC] - Too few port connections for 'soc'.  Expected 35, found 13.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'protocol_fault'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'debug_data'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'debug_addr'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'wdata'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'rd'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'rd_valid'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_inst'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_pc'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_order'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_fire'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_tval'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_pc'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_cause'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_fire'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'csr_mtvec'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'irq_external'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'irq_timer'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'irq_software'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_vector'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_ready'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'arch_next_pc'.
+# ** Warning: E:\file\pango\project\evidence\records\bottleneck_audit/scripts/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'halted'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_uart_run(fast)
+# Loading work.pangoriscv_axi_soc(fast)
+# Loading work.pangoriscv_axi_top(fast)
+# Loading work.pangoriscv(fast)
+# Loading work.branch_predictor(fast)
+# Loading work.csr_native(fast)
+# Loading work.ctrl(fast)
+# Loading work.pc_reg(fast)
+# Loading work.if_id(fast)
+# Loading work.pipe_slot(fast)
+# Loading work.regs(fast)
+# Loading work.id(fast)
+# Loading work.id_ex(fast)
+# Loading work.pipe_slot(fast__1)
+# Loading work.ex(fast)
+# Loading work.div_adapter(fast)
+# Loading work.div(fast)
+# Loading work.retire_ctrl(fast)
+# Loading work.ifu_axi(fast)
+# Loading work.icache_axi(fast)
+# Loading work.lsu_axi(fast)
+# Loading work.dcache_axi(fast)
+# Loading work.axi_data_engine(fast)
+# Loading work.axi_read_engine(fast)
+# Loading work.axi_interconnect(fast)
+# Loading work.axi_error_slave(fast)
+# Loading work.axi_ram(fast)
+# Loading work.axi_ram(fast__1)
+# Loading work.axi_timer(fast)
+# Loading work.axi_reg_slave(fast)
+# Loading work.axi_uart(fast)
+# Loading work.axi_reg_slave(fast__1)
+# Loading work.axi_gpio(fast)
+# Loading work.axi_reg_slave(fast__2)
+# Loading work.axi_spi(fast)
+# Loading work.axi_reg_slave(fast__3)
+# Loading work.irq_ctrl(fast)
+# Loading work.axi_reg_slave(fast__4)
+# Loading work.perf_regs(fast)
+# Loading work.axi_reg_slave(fast__5)
+# run -all
+# TB image prog=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/microbench/validation/program.hex data=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree/build/native_software/microbench/validation/data.hex max_cycles=4000000
+# MICROBENCH start
+# alu_independent (n=ITER): cycles=5192 insn=2560 cyc_per_insn_x100=202
+# alu_dependent (n=ITER): cycles=5161 insn=2560 cyc_per_insn_x100=201
+# load_independent (n=ITER): cycles=9020 insn=2816 cyc_per_insn_x100=320
+# load_dependent (n=ITER): cycles=8733 insn=2304 cyc_per_insn_x100=379
+# store (n=ITER): cycles=25400 insn=2816 cyc_per_insn_x100=901
+# branch_taken (n=ITER): cycles=1576 insn=768 cyc_per_insn_x100=205
+# branch_alternating (n=ITER): cycles=3113 insn=1280 cyc_per_insn_x100=243
+# mul_dependent (n=ITER): cycles=5159 insn=2560 cyc_per_insn_x100=201
+# div_dependent (n=32): cycles=4682 insn=192 cyc_per_insn_x100=2438
+# MICROBENCH done
+# 
+# TB TIMEOUT after 4000000 cycles, 645 chars
+# ----- UART TEXT BEGIN (645 chars) -----
+#          MICROBENCH start.alu_independent (n=ITER): cycles=5192 insn=2560 cyc_per_insn_x100=202.alu_dependent (n=ITER): cycles=5161 insn=2560 cyc_per_insn_x100=201.load_independent (n=ITER): cycles=9020 insn=2816 cyc_per_insn_x100=320.load_dependent (n=ITER): cycles=8733 insn=2304 cyc_per_insn_x100=379.store (n=ITER): cycles=25400 insn=2816 cyc_per_insn_x100=901.branch_taken (n=ITER): cycles=1576 insn=768 cyc_per_insn_x100=205.branch_alternating (n=ITER): cycles=3113 insn=1280 cyc_per_insn_x100=243.mul_dependent (n=ITER): cycles=5159 insn=2560 cyc_per_insn_x100=201.div_dependent (n=32): cycles=4682 insn=192 cyc_per_insn_x100=2438.MICROBENCH done.
+#      0: 4d 49 43 52 4f 42 45 4e 43 48 20 73 74 61 72 74
+#     16: 0a 61 6c 75 5f 69 6e 64 65 70 65 6e 64 65 6e 74
+#     32: 20 28 6e 3d 49 54 45 52 29 3a 20 63 79 63 6c 65
+#     48: 73 3d 35 31 39 32 20 69 6e 73 6e 3d 32 35 36 30
+#     64: 20 63 79 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31
+#     80: 30 30 3d 32 30 32 0a 61 6c 75 5f 64 65 70 65 6e
+#     96: 64 65 6e 74 20 28 6e 3d 49 54 45 52 29 3a 20 63
+#    112: 79 63 6c 65 73 3d 35 31 36 31 20 69 6e 73 6e 3d
+#    128: 32 35 36 30 20 63 79 63 5f 70 65 72 5f 69 6e 73
+#    144: 6e 5f 78 31 30 30 3d 32 30 31 0a 6c 6f 61 64 5f
+#    160: 69 6e 64 65 70 65 6e 64 65 6e 74 20 28 6e 3d 49
+#    176: 54 45 52 29 3a 20 63 79 63 6c 65 73 3d 39 30 32
+#    192: 30 20 69 6e 73 6e 3d 32 38 31 36 20 63 79 63 5f
+#    208: 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d 33 32
+#    224: 30 0a 6c 6f 61 64 5f 64 65 70 65 6e 64 65 6e 74
+#    240: 20 28 6e 3d 49 54 45 52 29 3a 20 63 79 63 6c 65
+#    256: 73 3d 38 37 33 33 20 69 6e 73 6e 3d 32 33 30 34
+#    272: 20 63 79 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31
+#    288: 30 30 3d 33 37 39 0a 73 74 6f 72 65 20 28 6e 3d
+#    304: 49 54 45 52 29 3a 20 63 79 63 6c 65 73 3d 32 35
+#    320: 34 30 30 20 69 6e 73 6e 3d 32 38 31 36 20 63 79
+#    336: 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d
+#    352: 39 30 31 0a 62 72 61 6e 63 68 5f 74 61 6b 65 6e
+#    368: 20 28 6e 3d 49 54 45 52 29 3a 20 63 79 63 6c 65
+#    384: 73 3d 31 35 37 36 20 69 6e 73 6e 3d 37 36 38 20
+#    400: 63 79 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30
+#    416: 30 3d 32 30 35 0a 62 72 61 6e 63 68 5f 61 6c 74
+#    432: 65 72 6e 61 74 69 6e 67 20 28 6e 3d 49 54 45 52
+#    448: 29 3a 20 63 79 63 6c 65 73 3d 33 31 31 33 20 69
+#    464: 6e 73 6e 3d 31 32 38 30 20 63 79 63 5f 70 65 72
+#    480: 5f 69 6e 73 6e 5f 78 31 30 30 3d 32 34 33 0a 6d
+#    496: 75 6c 5f 64 65 70 65 6e 64 65 6e 74 20 28 6e 3d
+#    512: 49 54 45 52 29 3a 20 63 79 63 6c 65 73 3d 35 31
+#    528: 35 39 20 69 6e 73 6e 3d 32 35 36 30 20 63 79 63
+#    544: 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d 32
+#    560: 30 31 0a 64 69 76 5f 64 65 70 65 6e 64 65 6e 74
+#    576: 20 28 6e 3d 33 32 29 3a 20 63 79 63 6c 65 73 3d
+#    592: 34 36 38 32 20 69 6e 73 6e 3d 31 39 32 20 63 79
+#    608: 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d
+#    624: 32 34 33 38 0a 4d 49 43 52 4f 42 45 4e 43 48 20
+#    640: 64 6f 6e 65 0a
+# ----- UART TEXT END -----
+# ** Note: $finish    : E:/file/pango/project/evidence/records/bottleneck_audit/scripts/tb_uart_run.sv(114)
+#    Time: 148144018518 ps  Iteration: 1  Instance: /tb_uart_run
+# End time: 18:01:09 on Oct 17,2026, Elapsed time: 0:00:34
+# Errors: 0, Warnings: 23

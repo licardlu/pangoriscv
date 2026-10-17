@@ -32,7 +32,14 @@
 `include "defines.v"
 
 module branch_predictor #(
-    parameter integer ENTRIES = 128         // direct-mapped sets, index derived from ENTRIES
+    // Measured trade-off (see evidence/records/optimization/P4/measurement.md):
+    // 32 entries is the delivered default because enlarging the BTB costs far more
+    // resource than it buys in speed. 64/128 remain available as knobs:
+    //   ENTRIES  ticks(20it)  cycles delta  mispredict  LUT
+    //      32     15,316,450        -          154,553   12,572
+    //      64     15,059,217     -1.68%        116,246  ~14,500 (extrapolated)
+    //     128     15,035,153     -1.84%        112,723   16,572 (measured)
+    parameter integer ENTRIES = 32          // direct-mapped sets, index derived from ENTRIES
 )(
     input wire clk,
     input wire rst_n,

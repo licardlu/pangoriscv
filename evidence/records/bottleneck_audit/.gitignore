@@ -1,5 +1,6 @@
-﻿# 瀹¤宸ヤ綔鍖轰笉鍏ュ簱锛堜綋绉ぇ涓斿彲鐢?commands.md 閲嶆柊鐢熸垚锛?work/
-# 鍙繚鐣欐湰鐩綍鐨?logs/ results/ scripts/ 涓庢姤鍛?
+# 审计工作区不入库（体积大且可用 commands.md 重新生成）：work/
+# 只保留本目录的 logs/ results/ scripts/ 与报告。
+
 # 基线构建副本（55 MB，可用 commands.md §3.6 重建；位流副本与身份清单单独入库）
 baseline_build/src/
 baseline_build/pds_build.log
@@ -11,3 +12,20 @@ baseline_build/provenance/firmware/
 # 基线位流副本要入库
 !baseline_build/artifacts/*.sbit
 
+# T4 前端优化副本：Questa work 库不入库（可重建）
+frontend_opt/src/ab2_*/
+frontend_opt/src/ab_cand/
+frontend_opt/src/ab_base/
+frontend_opt/src/wu/
+
+# PDS 原始流程日志不入库（每份 0.5–1.2 MB，可重建；结论见 results/T4_frontend_results.md §8）
+frontend_opt/pds/*.log
+frontend_opt/pds/**/flow.log
+frontend_opt/pds/**/pds_stdout.log
+frontend_opt/pds/**/run.log
+
+# 候选位流只保留最终版（hold 修复 100 ps 的 run2）；run1 失败版只在文档里留摘要
+frontend_opt/pds/run1_hold36ps/*.sbit
+frontend_opt/pds/run1_hold36ps/*.smsk
+!frontend_opt/pds/run2_hold100/pangoriscv_top.sbit
+frontend_opt/wu/

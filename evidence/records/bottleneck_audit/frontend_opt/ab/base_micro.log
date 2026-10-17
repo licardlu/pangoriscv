@@ -1,0 +1,104 @@
+# vsim -c tb_uart_run "+PROG=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\microbench\validation\program.hex" "+DATA=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\microbench\validation\data.hex" "+MAX_CYCLES=3000000" -do "run -all; quit -f" -l E:\file\pango\project\evidence\records\bottleneck_audit\frontend_opt\ab\base_micro.log 
+# Start time: 22:01:19 on Oct 17,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2685) [TFMPC] - Too few port connections for 'soc'.  Expected 35, found 13.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'protocol_fault'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'debug_data'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'debug_addr'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'wdata'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'rd'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'rd_valid'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_inst'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_pc'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_order'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'retire_fire'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_tval'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_pc'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_cause'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_fire'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'csr_mtvec'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'irq_external'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'irq_timer'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'irq_software'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_vector'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'trap_ready'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'arch_next_pc'.
+# ** Warning: tb/integration/tb_uart_run.sv(28): (vopt-2718) [TFMPC] - Missing connection for port 'halted'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_uart_run(fast)
+# run -all
+# TB image prog=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\microbench\validation\program.hex data=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\microbench\validation\data.hex max_cycles=3000000
+# MICROBENCH start
+# alu_independent (n=ITER): cycles=5192 insn=2560 cyc_per_insn_x100=202
+# alu_dependent (n=ITER): cycles=5161 insn=2560 cyc_per_insn_x100=201
+# load_independent (n=ITER): cycles=9020 insn=2816 cyc_per_insn_x100=320
+# load_dependent (n=ITER): cycles=8733 insn=2304 cyc_per_insn_x100=379
+# store (n=ITER): cycles=25400 insn=2816 cyc_per_insn_x100=901
+# branch_taken (n=ITER): cycles=1576 insn=768 cyc_per_insn_x100=205
+# branch_alternating (n=ITER): cycles=3113 insn=1280 cyc_per_insn_x100=243
+# mul_dependent (n=ITER): cycles=5159 insn=2560 cyc_per_insn_x100=201
+# div_dependent (n=32): cycles=4682 insn=192 cyc_per_insn_x100=2438
+# MICROBENCH done
+# 
+# TB TIMEOUT after 3000000 cycles, 645 chars
+# ----- UART TEXT BEGIN (645 chars) -----
+#          MICROBENCH start.alu_independent (n=ITER): cycles=5192 insn=2560 cyc_per_insn_x100=202.alu_dependent (n=ITER): cycles=5161 insn=2560 cyc_per_insn_x100=201.load_independent (n=ITER): cycles=9020 insn=2816 cyc_per_insn_x100=320.load_dependent (n=ITER): cycles=8733 insn=2304 cyc_per_insn_x100=379.store (n=ITER): cycles=25400 insn=2816 cyc_per_insn_x100=901.branch_taken (n=ITER): cycles=1576 insn=768 cyc_per_insn_x100=205.branch_alternating (n=ITER): cycles=3113 insn=1280 cyc_per_insn_x100=243.mul_dependent (n=ITER): cycles=5159 insn=2560 cyc_per_insn_x100=201.div_dependent (n=32): cycles=4682 insn=192 cyc_per_insn_x100=2438.MICROBENCH done.
+#      0: 4d 49 43 52 4f 42 45 4e 43 48 20 73 74 61 72 74
+#     16: 0a 61 6c 75 5f 69 6e 64 65 70 65 6e 64 65 6e 74
+#     32: 20 28 6e 3d 49 54 45 52 29 3a 20 63 79 63 6c 65
+#     48: 73 3d 35 31 39 32 20 69 6e 73 6e 3d 32 35 36 30
+#     64: 20 63 79 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31
+#     80: 30 30 3d 32 30 32 0a 61 6c 75 5f 64 65 70 65 6e
+#     96: 64 65 6e 74 20 28 6e 3d 49 54 45 52 29 3a 20 63
+#    112: 79 63 6c 65 73 3d 35 31 36 31 20 69 6e 73 6e 3d
+#    128: 32 35 36 30 20 63 79 63 5f 70 65 72 5f 69 6e 73
+#    144: 6e 5f 78 31 30 30 3d 32 30 31 0a 6c 6f 61 64 5f
+#    160: 69 6e 64 65 70 65 6e 64 65 6e 74 20 28 6e 3d 49
+#    176: 54 45 52 29 3a 20 63 79 63 6c 65 73 3d 39 30 32
+#    192: 30 20 69 6e 73 6e 3d 32 38 31 36 20 63 79 63 5f
+#    208: 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d 33 32
+#    224: 30 0a 6c 6f 61 64 5f 64 65 70 65 6e 64 65 6e 74
+#    240: 20 28 6e 3d 49 54 45 52 29 3a 20 63 79 63 6c 65
+#    256: 73 3d 38 37 33 33 20 69 6e 73 6e 3d 32 33 30 34
+#    272: 20 63 79 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31
+#    288: 30 30 3d 33 37 39 0a 73 74 6f 72 65 20 28 6e 3d
+#    304: 49 54 45 52 29 3a 20 63 79 63 6c 65 73 3d 32 35
+#    320: 34 30 30 20 69 6e 73 6e 3d 32 38 31 36 20 63 79
+#    336: 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d
+#    352: 39 30 31 0a 62 72 61 6e 63 68 5f 74 61 6b 65 6e
+#    368: 20 28 6e 3d 49 54 45 52 29 3a 20 63 79 63 6c 65
+#    384: 73 3d 31 35 37 36 20 69 6e 73 6e 3d 37 36 38 20
+#    400: 63 79 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30
+#    416: 30 3d 32 30 35 0a 62 72 61 6e 63 68 5f 61 6c 74
+#    432: 65 72 6e 61 74 69 6e 67 20 28 6e 3d 49 54 45 52
+#    448: 29 3a 20 63 79 63 6c 65 73 3d 33 31 31 33 20 69
+#    464: 6e 73 6e 3d 31 32 38 30 20 63 79 63 5f 70 65 72
+#    480: 5f 69 6e 73 6e 5f 78 31 30 30 3d 32 34 33 0a 6d
+#    496: 75 6c 5f 64 65 70 65 6e 64 65 6e 74 20 28 6e 3d
+#    512: 49 54 45 52 29 3a 20 63 79 63 6c 65 73 3d 35 31
+#    528: 35 39 20 69 6e 73 6e 3d 32 35 36 30 20 63 79 63
+#    544: 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d 32
+#    560: 30 31 0a 64 69 76 5f 64 65 70 65 6e 64 65 6e 74
+#    576: 20 28 6e 3d 33 32 29 3a 20 63 79 63 6c 65 73 3d
+#    592: 34 36 38 32 20 69 6e 73 6e 3d 31 39 32 20 63 79
+#    608: 63 5f 70 65 72 5f 69 6e 73 6e 5f 78 31 30 30 3d
+#    624: 32 34 33 38 0a 4d 49 43 52 4f 42 45 4e 43 48 20
+#    640: 64 6f 6e 65 0a
+# ----- UART TEXT END -----
+# ** Note: $finish    : tb/integration/tb_uart_run.sv(114)
+#    Time: 111108018518 ps  Iteration: 1  Instance: /tb_uart_run
+# End time: 22:01:32 on Oct 17,2026, Elapsed time: 0:00:13
+# Errors: 0, Warnings: 23

@@ -208,6 +208,93 @@ powershell -ExecutionPolicy Bypass -File .\board\run_flash.ps1 `
 且一次失败的 verify 会把后续命令全部锁死（`W: Public-4023: ... run command clean`），
 而 `cfg_clean` 命令在该版本里**不存在**——唯一恢复办法是杀掉 `cdt_js` / `cdt_cfg` 进程重来。
 
+## 3.7 T4 前端优化：编译、契约 TB、A/B 与微程序（本轮实测）
+
+两棵树各自建**相对名** work 库（cwd = 树根；用绝对库名在 `vsim` 时会报 `(vopt-2253)`）：
+
+```powershell
+$env:PATH='E:\donwload\win64;'+$env:PATH
+$audit = 'E:\file\pango\project\evidence\records\bottleneck_audit'
+$trees = @{ cand = "$audit\frontend_opt\src"; base = "$audit\baseline_build\src" }
+$defs  = @('+define+CACHE_ENABLE','+define+PREDICT_ENABLE','+incdir+rtl/core','+incdir+rtl/perips')
+
+foreach($k in 'cand','base'){
+  Set-Location $trees[$k]
+  if(!(Test-Path "ab2_$k")){ & vlib "ab2_$k" }
+  # 契约 TB（候选树）
+  & vlog -sv -work "ab2_$k" @defs -f sim/native_axi_sources.f `
+        tb/unit/tb_icache_contract.sv tb/unit/tb_ifu_contract.sv 2>&1 | Select-String 'Errors:'
+}
+Set-Location $trees['cand']
+& vsim -c -work ab2_cand tb_icache_contract -do "run -all; quit -f" -l "$audit\frontend_opt\ab\cand_icontract.log"
+& vsim -c -work ab2_cand tb_ifu_contract    -do "run -all; quit -f" -l "$audit\frontend_opt\ab\cand_ifucontract.log"
+```
+
+CoreMark 同镜像 A/B（**长窗口** TB，`repeat(30000)` 的 v2 只够 12 字符，已改 v3）：
+
+```powershell
+# 审计 TB 编译进两棵树
+foreach($k in 'cand','base'){
+  Set-Location $trees[$k]
+  & vlog -sv -work "ab2_$k" @defs -f sim/native_axi_sources.f "$audit\scripts\tb_coremark_audit_v3.sv"
+  & vsim -c -work "ab2_$k" tb_coremark_audit_v3 `
+      "+PROG=$audit\work\tree\build\native_software\coremark\validation\program.hex" `
+      "+DATA=$audit\work\tree\build\native_software\coremark\validation\data.hex" `
+      "+MAX_CYCLES=5000000" -do "run -all; quit -f" -l "$audit\frontend_opt\ab\$($k)_cmval_v3b.log"
+}
+# 提取：先去掉 UART 载荷里的控制行（# PROGRESS / # AUDIT_），否则 "Total ticks" 会被截断
+```
+
+微程序（端口级 TB，只探 `clk/rst_n/uart_tx`；镜像用 `work/tree/.../microbench/validation`）：
+
+```powershell
+& vsim -c -work ab2_cand tb_uart_run `
+   "+PROG=$audit\work\tree\build\native_software\microbench\validation\program.hex" `
+   "+DATA=$audit\work\tree\build\native_software\microbench\validation\data.hex" `
+   "+MAX_CYCLES=3000000" -do "run -all; quit -f" -l "$audit\frontend_opt\ab\cand_micro.log"
+```
+
+**结果**：`results/T4_frontend_results.md`；原始日志在 `frontend_opt/ab/`
+（`cand_cm3.log`、`cand_cmval_v3b.log`、`cand_micro.log`、`base_*` 同名）。
+坑：微程序镜像跑完打印 `MICROBENCH done.` 后 TB 仍会跑到 `+MAX_CYCLES` 上限（日志尾部
+`TB TIMEOUT after 3000000 cycles`），所有阶段数据在 `done` 之前已打印完毕，不影响取值。
+
+## 3.8 T4 后端与上板（本轮实测）
+
+候选树综合前先开宏（与基线开宏版逐字节相同，sha256 `BD9A2677…`）：
+
+```powershell
+$cand = "$audit\frontend_opt\src"; $run = "$cand\build\pango_native"
+# rtl/core/soc_config.vh:34-36 取消三行注释（先 cp soc_config.vh 到 soc_config.vh.t4bak）
+$env:PANGO_NATIVE_REPO      = $cand
+$env:PANGO_NATIVE_BOARD_DIR = "$cand\platform"
+$env:NATIVE_IMAGE_DIR       = "$audit\baseline_build\src\build\native_software\coremark\performance"  # 400 iter
+pds_shell -file "$cand\platform\pango_native\build.tcl" -work_dir $run
+```
+
+- 流程目录 = `$cand\build\pango_native`（PDS 按**进程 CWD** 落流程目录；cwd 必须是这个目录，
+  否则位流为空/DRM=0）。
+- 候选 `build.tcl` 只改了一处：`pnr` 的 hold 修复阈值 `0 → 100` ps、迭代 `50 → 100`
+  （更严，不放松约束；备份 `build.tcl.baseline_hold0`）。不改则 Hold slow −0.036 ns 不过。
+- 结果：`frontend_opt/pds/run2_hold100/`（rtr、multiseed_summary.csv、sbit、flow.log）。
+
+上板（串口必须先开，镜像只打印一次）：
+
+```powershell
+$b = "$audit\board"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$b\capture_uart.ps1" -Port COM13 -Seconds 75 -Out "$b\board_uart_candidate.txt"   # 后台先跑
+powershell -NoProfile -ExecutionPolicy Bypass -File "$b\run_flash.ps1" -Script 01b_program_only.tcl `
+    -Sbit "$audit\frontend_opt\pds\run2_hold100\pangoriscv_top.sbit" -TimeoutSec 120
+```
+
+- `run_flash.ps1` 会自己起/停 JtagServer 并解析真实端口；`cdt_cfg.exe` 跑完 file-only Tcl
+  不退出，脚本按超时杀进程，成功以 `configuration_tcl.log` 里的 `cfg_program succeed` 为准。
+- 结果：`results/board_uart_candidate.txt` 与 `board_uart_candidate_run2.txt`
+  （sha256 `D4DC2B50…`，两次逐字节相同；`Total ticks 279957350`，1.4288 CoreMark/MHz）；
+  基线捕获同目录 `board_uart_baseline.txt` / `board_uart_baseline_run2.txt`。
+- 坑：本机启动 `cdt_js.exe` 有 ftdibus.sys 内核 bugcheck 前科（0x139），本轮未复现；
+  串口未先开就下载 ⇒ UART 输出丢失，只能重下。
+
 ## 4. 源清单与开关
 
 - 源清单：`work/tree/sim/native_axi_sources.f`（33 行，`+incdir+rtl/core`、`+incdir+rtl/perips`）
@@ -222,8 +309,9 @@ powershell -ExecutionPolicy Bypass -File .\board\run_flash.ps1 `
 
 ## 5. 本轮没有做的事
 
-- **没有改生产 RTL**：写缓冲、前端改造都未实施（写缓冲按用户决定继续搁置）。
+- **没有改生产 RTL**：写缓冲继续搁置；T4 前端改造只做在独立副本 `frontend_opt/src/`，
+  交付树 `firmware/code` 未合并。
 - 没有接 ILA：本轮全部结论来自仿真器件级信号与 UART 输出。
 - `REC lat=16` 的 1,592 次长尾没定位；两个 AXI 主口的仲裁对取指的影响没单独测；
   `RVCoreP-32IC` 等两篇候选论文的作者信息未核实。
-- 综合资源/时序只复测了基线构建（见 `results/baseline_build.md`），优化版的资源/时序要等下一轮。
+- T4 前端优化的 PDS 资源/时序与上板已补测（见 §3.8、`results/T4_frontend_results.md` §8）。

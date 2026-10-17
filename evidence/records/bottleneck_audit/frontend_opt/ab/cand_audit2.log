@@ -1,0 +1,85 @@
+# vsim -c -voptargs="+acc" tb_coremark_audit_v2 "+PROG=E:\file\pango\project\evidence\records\bottleneck_audit\baseline_build\src\build\native_software\coremark\performance\program.hex" "+DATA=E:\file\pango\project\evidence\records\bottleneck_audit\baseline_build\src\build\native_software\coremark\performance\data.hex" "+MAX_CYCLES=2000000" -do "run -all; quit -f" -l E:\file\pango\project\evidence\records\bottleneck_audit\frontend_opt\ab\cand_audit2.log 
+# Start time: 21:48:43 on Oct 17,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: tb/integration/tb_coremark_audit_v2.sv(50): (vopt-2685) [TFMPC] - Too few port connections for 'soc'.  Expected 35, found 34.
+# ** Warning: tb/integration/tb_coremark_audit_v2.sv(50): (vopt-2718) [TFMPC] - Missing connection for port 'trap_vector'.
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_interconnect(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "dcache_axi(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_ram(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_ram(fast__1)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_uart(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "icache_axi(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_data_engine(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "lsu_axi(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "div(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "axi_read_engine(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_coremark_audit_v2(fast)
+# Loading work.pangoriscv_axi_soc(fast)
+# Loading work.pangoriscv_axi_top(fast)
+# Loading work.pangoriscv(fast)
+# Loading work.branch_predictor(fast)
+# Loading work.csr_native(fast)
+# Loading work.ctrl(fast)
+# Loading work.pc_reg(fast)
+# Loading work.if_id(fast)
+# Loading work.pipe_slot(fast)
+# Loading work.regs(fast)
+# Loading work.id(fast)
+# Loading work.id_ex(fast)
+# Loading work.pipe_slot(fast__1)
+# Loading work.ex(fast)
+# Loading work.div_adapter(fast)
+# Loading work.div(fast)
+# Loading work.retire_ctrl(fast)
+# Loading work.ifu_axi(fast)
+# Loading work.icache_axi(fast)
+# Loading work.lsu_axi(fast)
+# Loading work.dcache_axi(fast)
+# Loading work.axi_data_engine(fast)
+# Loading work.axi_read_engine(fast)
+# Loading work.axi_interconnect(fast)
+# Loading work.axi_error_slave(fast)
+# Loading work.axi_ram(fast)
+# Loading work.axi_ram(fast__1)
+# Loading work.axi_timer(fast)
+# Loading work.axi_reg_slave(fast)
+# Loading work.axi_uart(fast)
+# Loading work.axi_reg_slave(fast__1)
+# Loading work.axi_gpio(fast)
+# Loading work.axi_reg_slave(fast__2)
+# Loading work.axi_spi(fast)
+# Loading work.axi_reg_slave(fast__3)
+# Loading work.irq_ctrl(fast)
+# Loading work.axi_reg_slave(fast__4)
+# run -all
+# AUDIT_IMAGE prog=E:\file\pango\project\evidence\records\bottleneck_audit\baseline_build\src\build\native_software\coremark\performance\program.hex data=E:\file\pango\project\evidence\records\bottleneck_audit\baseline_build\src\build\native_software\coremark\performance\data.hex max_cycles=2000000
+# AUDIT_START cycle=54837 retire_pc=0000082c retire_inst=c0002573
+# PROGRESS cycles=500000 retires=219700 ipc=0.439400 chars=0 pc=000018cc
+# PROGRESS cycles=1000000 retires=428350 ipc=0.428350 chars=0 pc=00002290
+# PROGRESS cycles=1500000 retires=640035 ipc=0.426690 chars=0 pc=00001098
+# PROGRESS cycles=2000000 retires=871413 ipc=0.435707 chars=0 pc=0000248c
+# AUDIT_WARN coremark stop point never seen (cycle cap reached)
+# 
+# AUDIT_SUMMARY cycles=2001000 retires=872137 ipc=0.435851 traps=0 faults=0 chars=0 report_seen=0
+# AUDIT_RAW ifwait=86653 lsuwait=200782 imiss=1235 dmiss=286 predmiss=31292 ctrl=194020 redirect=31292 fetch=0 issue=1058883 rsp=1058882
+# AUDIT_AXI i_ar=1235 i_r=9880 d_ar=286 d_r=2288 d_aw=45425 d_w=45425 d_b=45425
+# AUDIT_MEM load=155357 store=45425 mdiv_issue=108
+# AUDIT_ERROR cycle CSR reads not both observed (start=1 stop=0)
+# ** Note: $finish    : tb/integration/tb_coremark_audit_v2.sv(434)
+#    Time: 2001019500 ps  Iteration: 1  Instance: /tb_coremark_audit_v2
+# End time: 21:49:29 on Oct 17,2026, Elapsed time: 0:00:46
+# Errors: 0, Warnings: 2

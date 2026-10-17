@@ -1,0 +1,33 @@
+# MES2L676-100HP board clock = the core board's single-ended 27 MHz oscillator (U11),
+# routed to FPGA_GCLK_27M on pin D18. It is the only system clock input; the core
+# board's second oscillator is 125 MHz differential and feeds the DDR3 reference only.
+# Official evidence (see the project validation archive):
+#   * 教程1_硬件实验指导手册_盘古676系列100Pro+开发板.pdf, 2.1.2.2.3.2 「27MHz 单端时钟」:
+#     U11 oscillator, table row "FPGA_GCLK_27M | FPGA 输入全局时钟 | D18";
+#     125MHz differential (U7) "用于 DDR3 的参考时钟输入".
+#   * 教程2_通用实验指导手册_盘古676系列100Pro+开发板.pdf, 7.3 接口列表 (MES2L676-100HP):
+#     "clk input 1 系统时钟，27MHZ"; 7.2 "在 100K 板卡上单端时钟有一个 27MHZ 的时钟。
+#     所以其周期约为 37.037ns。"
+#   * Official demo 2_8_uart_test/source/uart_top.v: parameter BPS_NUM = 16'd234 (= 27e6/115200),
+#     i.e. the vendor demo is built for the 27 MHz board clock.
+# 27 MHz -> period 37.037 ns. The old 20 ns (50 MHz) constraint was an OVER-CONSTRAINT, not
+# this board's clock: the same RTL met it with +5.219 ns setup slack (equivalent Fmax ~67.6 MHz).
+# That run is kept as frequency-margin evidence only (see
+# the project validation archive and the 50 MHz over-constraint experiment FDC
+# pango_native_50mhz_overconstraint.fdc). The delivered constraint must describe the real board.
+create_clock -name clk -period 37.037 -waveform {0 18.5185} [get_ports {clk}]
+# Hold (board-material audit round, 2026-10-11): the first PDS run with this real 27 MHz
+# constraint finished with ONE failing hold endpoint at -0.007 ns (WHS -0.007, THS -0.007,
+# 1 of 29177 endpoints). Hold checks are independent of the clock period, so that is a
+# placement/routing result, not a clock-frequency result: the very same RTL placed under the
+# 20 ns experiment met hold with +0.124 ns.
+# This file deliberately declares no artificial hold uncertainty. The hold optimisation target
+# is requested from the router instead - build.tcl runs
+#   pnr -fix_hold_violation_threshold 50 -fix_hold_violation_threshold_for_clk_tree 50 \
+#       -fix_hold_violation_threshold_for_clock_path_cross_srb 50 -fix_hold_violation_iterations 20
+# i.e. "optimise the hold timing of paths whose slack is below 50 ps (= 0.05 ns)".
+# The option takes integer PICOSECONDS (`pnr -help`: "Fix Hold Violation Threshold(ps)").
+# Nothing is relaxed, and no uncertainty is added on top of the real board clock.
+# KEY0/KEY1/UART are asynchronous board signals, not synchronous bus inputs.
+# No blanket timing exception is applied to internal reset or AXI paths.
+# Review synchronizer placement and asynchronous input paths after mapping.

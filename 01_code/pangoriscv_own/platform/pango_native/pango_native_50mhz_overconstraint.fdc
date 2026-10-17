@@ -1,0 +1,23 @@
+# EXPERIMENT-ONLY constraint: 50 MHz over-constraint (period 20 ns).
+# NOT the delivered board constraint -- use pango_native.fdc for the delivered bitstream.
+#
+# Purpose: the contest scores the highest clock frequency that still closes timing.
+# The MES2L676-100HP board only supplies 27 MHz on D18, so this 20 ns constraint is
+# deliberately stricter than the hardware and is run only to measure how much frequency
+# margin the final RTL has. It must be reported as an over-constraint experiment, never
+# as the board clock, and never as a measured maximum frequency.
+#
+# Run it with:  PANGO_NATIVE_FDC=<abs path to this file> pds_shell -file build.tcl
+create_clock -name clk -period 20 -waveform {0 10} [get_ports {clk}]
+# Hold: the run at the real 27 MHz board clock ended with ONE hold endpoint at -0.007 ns
+# (design summary "Some Constraints Violated") - a marginal placement/routing result, not a
+# clock-period result, because hold checks are period-independent. This experiment therefore
+# declares no artificial hold uncertainty either; the hold optimisation target is requested
+# from the router in build.tcl instead
+#   pnr -fix_hold_violation_threshold 50 -fix_hold_violation_threshold_for_clk_tree 50 \
+#       -fix_hold_violation_threshold_for_clock_path_cross_srb 50 -fix_hold_violation_iterations 20
+# i.e. a 50 ps (= 0.05 ns) hold optimisation threshold; the option takes integer PICOSECONDS
+# (`pnr -help`: "Fix Hold Violation Threshold(ps)"). Nothing is relaxed.
+# Same asynchronous-input policy as the delivered constraint.
+# KEY0/KEY1/UART are asynchronous board signals, not synchronous bus inputs.
+# No blanket timing exception is applied to internal reset or AXI paths.

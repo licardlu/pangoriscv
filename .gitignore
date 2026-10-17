@@ -1,0 +1,65 @@
+# =============================================================================
+# pangoriscv — 作品仓库（RV32IM 处理器核 + 原生 AXI4 SoC）
+# 协作者：两人都可直接推 main。请先看 CONTRIBUTING.md 的「同时改同一份文件」约定。
+# =============================================================================
+
+# ---- 编辑与系统垃圾 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.swp
+*~
+.vscode/
+.idea/
+*.bak
+*.tmp
+*.orig
+*.rej
+
+# ---- 仿真与综合的中间产物（可再生成，不入库） ----
+work/
+*.wlf
+transcript
+modelsim.ini
+vsim.wlf
+*.vstf
+*.log.wlf
+simv
+csrc/
+.sim_runs/
+build/
+compile/
+pds.prj
+*.sbit
+*.smsk
+*.bit
+*.bin
+!01_code/pangoriscv_own/tests/**/*.bin
+*.pds
+pds.log
+*.rtr
+*.twr
+*.tsr
+*.pwr
+*.used_resources.txt
+!06_evidence/**/*.rtr
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# ---- 大件：验证结果归档与原始备份不入库，另存本地 / 网盘 ----
+# （体积与原因见 REPO_LAYOUT.md；如需归档请用 Git LFS 或发布 Release 附件）
+09_validation_results/
+02_original_backups/
+10_codex_chats/
+01_code/adv_sram_build/
+01_code/led_sram_build/
+01_code/pangoriscv_axi4/
+log/
+logbackup/
+07_board_references/

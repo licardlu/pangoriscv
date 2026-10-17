@@ -15,6 +15,12 @@
 // This testbench is a VERIFICATION HARNESS. A run that prints CoreMark text proves
 // functional execution of the real firmware; it does not by itself produce a valid
 // contest score (see the +MAX_CYCLES budget and the report).
+// The hierarchical probes below reach into soc.core.data_cache, which only exists
+// when CACHE_ENABLE is defined.  vlog compiles each source file as its own
+// compilation unit here, so the macro does not carry over from the RTL files:
+// include the same configuration header the RTL uses, so the guards below track
+// the real build instead of silently disabling themselves.
+`include "soc_config.vh"
 `timescale 1ns/1ps
 module tb_coremark_uart;
     // Board clock is 27 MHz and the UART divisor is 234 (both the axi_uart reset value and
@@ -147,7 +153,12 @@ module tb_coremark_uart;
                 soc.core.op_valid, soc.core.done_valid, halted);
         end
         // First bus faults: which access failed, so a trap loop can be attributed.
-        if(soc.core.lsu.state==3'd5 && soc.core.lsu.done_valid && soc.core.lsu.fault) begin
+        // P9: a completion is now reported on the engine RESPONSE edge, which is
+        // READ_WAIT (3) for loads and WRITE_WAIT (4) for stores; COMPLETE (5) only
+        // holds it when the consumer stalls. Probe all three, or this diagnostic
+        // line would go silent after the change.
+        if((soc.core.lsu.state==3'd3 || soc.core.lsu.state==3'd4 ||
+            soc.core.lsu.state==3'd5) && soc.core.lsu.done_valid && soc.core.lsu.fault) begin
             lsu_faults=lsu_faults+1;
             if(lsu_faults<=12)
                 $display("LSU_FAULT cycle=%0d addr=%08x store=%b size=%0d pc=%08x rd=%0d",
@@ -314,10 +325,97 @@ module tb_coremark_uart;
     //   ST_WR_HOLD =6 : holding the response until the CPU takes it
     // Counting cycles in each tells whether "not waiting for B" would buy anything.
     integer st_wr_req=0, st_wr_resp=0, st_wr_hold=0;
+`ifdef CACHE_ENABLE
     always @(posedge clk) if(rst_n) begin
         if(soc.core.data_cache.state_q==4'd4) st_wr_req =st_wr_req +1;
         if(soc.core.data_cache.state_q==4'd5) st_wr_resp=st_wr_resp+1;
         if(soc.core.data_cache.state_q==4'd6) st_wr_hold=st_wr_hold+1;
+    end
+`endif
+
+    // ---- D-Cache refill cost (optimization plan P14) ---------------------------
+    // LSU rdwait is ~11.6% of all cycles, yet d_miss is only ~0.3% of loads.  That
+    // arithmetic does not close, so count the two sides separately BEFORE touching
+    // any RTL: how many operations enter READ_WAIT at all, and how many cycles the
+    // line refill (ST_RD_AR + ST_RD_DATA) itself occupies.
+    integer dc_idle=0, dc_hit=0, dc_rdar=0, dc_rddata=0, dc_byp=0, dc_drain=0;
+    integer rdwait_entries=0, refills=0;
+    // Bucket every load by address region so a "18% of loads are uncached" reading
+    // can be pinned to a region instead of guessed at.
+    integer ld_lo=0, ld_data=0, ld_hi=0;
+    integer sl_lo=0, sl_data=0, sl_hi=0;
+    integer nh_lo=0, nh_data=0, nh_hi=0;
+    // Mispredict mix: a return-address stack only helps if returns are a large
+    // share of the mispredictions.  Bucket by the retiring opcode.
+    integer misp_ret=0, misp_jal=0, misp_br=0, misp_other=0;
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        if(retire_fire && soc.core.pred_miss) begin
+            if(retire_inst[6:0]==7'h67)      misp_ret  =misp_ret  +1;   // jalr (returns)
+            else if(retire_inst[6:0]==7'h6f) misp_jal  =misp_jal  +1;   // jal
+            else if(retire_inst[6:0]==7'h63) misp_br   =misp_br   +1;   // branches
+            else                             misp_other=misp_other+1;
+        end
+    end
+    // split the >=0x2000_0000 load traffic per 0x1000_0000 region
+    integer hi2=0, hi3=0, hi4=0, hi5=0, hi6=0;
+    always @(posedge clk) if(rst_n) begin
+        if(soc.core.lsu.state==3'd0 && soc.core.op_valid && soc.core.op_ready &&
+           !soc.core.lsu.is_store && soc.core.lsu.address>=32'h2000_0000) begin
+            if(soc.core.lsu.address<32'h3000_0000) hi2=hi2+1;
+            else if(soc.core.lsu.address<32'h4000_0000) hi3=hi3+1;
+            else if(soc.core.lsu.address<32'h5000_0000) hi4=hi4+1;
+            else if(soc.core.lsu.address<32'h6000_0000) hi5=hi5+1;
+            else begin
+                hi6=hi6+1;
+            end
+        end
+    end
+    reg lsu_was_rdwait=0;
+    reg [3:0] prev_dc_state=4'd0;
+    // NOTE: soc.core.data_cache only exists when CACHE_ENABLE is defined, and
+    // tools/run_coremark_ab.py deliberately also builds a cache_off side.  Every
+    // probe that reaches into the cache is therefore `ifdef CACHE_ENABLE; the
+    // counters stay 0 in the cache_off build and the $display lines still work.
+    //
+    // The gate is !report_seen, which fires on the report's LAST line, so these
+    // counters still include the report printing (the UART busy-wait). Use the
+    // SCORE_WINDOW line -- snapshotted at the first TXDATA write -- for a clean
+    // score-window decomposition.
+`ifdef CACHE_ENABLE
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        case(soc.core.data_cache.state_q)
+            4'd0: dc_idle  =dc_idle  +1;
+            4'd1: dc_hit   =dc_hit   +1;
+            4'd2: dc_rdar  =dc_rdar  +1;
+            4'd3: dc_rddata=dc_rddata+1;
+            4'd7: dc_byp   =dc_byp   +1;
+            4'd9: dc_drain =dc_drain +1;
+        endcase
+        // a line refill (cacheable miss) is ST_RD_AR -> ST_RD_DATA
+        if(soc.core.data_cache.state_q==4'd3 && prev_dc_state==4'd2) refills=refills+1;
+        prev_dc_state = soc.core.data_cache.state_q;
+    end
+`endif
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        // accepted memory op: bucket loads and stores by region
+        if(soc.core.lsu.state==3'd0 && soc.core.op_valid && soc.core.op_ready) begin
+            if(soc.core.lsu.is_store) begin
+                if(soc.core.lsu.address<32'h1000_0000)      sl_lo  =sl_lo  +1;
+                else if(soc.core.lsu.address<32'h2000_0000) sl_data=sl_data+1;
+                else                                       sl_hi  =sl_hi  +1;
+            end else begin
+                if(soc.core.lsu.address<32'h1000_0000)      ld_lo  =ld_lo  +1;
+                else if(soc.core.lsu.address<32'h2000_0000) ld_data=ld_data+1;
+                else                                       ld_hi  =ld_hi  +1;
+            end
+        end
+        if(soc.core.lsu.state==3'd3 && !lsu_was_rdwait) begin
+            rdwait_entries=rdwait_entries+1;
+            if(soc.core.lsu.address_q<32'h1000_0000)      nh_lo  =nh_lo  +1;
+            else if(soc.core.lsu.address_q<32'h2000_0000) nh_data=nh_data+1;
+            else                                          nh_hi  =nh_hi  +1;
+        end
+        lsu_was_rdwait = (soc.core.lsu.state==3'd3);
     end
 
     // ---- LSU path decomposition (optimization plan P8) ------------------------
@@ -327,7 +425,7 @@ module tb_coremark_uart;
     // LSU state checks the claim "REQUEST cycles ~= memory operations" BEFORE
     // the RTL is touched.  Testbench-only hierarchical probes, like STORE_PATH.
     integer l_emp=0, l_req=0, l_wdat=0, l_rdwait=0, l_wrwait=0, l_comp=0;
-    always @(posedge clk) if(rst_n) begin
+    always @(posedge clk) if(rst_n && !report_seen) begin
         case(soc.core.lsu.state)
             3'd0: l_emp   =l_emp   +1;
             3'd1: l_req   =l_req   +1;
@@ -344,6 +442,32 @@ module tb_coremark_uart;
     // visible there. These testbench-only counters split EX occupancy instead.
     // They are hierarchical probes: no RTL change, no image change.
     integer ex_busy=0, ex_mem_post=0, ex_div_busy=0, lsu_nonidle=0;
+    // Split EX occupancy by what is parked there.  `ex_busy` alone cannot tell a
+    // load-use hazard from a store waiting for B, and the next step depends on
+    // which one it is.  Also count ID back-pressure and non-retiring cycles.
+    integer exb_load=0, exb_store=0, exb_other=0, id_stall=0, no_retire=0, retire_cyc=0;
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        if(soc.core.cpu.ex_valid && !soc.core.cpu.ex_leave) begin
+            if(soc.core.cpu.is_memory && !soc.core.cpu.is_store) exb_load =exb_load +1;
+            else if(soc.core.cpu.is_memory)                      exb_store=exb_store+1;
+            else                                                 exb_other=exb_other+1;
+        end
+        if(soc.core.cpu.id_valid && !soc.core.cpu.id_ready) id_stall=id_stall+1;
+        if(retire_fire) retire_cyc=retire_cyc+1; else no_retire=no_retire+1;
+    end
+    // Snapshot at the FIRST UART TXDATA write: CoreMark prints its report only
+    // after stop_time(), so that write marks the end of the scored window.
+    // Everything afterwards (the report's busy-wait polling on 0x3000_0000) must
+    // not be attributed to the benchmark.
+    integer sw_cycles=0, sw_retires=0, sw_load=0, sw_store=0, sw_other=0;
+    integer sw_idstall=0, sw_noretire=0, sw_done=0;
+    always @(posedge clk) if(rst_n && !sw_done &&
+                             soc.uart_inst.wr_hit && soc.uart_inst.wr_off==12) begin
+        sw_cycles=cycles; sw_retires=retired;
+        sw_load=exb_load; sw_store=exb_store; sw_other=exb_other;
+        sw_idstall=id_stall; sw_noretire=no_retire;
+        sw_done=1;
+    end
     integer mem_ops=0, mem_ld=0, mem_st=0;
     always @(posedge clk) if(rst_n) begin
         if(soc.core.cpu.ex_valid && !soc.core.cpu.ex_leave) ex_busy=ex_busy+1;
@@ -393,9 +517,19 @@ module tb_coremark_uart;
         $display("");
         $display("CORE_SUMMARY cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d txd_writes=%0d ctrl=%0d mispred=%0d", cycles, retired, traps, faults, chars, txd_writes, ctrl_retired, mispred_retired);
         $display("EX_OCCUPANCY ex_busy=%0d ex_mem_post=%0d ex_div_busy=%0d lsu_nonidle=%0d", ex_busy, ex_mem_post, ex_div_busy, lsu_nonidle);
+        $display("EX_SPLIT load=%0d store=%0d other=%0d id_stall=%0d no_retire=%0d retire_cyc=%0d",
+                 exb_load, exb_store, exb_other, id_stall, no_retire, retire_cyc);
+        $display("SCORE_WINDOW cycles=%0d retires=%0d no_retire=%0d load=%0d store=%0d other=%0d id_stall=%0d",
+                 sw_cycles, sw_retires, sw_noretire, sw_load, sw_store, sw_other, sw_idstall);
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);
         $display("STORE_PATH st_wr_req=%0d st_wr_resp=%0d st_wr_hold=%0d st_total=%0d", st_wr_req, st_wr_resp, st_wr_hold, st_wr_req+st_wr_resp+st_wr_hold);
         $display("LSU_PATH empty=%0d request=%0d wdata=%0d rdwait=%0d wrwait=%0d complete=%0d", l_emp, l_req, l_wdat, l_rdwait, l_wrwait, l_comp);
+        $display("DCACHE_PATH idle=%0d hit=%0d rdar=%0d rddata=%0d byp=%0d drain=%0d rdwait_entries=%0d refills=%0d",
+                 dc_idle, dc_hit, dc_rdar, dc_rddata, dc_byp, dc_drain, rdwait_entries, refills);
+        $display("ADDR_REGION ld_lo=%0d ld_data=%0d ld_hi=%0d st_lo=%0d st_data=%0d st_hi=%0d nonhit_lo=%0d nonhit_data=%0d nonhit_hi=%0d",
+                 ld_lo, ld_data, ld_hi, sl_lo, sl_data, sl_hi, nh_lo, nh_data, nh_hi);
+        $display("HI_SPLIT hi2=%0d hi3=%0d hi4=%0d hi5=%0d hi6=%0d", hi2, hi3, hi4, hi5, hi6);
+        $display("MISPRED_MIX ret=%0d jal=%0d br=%0d other=%0d", misp_ret, misp_jal, misp_br, misp_other);
         if(txd_writes!=0 && chars==0) begin
             $display("TEST_FAIL UART_LOOPBACK no decoded byte although %0d TXDATA writes reached the UART",txd_writes);
             $fatal(1,"uat tx broken");

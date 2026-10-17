@@ -8,3 +8,18 @@ P7-delivered,2-deep request FIFO + I-cache back-to-back,512,304495134,594717,306
 P8-ab-base,P7 design re-measured (perf_on image),20,11887687,594384,13809115,6471148,0.4686,742122,1560816,18474,4209,154315,1.6824,13018,13.398,yes,controlled 20-iteration A/B; LSU request=1852431
 P8-new,LSU fast issue (request on accept edge),20,10733373,536669,12651176,6543970,0.5173,,,,,,1.8633,13059,13.398,yes,LSU request 1852431 -> 490318; ex_mem_post -1265115
 P8-delivered,LSU fast issue (request on accept edge),576,309304812,536987,311106054,166754299,0.5360,,,,,,1.8622,13059,13.398,yes,valid run 11.46 s; 50 MHz setup +2.557 hold +0.061; crcfinal 0x7b65
+P9-ab-base,P8 design re-measured (perf_on image),20,10733373,536669,12651176,6543970,0.5173,,,,,,1.8633,13059,16.231,yes,controlled 20-iteration A/B; LSU complete=1600800
+P9-new,completion reported on the response edge,20,9588579,479429,11499752,6635901,0.5770,,,,,,2.0858,13099,16.231,yes,LSU complete 1600800 -> 0; ex_mem_post -1284003
+P9-delivered,completion reported on the response edge,640,307055517,479774,308852640,185284697,0.5999,,,,,,2.0843,13099,16.231,yes,valid run 11.37 s; 50 MHz setup +3.191 hold +0.182; crcfinal 0x382f
+P10-ab-base,P9 design re-measured (perf_on image),20,9588579,479429,11499752,6635901,0.5770,,,,,,2.0858,13099,16.231,yes,controlled 20-iteration A/B; rdwait=2207632
+P10a-new,D-cache hit answered on the accept edge,20,8713558,435678,10626093,6639360,0.6248,,,,,,2.2952,13558,14.986,yes,rdwait 2207632 -> 1324990; 3 RTL files
+P10b-new,write request presented on the accept edge,20,8432493,421625,10341340,6639815,0.6421,,,,,,2.3718,13558,14.986,yes,wdata 575816 -> 287905 (exact half); lsu_wait halved
+P10-delivered,zero-latency D-cache hit + early write request,768,323940991,421798,325735779,222177475,0.6821,,,,,,2.3708,13558,14.986,yes,valid run 12.00 s; 50 MHz setup +3.361 hold +0.073; crcfinal 0x3c53; hold margin only +0.016 ns
+P12-rejected,store completion on the W edge (reverted),20,8378486,418924,10287015,6639894,0.6455,,,,,,2.3883,13558,,yes,wrwait 291691 -> 4530 BUT request 708411 -> 938598; net -0.64%; broke halt-reset scenarios 2 and 4 -> reverted
+P13-new,read hit served during a write transaction,20,7788468,389423,9691758,6642269,0.6854,,,,,,2.5679,13558,,yes,request 708411 -> 244654; rdwait -201717
+P13-delivered,read hit served during a write transaction,768,299139003,389504,300928216,222178327,0.7383,,,,,,2.5674,13558,14.864,yes,valid run 11.08 s; 50 MHz setup +0.587 hold +0.016; crcfinal 0x3c53; hold needs threshold 500
+P14-new,store completion on the W beat edge,20,7658647,382932,9561172,6642415,0.6947,,,,,,2.6114,13576,,yes,wrwait 291155 -> 4140; request 244493 -> 400667; drain +286776; net -1.67%
+P14-delivered,store completion on the W beat edge,768,294149365,382986,295937832,222178406,0.7508,,,,,,2.6109,13576,16.909,yes,valid run 10.89 s; 50 MHz setup +1.286 hold +0.021 (seed 23; 11 and 41 failed); crcfinal 0x3c53
+P14-note-probes,score-window probes added,20,,,,,,,,,,,,,,,yes,DCACHE_PATH/ADDR_REGION/HI_SPLIT/MISPRED_MIX gated by !report_seen; proved UART polling sits outside the score window
+P15-probes,score-window probes (SCORE_WINDOW/EX_SPLIT/DCACHE_PATH/ADDR_REGION/MISPRED_MIX),20,7658647,382932,9561172,6642415,0.6947,,,,,,2.6114,13576,,yes,window boundary = first UART TXDATA write; sw_cycles=7694091 vs ticks=7658647 (0.5%)
+P15-rejected,I-cache 2 KB -> 4 KB (SETS 32->64),20,7395351,369768,9297709,6644923,0.7147,543931,,,,,,2.7040,14667,,yes,i_miss 18289->8913 (-51%); but LUT 13576->14667 (+8.04%) FF 8639->10016; CM/kLUT 0.1923->0.1844 (-4.11%) -> reverted

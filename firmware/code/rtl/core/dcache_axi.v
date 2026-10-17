@@ -211,11 +211,23 @@ module dcache_axi #(
     wire        i_b_ready   = (state_q==ST_WR_DRAIN) ||
                               ((state_q==ST_WR_HOLD) && b_ready);
 
+    // P11: present the write request to the inner engine on the ACCEPT edge, so it
+    // can latch the address immediately and accept the W beat one cycle sooner.
+    // The registered i_req_*_r remain as the fallback/keep-alive (the engine only
+    // looks at req_valid in WR_IDLE, so the extra pulse is harmless).
+    wire i_write_accept = rst_n && (state_q==ST_IDLE) && req_valid && req_ready && req_write;
+    wire        i_req_valid = i_req_valid_r || i_write_accept;
+    wire [31:0] i_req_addr  = i_write_accept ? req_addr    : i_req_addr_r;
+    wire [2:0]  i_req_size  = i_write_accept ? req_size     : i_req_size_r;
+    wire [7:0]  i_req_len   = i_write_accept ? 8'd0         : i_req_len_r;
+    wire [3:0]  i_req_id    = i_write_accept ? req_id       : i_req_id_r;
+    wire        i_req_write = i_write_accept ? 1'b1         : i_req_write_r;
+
     axi_data_engine inner (
         .clk(clk), .rst_n(rst_n),
-        .req_valid(i_req_valid_r), .req_ready(i_req_ready), .req_write(i_req_write_r),
-        .req_addr(i_req_addr_r), .req_size(i_req_size_r), .req_len(i_req_len_r),
-        .req_id(i_req_id_r),
+        .req_valid(i_req_valid), .req_ready(i_req_ready), .req_write(i_req_write),
+        .req_addr(i_req_addr), .req_size(i_req_size), .req_len(i_req_len),
+        .req_id(i_req_id),
         .w_valid(w_valid), .w_ready(i_w_ready), .w_data(w_data), .w_strb(w_strb),
         .w_last(w_last),
         .rsp_valid(), .rsp_ready(1'b0), .rsp_data(), .rsp_resp(), .rsp_last(),
@@ -251,18 +263,50 @@ module dcache_axi #(
 
     assign protocol_fault = read_protocol_fault_q || i_protocol_fault;
     assign config_fault   = i_config_fault;
-    assign req_ready = rst_n && (state_q==ST_IDLE) && !protocol_fault && !config_fault;
+    // P13: a read HIT needs nothing but the tag/data RAM, so it can also be served
+    // while the write machine occupies the cache (ST_WR_HOLD / ST_WR_DRAIN).  The
+    // cache is then unavailable to the CPU only for genuine read misses, which is
+    // what the LSU's "engine busy" fallback was really paying for.
+    wire read_hit_now = req_valid && !req_write && req_in_cache && hit_any;
+    assign req_ready = rst_n && !protocol_fault && !config_fault &&
+                       ((state_q==ST_IDLE) ||
+                        ((state_q==ST_WR_HOLD || state_q==ST_WR_DRAIN) && read_hit_now));
     assign w_ready   = i_w_ready;              // inner engine latches in WR_PREP
 
-    assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP));
-    assign rsp_data  = (state_q==ST_BYP_RESP) ? rdata_q
-                     : data_mem[didx(hit_q ? hit_way_q : fill_way_q,set_q,word_q)];
-    assign rsp_resp  = (state_q==ST_BYP_RESP) ? rresp_q : resp_q;
-    assign rsp_last  = 1'b1;
-    assign rsp_id    = id_q;
+    // P10: answer a cache READ hit on the ACCEPT edge.  The tag comparison already
+    // runs combinationally on req_addr, so the line's data word can be read from
+    // that same address in the same cycle.  The engine then sees rsp_valid on the
+    // very edge its request was taken, and a load retires without paying the accept
+    // cycle.  When the consumer is not ready, the original registered ST_HIT path
+    // still holds the response (the state simply parks there instead).
+    // Writes are excluded: a store gets its completion from the B response, and
+    // answering one here would retire it while ST_WR_REQ still owns the engine.
+    wire accept_hit = rst_n && req_valid && req_ready && !req_write &&
+                      req_in_cache && hit_any;
+    wire [31:0] accept_word = data_mem[didx(hit_way,req_set,req_addr[4:2])];
 
-    assign b_valid = rst_n && (state_q==ST_WR_HOLD);
-    assign b_resp  = resp_q;
+    assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP) || accept_hit);
+    assign rsp_data  = (state_q==ST_BYP_RESP) ? rdata_q
+                     : accept_hit            ? accept_word
+                     : data_mem[didx(hit_q ? hit_way_q : fill_way_q,set_q,word_q)];
+    assign rsp_resp  = (state_q==ST_BYP_RESP) ? rresp_q
+                     : accept_hit            ? 2'b00 : resp_q;
+    assign rsp_last  = 1'b1;
+    assign rsp_id    = accept_hit ? req_id : id_q;
+
+    // P14: report the early-release OKAY on the very edge the W beat is taken, so
+    // the CPU's store completes one cycle sooner.  P13 already lets read hits
+    // through during the write states, so the cache no longer loses that cycle.
+    // The write-through merge then has to use the RAW w_data/w_strb, because
+    // wdata_q/wstrb_q are only latched on that edge.
+    wire early_now = rst_n && (state_q==ST_WR_REQ) && early_q && w_valid && w_ready;
+    wire [31:0] strb_mask_now = {{8{w_strb[3]}},{8{w_strb[2]}},
+                                 {8{w_strb[1]}},{8{w_strb[0]}}};
+    wire [31:0] merged_now = (data_mem[didx(hit_way_q,set_wr_q,word_q)] & ~strb_mask_now) |
+                             (w_data & strb_mask_now);
+
+    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now);
+    assign b_resp  = early_now ? `AXI_RESP_OKAY : resp_q;
     assign b_id    = id_q;
     assign miss_event = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         !req_write && req_in_cache && !hit_any;
@@ -336,7 +380,11 @@ module dcache_axi #(
                         state_q       <= ST_WR_REQ;
                     end else if (req_in_cache && hit_any) begin
                         resp_q  <= 2'b00;
-                        state_q <= ST_HIT;
+                        // P10: if the engine takes the response on this very edge,
+                        // do NOT park in ST_HIT -- that would present the same
+                        // response a second time.  Going straight back to ST_IDLE
+                        // keeps exactly one response per lookup.
+                        state_q <= rsp_ready ? ST_IDLE : ST_HIT;
                     end else begin
                         // line refill (cacheable) or a single bypass beat (MMIO)
                         rd_refill_q <= req_in_cache;
@@ -399,12 +447,21 @@ module dcache_axi #(
                     wstrb_q <= w_strb;
                     if (early_q) begin
                         // Data-RAM store: answer now, drain B in the background.
-                        // The write-through merge is applied when leaving ST_WR_HOLD,
-                        // because wstrb_q only becomes valid on this edge.
                         resp_q   <= `AXI_RESP_OKAY;
                         drain_q  <= 1'b1;
                         b_seen_q <= 1'b0;   // B belongs to the write starting now
-                        state_q  <= ST_WR_HOLD;
+                        if (b_ready) begin
+                            // P14: the CPU takes the OKAY on this very edge, so
+                            // there is nothing left to hold -- apply the merge from
+                            // the RAW beat and let the drain finish in background.
+                            if (cached_q && hit_q)
+                                data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_now;
+                            state_q <= (i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
+                        end else begin
+                            // CPU not ready: park and keep the registered OKAY
+                            // (merge applied when leaving ST_WR_HOLD).
+                            state_q <= ST_WR_HOLD;
+                        end
                     end else begin
                         state_q <= ST_WR_RESP;
                     end

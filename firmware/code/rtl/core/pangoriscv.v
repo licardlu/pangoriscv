@@ -68,9 +68,14 @@ module pangoriscv(
  wire misaligned_target=alu_taken && |alu_target[1:0];
  wire local_fault=efault || effective_illegal || is_ecall || is_ebreak || misaligned_target ||
                   (is_memory && misaligned_data);
- wire memory_fault=is_memory && issued && done_valid && fault;
+ // P10: a memory operation may now complete on the very edge it is accepted
+ // (the data cache answers a hit combinationally).  `issued` is registered, so it
+ // is still 0 on that edge; "the op was accepted this cycle" is the same fact, and
+ // it is what both the completion and the acknowledge have to test.
+ wire mem_issued=issued || (op_valid && op_ready);
+ wire memory_fault=is_memory && mem_issued && done_valid && fault;
  wire ex_fault=local_fault || memory_fault;
- wire ex_done=local_fault || (is_memory ? (issued && done_valid) :
+ wire ex_done=local_fault || (is_memory ? (mem_issued && done_valid) :
                        is_div ? (issued && div_rsp_valid) : 1'b1);
  wire [31:0] actual_next_pc=is_mret ? csr_epc : alu_taken ? alu_target : ep+32'd4;
  // ---- the predictor dynamic branch prediction (plan spec section 5) ----------------
@@ -118,7 +123,7 @@ module pangoriscv(
  assign store_value=er2;
  assign op_pc=ep; assign op_rd=erd;
  assign op_valid=rst_n && ex_valid && is_memory && !issued && !local_fault;
- assign done_ready=ex_leave && is_memory && issued;
+ assign done_ready=ex_leave && is_memory && mem_issued;
  assign div_req_valid=rst_n && ex_valid && is_div && !issued && !local_fault;
  assign div_rsp_ready=ex_leave && is_div && issued;
  assign wdata=is_csr ? csr_old : is_load ? load_value : is_div ? div_result : alu_result;

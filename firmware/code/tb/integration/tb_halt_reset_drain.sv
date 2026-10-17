@@ -226,7 +226,13 @@ module tb_halt_reset_drain;
                 wait (soc.core.lsu.state == LSU_READ_WAIT);
             end else begin
                 $display("HR_INJECT halt during in-flight data write");
-                wait (soc.core.lsu.state == LSU_WRITE_WAIT);
+                // An early-released data-RAM store is answered before its B
+                // returns, so the CPU is no longer parked in WRITE_WAIT while that
+                // write is in flight.  Wait for either the parked case (MMIO store)
+                // or the AXI AW handshake, which is the moment the write is really
+                // on the bus with its B outstanding.
+                wait (soc.core.lsu.state == LSU_WRITE_WAIT ||
+                      (soc.m_awvalid[1] === 1'b1 && soc.m_awready[1] === 1'b1));
             end
             @(negedge clk);
             arch_pc_at_halt = arch_next_pc;
@@ -359,7 +365,13 @@ module tb_halt_reset_drain;
                 wait (soc.core.lsu.state == LSU_READ_WAIT);
             end else if (scen == 4) begin
                 $display("HR_INJECT reset during in-flight data write");
-                wait (soc.core.lsu.state == LSU_WRITE_WAIT);
+                // An early-released data-RAM store is answered before its B
+                // returns, so the CPU is no longer parked in WRITE_WAIT while that
+                // write is in flight.  Wait for either the parked case (MMIO store)
+                // or the AXI AW handshake, which is the moment the write is really
+                // on the bus with its B outstanding.
+                wait (soc.core.lsu.state == LSU_WRITE_WAIT ||
+                      (soc.m_awvalid[1] === 1'b1 && soc.m_awready[1] === 1'b1));
             end else begin
                 $display("HR_INJECT reset while the bus is idle");
                 wait (soc.core.lsu.state == LSU_EMPTY && soc.m_arvalid[1] === 1'b0);

@@ -2,59 +2,74 @@
 
 | 文件 | 大小 | SHA256 |
 |---|---|---|
-| `pangoriscv_i576.sbit` | 3,791,112 B | `D3C603C7058FE49E867085E1D358CADF9F2033B8F131FC89A4DE54ADAF0FD4D2` |
+| `pangoriscv_i768.sbit` | 3,791,112 B | `7E2CCBDC0D5744491B15C1F24EC4FF9AA45E82E54533C66305AE83F8DB4B0D36` |
 
 **板卡**：Pango PG2L100H，27 MHz 晶振。
 
 **配置**：`CACHE_ENABLE` / `PREDICT_ENABLE` / `PERF_ENABLE` 三开关全开（全功能配置），BTB 32 项。
 
-**固件**：CoreMark v1.0 性能跑（`PERFORMANCE_RUN=1`），**576 次迭代**，`-DCPU_FREQ_MHZ=27`。
+**固件**：CoreMark v1.0 性能跑（`PERFORMANCE_RUN=1`），**768 次迭代**，`-DCPU_FREQ_MHZ=27`。
 
-> 迭代数为什么是 576：赛题要求单次运行 ≥10 s。本版把访存快发做完后每迭代 ticks 降到
-> 536,669，按 `N ≥ ceil(10.5 × 27e6 / 536,669) = 529` 重算后取 576，实际 11.46 s。
+> 迭代数为什么是 768：赛题要求单次运行 ≥10 s。本轮改动后每迭代 ticks 降到 382,932，
+> 按 `N ≥ ceil(10.5 × 27e6 / 382,932) = 741` 重算后取 768，实际 10.89 s。
 > **性能每变一次都必须重算，否则成绩作废。**
 
-**串口输出（RTL 仿真，同一镜像 `score576`）**：
+**串口输出（RTL 仿真，同一镜像 `score768`）**：
 
 ```
-Total ticks      : 309304812
-Total time (secs): 11
-Iterations/Sec   : 49
-Iterations       : 576
+Total ticks      : 294149365
+Total time (secs): 10
+Iterations/Sec   : 70
+Iterations       : 768
 seedcrc          : 0xe9f5
 [0]crclist       : 0xe714
 [0]crcmatrix     : 0x1fd7
 [0]crcstate      : 0x8e3a
-[0]crcfinal      : 0x7b65
+[0]crcfinal      : 0x3c53
 Correct operation validated. See readme.txt for run and reporting rules.
 ```
 
 `crcfinal` 随迭代数变化（最终 CRC 是跨迭代累积的）：20→`0x4983`、400→`0x25b5`、
-512→`0xdfc8`、576→`0x7b65`。官方只与已知表比对 `crclist / crcmatrix / crcstate`，
-三项全对，`total_errors` 为 0，故 `Correct operation validated` 已打印。
+512→`0xdfc8`、576→`0x7b65`、640→`0x382f`、768→`0x3c53`。官方只与已知表比对
+`crclist / crcmatrix / crcstate`，三项全对，`total_errors` 为 0，故
+`Correct operation validated` 已打印。
 
 **评分口径**
 
 | 项 | 值 | 口径 |
 |---|---|---|
-| ① 执行效率 | **1.8622 CoreMark/MHz** | `iterations / ticks`，迭代数无关的归一化指标 |
-| ② 时钟频率 | **27 MHz 约束 All Constraints Met**；**50 MHz 过约束同样 All Constraints Met** | 27 MHz：setup WNS **+13.398 ns**、hold WHS **+0.058 ns**，0 / 52,404 失败端点。50 MHz：setup +2.557 ns、hold +0.061 ns，0 / 52,388。板载晶振 27 MHz，**不是**板上实测最高频率 |
-| ③ 资源效率 | **0.1426 CoreMark/kLUT** | `Total LUTs 13,059`（as logic 10,374 + as DRAM 2,685），取自 `device_map` |
+| ① 执行效率 | **2.6109 CoreMark/MHz** | `iterations / ticks`，迭代数无关的归一化指标 |
+| ② 时钟频率 | **27 MHz 约束 All Constraints Met**；**50 MHz 过约束同样 All Constraints Met** | 27 MHz：setup WNS **+16.909 ns**、hold WHS **+0.105 ns**，0 / 54,350 失败端点。50 MHz：setup **+1.286 ns**、hold +0.021 ns，0 / 54,731。板载晶振 27 MHz，**不是**板上实测最高频率 |
+| ③ 资源效率 | **0.1923 CoreMark/kLUT** | `Total LUTs 13,576`（as logic 10,635 + as DRAM 2,941），取自 `device_map` |
 
 **提升幅度**
 
 | 阶段 | ticks | CoreMark/MHz | LUT | CoreMark/kLUT |
 |---|---|---|---|---|
 | S0 基线（store 优化前，400 迭代） | 306,415,752 | 1.3054 | 12,572 | 0.1038 |
-| store 后台排空 B 响应（512 迭代实测） | 356,993,719 | 1.4342 | 12,622 | 0.1136 |
-| 取指吞吐（512 迭代实测） | 304,495,134 | 1.6815 | 13,018 | 0.1292 |
-| **访存快发（本版位流，576 迭代）** | **309,304,812** | **1.8622** | **13,059** | **0.1426** |
+| store 后台排空 B 响应（512 迭代） | 356,993,719 | 1.4342 | 12,622 | 0.1136 |
+| 取指吞吐（512 迭代） | 304,495,134 | 1.6815 | 13,018 | 0.1292 |
+| 访存快发（576 迭代） | 309,304,812 | 1.8622 | 13,059 | 0.1426 |
+| 访存完成提前报（640 迭代） | 307,055,517 | 2.0843 | 13,099 | 0.1591 |
+| 零延迟 D-Cache 命中（768 迭代） | 323,940,991 | 2.3708 | 13,558 | 0.1749 |
+| 读命中不阻塞写事务（768 迭代） | 299,139,003 | 2.5674 | 13,558 | 0.1894 |
+| **store 当拍拿写确认（本版位流，768 迭代）** | **294,149,365** | **2.6109** | **13,576** | **0.1923** |
 
-累计 **+42.65% CoreMark/MHz**、**+37.34% CoreMark/kLUT**；本版相对上一版是
-**性能 +10.75%、面积 +0.31%**（触发器零增量）。
+累计 **+100.01% CoreMark/MHz**（正好翻一倍）、**+85.22% CoreMark/kLUT**，
+面积仅 **+7.99%**；本版相对上一版是 **性能 +1.70%、面积 +0.13%**。
 
-**三项数据同源**：本目录位流、`13,059 LUT`、上表 27 MHz 时序，全部来自同一份源码树
-（`lsu_axi` 访存快发）配同一份 `score576` 镜像。
+**三项数据同源**：本目录位流、`13,576 LUT`、上表 27 MHz 时序，全部来自同一份源码树
+配同一份 `score768` 镜像。
+
+**时序余量说明**
+
+- 27 MHz：setup **+16.909 ns**、hold **+0.105 ns**（快角 +0.077），余量健康。
+- 50 MHz：setup **+1.286 ns**、hold +0.021 ns，是整份设计里最紧的两项。
+- 收敛经验（务必保留）：
+  - 27 MHz 的 hold 必须用 **`-fix_hold_violation_threshold 500`**（不是 300），
+    否则会留下 1~5 个 −0.001~−0.027 ns 的端点；根因是 D-Cache LUTRAM 写口跨时钟树分支的偏斜。
+  - **50 MHz 是种子敏感的**：本版 seed 11 得 −0.001、seed 41 得 −0.155、seed 23 才通过。
+    换一次 PnR 就可能不收敛，**不能拿一次通过当保证**。
 
 **可复现性**：同一组 PnR 参数重跑，slack 与失败端点数完全一致，但 `.sbit` 的 SHA256
 每次不同（Pango 位流容器含非确定性元数据）。所以"位流哈希一致"不能当作可复现的证据，
@@ -62,15 +77,15 @@ Correct operation validated. See readme.txt for run and reporting rules.
 
 **证据等级（重要）**：CoreMark 的 ticks / CRC / 运行时间均来自**周期精确的 RTL 仿真**，
 不是板上实测——目前没有物理开发板。仿真里"总时间"由固件按 `CPU_FREQ_MHZ=27` 从 ticks 换算，
-因此在 27 MHz 板卡上就是表中的 11.46 s；但**串口实物输出仍需上板复现**。
+因此在 27 MHz 板卡上就是表中的 10.89 s；但**串口实物输出仍需上板复现**。
 频率一栏是约束收敛结果，按赛题诚信边界不得写成"实测最高频率"。
 
 上板后必须补的三件事：实板串口抓完整报告、ILA 抓 CoreMark 关键算法波形、
 以及用实测数据重算迭代数。详见 `docs/verification/handoff-2026-10-18-ifu-done.md` 与
-`evidence/records/optimization/P8/measurement.md`。
+`evidence/records/optimization/P14/measurement.md`。
 
-**已取代**：`pangoriscv_i400.sbit`（400 迭代）与 `pangoriscv_i512.sbit`（512 迭代）均已
-从本目录移除，其数据保留在 git 历史与 `evidence/records/` 中。
+**已取代**：`pangoriscv_i400.sbit`、`pangoriscv_i512.sbit`、`pangoriscv_i576.sbit`、
+`pangoriscv_i640.sbit` 均已从本目录移除，其数据保留在 git 历史与 `evidence/records/` 中。
 
 自行重新构建位流的流程见 `firmware/code/platform/pango_native/README.md`。
 **注意**：必须在 `build/pango_native` 目录里直接启动 `pds_shell`，否则 `$readmemh`

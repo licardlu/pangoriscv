@@ -123,7 +123,7 @@ runner按第27.3节实现，仅抽取日志判定与镜像转换函数用于单�
 
 新编译日志：`.sim_runs/baseline-3wl8mqev/compile.log`，
 0 Errors / 0 Warnings。该目录47个用例日志全部唯一PASS，
-证据副本及逐项结果CSV位于`docs/evidence/baseline/compatible-original/`。
+当时逐项日志位于 `evidence/records/baseline/compatible-original/`，该目录已于 2026-10-18 清理（属早期 2026-10-10 的兼容性验证，已被后续 ISA 15/15 与优化轮次取代）。
 ModelSim仿真各日志含15条原模型警告，未隐藏；
 PASS只表示这些预编译镜像通过，不证明完整ISA、FENCE.I维护或本机软件编译。
 

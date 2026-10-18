@@ -36,7 +36,7 @@
 | 分支预测失败 | 1.8% |
 | 除法 | 0.04% |
 
-> 记录：`evidence/records/optimization/P1/measurement.md`
+> 记录：`evidence/records/optimization/early/P1-measurement.md`
 > 结论：**访存是主矛盾**，不是 Cache 容量，也不是分支预测。
 
 ### 2. store 路径优化（P2'）— 采纳，最大收益
@@ -46,14 +46,14 @@
   总线确认在后台排空；窗口外的写仍同步等 B，保住 store 故障精确性
 - 结果：**ticks 15,316,450 → 13,940,928（−8.98%）**，等 B 从 1,775,055 → 3,808 拍
 - 验证：D-Cache 单元 PASS、ISA **15/15**、5 项 CRC 与基线逐项一致
-- 提交 `99e8bdb`；记录 `evidence/records/optimization/P2-store/`
+- 提交 `99e8bdb`；记录 `evidence/records/optimization/early/P2-store-measurement.md`
 
 ### 3. 时钟频率收敛实验（P5）— 完成
 
 - 50 MHz 过约束（20 ns）跑完整流程：`All Constraints Met`，Setup WNS **+2.372 ns**，0 失败
 - 位流 3,791,112 B，SHA256 `7321AB61…45A3E9`
 - **口径**：这是约束收敛结果，不是板上实测最高频率；slack 推算的 56.7 MHz 只能写"推算"
-- 提交 `7661e3e`；记录 `evidence/records/optimization/P5/`
+- 提交 `7661e3e`；记录 `evidence/records/optimization/early/P5-measurement.md`
 
 ---
 
@@ -64,7 +64,7 @@
 | D-Cache 扩容 | 2→4→8 KB 只快 0.39%/0.53% | 缺失是强制性/流式，不是冲突；面积 ×4 换 0.5% |
 | BTB 扩容 | 64/128 项快 1.68%/1.84%，但 LUT +15%/+32% | 指标③掉 12%/23%，三项并列评分下净亏 |
 
-记录：`evidence/records/optimization/P2/`、`.../P4/`
+记录：`evidence/records/optimization/early/P2-measurement.md`、`.../early/P4-measurement.md`
 
 ---
 

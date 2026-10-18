@@ -310,7 +310,7 @@ ROM/外设把AXI请求解码成内部寄存器写使能是正常从设备实现�
 - [x] 2026-10-10已保存赛题PDF摘要、计划快照、源文件SHA256及ModelSim版本到实施副本`docs/evidence/baseline/`。
 - [ ] 在副本运行`Get-Command vsim,vlog,vlib,python`。本次发现ModelSim位于`E:\donwload\win64`，存在不等于许可证可用。
 - [ ] 检查编译器：`riscv32-unknown-elf-gcc --version`；如果不存在，先配置工具链，不用宿主机GCC替代。
-- [x] 2026-10-10两处寄存器声明顺序兼容修复后，add及47/47原镜像通过；逐项日志与CSV见实施副本`docs/evidence/baseline/compatible-original/`，首次原版编译失败另行保留。
+- [x] 2026-10-10两处寄存器声明顺序兼容修复后，add及47/47原镜像通过；当时逐项日志见 `evidence/records/baseline/compatible-original/`（已于 2026-10-18 清理，属早期验证）；首次原版编译失败记录保留在 `evidence/records/bottleneck_audit/provenance/early-baseline/first-compile-failure.log`。
 
 原Icarus路径的运行命令（仅在iverilog/vvp已可用时）：
 

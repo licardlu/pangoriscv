@@ -261,6 +261,11 @@ module tb_dcache_axi;
             @(negedge clk);
             req_addr = addr; req_write = 0; req_size = 3'd2; req_len = 8'd0;
             req_id = 4'h7; req_valid = 1; rsp_ready = 0;
+            // A request is only taken when req_ready is high.  The old version
+            // dropped req_valid after one edge regardless, so a request issued
+            // while the cache was still busy was silently lost and the task hung
+            // (review 2026-10-18: this is why D3 timed out from D2's tail).
+            while(!req_ready) @(negedge clk);
             @(posedge clk);
             @(negedge clk);
             req_valid = 0; rsp_ready = 1;
@@ -292,6 +297,7 @@ module tb_dcache_axi;
             @(negedge clk);
             req_addr = addr; req_write = 1; req_size = 3'd2; req_len = 8'd0;
             req_id = 4'h3; req_valid = 1; w_valid = 0; b_ready = 0;
+            while(!req_ready) @(negedge clk);   // see the note in rd()
             @(posedge clk);
             @(negedge clk);
             req_valid = 0;

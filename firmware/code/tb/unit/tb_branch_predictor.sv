@@ -181,6 +181,24 @@ module tb_branch_predictor;
         expect_pred2(32'h0000_0300, 1'b0, 32'h0000_0000);        // untrained entry on port 2
         expect_pred (32'h0000_0100, 1'b1, 32'h0000_0200);        // port 1 still resolves
 
+        $display("--- P10 saturation survives an ODD number of taken trainings");
+        // Independent review R04: the old update form was
+        //     (hit && count!=11) ? count+1 : 2'b10
+        // so a 3rd taking training folded a saturated entry back to 10.
+        // P6 above trains 4 times (10->11->10->11 under the bug) and therefore
+        // still passes; an ODD count ends at 10 under the bug and 11 when the
+        // counter really saturates.  One following not-taken then separates them:
+        //   bug:  10 -> 01 -> predicts NOT taken  (wrong, branch was taken)
+        //   fixed: 11 -> 10 -> predicts taken     (right)
+        train(32'h0000_0020, 1'b1, 1'b0, 1'b1, 32'h0000_0080);   // new entry -> 10
+        train(32'h0000_0020, 1'b1, 1'b0, 1'b1, 32'h0000_0080);   // 10 -> 11
+        train(32'h0000_0020, 1'b1, 1'b0, 1'b1, 32'h0000_0080);   // 11 -> 11 (must saturate)
+        expect_pred(32'h0000_0020, 1'b1, 32'h0000_0080);
+        train(32'h0000_0020, 1'b1, 1'b0, 1'b0, 32'h0000_0000);   // 11 -> 10, still taken
+        expect_pred(32'h0000_0020, 1'b1, 32'h0000_0080);         // <-- fails on the old form
+        train(32'h0000_0020, 1'b1, 1'b0, 1'b0, 32'h0000_0000);   // 10 -> 01
+        expect_pred(32'h0000_0020, 1'b0, 32'h0000_0000);
+
         if (errors == 0) $display("TEST_PASS BRANCH_PREDICTOR checks=%0d", checks);
         else             $display("TEST_FAIL BRANCH_PREDICTOR errors=%0d checks=%0d", errors, checks);
         $finish;

@@ -112,10 +112,16 @@ module branch_predictor #(
                 tag_q[train_idx]    <= train_tag;
                 target_q[train_idx] <= train_target;
                 uncond_q[train_idx] <= 1'b0;
-                // first sighting of a taken branch starts weakly taken, a
-                // matching entry is strengthened and saturates at 11
-                count_q[train_idx]  <= (train_hit && count_q[train_idx]!=2'b11)
-                                       ? count_q[train_idx] + 2'b01 : 2'b10;
+                // Saturating 2-bit counter: a newly seen taken branch starts
+                // weakly taken (10); a hit strengthens it and **saturates at 11**.
+                // The old form `(hit && count!=11) ? count+1 : 2'b10` folded an
+                // already-saturated entry (11) back to 10 on every taken outcome,
+                // so an always-taken branch sat at 10 and a single not-taken
+                // outcome flipped the prediction one step too early
+                // (independent review R04).
+                count_q[train_idx]  <= (!train_hit)                   ? 2'b10 :
+                                       (count_q[train_idx]==2'b11)     ? 2'b11 :
+                                                                         count_q[train_idx]+2'b01;
             end else if (train_hit) begin
                 // a not-taken branch needs no entry of its own: weaken ours.
                 // (tag+index is the whole PC, so an uncond entry can never be

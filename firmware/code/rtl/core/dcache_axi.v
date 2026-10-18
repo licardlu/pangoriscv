@@ -36,7 +36,13 @@
 module dcache_axi #(
     parameter integer SETS = 32,
     parameter integer WAYS = 2,
-    parameter [31:0]  CACHED_LIMIT = 32'h2000_0000
+    parameter [31:0]  CACHED_LIMIT = 32'h2000_0000,
+    // Data-RAM aperture: 16 KiB at 0x1000_0000 (axi_ram WORDS=4096).
+    // Stores inside it can never fail, so they may be answered before B
+    // returns.  Outside it -- the 0x1000_4000..0x1FFF_FFFF hole -- a store
+    // can be answered DECERR, and that must reach the CPU as a store access
+    // fault, so it must NOT take the early path (independent review R01).
+    parameter [31:0]  DATA_RAM_LIMIT = 32'h1000_4000
 )(
     input wire clk, rst_n,
     // LSU-facing request interface (identical to axi_data_engine)
@@ -253,7 +259,10 @@ module dcache_axi #(
     assign m_araddr  = ar_addr_q;
     assign m_arid    = ar_id_q;
     assign m_arlen   = ar_len_q;
-    assign m_arsize  = 3'd2;                   // always full 32-bit words
+    // Cached line refills are always full-word beats.  A non-cached (MMIO) read
+// must carry the actual access size: presenting a byte/halfword read as a
+// 32-bit word makes the slave answer SLVERR (independent review R02).
+assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     assign m_arburst = `AXI_BURST_INCR;
     assign m_arlock  = 1'b0;
     assign m_arcache = 4'b0000;
@@ -366,7 +375,10 @@ module dcache_axi #(
                     word_q    <= req_word;
                     id_q      <= req_id;
                     cached_q  <= req_in_cache;
-                    early_q   <= (req_addr >= 32'h1000_0000) && (req_addr < CACHED_LIMIT);
+                    // latch the access size for the AR/AW framing: the read path
+                    // needs it for MMIO byte/halfword reads (review R02)
+                    i_req_size_r <= req_size;
+                    early_q   <= (req_addr >= 32'h1000_0000) && (req_addr < DATA_RAM_LIMIT);
                     hit_q     <= hit_any;
                     hit_way_q <= hit_way;
                     if (req_write) begin

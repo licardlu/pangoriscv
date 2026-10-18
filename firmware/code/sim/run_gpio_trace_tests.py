@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """ModelSim runner for tb/integration/tb_gpio_trace.sv -- the plan's small
 gpio_trace application (00_PLAN_SPEC.md:149).
 
@@ -19,6 +19,7 @@ Exit code 0 only when the testbench reports TEST_PASS T_GPIO_TRACE.
 """
 import argparse
 import os
+import tb_verdict
 import random
 import string
 import subprocess
@@ -136,10 +137,12 @@ def main():
     tr = os.path.join(run_dir, 'transcript.txt')
     if os.path.exists(tr):
         text += open(tr, encoding='utf-8', errors='replace').read()
-    bad = [ln.strip() for ln in text.splitlines()
-           if ln.strip().startswith('FAIL') or ln.strip().startswith('TRACE_ERROR')]
-    fatal = [ln.strip() for ln in text.splitlines() if 'Fatal' in ln]
-    passed = 'TEST_PASS T_GPIO_TRACE' in text
+    # review 2026-10-18: log lines carry a '# ' prefix, so startswith('FAIL')
+    # could never fire.  Strip the prefix through the shared helper.
+    bad = [ln for ln in tb_verdict.failures(text)]
+    bad = [ln for ln in bad if ln.startswith('FAIL') or ln.startswith('TRACE_ERROR')]
+    fatal = tb_verdict.fatals(text)
+    passed = tb_verdict.passed(text, 'TEST_PASS T_GPIO_TRACE')
     if bad or fatal or rc != 0 or not passed:
         print('FAIL gpio_trace rc=%d fails=%d' % (rc, len(bad)))
         for ln in (bad + fatal)[:12]:

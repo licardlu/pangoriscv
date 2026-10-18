@@ -16,6 +16,7 @@ Exit code 0 only when every check passed.
 """
 import argparse
 import os
+import tb_verdict
 import random
 import string
 import subprocess
@@ -89,11 +90,13 @@ def main():
     tr = os.path.join(run_dir, 'transcript.txt')
     if os.path.exists(tr):
         text += open(tr, encoding='utf-8', errors='replace').read()
-    fails = [ln.strip() for ln in text.splitlines() if ln.strip().startswith('FAIL')]
-    fatal = [ln.strip() for ln in text.splitlines() if 'Fatal' in ln]
-    if fails or fatal or rc != 0:
-        print('FAIL dcache_axi rc=%d fails=%d' % (rc, len(fails)))
-        for ln in (fails + fatal)[:10]:
+    # review 2026-10-18: every log line is prefixed with '# ', so the old
+    # startswith('FAIL') test could never fire and a failing testbench still
+    # reported PASS.  Use the shared helper and require the success marker.
+    ok, why = tb_verdict.verdict(text, 'TEST_PASS DCACHE')
+    if not ok:
+        print('FAIL dcache rc=%d %s' % (rc, why))
+        for ln in (tb_verdict.failures(text) + tb_verdict.fatals(text))[:10]:
             print('  ' + ln)
         print('  log: ' + log_path)
         return 1

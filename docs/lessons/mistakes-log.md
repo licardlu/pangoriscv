@@ -1,4 +1,4 @@
-# 错误逐条记录（2026-10-18 那一晚 + 之前）
+# 错误逐条记录
 
 > 每条写三样：**发生了什么 / 根因 / 以后怎么做**。
 > 只记我（AI 代理）自己造成的错误；他人/历史遗留问题在
@@ -166,3 +166,84 @@
 
 - **表现**：`ab-log.csv` 里留下 `P15-*` 标签，而 P15 目录从未存在（内容已归入 P14 附录）。
 - **以后**：改编号时全仓 `grep` 旧编号，一次性改完。
+
+---
+
+## E. RTL 缺陷（独立复核发现，2026-10-18 修复）
+
+> 这三条都是**代码里真实存在**的缺陷，不影响 CoreMark 的 ticks（因为 CoreMark 的
+> 访问模式碰不到它们），但影响 RV32I 的精确异常语义与通用性。前两条是历史遗留，
+> 第三条的症状被现有单测"恰好"掩盖。
+
+### M21 · 数据 RAM 之外的 store 吞掉了 DECERR（R01，历史遗留）
+
+- **表现**：对 `0x1000_4000…0x1FFF_FFFF`（数据 RAM 只有 16 KiB，这段是空洞）的 store
+  被**提前回答 OKAY**，从站回 DECERR 时只在 `ST_WR_DRAIN` 里作废缓存行，**不产生
+  store access fault** —— 违反 RV32I 精确异常要求。
+- **根因**：`dcache_axi.v` 里
+  `early_q <= (addr>=0x1000_0000) && (addr<CACHED_LIMIT)`，
+  `CACHED_LIMIT` 是 **256 MB** 窗口上界，而不是数据 RAM 的 16 KiB 上界。
+- **修法**：新增参数 `DATA_RAM_LIMIT = 32'h1000_4000`，`early_q` 只用它做上界。
+  空洞里的 store 于是走 `ST_WR_RESP`，拿到真实 B 响应 → 能报 fault。
+  CoreMark 的 store 全在 16 KiB 内，**性能无影响**。
+- **以后**：**"提前应答/乐观完成"的地址范围，必须按从站真实可服务范围来定，
+  不能按总线窗口来定。** 写一个新 parameter 明确写出物理上界。
+
+### M22 · MMIO 的 byte/halfword 读固定发 ARSIZE=2（R02，历史遗留）
+
+- **表现**：非缓存的单拍读（MMIO）无论 `req_size` 是什么都发 `ARSIZE=2`（32 位字），
+  `axi_reg_slave` 看到"字宽访问 + 非对齐偏移"回 SLVERR → 变成 load access fault。
+- **根因**：`assign m_arsize = 3'd2;  // always full 32-bit words`。
+  缓存行填充确实永远是整字，但 MMIO 单拍读不是。
+- **修法**：`assign m_arsize = cached_q ? 3'd2 : i_req_size_r;`，并在受理拍锁存
+  `i_req_size_r <= req_size`（原来只在写分支锁存，读路径拿到的是**上一次的值**）。
+- **以后**：**一个信号同时服务两条语义不同的路径时，先问"两条路径的要求一样吗"。**
+  "永远是整字"对填充成立、对 MMIO 不成立。
+
+### M23 · 2-bit 计数器在 11 上再 taken 会被打回 10（R04，历史遗留）
+
+- **表现**：一直 taken 的分支，计数器稳定在 10 而不是 11；随后**一次** not-taken 就
+  翻到 01（预测不跳），下一次 taken 必然多一次预测失败。实测 **mispred 153,690 → 137,945（−10.2%）**。
+- **根因**：`count_q <= (hit && count!=11) ? count+1 : 2'b10;` —— 已经饱和在 11 时，
+  条件为假，落到 `2'b10`，**等于每次 taken 都把 11 降回 10**。
+- **为什么单测没抓到**：P6 用例训了 **4 次** taken，序列是 10→11→10→11，**偶数次**
+  正好停在 11，后续检查全过。**奇数次**才暴露。已补 P10 用例（训 3 次）做判别。
+- **修法**：`(!hit) ? 2'b10 : (count==11) ? 2'b11 : count+1`。
+- **以后**：**验证饱和/溢出行为时，奇偶两种次数都要试**；写完"看似通过"的用例，
+  用**故意改回旧代码**的办法确认它会失败（本次就是这么做才敢说测试有效）。
+
+---
+
+## F. 测试基础设施缺陷（最危险的一类：它让上面所有缺陷都"通过"）
+
+### M24 · 五个 runner 的 PASS 判据永远不成立（历史遗留）
+
+- **表现**：`run_predictor/dcache/icache/perf/gpio_trace_tests.py` 都用
+  `ln.strip().startswith('FAIL')` 找失败行，但日志每行都被加了 `# ` 前缀
+  （`# FAIL predict ...`），**所以永远匹配不到** → 测试台打印了 FAIL，runner 仍报 PASS。
+- **后果**：修好判据后**立刻暴露两个一直存在的失败**：
+  `tb_dcache_axi` 在 D3 超时、`tb_perf_regs` 的 `D_R_BEAT 期望 16 实得 17`。
+  也就是说此前所有"dcache/perf PASS"的结论都**不可信**。
+- **修法**：新增 `sim/tb_verdict.py`（去前缀 + 找 FAIL/Fatal + **必须**出现显式成功标记），
+  五个 runner 全部改用它。
+- **验证**：把预测器旧逻辑临时放回，runner 现在正确报
+  `FAIL branch_predictor rc=0 fails=2 first=FAIL predict pc=00000020 taken=0 want=1`；
+  换回修复版报 PASS。
+- **以后**：**判据必须是"看到了成功标记"（白名单），不是"没看到失败字样"（黑名单）。**
+  凡"全绿"结论，先确认判据本身能变红。
+
+### M25 · 单元测试台不等 req_ready 就撤 req_valid（历史遗留）
+
+- **表现**：`tb_dcache_axi` 的 `rd()`/`wr()` 驱动 `req_valid` 一拍后无条件撤掉；
+  若 DUT 当时不在 `ST_IDLE`（`req_ready=0`），请求被静默丢弃 → 永远等 `w_ready`。
+- **修法**：加了 `while(!req_ready) @(negedge clk);` 再撤。**但 D3 超时仍未解决**
+  （探针显示 DUT 停在 `ST_WR_HOLD`、内层引擎停在 `WR_HOLD`、`bvalid/bready` 握手未完成），
+  这条**仍 OPEN**，需要单独排查。
+- **以后**：**驱动 DUT 前必须先看 `ready`**；"发一拍就走"在带反压的接口上一定会出问题。
+
+### M26 · 预存失败（已定位、未修，OPEN）
+
+| 现象 | 归属 | 状态 |
+|---|---|---|
+| `tb_dcache_axi` D3（写命中）超时 | 与本轮三处修复无关（用 `b1541f7` 的 RTL 同样超时） | **OPEN** |
+| `tb_perf_regs` `P2 D_R_BEAT` 期望 16 实得 17 | TB 只例化 `perf_regs`，与 dcache/预测器无关 | **OPEN** |

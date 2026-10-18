@@ -201,3 +201,65 @@ CM/MHz = IPC × 1e6 / 每迭代指令数        (每迭代指令数 = 222,179,04
 
 > 结论：**3.0~3.1 是单发射的现实终点；3.5/4.0 必须走第 5 步。**
 > 我不会声称单发射能到 3.5——那与 IPC≤1 矛盾。
+
+---
+
+## 9. P25 方案（未实施，下一轮首选）：把 store 数据搬到"请求拍"
+
+### 9.1 为什么这条和 P19 不一样
+
+P19 错在**把 AXI 写事务延后**（受理即回答、写排队后台发），
+结果破坏了 `store→load` 与非命中读的顺序（ISA case 5 挂）以及停机排空（halt-reset 挂）。
+
+本方案**不延后任何写事务**：AXI 写仍在受理拍就发起，只是
+**让 LSU 在请求拍就把 store 数据递出来**，D-Cache 在受理拍直接抓。
+访存全序完全不变，只是少了一次"递数据"的往返。
+
+### 9.2 现状与收益
+
+```
+REQUEST 拍（等 req_ready）→ WRITE_DATA 拍（w_valid/w_data）→ D-Cache 在 ST_WR_REQ 抓
+```
+`wdata_store` = **10.9M 拍 / 288M = 3.8%** 全部是"为了递一个数据多等一拍"。
+
+预期：`wdata_store` 归零，`request_store`（5.1%）也会部分缩短 → **① +3~4%**（2.6948 → 约 2.80）。
+面积：**不增反减**（可去掉 W 通道的一级 mux 与 `value_q` 握手的部分逻辑），对 hold 友好。
+
+### 9.3 改动清单（两个模块，必须一起改）
+
+**① `rtl/core/lsu_axi.v`（约 4 行）**
+- 在 `REQUEST` 状态就把数据递出去：
+  ```verilog
+  assign eng_w_valid = rst_n && (state==WRITE_DATA || (state==REQUEST && is_store && op_valid));
+  assign eng_w_data  = (state==REQUEST) ? (store_value << (8*address[1:0]))
+                                        : (value_q << (8*address_q[1:0]));
+  assign eng_w_strb  = (state==REQUEST) ? strb_of(size) : strb_of(size_q);
+  ```
+- `REQUEST` 受理后直接 `state <= READ_WAIT`（存）——**删掉 WRITE_DATA 这一跳**。
+
+**② `rtl/core/dcache_axi.v`（约 10 行）**
+- `ST_IDLE` 受理 store 时，若 `w_valid` 已为高，则**当拍锁存** `wdata_q/wstrb_q`
+  （不再等 `i_w_ready`）。
+- 引擎的 W 拍改由内部寄存器驱动：`.w_valid(<写事务在途>) .w_data(wdata_q) .w_strb(wstrb_q)`，
+  因为 LSU 现在不会在下一拍再递一次。
+- 写通合并与 `b_valid` 的回答时机保持"受理拍即回答"（数据已到齐，且写事务照常发起）。
+
+### 9.4 必须过的判据（与 P19 同一套，缺一不可）
+
+- `ISA 15/15`（**特别是 case 5 `store→load`**）与 `halt-reset 5/5`
+- `RAM 20/20`、单元 5/5、`icache 1/1`
+- 20 迭代 A/B：**五项 CRC 逐项相同**，且 `wdata_store` 应显著下降、`request_store` 不恶化
+- 768 迭代 + PDS（**先 `set_switches.py status` 确认 ON，并用面积断言核对**，见 §4.10）+ 上板
+
+### 9.5 剩余"不加面积"候选（按收益排序，供排队）
+
+| 编号 | 内容 | 预期 ① | 面积 | 风险 |
+|---|---|---|---|---|
+| **A（本节）** | store 数据搬到请求拍 | +3~4% | 略降 | 中（两模块 + 回答时序） |
+| B | 分支在 ID 解决（惩罚 2→1 拍） | +1.8% | 基本持平 | 中高（IFU 重定向 + flush） |
+| C | I-Cache 在受理拍就发 AR（省 1 拍/缺失） | +0.24% | 持平 | 低 |
+| D | 双发射 | IPC>1，唯一能过 3.457 | **大幅上升** | 极高 + ② 必破 |
+
+**加面积的候选已全部关闭**（§4.8/§4.10：hold 余量只有 0.024 ns，
+4 KB I-Cache 五个种子 hold 全不闭合）。所以在不放开 guardband 的前提下，
+A→B→C 全部做完大约 **2.80~2.85**，这是单发射 + 零面积增量能到的现实区间。

@@ -64,7 +64,22 @@ module lsu_axi(
     assign eng_req_size=(state==REQUEST)?size_q:access_size;
     assign eng_req_len=0;
     assign eng_req_id=1;
-    assign eng_w_valid=rst_n && state==WRITE_DATA;
+    // P29: hold the store beat until the write engine actually takes it, instead of
+    // dropping it the moment this unit leaves WRITE_DATA.  A harness that wires the
+    // LSU straight to axi_data_engine (tb/axi/tb_lsu_axi_ram.sv) needs that, because
+    // the engine only asks for W once HE is in WR_PREP -- possibly several cycles
+    // after the request was accepted.  With a data cache in between the beat is
+    // latched there, so the extra hold is harmless in the real SoC.
+    reg wtake_q;                       // this store's W beat has been consumed
+    always @(posedge clk) begin
+        if (!rst_n)                          wtake_q <= 1'b0;
+        else begin
+            if (eng_w_valid && eng_w_ready)  wtake_q <= 1'b1;
+            if (fast_issue || (state==REQUEST)) wtake_q <= 1'b0;   // fresh store
+        end
+    end
+    assign eng_w_valid=rst_n && (state==WRITE_DATA ||
+                                 ((state==WRITE_WAIT) && !wtake_q));
     assign eng_w_data=value_q << (8*address_q[1:0]);
     assign eng_w_strb=(size_q==0?4'b0001:size_q==1?4'b0011:4'b1111)
                       << address_q[1:0];

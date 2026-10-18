@@ -273,6 +273,27 @@
 
 ---
 
+### 4.11 改"LSU ↔ D-Cache 的 store 协议"必须同步改单元测试的引擎模型（P25）
+
+- **想做什么**：`wdata_store` 占 3.8% 的周期，全是"为了递一个 store 数据多等一拍"。
+  方案：让 LSU **在请求拍就把数据递出来**（`eng_w_valid/eng_w_data/eng_w_strb` 在 REQUEST 拍有效），
+  D-Cache 在受理拍锁存并当拍回答，LSU 从此不再进入 `WRITE_DATA`。
+  **注意这与 P19 不同**：P19 是延后 AXI 写事务（破坏顺序），本方案写事务照常发起。
+- **实现结果**：两侧都改完（`dcache_axi.v` 加 `wpend_q`、受理拍锁存 + 当拍回答、
+  引擎 W 改由内部寄存器驱动；`lsu_axi.v` 请求拍递数据 + 受理拍接受 B）。
+- **失败点**：`unit 5/5 → 卡在 lsu_axi`，报 `Fatal: store lanes/backpressure`
+  （`tb_lsu_axi.sv:75`）。原因：测试台的**假引擎**按旧协议断言
+  "受理后 `eng_w_valid` 要连续 5 拍保持、`eng_w_data/strb` 要对"，
+  新协议下 W 只在**受理拍**有效，测试台模型随即不成立。
+- **结论**：这不是 RTL bug，而是**接口契约变了**——凡是"谁在什么时候递数据"的改动，
+  都必须同时改 **单元测试里的对端模型**，否则会被判成功能回归。
+  正确顺序：先改 TB 的引擎模型（在受理拍采样 W）+ 保留一个"W 迟到一拍"的负向用例，
+  再改 RTL。
+- **纪律**：本轮按"改不动就退回"处理，已完整回退，`unit 5/5 / ISA 15/15` 恢复。
+  完整 diff 与验收清单保留在 `evidence/records/optimization/P18/measurement.md` §9。
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

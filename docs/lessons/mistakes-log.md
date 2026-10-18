@@ -183,3 +183,69 @@
 - **现象**：项目根目录堆着 `_fix.py`、`_peek.py`、`modelsim.ini`、`run.log`。
 - **怎么办**：临时脚本写到系统临时目录或写完当场删；`.gitignore` 加
   `/_*.py /_*.txt /_*.sv /_*.log` 这类根目录保险规则。
+
+---
+
+## 7. 上板类：工具、驱动、通道抢占
+
+> 这一类是"代码全对、就是找不到板子"的地方。判断顺序永远是：
+> **先分三件事** —— ① JTAG 用什么芯片 ② 板载串口用什么芯片 ③ 谁占了同一颗 USB 芯片的通道。
+> 三者混在一起看，会一直在错误的方向上重试。
+
+### 7.1 JTAG 工具"秒退、零输出、退出码空" = 缺 DLL，去查导入表
+
+- **现象**：`cdt_js.exe` / `cdt_cfg.exe` 一启动就退出，stdout/stderr 都是 0 字节，
+  `Process.ExitCode` 读出来是空。看起来像崩溃或驱动问题。
+- **查什么**：用 `cmd /c` 包一层 `.bat` 拿到真实退出码（注意：`cmd /c "... & echo %ERRORLEVEL%"`
+  里的 `%ERRORLEVEL%` 在解析时就展开了，**读到的是上一条命令的**，必须写成 `.bat` 文件才准）。
+  实测 `-1073741515` = **`0xC0000135` = DLL 未找到**。
+- **定位缺哪个**：解析 PE 导入表（可用 Python 读 DataDirectory[1]），并**递归检查被导入的 DLL 自己的导入**。
+  本例：`cdt_js.exe → FTD2XX.dll → CH347DLLA64.DLL`（最后这个缺失）。
+- **怎么办**：`CH347DLLA64.DLL` 就在 PDS 安装包自带的
+  `PDS 安装包\驱动安装包\CH341PAR.ZIP` 里的 `CH341PAR/` 目录下，
+  解出来放到 `PDS_2022.2-SP6.1\bin\` 即可。
+
+### 7.2 打开串口会把 JTAG 踢掉（同一颗 USB 芯片的多通道）
+
+- **现象**：单独扫链成功，一旦"先开串口再烧"就报
+  `E: JtagServer-0306: No devices detected while scanning the JTAG chain`，
+  且 `cfg_connect` 从 4 s 变成 40~60 s、`The cable List` 变成空。
+- **原因**：下载线是一颗双通道 USB 器件（FTDI FT2232），
+  **通道 A 走 D2XX 给 JTAG，通道 B 是虚拟串口**。把某个通道当串口打开会抢占整颗器件。
+- **怎么办**：**烧写期间不要打开任何属于下载线的 COM 口**；确认办法是
+  关掉全部串口后重烧一次，成功即证明。
+  板子的**串口是另一颗独立芯片**（本例是 CP2102），打开它不会影响 JTAG。
+
+### 7.3 板载串口芯片的驱动要单独装
+
+- **现象**：`CP2102 USB to UART Bridge Controller` 在设备管理器里带黄色感叹号，
+  `ProblemCode = 28`（未安装驱动），于是**一个 COM 口都没有**，
+  板子明明在跑却读不到任何输出。
+- **怎么办**：装厂商驱动（本例 `CP210x_Universal_Windows_Driver` 里的 `silabser.inf`）：
+  ```
+  pnputil /add-driver "<...>\silabser.inf" /install      # 需要管理员
+  ```
+  装好后会多出一个新 COM 口，那才是板子的串口。
+- **判断顺序**：先看设备管理器有无感叹号，再数 COM 口数量，别直接怀疑固件。
+
+### 7.4 工作目录带空格 → 工具参数被拆断
+
+- **现象**：`E: Flow-0072: In command 'cdt_js', the argument 'Nebula\AppData\...' is not defined`。
+- **原因**：`Start-Process -ArgumentList @('-work_dir',$path)` **不加引号**，
+  路径里的空格把参数切成两段。用户名带空格的机器（如 `Twinkle Nebula`）必踩。
+- **怎么办**：**把工具的工作目录放到无空格路径**（如 `D:\pangowork`），
+  比自己改脚本拼引号更稳。
+
+### 7.5 工具报 `Public-4023 ... run command clean` 时的正确理解
+
+- **现象**：`cfg_assign_file` / `cfg_program` 前打印
+  `W: Public-4023: Error has occurred, please run command clean before running again`，
+  而脚本用 `catch` 吃掉错误后照样打印 "OK"，**看起来烧成功、实际 done bit 仍是 0**。
+- **查什么**：`cfg_clean` / `clean` / `cfg_cmd clean` 这三个命令**都不存在**
+  （`cfg_*` 命令全表可用 `cfg_help` 打印）。这条消息的真实含义是
+  **"前一条命令失败过，状态已脏"**，要去修前一条命令，而不是找 clean。
+- **怎么办**：判断烧写是否真的生效，**只看两样**：
+  ① `configuration_tcl.log` 里有没有 `cfg_program succeed`；
+  ② 重新扫链看 **`done bit`** 是否变成 1。不要相信脚本打印的 "OK"。
+- 附带：`cfg_verify` 在这套工具/板组合上会报 `Configuration-0009: Operation error`，
+  **属固有失败，不代表烧写失败**。

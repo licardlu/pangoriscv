@@ -1,0 +1,2 @@
+pnr -help
+quit

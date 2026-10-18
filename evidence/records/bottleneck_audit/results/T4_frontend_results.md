@@ -93,7 +93,24 @@ INFO C resumed exp_pc=000001ec                            # redirect 后从新 P
 
 合计：两轮各 **11 套件 0 fail**，RTL 编译 0 error / 0 warning。
 
-## 6. CoreMark 同镜像 A/B（1 次迭代镜像，两棵树逐字节相同的 `program.hex`/`data.hex`）
+**配置口径（2026-10-17 阶段1 独立核验 `phase1_test_acceptance.md` §6 补记，必须与上表一起读）：**
+
+| 配置 | 回归结果 | 说明 |
+|---|---|---|
+| 三宏注释态（= 交付树 `soc_config.vh` 默认，T4 两轮所用） | 上述 11 套件 0 fail + isa_e2e 15/15 | 本表数字即此配置 |
+| 三宏全开（= PDS/位流配置） | 10/11 套件 PASS（154 用例）+ `pipeline` 配置性失败 + isa_e2e **14/15** | 见下两条 |
+
+- `run_pipeline_tests.py` 在宏全开下的失败是**工具配置问题**：runner 固定 13 个 core 源文件、不含 `branch_predictor.v`，
+  故 `pangoriscv.v(92) Module 'branch_predictor' is not defined`。同 RTL、同一 `tb_pipeline.sv` 用全源清单
+  `sim/native_axi_sources.f` + 三宏重新编译：`TEST_PASS N03_PIPELINE retires=29 traps=9 operations=5`（`phase1_logs/16_…`）。
+- `tools/run_isa_e2e.py` 在宏全开下 `case 7` FAIL（`x2=0 want 1 (mcycleh after wrap)`），归因矩阵：基线树 ON PASS、
+  候选树 OFF 15/15 PASS、候选树 ON FAIL、只开 CACHE FAIL、只开 PREDICT PASS；两树 `rtl/core` 只有
+  `icache_axi.v`/`ifu_axi.v` 不同 ⇒ 这是 core **既有的 CSR 读写时序隐患**被更快的取指压成背靠背后暴露，不是新增逻辑算错。
+  机理：CSR 读在 ID 级组合完成（`id.v:319/343`），CSR 写只在 retire 沿提交（`pangoriscv.v:142`、`csr_native.v:57/67/82`），
+  当 `csrw mcycleh` 与紧随的 `csrr mcycleh` 同拍落在 ID 时读到旧值。CoreMark 只读 `mcycle`、不写 CSR，竞赛软件路径不触发；
+  修法（ID 级 CSR 写旁路/一拍互锁）超出本次前端优化范围，**未在本轮修改**，列为已知限制（G1）。
+
+## 6. CoreMark 同镜像 A/B（1 次迭代镜像；两棵树加载同一组 `work/tree` 镜像，逐字节相同）
 
 审计 TB `scripts/tb_coremark_audit_v2.sv`（长窗口用 `tb_coremark_audit_v3.sv`），
 `AUDIT_INT` 区间以 `Total ticks` 打印为界，两侧同一镜像、同一仿真参数。
@@ -104,11 +121,18 @@ INFO C resumed exp_pc=000001ec                            # redirect 后从新 P
 | validation（1 iter）  | 804,633 | 702,231 | **−12.73 %** | 305,505 / 305,505 | 0.3797 → 0.4350 |
 
 - **retires 完全相同** ⇒ 减少的是纯停顿周期，不是少算了工作。
+- 编译配置差异（G5，如实记录）：基线侧日志编译时含 `PERF_ENABLE`（加载 `work.perf_regs`，只读计数从设备），
+  候选侧日志未加载；`perf_regs` 不驱动 CPU 数据通路，故不影响 cycles。旧 A/B 日志未保存 vlog 命令行，
+  复跑命令见 `commands.md` §3.7 与 `phase1_test_acceptance.md` §9。
 - 分类分解（validation）：`frontend_idle` **152,997 → 51,340**（−66 %），
   `ifwait` **153,442 → 30,001**，而 `lsu_load/lsu_store/lsuwait`（171,489/173,398/71,510）
   两侧基本不变 ⇒ 收益来源就是「取指侧不再每 2 拍才发一条」。
 - 五 CRC 两侧逐项一致：`seedcrc 0x18f2`、`crclist 0xe3c1`、`crcmatrix 0x0747`、
-  `crcstate 0x8d84`、`crcfinal 0xe3c1`；两侧均打印 `Correct operation validated`。
+  `crcstate 0x8d84`、`crcfinal 0xe3c1`（= EEMBC known 值），日志中无 `[0]ERROR!` 行。
+- 说明：1 迭代仿真的耗时 < 10 s，`core_main.c:298-301` 的规则会打印 `Errors detected`，这不代表 CRC 错；
+  `Correct operation validated` 只出现在板级 400 迭代日志（见 §8.1）。镜像身份：`frontend_opt/src` 与 `work/tree`
+  的 4 个 hex 逐字节相同；`baseline_build/src` 只有 400 迭代 performance 镜像（无 validation）。
+  §6 两棵树加载的是**同一组 1 迭代镜像**（`work/tree` 构建产物，sha 见 `phase1_test_acceptance.md` §3.1）。
 
 ## 7. ALU 微程序（同镜像，只探 `clk/rst_n/uart_tx` 的端口级 TB）
 
@@ -214,3 +238,6 @@ vsim -c -work ab2_cand tb_ifu_contract    -do "run -all; quit -f"
 - [ ] 合并进交付树（待定）
 - [x] PDS 综合/布局布线：时序与资源对比基线（见 §8；两版均 All Constraints Met）
 - [x] 优化版位流上板：400 次迭代 CoreMark 正式成绩（1.4288 vs 基线 1.2472 CoreMark/MHz，见 §8.1）
+- [x] 阶段1 独立核验：标签/计时窗口/固件一致/专项 a–h/旧回归/证据补齐（`phase1_test_acceptance.md`，本文件 §5/§6 口径已按它订正）
+- [ ] 已知限制 G1：宏全开配置 `tools/run_isa_e2e.py` case 7（core 既有 CSR 读/写时序隐患被更快取指暴露）；修法超出前端范围，未改动
+- [ ] 交付树宏配置说明（G6）：交付 `firmware/code` 的 `soc_config.vh` 仍是三宏注释态，而位流由全开配置构建；交付说明需写明这一点

@@ -255,9 +255,17 @@ foreach($k in 'cand','base'){
 ```
 
 **结果**：`results/T4_frontend_results.md`；原始日志在 `frontend_opt/ab/`
-（`cand_cm3.log`、`cand_cmval_v3b.log`、`cand_micro.log`、`base_*` 同名）。
+（`cand_cm1.log`、`cand_cmval_v3b.log`、`cand_micro.log` 与 `base_*` 同名；**没有** `cand_cm3.log`）。
 坑：微程序镜像跑完打印 `MICROBENCH done.` 后 TB 仍会跑到 `+MAX_CYCLES` 上限（日志尾部
 `TB TIMEOUT after 3000000 cycles`），所有阶段数据在 `done` 之前已打印完毕，不影响取值。
+
+**日志溯源（2026-10-17 阶段1 核验，`phase1_test_acceptance.md` §1/§3/§7 G4/G5）**：
+- 原始 A/B 日志生成时用的是默认 `work` 库（不是上面命令里的 `ab2_$k`），镜像取自
+  `frontend_opt/src/build/native_software/{coremark,microbench}/...`；这些 hex 与 `work/tree` 的逐字节相同，
+  故不影响数字，但按上面的命令复跑会改写日志文件，注意区分。
+- 日志未保存编译命令行；`base_*` 侧加载了 `work.perf_regs`（应含 `PERF_ENABLE`），`cand_*` 全部没有加载
+  ⇒ 候选侧 `PERF_ENABLE=OFF`。`perf_regs` 是只读计数从设备、不驱动 CPU，对 A/B 的 cycles 无影响（已核对 retires 相同）。
+- 建议后续 A/B 重跑时把 `vlog` 命令行与 `+define` 一并记入日志头部。
 
 ## 3.8 T4 后端与上板（本轮实测）
 
@@ -295,6 +303,61 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$b\run_flash.ps1" -Script 0
 - 坑：本机启动 `cdt_js.exe` 有 ftdibus.sys 内核 bugcheck 前科（0x139），本轮未复现；
   串口未先开就下载 ⇒ UART 输出丢失，只能重下。
 
+## 3.9 阶段 2（LSU 控制开销）：回归、A/B、逐事务、PDS 与上板（本轮实测）
+
+```powershell
+$audit = 'E:\file\pango\project\evidence\records\bottleneck_audit'
+$lsu   = "$audit\lsu_opt\src"
+$env:PATH = 'E:\donwload\win64;' + $env:PATH        # ModelSim vlog/vsim 所在
+```
+
+- 回归（在 `$lsu\sim`，与 T4 相同 runner）：`python run_unit_tests.py` 等 10 个依次跑；
+  日志在 `$audit\lsu_opt\logs\run_*_r2.log`。第二棵干净树 `lsu_opt_verify` 同理。
+- 全源 pipeline：`vlog -sv -f sim/native_axi_sources.f tb/unit/tb_pipeline.sv`（宏全开）。
+- ISA/停机测试：`python tools\run_isa_e2e.py`、`python tools\run_halt_reset_tests.py`；
+  宏全开时 isa 的 case 7 = 已有 G1，宏注释态（改 `rtl/core/soc_config.vh` 前先备份）15/15。
+- CoreMark 同镜像 A/B（1 迭代镜像来自 `$audit\work\tree\build\native_software\coremark\`）：
+
+```powershell
+vlog -sv -work ab_lsu +define+CACHE_ENABLE +define+PREDICT_ENABLE -incdir rtl/core -incdir rtl/perips `
+     -f sim/native_axi_sources.f "$audit\scripts\tb_coremark_audit_v3.sv"
+vsim -c -work ab_lsu tb_coremark_audit_v3 "+PROG=$audit\work\tree\build\native_software\coremark\performance\program.hex" `
+     "+DATA=$audit\work\tree\build\native_software\coremark\performance\data.hex" "+MAX_CYCLES=5000000" -do "run -all; quit -f"
+```
+
+- 逐事务 TB：`$lsu\tb\phase2\tb_lsu_trace.sv`（`-voptargs="+acc"`、`+MODE=coremark/micro`、
+  `+CYCLE_CSV=`/`+TXN_CSV=`）；分析脚本 `$audit\lsu_opt\phase2_logs\analyze.py`。
+- PDS（流程目录必须是进程 CWD；镜像用基线 400 迭代 performance）：
+
+```powershell
+$env:PANGO_NATIVE_REPO = $lsu
+$env:PANGO_NATIVE_BOARD_DIR = "$lsu\platform\pango_native"
+$env:NATIVE_IMAGE_DIR = "$audit\baseline_build\src\build\native_software\coremark\performance"
+Set-Location "$lsu\build\pango_native"
+pds_shell -file "$lsu\platform\pango_native\build.tcl" -work_dir "$lsu\build\pango_native"
+```
+
+  `build.tcl` 的 pnr 已改为 hold 阈值 200 ps / 300 iters + `-gplace_seed 2 -groute_seed 2`
+  （run3 只用 200 ps 仍剩 −0.008 ns/1 端点；阈值合法上限 200 ps，300 会被 Flow-0186 拒绝）。
+  证据：`lsu_opt/pds/run{1_holdfail_100ps,2_hold300_unlegal,3_hold200_8ps,4_seed2_hold200}/`。
+- 上板（**同一套 `capture_uart.ps1`/`run_flash.ps1`**，脚本必须在 `lsu_opt\board` 下运行；
+  `-Script` 只传脚本名，不能传绝对路径——传绝对路径会被 `$PSScriptRoot` 再拼一次）：
+
+```powershell
+$bd = "$audit\lsu_opt\board"
+Start-Process powershell -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File',"$bd\capture_uart.ps1",'-Port','COM13','-Seconds','80','-Out',"$bd\cand_run1.txt"
+Start-Sleep 4
+powershell -NoProfile -ExecutionPolicy Bypass -File "$bd\run_flash.ps1" `
+    -Sbit "$audit\lsu_opt\pds\run4_seed2_hold200\generate_bitstream\pangoriscv_top.sbit" `
+    -Script 01b_program_only.tcl -TimeoutSec 200
+```
+
+  结果：基线 320,725,708 ticks（11.8787 s，1.247172 CoreMark/MHz）、候选 226,427,447 ticks
+  （8.3862 s，1.766570 CoreMark/MHz），−29.40 % 周期；各自两次采集逐字节相同
+  （`base_run{1,2}.txt` sha `78B7D08D…`、`cand_run{1,2}.txt` sha `A79135C5…`）。
+  注意候选 8.386 s < 10 s，固件打印 CoreMark 的 `ERROR! Must execute for at least 10 secs`，
+  属规则提示（CRC 与基线完全一致），正式成绩需 ITERATIONS ≥477 重编镜像，本轮保持同镜像。
+
 ## 4. 源清单与开关
 
 - 源清单：`work/tree/sim/native_axi_sources.f`（33 行，`+incdir+rtl/core`、`+incdir+rtl/perips`）
@@ -315,3 +378,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$b\run_flash.ps1" -Script 0
 - `REC lat=16` 的 1,592 次长尾没定位；两个 AXI 主口的仲裁对取指的影响没单独测；
   `RVCoreP-32IC` 等两篇候选论文的作者信息未核实。
 - T4 前端优化的 PDS 资源/时序与上板已补测（见 §3.8、`results/T4_frontend_results.md` §8）。
+- 阶段 2 只做了“握手合并”（`lsu_opt/src` 三个文件）；store buffer、写回 Cache、非阻塞 Cache、
+  多笔在途、双发射、流水级重构均未做；AXI fabric 与 ram 模型未改。
+- 阶段 2 的正式 CoreMark 成绩（ITERATIONS≥477）未出：本轮按用户要求用与基线相同的 400 迭代镜像
+  对比，候选 8.386 s 触发 ≥10 s 规则；重编镜像并重做位流属额外步骤。
+- 阶段 2 的 RTL 未合并进交付树 `01_code/pangoriscv_own`，基线位流与交付位流未动。

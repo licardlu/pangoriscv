@@ -1,0 +1,316 @@
+# vsim -c tb_coremark_audit_v3 "+PROG=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\coremark\validation\program.hex" "+DATA=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\coremark\validation\data.hex" "+MAX_CYCLES=5000000" -do "run -all; quit -f" -l E:\file\pango\project\evidence\records\bottleneck_audit\lsu_opt\logs\lsu_cm_val.log 
+# Start time: 14:28:33 on Oct 18,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_coremark_audit_v3(fast)
+# Loading work.icache_axi(fast)
+# Loading work.dcache_axi(fast)
+# run -all
+# AUDIT_IMAGE prog=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\coremark\validation\program.hex data=E:\file\pango\project\evidence\records\bottleneck_audit\work\tree\build\native_software\coremark\validation\data.hex max_cycles=5000000
+# AUDIT_START cycle=41713 retire_pc=0000082c retire_inst=c0002573
+# PROGRESS cycles=500000 retires=268342 ipc=0.536684 chars=0 pc=00000f00
+# AUDIT_STOP  cycle=610434 retire_pc=0000082c retire_inst=c0002573 delta=568721
+# CPM_TICKS hi=0 lo=610433
+# 2K validation run parameters for coremark.
+# CoreMark Size    : 666
+# Total ticks      : 568721
+# Total time (secs): 0
+# ERROR! Must execute for aPROGRESS cycles=1000000 retires=470276 ipc=0.470276 chars=163 pc=00000910
+# t least 10 secs for a valid result!
+# Iterations       : 1
+# Compiler version : GCC7.1.1 20170509
+# Compiler flags   : -march=rv32im -mabi=ilp32 -mcmodel=medlow -O2 -ffreestanding -fno-builtin -fno-common -ffunction-sPROGRESS cycles=1500000 retires=657996 ipc=0.438664 chars=374 pc=0000090c
+# ections -fdata-sections -falign-functions=4 -falign-jumps=4 -falign-loops=4 -DCPU_FREQ_MHZ=27 -DITERATIONS=1 -DVALIDATION_RUN=1
+# Memory location  : STATIC
+# seedcrc          : 0x18f2
+# [0]crclist       : 0xe3c1
+# [0]crPROGRESS cycles=2000000 retires=845192 ipc=0.422596 chars=585 pc=0000090c
+# cmatrix     : 0x0747
+# [0]crcstate      : 0x8d84
+# [0]crcfinal      : 0xe3c1
+# Errors detected
+# 
+# AUDIT_SUMMARY cycles=2211894 retires=927053 ipc=0.419122 traps=0 faults=0 chars=674 report_seen=1
+# AUDIT_RAW ifwait=38900 lsuwait=274186 imiss=625 dmiss=210 predmiss=13015 ctrl=276714 redirect=13015 fetch=0 issue=1005165 rsp=1005164
+# AUDIT_AXI i_ar=625 i_r=5000 d_ar=194776 d_r=196246 d_aw=19125 d_w=19125 d_b=19125
+# AUDIT_MEM load=255061 store=19125 mdiv_issue=3060
+# 
+# AUDIT_INTERVAL t_start=41713 t_stop=610434 span=568721
+# AUDIT_INT cycles=568721 retires=305505 ipc=0.537179
+# AUDIT_INT_EV ifwait=30639 lsuwait=71787 redirect=10976 trap=0 mdiv=0
+# AUDIT_INT_MEM load=56227 store=15560 lsu_req=71787 flush_lost=0
+# AUDIT_CHECK class_sum=568721 interval_cycles=568721
+# AUDIT_INT_CLASS retires=305505 lsu_load=115400 lsu_store=95736 div=0 ex=0 frontend_idle=52080 (sum=568721 vs cycles=568721)
+# AUDIT_INT_LSU_PHASE empty=71787 request=0 write_data=0 read_wait=59173 write_wait=80176 complete=0 (sum=211136)
+# AUDIT_INT_FE_IDLE total=52080 empty=29908 empty_wait_rsp=18932 empty_idle=10976 bubble=22172 redirect_cycles=10976
+# AUDIT_INT_AXI i_ar=420 i_r=3360 d_ar=97 d_r=776 d_aw=15560 d_b=15560
+# AUDIT_INT_CACHE icache req=368990 miss=420 ar=420 r=3360 | dcache req=71787 miss=97 ar=97 single=0 r=776
+# AUDIT_INT_STORE_SHAPE stores=15560 runs=15560 max_run=27
+# 
+# AUDIT_HIST_OCC
+# AUDIT_OCC occ=0 cycles=31159
+# AUDIT_OCC occ=1 cycles=90307
+# AUDIT_OCC occ=2 cycles=7222
+# AUDIT_OCC occ=3 cycles=22487
+# AUDIT_OCC occ=4 cycles=6603
+# AUDIT_OCC occ=5 cycles=18303
+# AUDIT_OCC occ=6 cycles=151381
+# AUDIT_OCC occ=7 cycles=129534
+# AUDIT_OCC occ=8 cycles=111725
+# AUDIT_OCC occ=9 cycles=0
+# AUDIT_HIST_IGAP
+# AUDIT_IGAP gap=1 n=293865
+# AUDIT_IGAP gap=2 n=14078
+# AUDIT_IGAP gap=3 n=46876
+# AUDIT_IGAP gap=4 n=1683
+# AUDIT_IGAP gap=5 n=98
+# AUDIT_IGAP gap=6 n=98
+# AUDIT_IGAP gap=7 n=11529
+# AUDIT_IGAP gap=8 n=252
+# AUDIT_IGAP gap=21 n=2
+# AUDIT_IGAP gap=22 n=2
+# AUDIT_IGAP gap=23 n=4
+# AUDIT_IGAP gap=25 n=23
+# AUDIT_IGAP gap=26 n=1
+# AUDIT_IGAP gap=27 n=5
+# AUDIT_IGAP gap=29 n=7
+# AUDIT_IGAP gap=30 n=316
+# AUDIT_IGAP gap=31 n=150
+# AUDIT_IGAP_TOTAL n=368989
+# AUDIT_HIST_ILAT
+# AUDIT_ILAT lat=1 n=368570
+# AUDIT_ILAT lat=30 n=373
+# AUDIT_ILAT lat=31 n=47
+# AUDIT_HIST_LLAT
+# AUDIT_LLAT lat=2 n=56130
+# AUDIT_LLAT lat=6 n=15461
+# AUDIT_LLAT lat=21 n=1
+# AUDIT_LLAT lat=26 n=5
+# AUDIT_LLAT lat=27 n=3
+# AUDIT_LLAT lat=28 n=20
+# AUDIT_LLAT lat=29 n=97
+# AUDIT_LLAT lat=30 n=7
+# AUDIT_LLAT lat=31 n=18
+# AUDIT_LLAT lat=32 n=19
+# AUDIT_LLAT lat=33 n=12
+# AUDIT_LLAT lat=38 n=1
+# AUDIT_LLAT lat=46 n=1
+# AUDIT_LLAT lat=48 n=1
+# AUDIT_LLAT lat=50 n=1
+# AUDIT_LLAT lat=54 n=4
+# AUDIT_LLAT lat=55 n=1
+# AUDIT_LLAT lat=56 n=5
+# AUDIT_HIST_REC
+# AUDIT_REC lat=5 n=8308
+# AUDIT_REC lat=7 n=1789
+# AUDIT_REC lat=10 n=1023
+# AUDIT_REC lat=11 n=1603
+# AUDIT_REC lat=13 n=1
+# AUDIT_REC lat=21 n=1
+# AUDIT_REC lat=24 n=2
+# AUDIT_REC lat=25 n=1
+# AUDIT_REC lat=26 n=1
+# AUDIT_REC lat=27 n=4
+# AUDIT_REC lat=28 n=3
+# AUDIT_REC lat=29 n=6
+# AUDIT_REC lat=30 n=9
+# AUDIT_REC lat=31 n=18
+# AUDIT_REC lat=32 n=11
+# AUDIT_REC lat=33 n=34
+# AUDIT_REC lat=34 n=110
+# AUDIT_REC lat=35 n=4
+# AUDIT_REC lat=36 n=23
+# AUDIT_REC lat=37 n=5
+# AUDIT_REC lat=38 n=1
+# AUDIT_REC lat=39 n=1
+# AUDIT_REC lat=40 n=11
+# AUDIT_REC lat=45 n=1
+# AUDIT_REC lat=47 n=2
+# AUDIT_REC lat=52 n=1
+# AUDIT_REC lat=56 n=3
+# AUDIT_REC lat=57 n=7
+# AUDIT_REC lat=58 n=1
+# AUDIT_REC lat=59 n=2
+# AUDIT_REC lat=60 n=3
+# AUDIT_REC lat=61 n=6
+# AUDIT_REC lat=62 n=6
+# AUDIT_REC lat=63 n=6
+# AUDIT_REC lat=64 n=5
+# AUDIT_REC lat=86 n=1
+# AUDIT_REC lat=89 n=1
+# AUDIT_REC lat=118 n=1
+# AUDIT_HIST_STORE_RUN
+# AUDIT_RUN len=1 n=12854
+# AUDIT_RUN len=2 n=328
+# AUDIT_RUN len=3 n=112
+# AUDIT_RUN len=4 n=228
+# AUDIT_RUN len=5 n=113
+# AUDIT_RUN len=6 n=1
+# AUDIT_RUN len=11 n=2
+# AUDIT_RUN len=13 n=1
+# AUDIT_RUN len=14 n=4
+# AUDIT_RUN len=15 n=6
+# AUDIT_HIST_STORE_GAP
+# AUDIT_SGAP cycles=7 n=910
+# AUDIT_SGAP cycles=8 n=361
+# AUDIT_SGAP cycles=9 n=280
+# AUDIT_SGAP cycles=10 n=444
+# AUDIT_SGAP cycles=11 n=32
+# AUDIT_SGAP cycles=12 n=48
+# AUDIT_SGAP cycles=13 n=5997
+# AUDIT_SGAP cycles=14 n=545
+# AUDIT_SGAP cycles=15 n=218
+# AUDIT_SGAP cycles=16 n=65
+# AUDIT_SGAP cycles=17 n=266
+# AUDIT_SGAP cycles=18 n=136
+# AUDIT_SGAP cycles=19 n=42
+# AUDIT_SGAP cycles=20 n=285
+# AUDIT_SGAP cycles=21 n=478
+# AUDIT_SGAP cycles=22 n=541
+# AUDIT_SGAP cycles=23 n=215
+# AUDIT_SGAP cycles=24 n=67
+# AUDIT_SGAP cycles=25 n=153
+# AUDIT_SGAP cycles=26 n=526
+# AUDIT_SGAP cycles=27 n=144
+# AUDIT_SGAP cycles=28 n=228
+# AUDIT_SGAP cycles=29 n=290
+# AUDIT_SGAP cycles=30 n=3
+# AUDIT_SGAP cycles=31 n=54
+# AUDIT_SGAP cycles=32 n=86
+# AUDIT_SGAP cycles=33 n=233
+# AUDIT_SGAP cycles=34 n=23
+# AUDIT_SGAP cycles=35 n=147
+# AUDIT_SGAP cycles=36 n=2
+# AUDIT_SGAP cycles=37 n=241
+# AUDIT_SGAP cycles=38 n=83
+# AUDIT_SGAP cycles=39 n=41
+# AUDIT_SGAP cycles=40 n=16
+# AUDIT_SGAP cycles=41 n=51
+# AUDIT_SGAP cycles=42 n=113
+# AUDIT_SGAP cycles=43 n=181
+# AUDIT_SGAP cycles=44 n=1
+# AUDIT_SGAP cycles=45 n=7
+# AUDIT_SGAP cycles=46 n=101
+# AUDIT_SGAP cycles=47 n=39
+# AUDIT_SGAP cycles=48 n=3
+# AUDIT_SGAP cycles=49 n=9
+# AUDIT_SGAP cycles=50 n=5
+# AUDIT_SGAP cycles=51 n=36
+# AUDIT_SGAP cycles=52 n=6
+# AUDIT_SGAP cycles=53 n=12
+# AUDIT_SGAP cycles=54 n=40
+# AUDIT_SGAP cycles=55 n=94
+# AUDIT_SGAP cycles=56 n=22
+# AUDIT_SGAP cycles=57 n=4
+# AUDIT_SGAP cycles=58 n=19
+# AUDIT_SGAP cycles=59 n=77
+# AUDIT_SGAP cycles=60 n=25
+# AUDIT_SGAP cycles=61 n=5
+# AUDIT_SGAP cycles=62 n=96
+# AUDIT_SGAP cycles=63 n=6
+# AUDIT_SGAP cycles=64 n=8
+# AUDIT_SGAP cycles=65 n=4
+# AUDIT_SGAP cycles=66 n=43
+# AUDIT_SGAP cycles=67 n=2
+# AUDIT_SGAP cycles=68 n=50
+# AUDIT_SGAP cycles=70 n=43
+# AUDIT_SGAP cycles=72 n=3
+# AUDIT_SGAP cycles=73 n=2
+# AUDIT_SGAP cycles=74 n=38
+# AUDIT_SGAP cycles=75 n=2
+# AUDIT_SGAP cycles=76 n=2
+# AUDIT_SGAP cycles=77 n=2
+# AUDIT_SGAP cycles=78 n=3
+# AUDIT_SGAP cycles=79 n=2
+# AUDIT_SGAP cycles=81 n=1
+# AUDIT_SGAP cycles=82 n=2
+# AUDIT_SGAP cycles=83 n=1
+# AUDIT_SGAP cycles=86 n=1
+# AUDIT_SGAP cycles=87 n=3
+# AUDIT_SGAP cycles=88 n=47
+# AUDIT_SGAP cycles=89 n=4
+# AUDIT_SGAP cycles=91 n=2
+# AUDIT_SGAP cycles=92 n=17
+# AUDIT_SGAP cycles=93 n=1
+# AUDIT_SGAP cycles=95 n=3
+# AUDIT_SGAP cycles=96 n=31
+# AUDIT_SGAP cycles=100 n=1
+# AUDIT_SGAP cycles=101 n=1
+# AUDIT_SGAP cycles=102 n=4
+# AUDIT_SGAP cycles=107 n=1
+# AUDIT_SGAP cycles=112 n=1
+# AUDIT_SGAP cycles=113 n=1
+# AUDIT_SGAP cycles=114 n=2
+# AUDIT_SGAP cycles=115 n=23
+# AUDIT_SGAP cycles=116 n=136
+# AUDIT_SGAP cycles=117 n=2
+# AUDIT_SGAP cycles=119 n=1
+# AUDIT_SGAP cycles=120 n=176
+# AUDIT_SGAP cycles=123 n=1
+# AUDIT_SGAP cycles=124 n=1
+# AUDIT_SGAP cycles=125 n=3
+# AUDIT_SGAP cycles=127 n=14
+# AUDIT_SGAP cycles=129 n=1
+# AUDIT_SGAP cycles=131 n=34
+# AUDIT_SGAP cycles=135 n=4
+# AUDIT_SGAP cycles=139 n=3
+# AUDIT_SGAP cycles=140 n=1
+# AUDIT_SGAP cycles=141 n=1
+# AUDIT_SGAP cycles=142 n=1
+# AUDIT_SGAP cycles=143 n=2
+# AUDIT_SGAP cycles=144 n=1
+# AUDIT_SGAP cycles=146 n=8
+# AUDIT_SGAP cycles=148 n=2
+# AUDIT_SGAP cycles=150 n=1
+# AUDIT_SGAP cycles=152 n=1
+# AUDIT_SGAP cycles=158 n=1
+# AUDIT_SGAP cycles=159 n=2
+# AUDIT_SGAP cycles=160 n=6
+# AUDIT_SGAP cycles=161 n=129
+# AUDIT_SGAP cycles=165 n=153
+# AUDIT_SGAP cycles=166 n=1
+# AUDIT_SGAP cycles=167 n=1
+# AUDIT_SGAP cycles=169 n=5
+# AUDIT_SGAP cycles=172 n=14
+# AUDIT_SGAP cycles=176 n=18
+# AUDIT_SGAP cycles=180 n=1
+# AUDIT_SGAP cycles=187 n=3
+# AUDIT_SGAP cycles=191 n=2
+# AUDIT_SGAP cycles=203 n=3
+# AUDIT_SGAP cycles=210 n=3
+# AUDIT_SGAP cycles=214 n=1
+# AUDIT_SGAP cycles=220 n=1
+# AUDIT_SGAP cycles=221 n=1
+# AUDIT_SGAP cycles=225 n=2
+# AUDIT_SGAP cycles=231 n=1
+# AUDIT_SGAP cycles=237 n=1
+# AUDIT_SGAP cycles=239 n=1
+# AUDIT_SGAP cycles=241 n=1
+# AUDIT_SGAP cycles=243 n=2
+# AUDIT_SGAP cycles=244 n=1
+# AUDIT_SGAP cycles=245 n=3
+# AUDIT_SGAP cycles=247 n=2
+# AUDIT_SGAP cycles=248 n=2
+# AUDIT_SGAP cycles=249 n=1
+# AUDIT_SGAP cycles=251 n=2
+# AUDIT_SGAP cycles=252 n=1
+# AUDIT_SGAP cycles=255 n=297
+# 
+# TEST_PASS T_COREMARK_AUDIT_V3 retires=927053 cycles=2211894
+# ** Note: $finish    : E:/file/pango/project/evidence/records/bottleneck_audit/scripts/tb_coremark_audit_v3.sv(496)
+#    Time: 2211913500 ps  Iteration: 1  Instance: /tb_coremark_audit_v3
+# End time: 14:28:51 on Oct 18,2026, Elapsed time: 0:00:18
+# Errors: 0, Warnings: 0

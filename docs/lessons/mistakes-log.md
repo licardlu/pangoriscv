@@ -486,6 +486,20 @@
 
 ---
 
+- **第四次尝试（P30，两侧对称改完）**：`unit 5/5`、`ISA 15/15`、`halt-reset 5/5` 全过，
+  但 `ram_tests` 的 `lsu-seed1` 仍然 `LSU_RAM timeout`。
+  说明 `wtake_q` 的置位域收窄 + `eng_w_valid` 双条件**还不足以**让"直连引擎"的 harness 通过。
+- **仍然成立的部分**：P29（`wtake_q` 让 LSU 把 W 拍保持到被取走）单独上线是**全绿且行为中立**的
+  （`RAM 20/20`、A/B 与基线完全一致），已保留在 `70681c7`。
+- **下一步必须先读 `tb/axi/tb_lsu_axi_ram.sv` 的完整时序期望**（它给 `axi_data_engine`
+  的 `READ_DELAY(20)/WRITE_DELAY(30)` 和它自己的检查点），
+  再决定是改 LSU 还是那条 harness 的期望——**不要再猜**。
+  读的时候重点看：它是否假设"受理后先有一个 W 拍、然后才等到 B"，
+  以及 `wr()`/`rd()` 任务里对 `eng_w_valid` 的采样周期。
+- **纪律**：四次尝试全部完整回退，回归恢复 `unit 5/5 / ISA 15/15 / RAM 20/20 / halt-reset 5/5`。
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

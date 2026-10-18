@@ -425,6 +425,32 @@ module tb_coremark_uart;
     // LSU state checks the claim "REQUEST cycles ~= memory operations" BEFORE
     // the RTL is touched.  Testbench-only hierarchical probes, like STORE_PATH.
     integer l_emp=0, l_req=0, l_wdat=0, l_rdwait=0, l_wrwait=0, l_comp=0;
+    // Who is waiting in the REQUEST fallback?  That state only exists because the
+    // cache refused the request that cycle, so splitting it by operation class
+    // says whether a store queue would actually pay for itself.
+    integer l_req_st=0, l_req_ld=0, l_wdat_st=0;
+    // Where do the ~43 cycles of an I-Cache miss go?  If most of it is the AR
+    // round trip, an early-restart scheme would not help; if it is the 8-beat
+    // fill, it would.  Measure before designing anything.
+    integer ic_idle=0, ic_aresp=0, ic_ar=0, ic_fill=0, ic_mrd=0, ic_resp=0, ic_fault=0;
+`ifdef CACHE_ENABLE
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        case(soc.core.instruction_cache.state)
+            3'd0: ic_idle =ic_idle +1;
+            3'd1: ic_resp =ic_resp +1;
+            3'd2: ic_ar   =ic_ar   +1;
+            3'd3: ic_fill =ic_fill +1;
+            3'd4: ic_mrd  =ic_mrd  +1;
+            3'd5: ic_fault=ic_fault+1;
+        endcase
+    end
+`endif
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        if(soc.core.lsu.state==3'd1) begin
+            if(soc.core.lsu.is_store) l_req_st=l_req_st+1; else l_req_ld=l_req_ld+1;
+        end
+        if(soc.core.lsu.state==3'd2 && soc.core.lsu.is_store) l_wdat_st=l_wdat_st+1;
+    end
     always @(posedge clk) if(rst_n && !report_seen) begin
         case(soc.core.lsu.state)
             3'd0: l_emp   =l_emp   +1;
@@ -524,6 +550,8 @@ module tb_coremark_uart;
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);
         $display("STORE_PATH st_wr_req=%0d st_wr_resp=%0d st_wr_hold=%0d st_total=%0d", st_wr_req, st_wr_resp, st_wr_hold, st_wr_req+st_wr_resp+st_wr_hold);
         $display("LSU_PATH empty=%0d request=%0d wdata=%0d rdwait=%0d wrwait=%0d complete=%0d", l_emp, l_req, l_wdat, l_rdwait, l_wrwait, l_comp);
+        $display("LSU_REQ_SPLIT request_store=%0d request_load=%0d wdata_store=%0d", l_req_st, l_req_ld, l_wdat_st);
+        $display("ICACHE_PATH idle=%0d ar=%0d fill=%0d missrd=%0d resp=%0d fault=%0d", ic_idle, ic_ar, ic_fill, ic_mrd, ic_resp, ic_fault);
         $display("DCACHE_PATH idle=%0d hit=%0d rdar=%0d rddata=%0d byp=%0d drain=%0d rdwait_entries=%0d refills=%0d",
                  dc_idle, dc_hit, dc_rdar, dc_rddata, dc_byp, dc_drain, rdwait_entries, refills);
         $display("ADDR_REGION ld_lo=%0d ld_data=%0d ld_hi=%0d st_lo=%0d st_data=%0d st_hi=%0d nonhit_lo=%0d nonhit_data=%0d nonhit_hi=%0d",

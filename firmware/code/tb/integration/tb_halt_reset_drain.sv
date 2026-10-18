@@ -223,7 +223,12 @@ module tb_halt_reset_drain;
             // ---------------- halt scenarios -------------------------------
             if (scen == 1) begin
                 $display("HR_INJECT halt during in-flight data read");
-                wait (soc.core.lsu.state == LSU_READ_WAIT);
+                // The AXI RAM now streams burst beats back to back, so a data
+                // read can complete before the CPU parks in READ_WAIT.  Trigger
+                // on the AR handshake as well: that is the moment the read is
+                // genuinely on the bus with its R beats outstanding.
+                wait (soc.core.lsu.state == LSU_READ_WAIT ||
+                      (soc.m_arvalid[1] === 1'b1 && soc.m_arready[1] === 1'b1));
             end else begin
                 $display("HR_INJECT halt during in-flight data write");
                 // An early-released data-RAM store is answered before its B
@@ -362,7 +367,8 @@ module tb_halt_reset_drain;
             // ---------------- reset scenarios ------------------------------
             if (scen == 3) begin
                 $display("HR_INJECT reset during in-flight data read");
-                wait (soc.core.lsu.state == LSU_READ_WAIT);
+                wait (soc.core.lsu.state == LSU_READ_WAIT ||
+                      (soc.m_arvalid[1] === 1'b1 && soc.m_arready[1] === 1'b1));
             end else if (scen == 4) begin
                 $display("HR_INJECT reset during in-flight data write");
                 // An early-released data-RAM store is answered before its B

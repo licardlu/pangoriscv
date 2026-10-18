@@ -169,7 +169,13 @@ module axi_ram #(
                 READ_MEM: begin
                     if(read_good) read_data<=mem[read_index];
                     else read_data<=0;
-                    delay_left<=READ_DELAY; state<=READ_WAIT;
+                    delay_left<=READ_DELAY;
+                    // READ_DELAY=0 means "no modelled latency", yet the original
+                    // code still burned a whole cycle in READ_WAIT for it.  The
+                    // data register is loaded on this edge, so the beat is valid
+                    // next cycle: go straight to the response.
+                    if(READ_DELAY==0) state<=READ_RESP;
+                    else              state<=READ_WAIT;
                 end
                 READ_WAIT: begin
                     if(delay_left==0) state<=READ_RESP;
@@ -181,6 +187,15 @@ module axi_ram #(
                         beats_left<=beats_left-1;
                         // INCR with ARSIZE=2: the next beat is the next 32-bit word.
                         if(read_good) read_index<=read_index+1;
+                        // NOTE: a prefetch (read_data<=mem[read_index+1], staying
+                        // in READ_RESP) makes consecutive beats one cycle each and
+                        // measured another -2.15% ticks, but it changed the burst
+                        // timing enough that run_halt_reset_tests scenarios 1/3
+                        // (data-read injection with READ_DELAY=60) stopped finding
+                        // their window: the program appeared to never issue a data
+                        // read.  That interaction was not explained, so the change
+                        // is deliberately NOT taken.  Revisit with a focused test
+                        // of the READ_DELAY>0 path before enabling it.
                         state<=READ_MEM;
                     end
                 end

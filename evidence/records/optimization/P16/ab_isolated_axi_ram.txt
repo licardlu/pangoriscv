@@ -1,0 +1,28 @@
+CoreMark fetch A/B (image D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\firmware\code\build\native_software\coremark\performance\perf_on)
+baseline revision c153039; replaced files: rtl/perips/axi_ram.v
+wall clock 1.2 min
+
+base  PASS ticks=7658647 cycles=9561172 retires=6642415 IPC=0.6947
+      validated=False under-10s-rule=True  (expected for a short A/B image; CRCs are the check)
+      crc seed=0x55445f46 list=0xe714 matrix=0x1fd7 state=0x8e3a final=0x4983
+      traps=0 faults=0
+      perf cycle=9311709 instret=6474935 if_wait=788983 lsu_wait=518445 i_miss=18289 d_miss=4655 ret_cf=1452438 mispred=153686
+      store req=287902 resp=3781 hold=743 total=292426
+work  PASS ticks=7478647 cycles=9379156 retires=6643223 IPC=0.7083
+      validated=False under-10s-rule=True  (expected for a short A/B image; CRCs are the check)
+      crc seed=0x55445f46 list=0xe714 matrix=0x1fd7 state=0x8e3a final=0x4983
+      traps=0 faults=0
+      perf cycle=9129661 instret=6475559 if_wait=654975 lsu_wait=518653 i_miss=18289 d_miss=4655 ret_cf=1452646 mispred=153694
+      store req=287902 resp=3757 hold=743 total=292402
+
+ticks 7658647 -> 7478647 (-2.35%)
+cycles 9561172 -> 9379156 (-1.90%)
+perf if_wait  788983 -> 654975 (-16.98%)
+perf i_miss   18289 -> 18289 (+0.00%)
+perf lsu_wait 518445 -> 518653 (+0.04%)
+perf d_miss   4655 -> 4655 (+0.00%)
+perf ret_cf   1452438 -> 1452646 (+0.01%)
+perf mispred  153686 -> 153694 (+0.01%)
+CRC compared: seedcrc, crclist, crcmatrix, crcstate, crcfinal
+CRC differs: none
+architectural transparency: PASS

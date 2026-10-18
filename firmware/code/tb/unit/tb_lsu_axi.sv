@@ -28,7 +28,7 @@ module tb_lsu_axi;
     lsu_axi dut(.*);
     always @(posedge clk) if(rst_n) begin
         if(eng_req_valid && eng_req_ready) requests++;
-        if(eng_req_valid && eng_req_ready && eng_req_write && eng_w_valid) writes++;
+        if(eng_w_valid && eng_w_ready) writes++;
         if(done_valid && done_ready) completions++;
     end
     task launch(input bit st,input [31:0] addr,input [2:0] sz,input bit uns);
@@ -68,19 +68,17 @@ module tb_lsu_axi;
     endtask
     task store_case(input [31:0] addr,input [2:0] sz,input [3:0] strb,
                     input [31:0] data,input [1:0] resp);
-        launch(1,addr,sz,0);
-        repeat(3) begin
+        launch(1,addr,sz,0); accept_request(1,addr,sz);
+        repeat(5) begin
             @(negedge clk);
-            if(!eng_req_valid || eng_req_addr!==addr || eng_req_size!==sz ||
-               eng_req_write!==1'b1 || done_valid)
-                $fatal(1,"store request ownership/backpressure");
-            if(!eng_w_valid || eng_w_data!==data || eng_w_strb!==strb || !eng_w_last)
-                $fatal(1,"store data must accompany the request");
+            if(!eng_w_valid || eng_w_data!==data || eng_w_strb!==strb ||
+               !eng_w_last || done_valid) $fatal(1,"store lanes/backpressure");
         end
-        if(!eng_b_ready) $fatal(1,"store must accept B on the accept edge");
-        eng_req_ready=1; eng_b_valid=1; eng_b_resp=resp;
-        @(negedge clk);
-        eng_req_ready=0; eng_b_valid=0;
+        eng_w_ready=1; @(negedge clk); eng_w_ready=0;
+        repeat(30) @(negedge clk);
+        if(done_valid || !eng_b_ready) $fatal(1,"store completed before B");
+        eng_b_resp=resp; eng_b_valid=1;
+        @(negedge clk); eng_b_valid=0;
         complete(resp!=0,0,addr);
     endtask
     initial begin

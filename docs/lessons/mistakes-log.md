@@ -309,6 +309,30 @@
 
 ---
 
+### 4.12 构建开关是"被跟踪的文件"，`git add -A` 会把开关状态一起提交
+
+- **现象**：两次"只改文档"的提交（`0f21436`、`c43ae79`）里，
+  `firmware/code/rtl/core/soc_config.vh` 被一起提交，三个宏被注释掉：
+  ```diff
+  -`define CACHE_ENABLE
+  -`define PREDICT_ENABLE
+  -`define PERF_ENABLE
+  +// `define CACHE_ENABLE
+  ```
+  也就是说 **HEAD 一度处于"缓存关闭"状态**，而位流和成绩是"全开"配置下产生的。
+  若不核对，下一个人 `git clone` 出来综合，会得到一个**完全不同的设计**（LUT 7,774 vs 13,503）。
+- **根因**：`tools/set_switches.py` 直接改**被跟踪文件**；收尾时若用 `set_switches.py off`
+  还原"默认"，再 `git add -A`，开关状态就混进了提交。
+- **怎么办**（三条，任选其一，推荐前两条同时做）：
+  1. **提交前跑 `set_switches.py status`**，确认三开关 ON 与交付配置一致；
+  2. **提交信息里写明配置**（"三开关 ON"），并在 PDS/跑分记录里带上 status 输出；
+  3. 更彻底：把开关改成**构建参数**（`-D`/命令行传入），不再改被跟踪文件；
+     或在 `.gitignore` 之外用一个未被跟踪的 `soc_config_local.vh` 覆盖。
+- **可复用**：**任何"改文件来改配置"的工具，都是提交污染源。**
+  交付前要核对的是"仓库里那份配置"，而不是"我这台机器当前那份"。
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

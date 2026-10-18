@@ -23,7 +23,9 @@
  *   0xd00        test12
  *   0xe00        test13
  *   0xf00        test14
- *   0x800        shared trap handler
+ *   0x1100       test16
+ *   0x3f80       test16 local trap handler
+ *   0x3f00       shared trap handler
  */
   .section .text
   .globl _start
@@ -180,19 +182,28 @@ test6:
   HALT
 
 /* ------------------------------------------------------------------ test 7
- * mcycle/minstret: writable halves, read-only aliases, free running.
- * Expected: x2=1 x3=0 x5 = cycle low half, non-zero, even after the shift pair
+ * mcycle 64-bit counter wrap. The low half is written to 0xffffffff and the
+ * high half is polled in a bounded loop: the wrap becomes architecturally
+ * visible only after the counter increments, so a fixed instruction distance
+ * would encode a pipeline-timing assumption instead of an architectural one.
+ * Expected: x2=1 (mcycleh after wrap) x3=0..0x100 (low half after wrap)
+ *           x5=1..0x1000 (read-only alias of mcycle)
  */
   .org 0x700
 test7:
+  li    x1, 0
+  csrw  0xb80, x1              /* mcycleh = 0 */
   li    x1, -1
-  csrw  0xb00, x1              /* mcycle = 0xffffffff */
-  csrrs x2, 0xb80, x0         /* wraps: mcycleh = 1 */
-  csrrc x0, 0xb00, x1          /* clear low half */
-  csrrs x3, 0xb00, x0          /* x3 = 0 */
-  csrrs x5, 0xc00, x0           /* read-only alias of mcycle */
-  slli  x5, x5, 1
-  srli  x5, x5, 1               /* keep in range, still non-zero expected */
+  csrw  0xb00, x1              /* mcycle = 0xffffffff; wraps shortly after */
+  li    x28, 64                /* bounded polling attempts */
+1:
+  csrrs x2, 0xb80, x0          /* high half */
+  bne   x2, x0, 2f
+  addi  x28, x28, -1
+  bne   x28, x0, 1b
+2:
+  csrrs x3, 0xb00, x0          /* low half after the wrap */
+  csrrs x5, 0xc00, x0          /* read-only alias of mcycle */
   HALT
 
 /* ------------------------------------------------------------------ test 8
@@ -332,6 +343,93 @@ spin15:
   beq   x8, x0, spin15
   HALT
 
+/* ----------------------------------------------------------------- test 16
+ * Counter semantics that test 7 alone cannot prove: explicit write override of
+ * both halves, free-running increment, 64-bit wrap (bounded polling),
+ * minstret retirement counting including the "an exception does not retire"
+ * rule, read-only-alias write traps, unimplemented-CSR write traps and
+ * read-only aliases. The local handler trap16 advances mepc past the faulting
+ * instruction, so the retirement delta across a trap is exactly four
+ * instructions.
+ * Expected: x2=0x1000..0x1010 (mcycle low after write) x3=0 x17=0
+ *           x9>=8 (mcycle advanced over 8 nops) x10=0..8 (minstret cleared)
+ *           x13=10 (exactly 10 retired nops)
+ *           x16=4 (no retirement for the exception, only the handler)
+ *           x19=2 x20=2 (mcause of read-only / unimplemented CSR writes)
+ *           x22=1 x23=1 (mcycleh write and read-only alias)
+ *           x27=1 (mcycleh after bounded wrap polling) x31<=0x100 (low half)
+ */
+  .org 0x1100
+test16:
+  li    x1, 0x3f80
+  csrw  0x305, x1               /* mtvec = test-local trap handler */
+
+  /* (a) explicit write override of both mcycle halves */
+  li    x1, 0
+  csrw  0xb80, x1               /* mcycleh = 0 */
+  li    x1, 0x1000
+  csrw  0xb00, x1               /* mcycle = 0x1000 */
+  csrrs x2, 0xb00, x0           /* 0x1000 + a few cycles */
+  csrrs x3, 0xb80, x0           /* 0 */
+  csrrs x17, 0xc80, x0          /* read-only alias of mcycleh */
+
+  /* (b) free-running increment across a fixed instruction block */
+  csrrs x4, 0xb00, x0
+  .rept 8
+  nop
+  .endr
+  csrrs x8, 0xb00, x0
+  sub   x9, x8, x4              /* >= 8 */
+
+  /* (c) minstret write override, then the exact retirement delta:
+     the first reading csrrs samples minstret before retiring itself, so the
+     delta observed by the second read is 10 nops + 1 (the first reader). */
+  li    x1, 0
+  csrw  0xb82, x1               /* minstreth = 0 */
+  csrw  0xb02, x1               /* minstret = 0 */
+  csrrs x10, 0xb02, x0          /* small */
+  csrrs x11, 0xb02, x0
+  .rept 10
+  addi  x0, x0, 0
+  .endr
+  csrrs x12, 0xb02, x0
+  sub   x13, x12, x11           /* exactly 11 = 10 nops + first reader */
+
+  /* (d) an exception does not retire: exact delta = 4 handler instructions
+     + 1 (the first reader) = 5; a retired trapping instruction would make it 6 */
+  csrrs x14, 0xb02, x0
+  .word 0x0000100f              /* FENCE.I: illegal in this CPU -> trap */
+  csrrs x15, 0xb02, x0
+  sub   x16, x15, x14           /* exactly 5 */
+
+  /* (e) read-only alias and unimplemented CSR writes trap with cause 2 */
+  li    x18, 1
+  csrw  0xc00, x18              /* read-only mcycle alias */
+  csrrs x19, 0x342, x0          /* mcause = 2 */
+  csrw  0x320, x18              /* mcountinhibit is not implemented */
+  csrrs x20, 0x342, x0          /* mcause = 2 */
+
+  /* (f) mcycleh write and read-only alias observe the same value */
+  li    x21, 1
+  csrw  0xb80, x21
+  csrrs x22, 0xb80, x0          /* 1 */
+  csrrs x23, 0xc80, x0          /* 1 */
+
+  /* (g) 64-bit wrap: bounded polling instead of a fixed instruction distance */
+  li    x24, 0
+  csrw  0xb80, x24              /* mcycleh = 0 */
+  li    x25, -1
+  csrw  0xb00, x25              /* mcycle = 0xffffffff */
+  li    x26, 64                 /* bounded attempts */
+1:
+  csrrs x27, 0xb80, x0
+  bne   x27, x0, 2f
+  addi  x26, x26, -1
+  bne   x26, x0, 1b
+2:
+  csrrs x31, 0xb00, x0          /* low half right after the wrap */
+  HALT
+
 /* ------------------------------------------------------------------ trap
  * Shared trap handler, linked into the .trap section at address 0x3f00 by
  * link.ld. It reads mepc/mcause/mtval into x5/x6/x7. Synchronous exceptions
@@ -358,6 +456,15 @@ trap_irq:
   lui   x29, 0x20000
   li    x30, 4                  /* W1C the timer pending bit */
   sw    x30, 0(x29)
+  mret
+
+/* test16 local handler at 0x3f80: skip the faulting instruction and return.
+ * Exactly four instructions retire, which is what test16 asserts. */
+  .org 0x80
+trap16:
+  csrrs x31, 0x341, x0          /* mepc */
+  addi  x31, x31, 4
+  csrw  0x341, x31
   mret
 
   .section .text

@@ -143,10 +143,25 @@ add_constraint $pcf_file
 # three threshold classes, in-route hold optimisation enabled, 50 iterations. This only
 # asks the placer/router for MORE hold fixing; no constraint, exception or clock period
 # is relaxed.
-pnr -fix_hold_violation_threshold 0 \
-    -fix_hold_violation_threshold_for_clk_tree 0 \
-    -fix_hold_violation_threshold_for_clock_path_cross_srb 0 \
-    -fix_hold_violation_iterations 50 \
-    -fix_hold_violation_in_route TRUE
+# Phase-2 LSU experiment: the first place-and-route of this tree (same 100 ps / 100
+# iteration setting that closed the T4 front-end tree) still left 7 failing hold
+# endpoints on soc/core/data_cache/set_q[3] -> tag_mem_*/WADDR[3] with -0.032 ns,
+# because the changed state logic moved that register into a slower clock column.
+# Escalate the hold-fixing effort to the tool's legal maximum (200 ps on all
+# three classes, 300 iterations; PDS rejects 300 ps with Flow-0186, legal range
+# is 0~200). This still only asks the placer/router for MORE hold fixing; no
+# constraint, exception or clock period is relaxed. Setup margin at 27 MHz is
+# >14 ns, so extra hold padding does not endanger setup.
+# With 200 ps the run still ended at Hold slow -0.008 ns / 1 endpoint (Hold fast
+# -0.014 / 1 endpoint), so this retry also changes the placement/routing random
+# seeds (gplace_seed/groute_seed = 2) to move that one distributed-RAM WADDR
+# register out of the slow clock column. Constraints are still untouched.
+pnr -fix_hold_violation_threshold 200 \
+    -fix_hold_violation_threshold_for_clk_tree 200 \
+    -fix_hold_violation_threshold_for_clock_path_cross_srb 200 \
+    -fix_hold_violation_iterations 300 \
+    -fix_hold_violation_in_route TRUE \
+    -gplace_seed 2 \
+    -groute_seed 2
 report_timing
 gen_bit_stream

@@ -144,6 +144,7 @@ module dcache_axi #(
     reg        read_protocol_fault_q;
     reg [31:0] wdata_q;
     reg [3:0]  wstrb_q;
+    reg        w_captured_q;      // W already taken on the request accept cycle
     reg [1:0]  resp_q;
     reg [31:0] rdata_q;
     reg [1:0]  rresp_q;
@@ -185,19 +186,18 @@ module dcache_axi #(
     wire [1:0]  i_b_resp;
     wire [3:0]  i_b_id;
     wire        i_protocol_fault, i_config_fault;
-    reg         i_req_valid_r;
-    reg         i_req_write_r;
-    reg  [31:0] i_req_addr_r;
-    reg  [2:0]  i_req_size_r;
-    reg  [7:0]  i_req_len_r;
-    reg  [3:0]  i_req_id_r;
-    wire        i_b_ready   = (state_q==ST_WR_HOLD) && b_ready;
+    // candidate A: a write request and its W data are forwarded to the inner
+    // engine on the accept cycle instead of being registered for one cycle first
+    wire        i_req_valid = rst_n && (state_q==ST_IDLE) && req_valid &&
+                              req_ready && req_write;
+    wire        i_b_ready   = b_ready && ((state_q==ST_WR_RESP) ||
+                                          (state_q==ST_WR_HOLD));
 
     axi_data_engine inner (
         .clk(clk), .rst_n(rst_n),
-        .req_valid(i_req_valid_r), .req_ready(i_req_ready), .req_write(i_req_write_r),
-        .req_addr(i_req_addr_r), .req_size(i_req_size_r), .req_len(i_req_len_r),
-        .req_id(i_req_id_r),
+        .req_valid(i_req_valid), .req_ready(i_req_ready), .req_write(req_write),
+        .req_addr(req_addr), .req_size(req_size), .req_len(req_len),
+        .req_id(req_id),
         .w_valid(w_valid), .w_ready(i_w_ready), .w_data(w_data), .w_strb(w_strb),
         .w_last(w_last),
         .rsp_valid(), .rsp_ready(1'b0), .rsp_data(), .rsp_resp(), .rsp_last(),
@@ -233,7 +233,9 @@ module dcache_axi #(
 
     assign protocol_fault = read_protocol_fault_q || i_protocol_fault;
     assign config_fault   = i_config_fault;
-    assign req_ready = rst_n && (state_q==ST_IDLE) && !protocol_fault && !config_fault;
+    assign req_ready = rst_n && (state_q==ST_IDLE) && !protocol_fault &&
+                       !config_fault &&
+                       (!req_write || (i_req_ready && i_w_ready));
     assign w_ready   = i_w_ready;              // inner engine latches in WR_PREP
 
     assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP));
@@ -243,8 +245,11 @@ module dcache_axi #(
     assign rsp_last  = 1'b1;
     assign rsp_id    = id_q;
 
-    assign b_valid = rst_n && (state_q==ST_WR_HOLD);
-    assign b_resp  = resp_q;
+    // candidate A: hand the B response to the LSU on the cycle it arrives;
+    // ST_WR_HOLD remains the fallback when the LSU is not ready yet
+    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) ||
+                               ((state_q==ST_WR_RESP) && i_b_valid));
+    assign b_resp  = (state_q==ST_WR_RESP) ? i_b_resp : resp_q;
     assign b_id    = id_q;
     assign miss_event = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         !req_write && req_in_cache && !hit_any;
@@ -277,21 +282,15 @@ module dcache_axi #(
             read_protocol_fault_q <= 1'b0;
             wdata_q     <= 32'd0;
             wstrb_q     <= 4'd0;
+            w_captured_q <= 1'b0;
             resp_q      <= 2'd0;
             rdata_q     <= 32'd0;
             rresp_q     <= 2'd0;
-            i_req_valid_r <= 1'b0;
-            i_req_write_r <= 1'b0;
-            i_req_addr_r  <= 32'd0;
-            i_req_size_r  <= 3'd0;
-            i_req_len_r   <= 8'd0;
-            i_req_id_r    <= 4'd0;
             for (s=0;s<SETS;s=s+1) begin
                 lru_mem[s] <= 1'b0;
                 for (w=0;w<WAYS;w=w+1) valid_mem[widx(w,s)] <= 1'b0;
             end
         end else begin
-            i_req_valid_r <= 1'b0;              // requests are single-cycle
             case (state_q)
                 // ------------------------------------------------------ IDLE
                 ST_IDLE: if (req_valid && req_ready) begin
@@ -304,14 +303,14 @@ module dcache_axi #(
                     hit_q     <= hit_any;
                     hit_way_q <= hit_way;
                     if (req_write) begin
-                        // write-through, no write allocate on a miss
-                        i_req_valid_r <= 1'b1;
-                        i_req_write_r <= 1'b1;
-                        i_req_addr_r  <= req_addr;
-                        i_req_size_r  <= req_size;
-                        i_req_len_r   <= 8'd0;
-                        i_req_id_r    <= req_id;
-                        state_q       <= ST_WR_REQ;
+                        // write-through, no write allocate on a miss: request
+                        // and W data are handed to the inner engine on the
+                        // accept cycle, the B response can come back in
+                        // ST_WR_RESP and be forwarded on its arrival cycle
+                        wdata_q <= w_data;
+                        wstrb_q <= w_strb;
+                        w_captured_q <= w_valid;
+                        state_q <= ST_WR_RESP;
                     end else if (req_in_cache && hit_any) begin
                         resp_q  <= 2'b00;
                         state_q <= ST_HIT;
@@ -377,17 +376,27 @@ module dcache_axi #(
                     wstrb_q <= w_strb;
                     state_q <= ST_WR_RESP;
                 end
-                ST_WR_RESP: if (i_b_valid) begin
-                    resp_q <= i_b_resp;
-                    if (i_b_resp==2'b00) begin
-                        // write-through: the cached copy is merged after a good B
-                        if (cached_q && hit_q)
-                            data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_word;
-                    end else begin
-                        // a failed store must not leave a usable line behind
-                        if (cached_q && hit_q) valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
+                ST_WR_RESP: begin
+                    // legacy two-cycle protocol: request first, W in the next
+                    // cycle (the phase-2 LSU path already captured W on accept)
+                    if (!w_captured_q && w_valid && w_ready) begin
+                        wdata_q      <= w_data;
+                        wstrb_q      <= w_strb;
+                        w_captured_q <= 1'b1;
                     end
-                    state_q <= ST_WR_HOLD;
+                    if (i_b_valid) begin
+                        resp_q <= i_b_resp;
+                        if (i_b_resp==2'b00) begin
+                            // write-through: the cached copy is merged after a good B
+                            if (cached_q && hit_q)
+                                data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_word;
+                        end else begin
+                            // a failed store must not leave a usable line behind
+                            if (cached_q && hit_q) valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
+                        end
+                        // B already consumed by the LSU this cycle -> back to IDLE
+                        state_q <= b_ready ? ST_IDLE : ST_WR_HOLD;
+                    end
                 end
                 ST_WR_HOLD: if (b_valid && b_ready) state_q <= ST_IDLE;
 

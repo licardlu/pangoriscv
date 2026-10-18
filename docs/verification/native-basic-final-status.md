@@ -353,3 +353,29 @@ hi=0 lo=655213650      -> t1 = 655,213,650，无 32 位回绕；t0 = 180,889
 | 最终交付说明（交付物 7） | `BASIC_CLOSURE_FINAL_DELIVERY.md` |
 | 收尾轮 PDS 重跑全部日志与产物 | `pds_rerun/` |
 | 备份前 SHA256 记录 | `E:\file\pango\backups\tinyriscv_before_closure_20261011_1452.sha256.csv`（1335 行，全树） |
+
+---
+
+## 10. 比赛收口轮（2026-10-18，T4+LSU 候选）
+
+- **正式代码位置**：生产树 `firmware/code`（本轮按候选逐文件合入必要源码/测试/构建脚本，排除 `build/`、`.sim_runs/`、`__pycache__`、`transcript`、`*.gitasis`、`*.baseline_hold0`，未整目录覆盖；生产独有 `platform/pango_native/base_project.pds`、`build.pds` 保留）。
+- **冻结版本/身份**：
+  - 候选源码快照 `evidence/records/bottleneck_audit/contest_final/freeze_20261018/candidate_src.zip`（候选树 168 源文件）；合并/冻结清单同目录 `merge_manifest_20261018.csv`、`manifest_sha256.tsv`。
+  - 宏 ON `rtl/core/soc_config.vh` SHA256 `BD9A2677B58A093AB5BEE6027193BE34B9174C8464FEFBCF2E6957C22585AE2D`；宏全关 `5EAB5871…`（独立 clean 树）。
+  - 合并前 HEAD `e60a1f4`；合并前生产树备份 `freeze_20261018/production_before_merge.zip`（回退版本）。
+  - 正式位流（3,791,112 B）：cand perf `B3ACA53A7F1F5E8A…`、B0 perf `81C3D28272C34462…`、cand val `0397080AFD1177D8…`、B0 val `26E915CE32260273…`；ILA 调试位流 `CC351A11C90FC3F1…`。
+  - 600 迭代固件 hex：perf `BD8BDFE5…`/`ED1BAFD7…`；val `E305533B…`/`FFFB01DC…`（同模式两版逐字节一致）。
+- **有效成绩**（600 迭代、27 MHz、2000B data；CSV `evidence/records/bottleneck_audit/results/contest_final_600iter_ab.csv`）：
+  - cand perf：339,639,071 ticks / 12 s / 1.7666 CoreMark/MHz / 47.698 CoreMark / crcfinal 0xbd59；B0 perf：481,086,155 / 17 s / 1.2472 / 33.674 → **+41.6463%**。
+  - cand val：340,038,594 / 12 s / 1.7645 / 47.642 / 0xb8a0；B0 val：481,756,431 / 17 s / 1.2454 / 33.627 → +41.677%。
+  - 四个成绩位流均 **All Constraints Met**；cand LUT 12,641 / FF 7,358，B0 LUT 12,572 / FF 7,398。
+  - 合并前回归：宏 ON 13/13 PASS（`contest_final/logs/regression_on/`），宏全关 13/13 PASS（`regression_off/`）。
+  - **合并后回归（生产树 `firmware/code`）：13/13 PASS**，日志 `contest_final/logs/regression_merged/`（13 个 suite log + summary.txt）。
+- **证据路径**：板测原始 UART `evidence/records/bottleneck_audit/board/phase2/*.txt`；PDS 日志 `contest_final/logs/pds_*.log`；ILA 采集 `contest_final/logs/ila_capture_export3/`（`ila_samples_ascii.prn` 239,345 B、`ila_capture.wdf` 287,454 B、`ila_capture.dprj`）；触发值/人工步骤 `contest_final/logs/ila_gui_manual/`。
+- **ILA 状态（如实记录）**：已有真实采样（512 采样 × 224 信号；PC 迹与指令逐条匹配 `firmware.dump` 的 `core_list_find`/`core_bench_list`，证明 CPU 在跑 CoreMark 链表算法）。**调试电路存在时序问题**：DebugCore_JCLK→JCLK hold WHS −0.326 ns（slow）/−0.135 ns（fast，仅 1 端点），用户 clk 域全部通过；该位流仅作调试用、不作为成绩位流。触发条件尚未闭环（Match Unit 未启用、值为全 X，实际为自由运行采集）。→ **已有采样，调试电路时序问题及正式波形验收待补。**
+- **旧结论更正**：§8 第 1 条“无上板 / NOT RUN”已过期——本轮已完成上板 600 迭代 A/B（12 s / 17 s，均 ≥10 s）与 ILA 调试版上板采集；§8 其余限制（USB 易失配置、SCBV 未设置、长程仿真未全跑等）仍有效。
+- **剩余问题**：
+  1) ILA 触发条件需在 Fabric Debugger GUI 人工启用 Match Unit 并写入 224 位触发值（步骤与粘贴值见 `contest_final/logs/ila_gui_manual/trigger_values_paste.txt`），再做正式波形验收；
+  2) ILA 调试版 DebugCore_JCLK hold 违例需修复约束或在调试版说明中接受（不影响成绩位流）；
+  3) T4 在 600 迭代下的对照未单独重建（历史 T4 板上成绩为旧迭代数，不能与本轮直接混列）。
+- **重建入口（直接引用，不重写）**：回归 `firmware/code/tools/run_regression.ps1 -OutDir <dir>`；PDS `firmware/code/platform/pango_native/build.tcl`（CWD 必须是 `<tree>/build/pango_native`）；位流/下载命令见 `evidence/records/bottleneck_audit/results/commands.md` §3.6。

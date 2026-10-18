@@ -42,6 +42,7 @@ NAME = {
     13: "GPIO output mode",
     14: "timer one-shot and W1C",
     15: "machine timer interrupt and MRET",
+    16: "counter write/increment/wrap/retire semantics",
 }
 
 
@@ -304,7 +305,7 @@ class Ref:
 # case -> entry address of the case body in tests/isa_e2e/isa_e2e.S
 CASE_PC = {1: 0x000, 2: 0x200, 3: 0x300, 4: 0x400, 5: 0x500, 6: 0x600,
            7: 0x700, 8: 0x900, 9: 0xA00, 10: 0xB00, 11: 0xC00,
-           12: 0xD00, 13: 0xE00, 14: 0xF00, 15: 0x1000}
+           12: 0xD00, 13: 0xE00, 14: 0xF00, 15: 0x1000, 16: 0x1100}
 # The shared trap handler lives in its own 0x1000-aligned section.
 TRAP_HANDLER = 0x1000
 # mtvec value the test cases program: the trap section is linked at 0x1000
@@ -333,15 +334,17 @@ def special_checks(case, text, problems):
     be predicted by an architectural register model, so they carry explicit
     behavioural checks instead."""
     if case == 7:
-        # mcycle is free running; only its observable invariants are checked.
+        # mcycle is free running and the exact wrap latency is a micro-
+        # architectural property, so the test polls a bounded number of times
+        # and only the architectural invariants are checked here.
         if reg(text, case, 2) != 1:
             problems.append(f"x2={reg(text, case, 2)} want 1 (mcycleh after wrap)")
         x3 = reg(text, case, 3)
-        if x3 is None or x3 > 64:
-            problems.append(f"x3={x3} want a small value (mcycle cleared then re-read)")
+        if x3 is None or x3 > 0x100:
+            problems.append(f"x3={x3} want a small value (low half after wrap)")
         x5 = reg(text, case, 5)
-        if not x5:
-            problems.append("x5=0: mcycle alias did not advance")
+        if not x5 or x5 > 0x1000:
+            problems.append(f"x5={x5} want a small non-zero value (mcycle alias)")
     elif case == 12:
         n = text.count("UART_TX char=")
         if "UART_TX char='A'" not in text:
@@ -376,11 +379,52 @@ def special_checks(case, text, problems):
         if reg(text, case, 8) != 1:
             problems.append(
                 f"x8={reg(text, case, 8)} want 1 (interrupt-handler flag)")
+    elif case == 16:
+        # Counter semantics: explicit write override, free-running increment,
+        # 64-bit wrap, minstret retirement counting, the "exception does not
+        # retire" rule, read-only/unimplemented CSR write traps and the
+        # read-only aliases. The values are exact where architecture pins them
+        # and bounded where only the ordering is architectural.
+        v = {i: reg(text, case, i) for i in
+             (2, 3, 9, 10, 13, 16, 17, 19, 20, 22, 23, 27, 31)}
+        if v[2] is None or not (0x1000 <= v[2] <= 0x1010):
+            problems.append(f"x2={v[2]} want 0x1000..0x1010 (mcycle write visible)")
+        if v[3] != 0:
+            problems.append(f"x3={v[3]} want 0 (mcycleh cleared)")
+        if v[17] != 0:
+            problems.append(f"x17={v[17]} want 0 (mcycleh alias after clear)")
+        if v[9] is None or not (8 <= v[9] <= 0x1000):
+            problems.append(f"x9={v[9]} want >=8 (mcycle advanced)")
+        if v[10] is None or not (0 <= v[10] <= 8):
+            problems.append(f"x10={v[10]} want 0..8 (minstret cleared)")
+        if v[13] != 11:
+            problems.append(
+                f"x13={v[13]} want 11 (10 nops + the reading csrrs retiring "
+                "after it sampled minstret)")
+        if v[16] != 5:
+            problems.append(
+                f"x16={v[16]} want 5 (4 handler instructions + the reading "
+                "csrrs; the trapping instruction does not retire)")
+        if v[19] != 2:
+            problems.append(f"x19={v[19]} want 2 (cause of read-only CSR write)")
+        if v[20] != 2:
+            problems.append(f"x20={v[20]} want 2 (cause of unimplemented CSR write)")
+        if v[22] != 1:
+            problems.append(f"x22={v[22]} want 1 (mcycleh write visible)")
+        if v[23] != 1:
+            problems.append(f"x23={v[23]} want 1 (mcycleh read-only alias)")
+        if v[27] != 1:
+            problems.append(f"x27={v[27]} want 1 (mcycleh after wrap)")
+        if v[31] is None or v[31] > 0x100:
+            problems.append(f"x31={v[31]} want a small wrap residual")
+        if not re.search(r"TEST_PASS case=16 traps=3\b", text):
+            problems.append("expected exactly 3 traps (illegal FENCE.I + two "
+                            "illegal CSR writes)")
 
 
 # Cases whose behaviour is fixed by hardware state rather than by a register
 # computation; they use special_checks instead of the Ref oracle.
-SPECIAL_CASES = {7, 12, 13, 14, 15}
+SPECIAL_CASES = {7, 12, 13, 14, 15, 16}
 
 
 def main() -> int:
@@ -526,7 +570,10 @@ def main() -> int:
         problems = []
         if not re.search(rf"TEST_PASS case={case}", text):
             problems.append("no pass marker")
-        want_ref = reference(case)
+        # Hardware-state cases are checked by special_checks; running the
+        # architectural oracle on them is unnecessary and it does not model
+        # counters or traps, so skip it for those cases.
+        want_ref = reference(case) if case not in SPECIAL_CASES else None
         if case not in SPECIAL_CASES:
             want_regs = want_ref.r
             for regno in sorted(want_ref.written):

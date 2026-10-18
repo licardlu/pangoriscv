@@ -12,7 +12,7 @@ from runner_common import run, validate_test
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", choices=("pipe_slot", "div_adapter", "ifu_axi", "lsu_axi",
-                                           "icache_axi", "all"),
+                                           "icache_axi", "w_contract", "all"),
                         default="all")
     parser.add_argument("--pipe-source", type=Path,
                         help="Isolated pipe_slot source for negative verification")
@@ -24,7 +24,7 @@ def main():
     if not all(tools.values()):
         raise RuntimeError("ModelSim tools not in PATH: " + str(tools))
     cases = ("pipe_slot", "div_adapter", "ifu_axi", "lsu_axi",
-             "icache_axi") if args.case == "all" else (args.case,)
+             "icache_axi", "w_contract") if args.case == "all" else (args.case,)
     if args.negative_stall_clear and args.case != "pipe_slot":
         raise RuntimeError("--negative-stall-clear requires --case pipe_slot")
     if args.negative_stall_clear and args.pipe_source:
@@ -52,6 +52,9 @@ def main():
                         root / "rtl/core/pipe_slot.v")]
         elif case == "div_adapter":
             sources = [root / "rtl/core/div.v", root / "rtl/core/div_adapter.v"]
+        elif case == "w_contract":
+            sources = [root / "rtl/core/axi_read_engine.v",
+                       root / "rtl/core/axi_data_engine.v"]
         else:
             sources = [root / ("rtl/core/" + case + ".v")]
         sources.append(root / ("tb/unit/tb_" + case + ".sv"))
@@ -79,7 +82,8 @@ def main():
         validate_test(text, log)
         expected = {"pipe_slot": "TEST_PASS N02", "div_adapter": "TEST_PASS N03_DIV",
                     "ifu_axi": "TEST_PASS IFU", "lsu_axi": "TEST_PASS LSU",
-                    "icache_axi": "TEST_PASS ICACHE"}[case]
+                    "icache_axi": "TEST_PASS ICACHE",
+                    "w_contract": "TEST_PASS WCONTRACT"}[case]
         if expected not in text:
             raise RuntimeError("EXPECTED_CASE_PASS_MISSING: " + str(log))
         print("PASS", case, flush=True)

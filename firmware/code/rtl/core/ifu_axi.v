@@ -95,8 +95,29 @@ module ifu_axi #(
     wire head_lost=!empty&&!redirect_valid&&(state==S_IDLE)&&(head_pc!=fetch_pc);
 
     assign idle=(state==S_IDLE)&&empty;
-    assign eng_req_valid=rst_n&&enable&&!redirect_valid&&!stop_q&&!full&&
-                         (state==S_IDLE)&&!local_fault;
+    // Contract C2/C7: a new request may be issued in the same cycle the previous
+    // response handshakes away -- but only when that response is clean: not a
+    // fault response (a faulting fetch must stop the stream, not silently hand
+    // over to a younger request) and not the stale response left over after a
+    // redirect.  A single outstanding request is kept, so the response metadata
+    // (req_pc_q/req_pred_q) is exactly one request deep and cannot be mixed.
+    //
+    // Contract C6 (queue slot): with one request outstanding, no other push can
+    // happen between the issue and its response, so "!full at issue" guarantees
+    // the response still finds a free slot when it arrives.
+    wire rsp_consume=(state==S_WAIT)&&eng_rsp_valid&&eng_rsp_ready;
+    wire rsp_issue_ok=rsp_consume&&!stale_q&&(eng_rsp_resp==2'b00);
+    wire rsp_push_now=rsp_consume&&!stale_q;
+    // Contract C6, corrected for same-cycle replace: a request issued in the
+    // cycle its predecessor's response is pushed needs the slot AFTER that push,
+    // so the reservation test is on (count + this-cycle push), not on `full`.
+    // Getting this wrong overflows the queue by one entry (tail wraps, head_pc
+    // stops matching, head_lost drops the stream).
+    wire [AW:0] occupy=count_q+(rsp_push_now?1'b1:1'b0);
+    wire slot_ok=(occupy<DEPTH);
+    wire slot_free=(state==S_IDLE)||rsp_issue_ok;
+    assign eng_req_valid=rst_n&&enable&&!redirect_valid&&!stop_q&&slot_ok&&
+                         slot_free&&!local_fault;
     assign eng_req_addr=fetch_ptr;
     assign eng_req_size=2;
     assign eng_req_len=0;
@@ -115,7 +136,7 @@ module ifu_axi #(
     wire deq=fetch_valid&&fetch_ready;
     wire issue=eng_req_valid&&eng_req_ready;
     wire rsp=eng_rsp_valid&&eng_rsp_ready;
-    wire rsp_push=rsp&&!stale_q;
+    wire rsp_push=rsp_push_now;
     wire local_push=rst_n&&enable&&!redirect_valid&&!stop_q&&!full&&
                     (state==S_IDLE)&&local_fault;
     wire push=rsp_push||local_push;
@@ -161,7 +182,11 @@ module ifu_axi #(
                 req_pc_q<=fetch_ptr;
                 req_pred_q<=chain_next;
                 next_pc_q<=chain_next;
-                state<=S_WAIT;
+                // C2/C3 same-cycle replace: the old response is pushed with the
+                // OLD req_pc_q/req_pred_q above (they are read before this edge),
+                // while these registers take the new request.  Staying in S_WAIT
+                // means the new transaction is already in flight.
+                if(state!=S_WAIT) state<=S_WAIT;
             end else if(rsp) begin
                 // Do NOT touch next_pc_q here: the prefetch chain must keep
                 // walking along the predicted path.  Resynchronising with the
@@ -174,3 +199,4 @@ module ifu_axi #(
         end
     end
 endmodule
+

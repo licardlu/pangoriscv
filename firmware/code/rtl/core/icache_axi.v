@@ -26,11 +26,15 @@
 // lost RID, a short burst or an invalidation landing while the burst is in
 // flight leaves the line invalid, so stale code can never be re-validated.
 //
-// Hit latency (T3): a hit is answered on the accept edge -- the word RAM is read
-// combinationally from the incoming request, so the engine sees rsp_valid one
-// cycle after the request handshake and the next request can be accepted the
-// cycle after that (2 cycles per lookup, was 4 with the separate read state).
-// A miss keeps the original serialised AR/FILL/MISS_RD path.
+// Hit latency (T3/T4): a hit is answered on the accept edge -- the word RAM is
+// read combinationally from the incoming request, so the engine sees rsp_valid
+// one cycle after the request handshake.  T4 additionally lets the next request
+// be accepted in the SAME cycle that response handshakes away, so a warmed-up
+// stream of hits is accepted once per cycle (was every other cycle).  The
+// response is only replaced when it is actually consumed: while rsp_ready is
+// low the lookup is parked in IC_RESP and req_ready stays low, so a held
+// response can never be overwritten.  A miss keeps the original serialised
+// AR/FILL/MISS_RD path.
 //
 // FENCE.I stays an illegal instruction (plan section 15 option), so the only
 // invalidation sources are reset and the explicit `invalidate` pulse, which the
@@ -119,7 +123,15 @@ module icache_axi (
     wire beat_bad = (m_rresp!=`AXI_RESP_OKAY);
     wire line_bad = fill_bad_q || beat_bad;
 
-    assign req_ready = rst_n && state==IC_IDLE;
+    // Contract C1/C5: the cache may accept a new request in the same cycle the
+    // previous response handshakes away (state IC_RESP && rsp_valid && rsp_ready).
+    // While a response is *held* (rsp_ready low) req_ready stays low, so a
+    // pending response can never be overwritten.  No combinational loop:
+    // req_ready depends on rsp_ready, which only depends on the engine's state
+    // register; nothing feeds rsp_ready back from req_valid/req_ready.
+    wire rsp_consume = (state==IC_RESP) && rsp_valid && rsp_ready;
+    assign req_ready = rst_n && (state==IC_IDLE || rsp_consume);
+    wire accept = req_valid && req_ready;
     assign m_arvalid = rst_n && state==IC_AR;
     assign m_araddr = line_addr;
     assign m_arid = id_q;
@@ -154,8 +166,14 @@ module icache_axi (
                 // A burst in flight must not re-validate the line it is filling.
                 if(state==IC_AR || state==IC_FILL) fill_kill<=1;
             end
-            case(state)
-                IC_IDLE: if(req_valid && req_ready) begin
+            // Contract C1: the response handshake retires the lookup; a request
+            // accepted in the same cycle takes its place (see `accept` below).
+            if(state==IC_RESP && rsp_valid && rsp_ready) state<=IC_IDLE;
+
+            // Accept path, shared by IC_IDLE and by the same-cycle replace in
+            // IC_RESP.  The body is unchanged from the original IC_IDLE branch:
+            // hit answers on the accept edge, miss starts the line refill.
+            if(accept) begin
                     addr_q<=req_addr;
                     id_q<=req_id;
                     set_q<=req_addr[9:5];
@@ -186,7 +204,11 @@ module icache_axi (
                         state<=IC_AR;
                     end
                 end
-                IC_RESP: if(rsp_valid && rsp_ready) state<=IC_IDLE;
+            case(state)
+                // All transitions out of IC_IDLE / IC_RESP happen above, so a
+                // request accepted in the same cycle a response leaves cannot be
+                // lost to a stale "return to idle" here.
+                IC_IDLE, IC_RESP: ;
                 IC_AR: if(m_arvalid && m_arready) state<=IC_FILL;
                 IC_FILL: if(m_rvalid) begin
                     if(m_rid!=id_q) begin

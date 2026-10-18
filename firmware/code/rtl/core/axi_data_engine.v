@@ -94,7 +94,11 @@ module axi_data_engine (
     assign config_fault = read_config_fault || write_config_fault_q;
     assign req_ready = rst_n && state_q==WR_IDLE && read_ready &&
                        !protocol_fault && !config_fault;
-    assign w_ready = rst_n && state_q==WR_PREP;
+    // candidate A: accept the write data on the same cycle as the request
+    // (w_ready in WR_IDLE); WR_PREP stays as the legacy two-cycle fallback.
+    // Sticky fault states keep both ready signals low (dead engine).
+    assign w_ready = rst_n && (state_q==WR_IDLE || state_q==WR_PREP) &&
+                     !protocol_fault && !config_fault;
     assign m_awvalid = rst_n && state_q==WR_SEND && aw_pending_q;
     assign m_awaddr = addr_q;
     assign m_awid = id_q;
@@ -110,8 +114,12 @@ module axi_data_engine (
     assign m_wstrb = strb_q;
     assign m_wlast = 1'b1;
     assign m_bready = rst_n && state_q==WR_RESP;
-    assign b_valid = rst_n && state_q==WR_HOLD;
-    assign b_resp = resp_q;
+    // candidate A: the B response may be consumed on the same cycle it is
+    // received from the AXI port; WR_HOLD is the stall-safe fallback
+    wire b_arrived = m_bvalid && (m_bid==id_q);
+    assign b_valid = rst_n && ((state_q==WR_HOLD) ||
+                               (state_q==WR_RESP && b_arrived));
+    assign b_resp = (state_q==WR_RESP) ? m_bresp : resp_q;
     assign b_id = id_q;
 
     axi_read_engine read_engine (
@@ -146,7 +154,22 @@ module axi_data_engine (
 `endif
                     end else begin
                         addr_q<=req_addr; size_q<=req_size; len_q<=req_len; id_q<=req_id;
-                        state_q<=WR_PREP;
+                        if(w_valid && w_ready) begin
+                            // write data arrived with the request (candidate A)
+                            if(!w_last) begin
+                                write_protocol_fault_q<=1;
+                                state_q<=WR_FAULT;
+`ifndef SYNTHESIS
+                                $fatal(1,"ENGINE_W_LAST");
+`endif
+                            end else begin
+                                data_q<=w_data; strb_q<=w_strb;
+                                aw_pending_q<=1; w_pending_q<=1;
+                                state_q<=WR_SEND;
+                            end
+                        end else begin
+                            state_q<=WR_PREP;
+                        end
                     end
                 end
                 WR_PREP: if(w_valid && w_ready) begin
@@ -176,7 +199,8 @@ module axi_data_engine (
 `endif
                     end else begin
                         resp_q<=m_bresp;
-                        state_q<=WR_HOLD;
+                        // consumer ready in this cycle -> skip WR_HOLD
+                        state_q<= b_ready ? WR_IDLE : WR_HOLD;
                     end
                 end
                 WR_HOLD: if(b_valid && b_ready) state_q<=WR_IDLE;

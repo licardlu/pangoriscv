@@ -1,9 +1,19 @@
 //=============================================================================
 // pangoriscv - RV32IM processor core + native AXI4 SoC (Pango PG2L100H @ 27 MHz)
 // Module : lsu_axi                File : rtl/core/lsu_axi.v
-// Rev    : 1.0                    Date : 2026-10-13
+// Rev    : 1.1 (phase-2 lsu_opt)  Date : 2026-10-18
 // Author : pango_lpenghan
 // Brief  : Load/store unit: AXI4 read and write transactions, byte strobes, fault reporting
+//
+// Phase-2 change (control-overhead merge, candidate A):
+//   * The op is launched on the cycle it is accepted: eng_req_valid / eng_w_valid
+//     are driven from the operation inputs while EMPTY and op_ready additionally
+//     waits for the cache/engine request (and write data) ready.  This removes
+//     the one-shot "accept then request" cycle (diagnosis bubble #1).
+//   * The legacy REQUEST / WRITE_DATA states are kept for interface
+//     compatibility, but the normal path no longer traverses them.
+//   * Retirement semantics are unchanged: COMPLETE is still registered for one
+//     cycle, so the AXI B response never reaches the retire path combinationally.
 //=============================================================================
 
 // Operation ownership and lane conversion; AXI channels belong to the engine.
@@ -38,19 +48,31 @@ module lsu_axi(
     wire bad_access=access_size>2 ||
         (access_size==1 && address[0]) ||
         (access_size==2 && |address[1:0]);
+    // A launch happens while EMPTY: the operation inputs are still valid, so the
+    // cache/engine request (and, for a store, the write data) are registered by
+    // the downstream block on this very clock edge.
+    wire issuing = (state==EMPTY);
+    wire launch  = rst_n && issuing && op_valid && op_ready && !bad_access;
+
     assign idle=state==EMPTY;
-    assign op_ready=rst_n && idle;
+    assign op_ready=rst_n && issuing &&
+        (bad_access || (is_store ? (eng_req_ready && eng_w_ready) : eng_req_ready));
     assign done_valid=rst_n && state==COMPLETE;
-    assign eng_req_valid=rst_n && state==REQUEST;
-    assign eng_req_write=store_q;
-    assign eng_req_addr=address_q;
-    assign eng_req_size=size_q;
+    assign eng_req_valid=rst_n && (issuing ? launch : (state==REQUEST));
+    assign eng_req_write=issuing ? is_store : store_q;
+    assign eng_req_addr=issuing ? address : address_q;
+    assign eng_req_size=issuing ? access_size : size_q;
     assign eng_req_len=0;
     assign eng_req_id=1;
-    assign eng_w_valid=rst_n && state==WRITE_DATA;
-    assign eng_w_data=value_q << (8*address_q[1:0]);
-    assign eng_w_strb=(size_q==0?4'b0001:size_q==1?4'b0011:4'b1111)
-                      << address_q[1:0];
+    assign eng_w_valid=rst_n && (issuing ? (launch && is_store)
+                                           : (state==WRITE_DATA && store_q));
+    assign eng_w_data=issuing ? (store_value << (8*address[1:0]))
+                              : (value_q << (8*address_q[1:0]));
+    assign eng_w_strb=(issuing ?
+                       ((access_size==0?4'b0001:access_size==1?4'b0011:4'b1111)
+                        << address[1:0]) :
+                       ((size_q==0?4'b0001:size_q==1?4'b0011:4'b1111)
+                        << address_q[1:0]));
     assign eng_w_last=1;
     assign eng_rsp_ready=rst_n && state==READ_WAIT;
     assign eng_b_ready=rst_n && state==WRITE_WAIT;
@@ -83,7 +105,11 @@ module lsu_axi(
                 store_q<=is_store; unsigned_q<=load_unsigned;
                 pc_q<=op_pc; rd_q<=op_rd;
                 fault_addr<=address; fault<=bad_access; load_value<=0;
-                state<=bad_access?COMPLETE:REQUEST;
+                // the request (and W for a store) was accepted downstream on
+                // this same edge, so the wait state can be entered directly
+                if(bad_access) state<=COMPLETE;
+                else if(is_store) state<=WRITE_WAIT;
+                else state<=READ_WAIT;
             end
             REQUEST: if(eng_req_valid && eng_req_ready)
                 state<=store_q?WRITE_DATA:READ_WAIT;

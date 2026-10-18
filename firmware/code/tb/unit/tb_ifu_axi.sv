@@ -63,20 +63,33 @@ module tb_ifu_axi;
     reg pend=0;
     integer wait_cnt=0;
 
-    // Single-outstanding engine model: accepts a request, answers LAT cycles
-    // later with a payload derived from the request address.
+    // T4 engine model: still exactly ONE request outstanding at a time, but the
+    // IFU may now hand over to the next request in the same cycle this model's
+    // response is consumed.  That is the contract's C2, so the model has to
+    // retire the old transaction and latch the new one on one and the same edge
+    // (the old "if(eng_rsp_valid) ... else if(req)" chain silently dropped the
+    // new request and stalled the prefetcher).
     always @(posedge clk) begin
         if(!rst_n) begin
             pend<=0; eng_rsp_valid<=0; wait_cnt<=0; reqs=0; answered=0;
-        end else if(eng_rsp_valid) begin
-            if(eng_rsp_ready) begin eng_rsp_valid<=0; pend<=0; answered=answered+1; end
-        end else if(eng_req_valid&&eng_req_ready) begin
-            if(pend) $fatal(1,"IFU_TWO_REQUESTS_OUTSTANDING");
+        end else if(eng_rsp_valid && eng_rsp_ready) begin
+            // Old response leaves this edge; a request accepted on the same
+            // edge becomes the new (and only) outstanding transaction.
+            eng_rsp_valid<=0; answered=answered+1;
+            if(eng_req_valid&&eng_req_ready) begin
+                if(eng_req_size!==3'd2||eng_req_len!==8'd0||eng_req_id!==4'd0)
+                    $fatal(1,"IFU_REQ_ATTR size=%0d len=%0d id=%0d",
+                           eng_req_size,eng_req_len,eng_req_id);
+                reqs=reqs+1; pend_addr<=eng_req_addr; pend<=1; wait_cnt<=LAT;
+            end else begin
+                pend<=0;
+            end
+        end else if(eng_req_valid&&eng_req_ready) begin if(pend) begin $fatal(1,"IFU_TWO_REQUESTS_OUTSTANDING"); end
             if(eng_req_size!==3'd2||eng_req_len!==8'd0||eng_req_id!==4'd0)
                 $fatal(1,"IFU_REQ_ATTR size=%0d len=%0d id=%0d",
                        eng_req_size,eng_req_len,eng_req_id);
             reqs=reqs+1; pend_addr<=eng_req_addr; pend<=1; wait_cnt<=LAT;
-        end else if(pend) begin
+        end else if(pend && !eng_rsp_valid) begin
             if(wait_cnt>0) wait_cnt<=wait_cnt-1;
             else begin eng_rsp_valid<=1; rsp_data<=pend_addr+32'h00100093; end
         end
@@ -123,6 +136,19 @@ module tb_ifu_axi;
         end
     endtask
 
+    // Always-on contract monitors (T4): they replace the racy snapshot
+    // comparisons and catch exactly the two failure modes the same-cycle replace
+    // introduces -- a request for a non-executable address, and a one-entry
+    // queue overflow when the reservation math forgets the same-cycle push.
+    always @(posedge clk) begin
+        if(rst_n && enable && eng_req_valid && eng_req_ready) begin
+            if(eng_req_addr[1:0]!=2'b00 || eng_req_addr>=32'h4000)
+                $fatal(1,"IFU_REQUESTED_NONEXEC addr=%h",eng_req_addr);
+        end
+        if(rst_n && dut.count_q>DEPTH)
+            $fatal(1,"IFU_QUEUE_OVERFLOW count=%0d",dut.count_q);
+    end
+
     integer i;
     integer reqs_at_fault;
     initial begin
@@ -146,18 +172,28 @@ module tb_ifu_axi;
         consume(32'h404,0,0);
 
         // (4) Outside the executable window: fault, no engine request.
-        reqs_at_fault=reqs;
+        //     The "no request" claim is enforced by two always-on monitors added
+        //     for the T4 contract (no request for a non-executable address, and
+        //     count_q never exceeds DEPTH).  The old equality check against a
+        //     pre-redirect snapshot was racy by construction: once the unit may
+        //     issue in the same cycle a response is consumed, an old-stream
+        //     request can legitimately still be in flight when the redirect
+        //     arrives, so reqs may grow by one around the redirect edge.
         redirect_to(32'h20000000);
         consume(32'h20000000,1,5'd1);
+        reqs_at_fault=reqs;
         repeat(10) @(negedge clk);
-        if(reqs!=reqs_at_fault) $fatal(1,"IFU_NONEXEC_REQUESTED reqs=%0d",reqs);
-        if(eng_req_valid) $fatal(1,"IFU_PREFETCH_AFTER_FAULT");
+        if(reqs!=reqs_at_fault)
+            $fatal(1,"IFU_PREFETCH_AFTER_FAULT reqs=%0d hold=%0d",reqs,reqs_at_fault);
+        if(eng_req_valid) $fatal(1,"IFU_PREFETCH_AFTER_FAULT_VALID");
 
         // (5) Misaligned PC: fault with cause 0, still no engine request.
         redirect_to(32'h2);
         consume(32'h2,1,5'd0);
+        reqs_at_fault=reqs;
         repeat(10) @(negedge clk);
-        if(reqs!=reqs_at_fault) $fatal(1,"IFU_MISALIGNED_REQUESTED reqs=%0d",reqs);
+        if(reqs!=reqs_at_fault)
+            $fatal(1,"IFU_MISALIGNED_REQUESTED reqs=%0d hold=%0d",reqs,reqs_at_fault);
 
         // (6) Disable drains the queue and reports idle (halt handshake).
         redirect_to(32'h80);
@@ -173,3 +209,6 @@ module tb_ifu_axi;
     end
     initial begin #200000; $fatal(1,"IFU timeout"); end
 endmodule
+
+
+

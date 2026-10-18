@@ -10,7 +10,7 @@
 // ---------------------------------------------------------------------------
 // Directed unit test for the the caches two-way set-associative instruction cache.
 //
-// T1 cold miss            -> exactly one ARLEN=7 INCR burst, correct word
+// T1 cold miss            -> exactly one full-line INCR burst, correct word
 // T2 sequential hit       -> no burst, correct word
 // T3 line boundary        -> last word of a line, then the next line (new burst)
 // T4 two-way + LRU        -> A,B share a set; re-read A hits; C evicts the LRU
@@ -192,17 +192,22 @@ module tb_icache_axi;
         rst_n = 1;
         repeat(2) @(negedge clk);
 
-        // T1/T2: cold miss then a sequential hit inside the same 32 B line.
+        // T1/T2: cold miss then a sequential hit inside the same cache line.
+    // The expected burst length and beat count follow the DUT's own geometry
+    // (cache_axi localparams), so changing the line size does not silently
+    // keep an obsolete expectation.
         expect_word("T1 cold miss", 32'h0000_0000, mem[0], 2'b00, 1);
-        if(ar_len_seen !== 8'd7 || ar_size_seen !== 3'd2 || ar_burst_seen !== 2'b01)
+        if(ar_len_seen !== (dut.LINE_BEATS-1) || ar_size_seen !== 3'd2 || ar_burst_seen !== 2'b01)
             $display("  FAIL T1 burst descriptor len=%0d size=%0d burst=%0d",
                      ar_len_seen, ar_size_seen, ar_burst_seen);
-        if(beats_out !== 8) $display("  FAIL T1 burst beats %0d", beats_out);
+        if(beats_out !== dut.LINE_BEATS)
+        $display("  FAIL T1 burst beats %0d (expected %0d)", beats_out, dut.LINE_BEATS);
         expect_word("T2 sequential hit", 32'h0000_0004, mem[1], 2'b00, 0);
 
         // T3: last word of line 0, then the first word of line 1.
-        expect_word("T3 line tail", 32'h0000_001C, mem[7], 2'b00, 0);
-        expect_word("T3 next line", 32'h0000_0020, mem[8], 2'b00, 1);
+        //     Offsets follow the DUT line size instead of assuming 32 B.
+        expect_word("T3 line tail", dut.LINE_BEATS*4-4, mem[dut.LINE_BEATS-1], 2'b00, 0);
+        expect_word("T3 next line", dut.LINE_BEATS*4,   mem[dut.LINE_BEATS],   2'b00, 1);
 
         // T4: two-way conflict + LRU, all in set index 0 (addr[9:5]==0).
         expect_word("T4 A miss", 32'h0000_0400, mem[256], 2'b00, 1);
@@ -220,7 +225,7 @@ module tb_icache_axi;
         expect_word("T5 line not cached", 32'h0000_1000, mem[1024], 2'b00, 1);
 
         // T6: error on the last beat.
-        inject_at = 7;
+        inject_at = dut.LINE_BEATS-1;
         expect_word("T6 last-beat error", 32'h0000_2000, 32'h0, 2'b10, 1);
         inject_at = -1;
         expect_word("T6 line not cached", 32'h0000_2000, mem[2048], 2'b00, 1);

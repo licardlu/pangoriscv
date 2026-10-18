@@ -469,6 +469,23 @@
 
 ---
 
+- **第二步（叠加 D-Cache 部分）时的两个必须同时改的点**（P29 之后新发现的耦合）：
+  1. `wtake_q` 的**置位条件必须限定在 `WRITE_DATA`/`WRITE_WAIT`**，不能让它被
+     `WRITE_DATA`→`REQUEST` 那种"引擎恰好正为**上一笔**写准备"的 `eng_w_ready` 误置位：
+     ```verilog
+     if ((state==WRITE_DATA || state==WRITE_WAIT) && eng_w_valid && eng_w_ready)
+         wtake_q <= 1'b1;
+     ```
+     否则就是 §4.15 那个竞态的**镜像版本**（这次错在 LSU 侧，把别人的 W 握手当成自己的）。
+  2. `eng_w_valid` 要新增 `(state==REQUEST && store_q)` 与 `(fast_issue && is_store)`
+     两个条件（D-Cache 在受理拍就要采数据），**但同时保留 `WRITE_WAIT && !wtake_q`**，
+     两者缺一：少了前者 D-Cache 采不到数据；少了后者直连引擎的 harness 仍会 timeout。
+- **这条再次印证 §4.11 的结论**：一个"谁在什么时候递数据"的改动，
+  会在**双方**（LSU 与 D-Cache）各产生一个对称的归属判定，
+  任何一侧写错都会表现成"偶发卡死"，而仿真快时看不出来。**必须两侧同时审。**
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

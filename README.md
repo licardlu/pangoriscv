@@ -3,6 +3,10 @@
 用 Verilog 实现的一款 RISC-V RV32IM 处理器核，自带原生 AXI4 总线与 SoC，已在 Pango PG2L100H 开发板上
 跑通 CoreMark（400 次迭代，5 项 CRC 全部符合）。
 
+> **当前状态（2026-10-18 独立复核）**：最新交付为 **768 迭代、2.6740 CoreMark/MHz（RTL 仿真，未上板）**；
+> 下文的 400 迭代 / 1.35 / 12,694 LUT / “四级流水线”等均为历史版本。
+> 完整问题、验收缺口与修复顺序见 **[docs/verification/issue-register-2026-10-18.md](docs/verification/issue-register-2026-10-18.md)**。
+
 | 项 | 值 |
 |---|---|
 | 指令集 | RV32IM（32 位整数、乘除） |
@@ -18,7 +22,7 @@ firmware/code/          作品代码（RTL + 测试台 + 仿真脚本 + 固件�
 docs/
   design/plans/         方案书与调研
   design/change-notes/  变更记录：改了什么、为什么改
-  verification/         验证计划与状态汇总
+  verification/         验证计划、状态与问题总表（issue-register-2026-10-18.md）
   contest/              赛题原文与要求摘录
   repo/                 CONTRIBUTING.md / LAYOUT.md（协作约定与入库范围）
 evidence/

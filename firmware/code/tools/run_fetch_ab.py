@@ -138,7 +138,10 @@ def parse(run_dir, transcript):
              # total_errors nonzero (so "Correct operation validated" is skipped).
              # That is expected here and identical on both sides; the CRC chain is
              # what the A/B compares.
-             "under_10s": "at least 10 secs" in stream}
+             # NOTE: True means the rule was VIOLATED (the run was too short).
+             # The old key "under_10s" and the old label "under-10s-rule=False"
+             # read backwards -- independent review D09 flagged it; both renamed.
+             "ten_s_violated": "at least 10 secs" in stream}
     m = TICKS.search(stream)
     entry["ticks"] = int(m.group(1)) if m else None
     m = SUMMARY.search(flat)
@@ -226,10 +229,10 @@ def main() -> int:
         lines.append("%-5s %s ticks=%s cycles=%s retires=%s IPC=%.4f"
                      % (tag, e["verdict"], e["ticks"], e["cycles"],
                         e["retires"], ipc))
-        lines.append("      validated=%s under-10s-rule=%s%s"
-                     % (e["validated"], e["under_10s"],
+        lines.append("      validated=%s 10s-rule-violated=%s%s"
+                     % (e["validated"], e["ten_s_violated"],
                         "  (expected for a short A/B image; CRCs are the check)"
-                        if e["under_10s"] else ""))
+                        if e["ten_s_violated"] else ""))
         lines.append("      crc seed=%s list=%s matrix=%s state=%s final=%s"
                      % (e["crc"]["seedcrc"], e["crc"]["crclist"], e["crc"]["crcmatrix"],
                         e["crc"]["crcstate"], e["crc"]["crcfinal"]))

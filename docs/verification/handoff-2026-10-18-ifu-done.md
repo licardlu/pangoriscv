@@ -24,7 +24,15 @@ CoreMark/MHz 1.3054 → 2.6757（+105.0%），面积只 +7.2%，
 **PDS 收敛经验（务必保留）**：27 MHz 的 hold 必须用
 `-fix_hold_violation_threshold 500`（不是 300），否则会留下 1~5 个 −0.001~−0.027 ns 端点，
 根因是 D-Cache LUTRAM 写口跨时钟树分支的偏斜。
-**50 MHz 是种子敏感的**：本版 seed 11→−0.001、seed 41→−0.155、seed 23 才通过。
+**种子按频率分开，不要混**（实测记录）：27 MHz 用 `-gplace_seed 11 -groute_seed 11`；
+50 MHz 用 `-gplace_seed 23 -groute_seed 23`。50 MHz 对种子敏感：
+seed 41 曾出现 1096 条未布通网络（1042 次迭代后放弃），seed 23 才收敛。
+27 MHz 未做多seed 扫描（只用 11 与 23 试过）。
+
+> **ISA 限制（必须明说）**：本设计**不支持 Zifencei 扩展**，`FENCE.I` 按非法指令
+> 处理（`id.v:160-161` 注释已写"FENCE is implemented, FENCE.I is not"）。
+> 评委若跑 `rv32ui-p-fence_i` 会触发非法指令异常。要么在文档里写明不支持，
+> 要么实现成"无效化 I-Cache + 当 nop"。
 
 **三项数字的链条**（务必按这个口径说，别混）：
 
@@ -94,7 +102,13 @@ SHA256 `0878A35D1D1371209C4E6987F43DB535A54300DDAC15E21A9D9F69A77B3E7B0F`。
 
 ---
 
-## 三、交付跑分为什么是 512 迭代
+## 三、历史：P7 那一版的跑分口径（512 迭代）——**已过期，仅留作方法参考**
+
+> 下面这一整节是 **P7 那一版**（CoreMark/MHz 1.6815）的记录，当时交付镜像是
+> `pangoriscv_i512.sbit`、512 迭代、`crcfinal 0xdfc8`。
+> **当前交付是 P17：768 迭代、ticks 287,030,751、2.6757、`crcfinal 0x3c53`**，
+> 见本文档 §1 与 `evidence/records/optimization/P17/measurement.md`。
+> 保留这一节只为说明"迭代数必须随性能重算"这个方法论。
 
 性能提上去后 400 迭代会掉到 8.8 s，违反赛题"≥10 s"硬性规则。
 

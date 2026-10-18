@@ -109,3 +109,71 @@ SHA256 `0878A35D1D1371209C4E6987F43DB535A54300DDAC15E21A9D9F69A77B3E7B0F`
 
 完整清单：`docs/verification.md`。
 方法论教训：`docs/lessons/`。
+
+---
+
+## 6. 上板实测（2026-10-19，闭合 C01）
+
+**同一份位流**（`bitstream/pangoriscv_i768.sbit`，SHA256
+`0878A35D1D1371209C4E6987F43DB535A54300DDAC15E21A9D9F69A77B3E7B0F`）
+烧进 SRAM 后，CP210x 串口 115200 8N1 抓到的**原始输出**：
+
+```
+2K performance run parameters for coremark.
+CoreMark Size    : 666
+Total ticks      : 287030751
+Total time (secs): 10
+Iterations/Sec   : 76
+Iterations       : 768
+Compiler version : GCC15.2.0
+Compiler flags   : -march=rv32im -mabi=ilp32 -mcmodel=medlow -O2 -ffreestanding -fno-builtin
+                   -fno-common -ffunction-sections -fdata-sections -falign-functions=4
+                   -falign-jumps=4 -falign-loops=4 -DCPU_FREQ_MHZ=27 -march=rv32im_zicsr
+                   -DITERATIONS=768 -DPERFORMANCE_RUN=1
+Memory location  : STATIC
+seedcrc          : 0xe9f5
+[0]crclist       : 0xe714
+[0]crcmatrix     : 0x1fd7
+[0]crcstate      : 0x8e3a
+[0]crcfinal      : 0x3c53
+Correct operation validated. See readme.txt for run and reporting rules.
+```
+
+| 项 | 仿真（同镜像） | **板上实测** |
+|---|---|---|
+| Total ticks | 287,030,751 | **287,030,751** |
+| 用时 | 10.631 s | **10.631 s** |
+| 五项 CRC | e9f5/e714/1fd7/8e3a/3c53 | **完全相同** |
+| CoreMark/MHz | 2.6757 | **2.6757** |
+
+**逐周期一致**——数字电路上板与 RTL 仿真一致性得到实证，说明本项目的仿真
+口径可以直接用于回归与调优。
+
+### 6.1 上板条件（复现用）
+
+| 项 | 值 |
+|---|---|
+| 板卡 | Pango PG2L100H（MES2L676-100HP V1.2），27 MHz 晶振 |
+| 下载线 | Pango **USB Cable II**（D2XX 驱动），JTAG |
+| 下载方式 | **SRAM 下载（易失，掉电丢失）**，非 Flash 固化 |
+| 板载串口 | **Silicon Labs CP210x**（COM34），115200 8N1 |
+| 扫描链 | `PG2L100H`，Device ID `0x00602899`；烧写后 **`done bit` 0 → 1** |
+
+### 6.2 证据文件
+
+| 文件 | 内容 |
+|---|---|
+| `board_uart_score_i768.txt` | 原始串口抓取 691 B，SHA256 `17888C6B…FFC03` |
+| `board_program_tcl.log` | `configuration_tcl.log`：`cfg_program succeed, 3.9` |
+| `board_program_stdout.txt` | 烧写客户端完整输出 |
+
+### 6.3 上板过程中踩到的坑（已写入 `docs/lessons/mistakes-log.md` 第 7 节）
+
+1. `cdt_js.exe` 秒退零输出 = **缺 `CH347DLLA64.DLL`**（在 PDS 安装包的
+   `驱动安装包/CH341PAR.ZIP` 里），用 PE 导入表递归定位。
+2. **烧写期间不能打开下载线的 COM 口**（COM32/COM33 是同一颗 FTDI 的两个通道，
+   打开会抢占 D2XX，导致 `No devices detected`）。
+3. 工具工作目录**不能带空格**（用户名 `Twinkle Nebula` 会让参数被拆断）。
+4. 判断烧写是否成功**只看 `cfg_program succeed` 与 `done bit`**，不要相信脚本打印的 OK；
+   `cfg_verify` 在这套组合上固有失败。
+5. 板载串口是**独立芯片**（CP2102），驱动要单独装。

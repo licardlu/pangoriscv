@@ -111,7 +111,7 @@
 
 | ID | 严重度 | 位置 | 问题与影响 | 修复/下一步 | 状态 |
 |---|---|---|---|---|---|
-| **C01** | P0 | `bitstream/README.md:95-98`、`docs/verification.md:16`、`evidence/records/bottleneck_audit/results/board_uart_baseline.txt` | **没有 i768 位流的上板实测**。唯一真实上板记录是 i400 基线（400 迭代、GCC 7.1.1、ticks 320,541,251），不能代表 2.6740 这份 | 用 `pangoriscv_i768.sbit`（或重新生成）下载；串口抓完整 768 迭代；确认五项 CRC、`Correct operation validated`、≥10 s；保存原始串口日志与位流 SHA | **NEED-BOARD** |
+| **C01** | P0 | `bitstream/README.md`、`docs/verification.md` | ~~没有 i768 位流的上板实测~~ **已于 2026-10-19 完成** | 板上实测：`Total ticks 287,030,751`、768 迭代、10.631 s、五项 CRC `e9f5/e714/1fd7/8e3a/3c53`、`Correct operation validated`、`Compiler version GCC15.2.0` → **2.6757 CoreMark/MHz**。位流 SHA256 `0878A35D…F8D`，原始串口抓取与烧写日志见 `evidence/records/optimization/P17/board_uart_score_i768.txt` | **FIXED** |
 | **C02** | P0 | `docs/verification.md:38,77`、`docs/contest/README.md:24` | **ILA 波形 0 份**；赛题文档评分项明确要求抓 CoreMark 关键算法波形并分析流水线效率 | 用 PDS ILA 抓 list/matrix/state 任一窗口；保存波形图 + 触发条件/时间轴 + 流水线效率解读；写入性能分析文档 | **NEED-BOARD** |
 | **C03** | P0 | 全仓库 | **应用场景 0 处**；赛题 §四.2 要求说明场景、整体资源/时序/主频；AI 类还要延迟与识别率 | 至少补一个真实场景（工控/采集/游戏机/图像加速等），写资源、时序、主频；若做 AI，补延迟与识别率 | **OPEN** |
 

@@ -517,6 +517,30 @@
 
 ---
 
+- **决定性证据（本轮）**：同一个 `lsu-seed1` 用例，**通过时只用到 3,130 ns**
+  （看门狗 50,000 ns，仅占 6%）。所以 P30 的 `timeout` **不可能是"变慢"**，
+  只能是 `wait(done_valid)` **永久挂住** —— "只是超时"的猜想被证伪。
+  **判断"卡住 vs 变慢"最快的办法：看通过用例的 `$finish` 仿真时间离看门狗有多远。**
+- **顺带定位到一个明确的 bug**：P30 里把引擎的 W 数据写成
+  ```verilog
+  assign eng_w_data = (state==REQUEST) ? (value_q << (8*address_q[1:0]))
+                                       : (store_value << (8*address[1:0]));
+  ```
+  `WRITE_WAIT` 时 `state != REQUEST`，于是取的是**实时输入** `store_value/address`；
+  而调用方在受理后立刻把它们改成垃圾（`tb_lsu_axi_ram.sv:93`
+  `address=32'hdeadbeef; access_size=7; store_value=32'habcdabcd;`）。
+  **正确写法：只要数据是"本笔 store 锁存的那份"，就必须一直用 `value_q/address_q/size_q`；
+  只有受理的那一拍才用实时输入。**
+  ```verilog
+  assign eng_w_data = wdata_on_req || wdata_on_iss
+                      ? (store_value << (8*address[1:0]))     // only on the accept edge
+                      : (value_q     << (8*address_q[1:0]));  // every later cycle
+  ```
+- **可复用**：**"提前一拍递数据"的实现里，最容易错的就是"哪些拍用实时输入、哪些拍用锁存值"。**
+  判据很简单：**数据必须一直代表"这一笔请求"**，所以除受理那一拍外，一律用锁存值。
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

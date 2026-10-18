@@ -72,9 +72,37 @@ archive/
 # PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
 !firmware/code/platform/pango_native/*.pds
 
+# 证据目录里的 report_timing 原始报告（纯文本，含 slack 明细）**必须入库**：
+# 赛题要求三项指标能互校，只留摘要不够。上面的 *.rtr 规则会误伤这些文件，
+# 用下面的否定规则找回。
+!evidence/**/*.rtr
+
+# 证据目录里的位流副本**不入库**，理由：
+#   - 27 MHz 那份与 bitstream/pangoriscv_i768.sbit 逐字节相同（同一份实现），
+#     仓库里已有一份，不必重复存 3.8 MB；
+#   - 50 MHz 各轮是过约束实验，不是交付位流，其结论由 multiseed_summary.csv +
+#     report_timing.rtr 承载；
+#   - 11 个副本合计约 39.8 MB，属于纯体积。
+# 每个副本的 SHA256 都记在对应 measurement.md 里，可核对。
+# 如果将来某份位流是交付物且未在 bitstream/ 下，用 !evidence/.../xxx.sbit 单独找回。
+
+
 # ---- 跑分数据：禁止入库、禁止上传 ----
 # 无物理开发板，仿真口径的 CoreMark 分数不是有效成绩。
 # 整段排除，避免被 git add / git push 带上去；说明见 SCORE-STATUS.txt。
 evidence/records/coremark-sim-*/
 # PDS 工程锁文件（每次打开工程自动生成）
 *.pds.lock
+
+# =============================================================================
+# 仓库根目录的一次性临时件（AI 干活时最容易漏在这里）
+# 约定：临时脚本写到系统临时目录，或写完当场删。这里再加一道保险。
+# =============================================================================
+/_*.py
+/_*.txt
+/_*.sv
+/_*.md
+/_*.log
+/pnrhelp.pds
+/run.log
+/pds.log

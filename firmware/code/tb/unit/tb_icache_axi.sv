@@ -209,13 +209,16 @@ module tb_icache_axi;
         expect_word("T3 line tail", dut.LINE_BEATS*4-4, mem[dut.LINE_BEATS-1], 2'b00, 0);
         expect_word("T3 next line", dut.LINE_BEATS*4,   mem[dut.LINE_BEATS],   2'b00, 1);
 
-        // T4: two-way conflict + LRU, all in set index 0 (addr[9:5]==0).
-        expect_word("T4 A miss", 32'h0000_0400, mem[256], 2'b00, 1);
-        expect_word("T4 B miss", 32'h0000_0800, mem[512], 2'b00, 1);
-        expect_word("T4 A hit",  32'h0000_0400, mem[256], 2'b00, 0);
-        expect_word("T4 C evicts", 32'h0000_0C00, mem[768], 2'b00, 1);
-        expect_word("T4 B miss again", 32'h0000_0800, mem[512], 2'b00, 1);
-        expect_word("T4 C hit", 32'h0000_0C00, mem[768], 2'b00, 0);
+        // T4: two-way conflict + LRU.  0x2800 / 0x3000 / 0x3800 differ by 0x800,
+        // which is a multiple of both 32*32 B and 64*32 B, so they land in the SAME
+        // set for either geometry while being distinct lines (different tags) and
+        // avoiding the addresses used by T1-T3/T5/T6.
+        expect_word("T4 A miss", 32'h0000_2800, mem[32'h2800>>2], 2'b00, 1);
+        expect_word("T4 B miss", 32'h0000_3000, mem[32'h3000>>2], 2'b00, 1);
+        expect_word("T4 A hit",  32'h0000_2800, mem[32'h2800>>2], 2'b00, 0);
+        expect_word("T4 C evicts", 32'h0000_3800, mem[32'h3800>>2], 2'b00, 1);
+        expect_word("T4 B miss again", 32'h0000_3000, mem[32'h3000>>2], 2'b00, 1);
+        expect_word("T4 C hit", 32'h0000_3800, mem[32'h3800>>2], 2'b00, 0);
 
         // T5: error on beat 3 of a fresh line -> SLVERR reaches the core and the
         // line must not be cached.
@@ -235,7 +238,7 @@ module tb_icache_axi;
         fork
             begin
                 @(negedge clk);
-                req_addr = 32'h0000_3000; req_id = 4'h5; req_valid = 1; rsp_ready = 0;
+                req_addr = 32'h0000_0C00; req_id = 4'h5; req_valid = 1; rsp_ready = 0;  // fresh line (T4 now uses 0x2800/0x3000/0x3800)
                 @(posedge clk);
                 @(negedge clk);
                 req_valid = 0;
@@ -253,7 +256,7 @@ module tb_icache_axi;
             end
         join
         if(got_resp !== 2'b00) $display("  FAIL T7 response resp=%0d", got_resp);
-        expect_word("T7 invalidated line refetches", 32'h0000_3000, mem[3072], 2'b00, 1);
+        expect_word("T7 invalidated line refetches", 32'h0000_0C00, mem[768], 2'b00, 1);
 
         // T8: tags that differ only above bit 9 stay distinct entries.
         expect_word("T8 aliased tag A", 32'h0000_1400, mem[1280], 2'b00, 1);

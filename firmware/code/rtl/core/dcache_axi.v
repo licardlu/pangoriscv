@@ -152,6 +152,9 @@ module dcache_axi #(
     reg        early_q;           // this write may be released before B
     reg        drain_q;           // a released write still owes an AXI B
     reg        b_seen_q;          // B was already handed over by the write engine
+    // P25: store data arrives WITH the request; wpend_q marks the one engine W
+    // beat still owed for the accepted write.
+    reg        wpend_q;
     reg        hit_q;
     reg        hit_way_q;
     reg        fill_way_q;
@@ -229,12 +232,16 @@ module dcache_axi #(
     wire [3:0]  i_req_id    = i_write_accept ? req_id       : i_req_id_r;
     wire        i_req_write = i_write_accept ? 1'b1         : i_req_write_r;
 
+    // P25: the engine's W beat is driven from the latched store data, not from the
+    // LSU, because the LSU now hands the data over with the request.
+    wire        eng_w_valid = rst_n && wpend_q;
+
     axi_data_engine inner (
         .clk(clk), .rst_n(rst_n),
         .req_valid(i_req_valid), .req_ready(i_req_ready), .req_write(i_req_write),
         .req_addr(i_req_addr), .req_size(i_req_size), .req_len(i_req_len),
         .req_id(i_req_id),
-        .w_valid(w_valid), .w_ready(i_w_ready), .w_data(w_data), .w_strb(w_strb),
+        .w_valid(eng_w_valid), .w_ready(i_w_ready), .w_data(wdata_q), .w_strb(wstrb_q),
         .w_last(w_last),
         .rsp_valid(), .rsp_ready(1'b0), .rsp_data(), .rsp_resp(), .rsp_last(),
         .rsp_id(),
@@ -314,8 +321,17 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     wire [31:0] merged_now = (data_mem[didx(hit_way_q,set_wr_q,word_q)] & ~strb_mask_now) |
                              (w_data & strb_mask_now);
 
-    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now);
-    assign b_resp  = early_now ? `AXI_RESP_OKAY : resp_q;
+    wire [31:0] strb_mask_acc = {{8{w_strb[3]}},{8{w_strb[2]}},
+                                 {8{w_strb[1]}},{8{w_strb[0]}}};
+    wire [31:0] merged_accept = (data_mem[didx(hit_way,req_set,req_word)] & ~strb_mask_acc) |
+                                (w_data & strb_mask_acc);
+    // data-RAM aperture on the *request* address: such a store can never fail, so it
+    // may be answered on the accept edge (P25).
+    wire early_req = (req_addr >= 32'h1000_0000) && (req_addr < DATA_RAM_LIMIT);
+    wire accept_early = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
+                        req_write && early_req && b_ready;
+    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now || accept_early);
+    assign b_resp  = (early_now || accept_early) ? `AXI_RESP_OKAY : resp_q;
     assign b_id    = id_q;
     assign miss_event = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         !req_write && req_in_cache && !hit_any;
@@ -339,6 +355,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             early_q     <= 1'b0;
             drain_q     <= 1'b0;
             b_seen_q    <= 1'b0;
+            wpend_q     <= 1'b0;
             hit_q       <= 1'b0;
             hit_way_q   <= 1'b0;
             fill_way_q  <= 1'b0;
@@ -389,7 +406,19 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         i_req_size_r  <= req_size;
                         i_req_len_r   <= 8'd0;
                         i_req_id_r    <= req_id;
-                        state_q       <= ST_WR_REQ;
+                        wdata_q <= w_data;
+                        wstrb_q <= w_strb;
+                        wpend_q <= 1'b1;
+                        if (req_in_cache && hit_any)
+                            data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                        if (early_req) begin
+                            resp_q   <= `AXI_RESP_OKAY;
+                            drain_q  <= 1'b1;
+                            b_seen_q <= 1'b0;
+                            state_q  <= (i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
+                        end else begin
+                            state_q  <= ST_WR_RESP;
+                        end
                     end else if (req_in_cache && hit_any) begin
                         resp_q  <= 2'b00;
                         // P10: if the engine takes the response on this very edge,
@@ -531,6 +560,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             // background drain could wait for a response that was consumed while
             // the CPU response was being held (observed as an early deadlock).
             if (i_b_valid) b_seen_q <= 1'b1;
+            if (wpend_q && i_w_ready) wpend_q <= 1'b0;
         end
     end
 endmodule

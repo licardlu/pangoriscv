@@ -54,5 +54,5 @@
   **ticks −2.35%**（7,658,647 → 7,478,647），**CoreMark/MHz +2.42%**（2.6109 → 2.6740）。
   已在 measurement.md / intro / roadmap 三处改正。
 - roadmap 该行曾混入控制字符 U+0007（早期用 PowerShell 双重引号插入 markdown 时
-  `  ` 被当成转义），使 ` xi_ram ` 变成 <BEL>xi_ram。已修复；
+  （早期用 PowerShell 双引号插 markdown 时，反引号加字母 a 被当成 BEL 转义，使 `axi_ram` 前的 `` `a `` 变成控制字符）。已修复；文档类 markdown 复扫 BEL/ESC 结果为 0（PDS 自家日志里的换页符属工具字节，不算）。
   全仓（docs/evidence/bitstream/firmware）复扫控制字符数为 0。

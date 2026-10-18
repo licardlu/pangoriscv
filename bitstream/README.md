@@ -14,7 +14,7 @@
 
 | 文件 | 大小 | SHA256 |
 |---|---|---|
-| `pangoriscv_i768.sbit` | 3,791,112 B | `F7B135AE975CCDE775D5B046AFC06BF7BE0EC5D3309996B0E36EEF471BA42F8D` |
+| `pangoriscv_i768.sbit` | 3,791,112 B | `0878A35D1D1371209C4E6987F43DB535A54300DDAC15E21A9D9F69A77B3E7B0F` |
 
 **板卡**：Pango PG2L100H，27 MHz 晶振。
 
@@ -23,13 +23,13 @@
 **固件**：CoreMark v1.0 性能跑（`PERFORMANCE_RUN=1`），**768 次迭代**，`-DCPU_FREQ_MHZ=27`。
 
 > 迭代数为什么是 768：赛题要求单次运行 ≥10 s。本轮把 AXI RAM 猝发读的两个白等周期去掉后，
-> 每迭代 ticks 降到 373,932，按 `N ≥ ceil(10.5 × 27e6 / 373,932) = 759` 重算后取 768，
+> 每迭代 ticks 降到 373,738，按 `N ≥ ceil(10.5 × 27e6 / 373,738) = 759` 重算后取 768，
 > 实际 10.64 s。**性能每变一次都必须重算，否则成绩作废。**
 
 **串口输出（RTL 仿真，同一镜像 `score768`）**：
 
 ```
-Total ticks      : 287211317
+Total ticks      : 287030751
 Total time (secs): 10
 Iterations/Sec   : 76
 Iterations       : 768
@@ -40,7 +40,7 @@ seedcrc          : 0xe9f5
 [0]crcfinal      : 0x3c53
 Correct operation validated. See readme.txt for run and reporting rules.
 ```
-> 注：`Total time (secs)` 与 `Iterations/Sec` 是固件的**整数截断**打印（`core_portme.h` 里 `HAS_FLOAT 0`）。真实时间是 10.637 s，固件按 `floor(10.637)=10` 打印，故 `Iterations/Sec = 768/10 = 76`。**分数必须用 `Total ticks` 计算**：`768 / 287,211,317 × 1e6 = 2.6740`，不能用 `Iterations/Sec` 反推。
+> 注：`Total time (secs)` 与 `Iterations/Sec` 是固件的**整数截断**打印（`core_portme.h` 里 `HAS_FLOAT 0`）。真实时间是 10.631 s，固件按 `floor(10.631)=10` 打印，故 `Iterations/Sec = 768/10 = 76`。**分数必须用 `Total ticks` 计算**：`768 / 287,211,317 × 1e6 = 2.6740`，不能用 `Iterations/Sec` 反推。
 
 
 `crcfinal` 随迭代数变化（最终 CRC 是跨迭代累积的）：20→`0x4983`、400→`0x25b5`、
@@ -52,9 +52,9 @@ Correct operation validated. See readme.txt for run and reporting rules.
 
 | 项 | 值 | 口径 |
 |---|---|---|
-| ① 执行效率 | **2.6740 CoreMark/MHz** | `iterations / ticks`，迭代数无关的归一化指标 |
-| ② 时钟频率 | **27 MHz 约束 All Constraints Met**；**50 MHz 过约束同样 All Constraints Met** | 27 MHz：setup WNS **+15.404 ns**、hold WHS **+0.025 ns**，0 / 54,345 失败端点。50 MHz：setup **+0.862 ns**、hold +0.087 ns，0 / 54,685。板载晶振 27 MHz，**不是**板上实测最高频率 |
-| ③ 资源效率 | **0.1970 CoreMark/kLUT** | `Total LUTs 13,574`（as logic 10,633 + as DRAM 2,941），取自 `device_map` |
+| ① 执行效率 | **2.6757 CoreMark/MHz** | `iterations / ticks × 1e6`，迭代数无关的归一化指标 |
+| ② 时钟频率 | **27 MHz 约束 All Constraints Met**；**50 MHz 过约束同样 All Constraints Met** | 数值取自各次 PDS 的 `multiseed_summary.csv`（**收尾权威值，不是 `*_after_hold_fix.txt` 中间快照**）。27 MHz：setup **+14.578 ns**、hold **+0.115 ns**，0 失败端点，见 `evidence/records/optimization/P17/pds_27mhz_full/`。50 MHz：setup **+1.262 ns**、hold **+0.121 ns**，0 失败端点，见 `evidence/records/optimization/P17/pds_50mhz_full/`。板载晶振 27 MHz，**不是**板上实测最高频率 |
+| ③ 资源效率 | **0.1985 CoreMark/kLUT** | `13,481 LUT`，**取自 device_map**（`multiseed_summary.csv` 的 `Used` 行）。同一实现另有两个阶段的数：synthesis 13,574、后布线更小；**引用 LUT 必须写阶段** |
 
 **提升幅度**
 
@@ -68,18 +68,19 @@ Correct operation validated. See readme.txt for run and reporting rules.
 | 零延迟 D-Cache 命中（768 迭代） | 323,940,991 | 2.3708 | 13,558 | 0.1749 |
 | 读命中不阻塞写事务（768 迭代） | 299,139,003 | 2.5674 | 13,558 | 0.1894 |
 | store 当拍拿写确认（768 迭代） | 294,149,365 | 2.6109 | 13,576 | 0.1923 |
-| **AXI 猝发气泡清除（本版位流，768 迭代）** | **287,211,317** | **2.6740** | **13,574** | **0.1970** |
+| AXI 猝发气泡清除（768 迭代） | 287,211,317 | 2.6740 | 13,574 | 0.1970 |
+| **LRU 修复 + 重新实现（本版位流，768 迭代）** | **287,030,751** | **2.6757** | **13,481** | **0.1985** |
 
-累计 **+104.84% CoreMark/MHz**（超过一倍）、**+89.72% CoreMark/kLUT**，
-面积仅 **+7.97%**；本版相对上一版是 **性能 +2.42%、面积 −2 LUT / −2 FF（中性）**。
+累计 **+104.97% CoreMark/MHz**（超过一倍）、**+91.24% CoreMark/kLUT**，
+面积仅 **+7.23%**（12,572 → 13,481）。本版相对上一版是 **性能 +0.06%**；主要变更是修掉独立复核提出的 R03（快命中路径漏更新 LRU，`d_miss` −8.3%）。
 
-**三项数据同源**：本目录位流、`13,574 LUT`、上表 27 MHz 时序，全部来自同一份源码树
-配同一份 `score768` 镜像。
+**三项数据同源**：本目录位流、`13,481 LUT`、27 MHz 时序，全部来自同一次 PDS 运行，整套原始产物已归档在 `evidence/records/optimization/P17/pds_27mhz_full/`（位流 + `multiseed_summary.csv` + `report_timing.rtr` + `device_map` / `synthesize` / `place_route` / `compile` 日志）。50 MHz 那一套在同级 `pds_50mhz_full/`。
 
 **时序余量说明**
 
-- 27 MHz：setup **+15.404 ns**、hold **+0.025 ns**（快角 +0.012），0/54,345。hold 余量偏薄。
-- 50 MHz：setup **+0.862 ns**、hold +0.087 ns，0/54,685，是整份设计里最紧的一项。
+- 27 MHz：setup **+14.578 ns**、hold **+0.115 ns**，0 失败端点（`multiseed_summary.csv` 收尾值）。
+- 50 MHz：setup **+1.262 ns**、hold **+0.121 ns**，0 失败端点，是本版最紧的一项。
+- **口径**：`place_route/*_after_hold_fix.txt` 是中间快照，其 slack 与最终值不同（本版中间值 17.390，收尾 14.578）。引 slack 只用 `multiseed_summary.csv`。
 - 收敛经验（务必保留）：
   - 27 MHz 的 hold 必须用 **`-fix_hold_violation_threshold 500`**（不是 300）；
     但对本版而言**阈值不再敏感**（500 与 700 的结果完全相同，都是 3 个端点 −0.012），

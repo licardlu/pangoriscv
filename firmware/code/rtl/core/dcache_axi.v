@@ -384,6 +384,15 @@ module dcache_axi #(
                         // do NOT park in ST_HIT -- that would present the same
                         // response a second time.  Going straight back to ST_IDLE
                         // keeps exactly one response per lookup.
+                        //
+                        // P16 fix (independent-review R03): the fast path leaves
+                        // through ST_IDLE and therefore never executes the LRU
+                        // update that lives in ST_HIT, so nearly every hit used to
+                        // leave the replacement policy untouched.  Update it here
+                        // as well; ST_HIT keeps its identical update for the
+                        // back-pressured path (writing the same value twice is
+                        // harmless).
+                        lru_mem[req_set] <= hit_way ? 1'b0 : 1'b1;
                         state_q <= rsp_ready ? ST_IDLE : ST_HIT;
                     end else begin
                         // line refill (cacheable) or a single bypass beat (MMIO)

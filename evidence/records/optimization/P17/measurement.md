@@ -80,7 +80,7 @@ lru_mem[req_set] <= hit_way ? 1'b0 : 1'b1;
 
 > **中间快照 vs 收尾值**：本版 27 MHz 的 `*_after_hold_fix.txt` 写 setup 17.390，
 > 而收尾 `multiseed_summary` 是 +14.578 —— 最后一道优化用 setup 换了 hold。
-> **引 slack 只能用 multiseed。** 这条已写进 `docs/lessons/evidence-rules.md`。
+> **引 slack 只能用 multiseed。** 这条已写进 `docs/lessons/rules.md` §1。
 
 **交付位流**：`bitstream/pangoriscv_i768.sbit`，3,791,112 B，
 SHA256 `0878A35D1D1371209C4E6987F43DB535A54300DDAC15E21A9D9F69A77B3E7B0F`

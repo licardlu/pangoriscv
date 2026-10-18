@@ -1,68 +1,52 @@
-# 错误与教训（本目录的用途）
+# 接手必读（AI / 人 都一样）
 
-> 这个目录只干一件事：**把踩过的坑写成下次能查的规则**。
+> 这个目录是项目的**错误汇总与方法论**，是交接时最重要的一份资产。
+> 读完这一页再去碰 RTL，能避免重复下面记录的坑。
 >
-> - 逐条错误记录：[`mistakes-log.md`](mistakes-log.md)
-> - 证据口径（最容易出错的地方）：[`evidence-rules.md`](evidence-rules.md)
-> - 开工/收工清单：[`preflight-checklist.md`](preflight-checklist.md)
->
-> 项目层面的问题总表（含 RTL/合规/文档全部编号项）在
-> [`../verification/issue-register-2026-10-18.md`](../verification/issue-register-2026-10-18.md)，
-> 那个是**唯一问题登记处**；本目录是"方法论层面的防再犯清单"，两者不重复。
+> 具体目录放置与清理规矩，在 skill `pango-riscv-contest` 的
+> 「仓库放置与清理约定」一节（**动手前先读**）。
 
-## 三条铁律
+## 项目是什么
 
-### 1. 只贴工具原文，不填自己算的数
+紫光同创 PG2L100H 上的 RV32IM 处理器 + 原生 AXI4 SoC，用 CoreMark v1.0 测评。
+三级流水 + 2 路组相联 I/D Cache（2 KB）+ 32 项 BTB + 完整 trap/中断。
 
-**踩过**：我在标注为"串口原始输出"的代码块里，把 `Iterations/Sec` 写成了自己按浮点
-算的 72/70/64/56，固件实际打印的是整数截断值 76/76/69/58 —— 5 份文档 4 份错。
+## 当前状态（2026-10-18，P17）
 
-**规则**：
-- 代码块标了"原始输出"，里面每一行都必须是工具/固件一次性产出的原文。
-- 自己推导的数放正文表格，并注明"由 X 计算"。
-- 百分比必须写清是**哪个量的比值**（是 ticks 降幅还是 CoreMark/MHz 增幅？两者差 3%）。
+| 项 | 值 | 性质 |
+|---|---|---|
+| CoreMark/MHz | **2.6757**（768 迭代，ticks 287,030,751，10.63 s，IPC 0.7693） | **RTL 仿真**，不是板上实测 |
+| 27 MHz | All Constraints Met，setup +14.578 / hold +0.115，0 失败 | 真实工具产物 |
+| 50 MHz 过约束 | All Constraints Met，setup +1.262 / hold +0.121，0 失败 | 真实工具产物 |
+| 资源 | 13,481 LUT（device_map）、8,507 FF → 0.1985 CoreMark/kLUT | 真实工具产物 |
+| 交付位流 | `bitstream/pangoriscv_i768.sbit`，SHA256 `0878A35D…E7B0F` | — |
+| 累计提升 | 相对最初基线 1.3054 → **+105.0%** | — |
 
-### 2. 一个实现 = 一个目录，证据全套同源
+**未做且影响报分资格**：① 没有 i768 的板载实测（赛题 §4 要求分数必须来自板上）；
+② 没有 ILA 波形（文档评分项）；③ 没有应用场景章节。
+完整编号清单：`docs/verification/issue-register-2026-10-18.md`。
 
-**踩过**：我把同一个 `build/pango_native` 先后用于 27 MHz 和 50 MHz 两次 PDS，
-第二次覆盖了第一次。结果**交付位流 `F7B135AE…` 在本机没有对应的实现目录**，
-独立复核无法验证三项指标同源（问题 C05）。
+## 怎么读（按顺序）
 
-**规则**：每次"要报数"的实现，产出一个自包含证据目录：
+1. **本目录 [`mistakes-log.md`](mistakes-log.md)** —— 20 条真实错误，每条都有
+   "表现 / 根因 / 以后怎么做"。**先看这个**，里面每一条都曾经让工作白跑一轮。
+2. **本目录 [`rules.md`](rules.md)** —— 引数口径（slack 取哪个文件、LUT 写哪个阶段、
+   仿真不等于成绩、串口块只贴原文）+ 开工/改RTL/出分/提交前的逐项清单。
+3. `docs/verification/issue-register-2026-10-18.md` —— 编号问题总表（含未修项）。
+4. `evidence/records/optimization/P*/measurement.md` —— 每一轮优化做了什么、数据多少。
 
-```
-evidence/records/optimization/<阶段>/pds_<频率>/
-    pangoriscv_top.sbit          位流（附 SHA256）
-    flow.log 或 run.log          整条流程日志
-    multiseed_summary.csv        ★ 收尾权威值（setup/hold/LUT 都取这里）
-    report_timing.rtr            report_timing 原始报告
-    device_map_run.log           资源表
-    compile_run.log              编译日志
-```
+## 三条铁律（其余都是展开）
 
-**并且**：`*_after_hold_fix.txt` 是**中间快照**，它的 slack 与最终值不同
-（实测：27 MHz 中间 15.404 / 最终 15.267；50 MHz 中间 0.862 / 最终 0.703）。
-引 slack 只用 `multiseed_summary.csv`。
+1. **只贴工具原文，不填自己算的数。** 标了"原始输出"的代码块，每行都必须是
+   工具/固件一次产出的原文；推导值放正文并注明算法；百分比写清是哪个量的比值。
+2. **一个实现 = 一个证据目录。** 位流+SHA、`multiseed_summary.csv`、
+   `report_timing.rtr`、各阶段 log 全套同源。同一构建目录**不许跑第二次实现**。
+3. **先量后改；改不动就退回。** 改前用探针把账算准，一次只动一个变量，
+   基线取改动前的提交，收益 <1% 而风险不低就不做，解释不清的差异不上线。
 
-### 3. 先量后改；改不动就退回，不留看不懂的改动
+## 这个目录怎么维护
 
-**踩过两次**：
-- P12（写确认提前一拍）净赚仅 0.64% 且破坏 halt-reset 注入点 → 回退；P13 打通读路径后重做才值 1.67%。
-- R 拍预取（+2.15%）改变了 `READ_DELAY>0` 路径的取指行为，**我没解释清楚** → 回退，只留注释。
-
-**规则**：
-- 改之前先用探针把账算准（本项目已有 `SCORE_WINDOW`/`EX_SPLIT`/`DCACHE_PATH`/`ICACHE_PATH`/
-  `ADDR_REGION`/`MISPRED_MIX`/`LSU_REQ_SPLIT` 七个探针）。
-- 一次只改一个变量，A/B 用同一镜像、基线取**改动前**的提交。
-- 收益 < 1% 而风险不低 → 不做。
-- 解释不清的行为差异 → 不上线，写进代码注释说明重启条件。
-
-## 本目录与其他文档的关系
-
-| 想知道 | 去哪 |
-|---|---|
-| 某个具体问题修了没有、编号多少 | `docs/verification/issue-register-2026-10-18.md` |
-| 我怎么又犯了同一个错、怎么避免 | 本目录 `mistakes-log.md` |
-| 引数时该引哪个文件 | 本目录 `evidence-rules.md` |
-| 动手前/提交前该查什么 | 本目录 `preflight-checklist.md` |
-| 某一轮优化怎么做的、数据多少 | `evidence/records/optimization/P*/measurement.md` |
+- 每犯一次错（包括"差点犯错"）就在 `mistakes-log.md` 加一条，写清三样。
+- 引数口径变了（比如 PDS 换了输出格式）就改 `rules.md`，别另开文件。
+- **不要**把问题清单、目录约定另存一份到别的 README —— 只写一处。
+- 这个目录目前 3 个文件（本页 + 错误 + 规则），**够了，不要加**。

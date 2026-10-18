@@ -107,5 +107,5 @@ SHA256 `0878A35D1D1371209C4E6987F43DB535A54300DDAC15E21A9D9F69A77B3E7B0F`
 - **R01/R02**：D-Cache 两处功能缺陷（store 空洞吞 fault、MMIO byte 读 SLVERR）
 - **D01/D02/D03 等**：旧数值文档刷新
 
-完整清单：`docs/verification/issue-register-2026-10-18.md`。
+完整清单：`docs/verification.md`。
 方法论教训：`docs/lessons/`。

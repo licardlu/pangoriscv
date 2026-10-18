@@ -115,7 +115,7 @@ compile/run.log
 ### 开工前
 - [ ] `git status` 干净；`git log --oneline -3` 看清基线
 - [ ] `python tools/set_switches.py status` 记下开关状态
-- [ ] 读 `docs/verification/issue-register-*.md`，确认要动的地方有无未修编号项
+- [ ] 读 `docs/verification.md` §2 问题台账，确认要动的地方有无未修编号项
 - [ ] 动 RTL 前确认七个探针还在：`SCORE_WINDOW` / `EX_SPLIT` / `DCACHE_PATH` /
       `ICACHE_PATH` / `ADDR_REGION` / `MISPRED_MIX` / `LSU_REQ_SPLIT`
 

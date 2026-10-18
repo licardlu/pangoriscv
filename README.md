@@ -5,7 +5,7 @@
 
 > **当前状态（2026-10-18 独立复核）**：最新交付为 **768 迭代、2.6740 CoreMark/MHz（RTL 仿真，未上板）**；
 > 下文的 400 迭代 / 1.35 / 12,694 LUT / “四级流水线”等均为历史版本。
-> 完整问题、验收缺口与修复顺序见 **[docs/verification/issue-register-2026-10-18.md](docs/verification/issue-register-2026-10-18.md)**。
+> 完整问题、验收缺口与修复顺序见 **[docs/verification.md](docs/verification.md)**。
 
 | 项 | 值 |
 |---|---|
@@ -22,10 +22,9 @@ firmware/code/          作品代码（RTL + 测试台 + 仿真脚本 + 固件�
 docs/
   design/plans/         方案书与调研
   design/change-notes/  变更记录：改了什么、为什么改
-  verification/         验证计划、状态与问题总表（issue-register-2026-10-18.md）
+  verification.md       验证计划、状态与问题总表（含问题台账）
   contest/              赛题原文与要求摘录
-  repo/                 CONTRIBUTING.md / LAYOUT.md（协作约定与入库范围）
-evidence/
+  evidence/
   logs/                 仿真运行日志（按用例归档）
   records/              上板记录、时序报告、ISA 合规日志、基线证据
 bitstream/              发布版位流（见其中 README.md）
@@ -54,9 +53,9 @@ python sim/run_icache_tests.py --modelsim "<ModelSim 目录>"
 ## 协作
 
 两人都可以直接推 `main`。提交信息格式、改动前先 `pull --rebase`、同一份文件避免同时改等约定见
-[docs/repo/CONTRIBUTING.md](docs/repo/CONTRIBUTING.md)。
+`docs/verification.md`（问题台账）与 `docs/lessons/rules.md`（动手清单）。
 
 ## 入库范围
 
 仓库只收**作品代码、设计文档、验证证据**（约 5 MB）。位流、仿真波形、EDA 构建产物、历史工作树、
-原始备份与聊天记录不入库，原因与替代存放方式见 [docs/repo/LAYOUT.md](docs/repo/LAYOUT.md)。
+原始备份与聊天记录不入库；可再生产物不得入库的规则见 skill `pango-riscv-contest` 的「仓库放置与清理约定」与 `docs/lessons/rules.md`。

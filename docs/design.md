@@ -1,4 +1,240 @@
-# tinyriscv 原生 AXI4 改造与紫光赛题一实施计划书（合并版）
+# 设计与决策记录
+
+> 本文件由 `docs/design/` 下 9 份文档合并而成（2026-10-18），内容按原样保留，
+> 只把小标题降级并加了编号。**署名与来源请先看 §1**：它和根 README/LICENSE
+> 的表述有冲突，尚未定案。
+
+## 目录
+
+1. §1 来源与署名（重要）
+2. §2 CPU 与存储的契约
+3. §3 CSR 与中断
+4. §4 总体规划（2026-10-09）
+5. §5 优化 roadmap（2026-10-17）
+6. §6 CoreMark 优化文献综述
+7. §7 实施状态
+8. §8 基础版最终实现
+9. §9 基础版交接
+
+---
+
+## §1 来源与署名（重要）
+
+*原文件：`docs/design.md`*
+
+### Source Provenance
+
+Recorded: 2026-10-10.
+
+This is a development copy of the locally supplied tinyriscv tree:
+`E:/donwload/tinyriscv-master/tinyriscv-master`.
+The source tree has no Git history. File timestamps do not establish an upstream
+commit, download date, or authorship of subsequent changes.
+
+| Category | Evidence and boundary |
+| --- | --- |
+| Upstream attribution | Original README, LICENSE and RTL author notices retained. |
+| Locally supplied baseline | All 790 files backed up and SHA256 checked before edits. |
+| Prior teammate changes | Unknown; requires contributor records or comparison against an identified upstream snapshot. |
+| Teammate authorization | User explicitly confirmed teammate consent to modify this supplied tree on 2026-10-10. This authorizes implementation; it does not establish the history of prior edits. |
+| Changes in this implementation | Track against Git baseline `6741872` and the implementation status record. |
+| Contest reuse permission | Not established by the source license; organizer confirmation pending. |
+
+Baseline file hashes are in `evidence/baseline/original-files.sha256.csv`.
+Do not claim that this complete CPU is newly authored by the team.
+Do not replace upstream attribution with team attribution.
+
+The original RIB implementation remains available solely for the plan's
+baseline tests. Its presence in the preserved baseline does not constitute the
+future native-AXI implementation, which has not yet been integrated.
+
+---
+
+## §2 CPU 与存储的契约
+
+*原文件：`docs/design.md`*
+
+### CPU Memory Contract
+
+Plan references: sections 3.5, 8.2, 9, 10.1 and 13.2.
+Recorded 2026-10-10. This freezes the intended interfaces before T02;
+it does not assert that these interfaces are integrated in the original CPU.
+All interfaces share the CPU clock and active-low synchronous reset `rst_n`.
+Payloads remain stable while valid is asserted and ready is low.
+`fire = valid && ready` at the rising edge. Reset clears occupancy.
+
+## Pipeline identity and retirement
+
+IF/ID owns `valid`, `pc[31:0]`, `inst[31:0]`, `fault`,
+`predicted_next_pc[31:0]`. ID/EX preserves these and decoded controls,
+operands, `rd[4:0]` and CSR metadata. Stall holds identity and valid.
+Flush clears younger valid slots and suppresses their internal handshakes.
+An older EX branch may retire during its younger-slot flush.
+
+EX owns one instruction until `ex_leave = retire_fire || trap_fire`.
+`retire_fire` occurs once on normal completion; `trap_fire` accepts a
+synchronous fault without normal retirement or rd writeback. Register/CSR
+updates and branch training are tied to their defined commit event.
+Monotonic `retire_order[63:0]` identifies retired instructions; PC is not
+a unique identity. Decode samples operands only on entry to ID/EX, with
+same-cycle completed EX writeback bypass or an explicit extra stall.
+
+## Instruction operations
+
+The IFU owns PC, redirect, request identity and a reserved result slot.
+Its internal fetch request is `req_valid/req_ready`,
+`req_pc[31:0]`, `req_predicted_next_pc[31:0]`.
+The result is `rsp_valid/rsp_ready`, `rsp_pc[31:0]`, `rsp_inst[31:0]`,
+`rsp_fault`, `rsp_predicted_next_pc[31:0]`. Fetch faults retain their
+original PC; the trap cause is instruction access fault. Misaligned
+targets are rejected before bus issue.
+
+Identity begins at internal req_fire, before AR acceptance. Redirect
+marks all younger identities stale, including requests accepted internally
+on the redirect edge. An AXI VALID already asserted stays asserted until
+handshake. Accepted stale reads drain to completion and are discarded.
+Stale results never enter IF/ID or raise a wrong-path trap.
+R reception uses the reserved slot independently of EX stalls, releasing
+the shared bus before a waiting LSU request needs it.
+Fetches to MMIO are rejected locally; no speculative peripheral read.
+
+## Data operations
+
+EX to LSU:
+
+| Port | Width | Meaning |
+| --- | --- | --- |
+| op_valid / op_ready | 1 each | One operation handshake |
+| is_store | 1 | Store versus load |
+| address / store_value / pc | 32 each | Effective byte address, unshifted value, instruction PC |
+| access_size | 3 | 0 byte, 1 halfword, 2 word; other values rejected |
+| load_unsigned | 1 | Zero extension for byte/halfword loads |
+| rd | 5 | Destination identity; x0 still performs the access |
+| done_valid / done_ready | 1 each | Completion handshake |
+| load_value / fault_addr | 32 each | Extended load result and original effective fault address |
+| fault | 1 | Access failure; operation identity determines load/store cause |
+
+LSU latches all request fields at op_fire. EX sets its issued bit only
+on op_fire and never requests the same operation again while waiting.
+done_valid and its payload are held until the corresponding retirement
+or trap consumes them. A prechecked misalignment raises the synchronous
+trap without issuing a memory request. Halfwords require address bit 0
+zero; words require address bits 1:0 zero.
+
+LSU alone shifts store_value by 8*address[1:0], generates WSTRB, selects
+the load lane and performs sign/zero extension. Cache and bypass return
+an unextended aligned 32-bit word; they do not extend it a second time.
+A store completes after B, not after AW/W. BRESP errors produce one
+store fault and are never automatically retried.
+
+## Transfer engines and cache ownership
+
+I-cache/D-cache own tag/data/LRU/refill only. They cannot retire CPU
+instructions, update architectural PC or generate an independent trap.
+T09 inserts cache logic behind the above operation interfaces.
+
+Engine descriptors: `valid/ready`, `addr[31:0]`, `size[2:0]`,
+`len[7:0]`, `id[3:0]`. Write beats use independent `valid/ready`,
+`data[31:0]`, `strb[3:0]`, `last`. Read beats return independent
+`valid/ready`, `data[31:0]`, `resp[1:0]`, `last`; descriptor ownership
+preserves ID. Write completion holds `valid/ready`, `resp[1:0]`
+until consumed. IF uses ID 0 and data uses ID 1 initially.
+
+AXI exposes all five channels, 32-bit addresses/data, 4-bit IDs,
+AxLEN/SIZE/BURST/LOCK/CACHE/PROT/QOS and RRESP/BRESP/LAST.
+There is no WID. First release permits one global outstanding transfer,
+INCR bursts up to 16 beats, no 4 KiB crossing, no exclusives.
+AW and W are accepted independently; arbitration locks the owner before
+either write channel can be accepted. All asserted channel payloads hold
+through backpressure. Errors drain the promised beats and produce one
+completion error. The verification model is not synthesizable CPU RTL.
+
+## Interrupt, halt and maintenance boundaries
+
+`arch_next_pc[31:0]` identifies the next unexecuted architectural
+instruction. Interrupt acceptance is possible after retirement and when
+EX is empty, even if a young fetch is waiting. Acceptance blocks young
+entry to EX on that edge. A retiring branch sets the actual next target;
+CSR/MRET state updates precede the interrupt eligibility check.
+An already issued store drains and resolves before asynchronous interrupt.
+
+halt_pending blocks younger work but lets current EX issue and finish
+its one required LSU/divider request. Current exceptions/redirects
+resolve first. No reset/halt leaves a live remote AXI transaction orphaned;
+reset needs coordinated endpoint quiescence/reset.
+
+FENCE.I must either implement the plan's complete store/fetch drain,
+IF/ID/prefetch/I-cache/BTB/refill invalidation and PC+4 refetch sequence,
+or decode as illegal and exclude Zifencei from the software ISA flags.
+No partial maintenance implementation is accepted.
+
+---
+
+## §3 CSR 与中断
+
+*原文件：`docs/design.md`*
+
+### Native M-Mode CSR and Trap Contract
+
+This document describes implemented RTL, not simulation or board validation.
+Production sources include `rtl/core/csr_native.v`; baseline `csr_reg.v` and
+`clint.v` are unchanged and are not instantiated by the native CPU.
+
+| CSR | Address | Policy |
+| --- | --- | --- |
+| mstatus | 300 | MIE bit 3 and MPIE bit 7 writable; MPP fixed M; other bits zero |
+| misa | 301 | Read-only RV32IM, 0x40001100 |
+| mie | 304 | Software/timer/external enables at bits 3/7/11 |
+| mtvec | 305 | Direct only, low two bits forced zero |
+| mscratch | 340 | Read/write |
+| mepc | 341 | Read/write, low two bits forced zero |
+| mcause, mtval | 342,343 | Read/write, trap overwrites atomically |
+| mip | 344 | Read-only live hardware IRQ levels at bits 3/7/11 |
+| mcycle, mcycleh | B00,B80 | Writable 64-bit counter |
+| minstret, minstreth | B02,B82 | Writable 64-bit actual-retirement counter |
+| cycle, cycleh | C00,C80 | Read-only mcycle aliases |
+| instret, instreth | C02,C82 | Read-only minstret aliases |
+| mhartid | F14 | Read-only zero |
+
+Other addresses and writes to read-only CSRs trap as illegal instructions.
+Counter half writes override that clock's increment and preserve the other
+half from the pre-clock counter. Traps do not increment minstret.
+
+All six Zicsr operations read CSR state in EX, never an ID snapshot. CSRRW
+always writes, including rd=x0; no implemented CSR has read side effects.
+CSRRS/CSRRC write intent depends on the encoded rs1 index (not its value).
+Immediate operands are zero-extended zimm; zero zimm suppresses set/clear writes.
+Only exact ECALL, EBREAK and MRET system encodings are accepted. FENCE is
+supported at the serialized EX boundary; FENCE.I is illegal.
+
+The wrapper and SoC expose irq_software, irq_timer and irq_external inputs.
+Priority is external > software > timer. Interrupt eligibility uses the
+post-normal-CSR-write and post-MRET state. Trap entry then copies that MIE
+into MPIE, clears MIE, and records full 32-bit mcause.
+
+Synchronous faults have priority. Interrupts are accepted only at actual
+retirement or an empty EX boundary, never while memory/division is incomplete.
+Interrupt mepc is the retired instruction's actual successor (including branch
+and MRET), or arch_next_pc when EX is empty. Acceptance flushes younger fetch/ID
+work before it can enter EX. trap_ready backpressure delays acceptance but does
+not undo or repeat normal retirement. A retiring store has completed its response.
+Halting suppresses interrupt acceptance while current EX drains.
+
+trap_cause is now 32 bits. csr_mtvec exposes the architectural redirect target.
+The old trap_vector input remains for connection compatibility but is unused:
+native traps always redirect using architectural mtvec. mtvec resets to zero.
+
+Syntax-only verification:
+`vlog -sv -work sim/work_csr_native_compile +incdir+rtl/core -f sim/native_axi_sources.f`
+completed with zero errors and zero warnings. No simulation was run.
+
+---
+
+## §4 总体规划（2026-10-09）
+
+*原文件：`docs/design.md`*
+
+### tinyriscv 原生 AXI4 改造与紫光赛题一实施计划书（合并版）
 
 > For agentic workers: use $superpower-executing-plans to implement approved tasks one at a time. 本文是设计与实施计划，不是已完成或已测试的 RTL。执行时逐项打勾；没有通过验收，不进入依赖它的下一项。
 
@@ -2317,3 +2553,1515 @@ wire signed [31:0] extended_product = {{16{product[15]}},product};
 本节仍是静态设计复核，不代表故障已在真实CPU复现，也不代表修订后的RTL已经仿真通过。实施时必须用本节列出的定向测试证明规则落地。
 
 **交付状态：** 文档扩充与上述验证完成；仍停在计划阶段。下一步先由队伍确认G0与功能范围，获准后按N00/N01开始真实工程基线，不直接把所有模板一次性并入CPU。
+
+---
+
+## §5 优化 roadmap（2026-10-17）
+
+*原文件：`docs/design.md`*
+
+### pangoriscv 分数优化路线图（2026-10-17）
+
+> **目标**：在**不改变现有代码框架**的前提下，把三项评分指标逐项推高，且每一分都有可复现证据。
+> **前提**：当前无物理开发板，本计划所有验收都是「仿真 + PDS」。板上实测按 §8 单独排期。
+> **基线**：`evidence/records/coremark-sim-2026-10-17/`（400 迭代，GCC 15.2.0，三开关全开）。
+
+---
+
+## 0. 基线数字（所有优化的对照基准，不得改动这份记录）
+
+| 项 | 基线值 | 来源 |
+|---|---|---|
+| Total ticks | **306,415,752** | 仿真 |
+| 周期数 | 308,000,765 | 仿真 |
+| 退休指令 | 115,803,118 | 仿真 |
+| 每迭代指令数 | **289,508** | 115,803,118 ÷ 400 |
+| 每迭代周期 | **770,002** | 308,000,765 ÷ 400 |
+| 每指令周期 | **2.66** | 308,000,765 ÷ 115,803,118 |
+| IPC | **0.3760** | — |
+| 分支预测失败率 | **12.39%** | 3,040,222 ÷ 24,535,660 |
+| trap / 总线故障 | 0 / 0 | — |
+| CoreMark/MHz | **1.3054** | 评分项① |
+| 约束频率 | 27 MHz（Setup WNS +16.440 ns） | 评分项② |
+| Total LUTs | **12,572**（as logic 9,887 + as DRAM 2,685） | 评分项③ |
+| CoreMark/LUTs | 0.1038 每 kLUT | 评分项③ |
+
+**已定位的结构性事实**：
+
+| 项 | 值 | 结论 |
+|---|---|---|
+| I-Cache 容量 | 32 组 × 2 路 × 32 B = **2 KB** | 程序 text = **13,324 B**，只装得下 15% |
+| D-Cache 容量 | 同上 = **2 KB** | data+bss = **4,720 B**，只装得下 43% |
+| 乘法器 | `ex.v:141` 组合 `*`，PDS 推断 3 组 APM | **已是 1 拍，无优化空间** |
+| 数据 RAM 读 | `axi_ram.v:170` 已是同步读 | 被推成 LUTRAM 是工具选择，不是 RTL 结构问题 |
+| 分支冲刷代价 | 重定向在 retire 时刻，惩罚 ≈ 2 周期 | 3.04 M × 2 ≈ 6 M 周期，仅占 **2%** |
+
+---
+
+## 1. 防止框架混乱的五条铁律
+
+1. **每个优化必须能一键关掉**：新行为一律挂在 `rtl/core/soc_config.vh` 的开关后面，关闭时编译结果必须与基线**逐位等价**（用 A/B 跑同一镜像对比 ticks 与 CRC）。
+2. **一次只动一个变量**：一个提交只做一件事，禁止"顺手改个命名/顺手重构"。
+3. **接口合同冻结**：`CPU ↔ 访存`、`CPU ↔ CSR`、`AXI 端口列表`、`firmware 可见寄存器映射` 一律不改。优化只在模块**内部**改。
+4. **每次必过三重门**（缺一不可，见 §3）：ISA 端到端 → CoreMark 五项 CRC → 同镜像 ticks 对比。
+5. **新增文件必须登记**：RTL 新文件要进 `sim/native_axi_sources.f`，否则仿真与 PDS 会各自看到不同设计（这是最隐蔽的一类 bug）。
+
+> 反例记录（本次已踩过，写进铁律）：`tb_coremark_uart.sv` 的探针名与 `axi_uart.v` 实际信号不一致，导致 vopt 精化直接失败 13 处。**测试台探针名必须与 RTL 信号名同步改。**
+
+---
+
+## 2. 阶段划分总览
+
+| 阶段 | 内容 | 主攻 | 预期收益 | 风险 | 前置条件 |
+|---|---|---|---|---|---|
+| **P0** | 测量脚手架 | — | 0（但是后面一切的前提） | 低 | 无 |
+| **P1** | 周期分诊 | — | 0（决定后面做哪个） | 无 | P0 |
+| **P2** | 扩大 I/D-Cache | ① 执行效率 | **大**（估 +40~70% IPC） | 中 | P1 确认 miss 高 |
+| **P3** | load-use 前递 | ① 执行效率 | 中 | **高** | P1 确认 LSU_WAIT 高 |
+| **P4** | 分支预测增强 | ① 执行效率 | 小（≤5%） | 低 | P2/P3 之后 |
+| **P5** | 提频 | ② 频率 | 中（27→~40 MHz） | 中 | 独立线，可并行 |
+| **P6** | 强制数据 RAM 进 BRAM | ③ 资源效率 | **大**（LUT −21%） | 低 | 无 |
+
+**推荐执行顺序**：`P0 → P1 → P6 → P2 → P3 → P5 → P4`。
+把 P6 提前，是因为它几乎零风险、且能立刻拿掉 21% 的 LUT，为 P2 扩 Cache 腾出资源预算。
+
+---
+
+## P0 · 测量脚手架（不改设计）
+
+### P0.1 让 CoreMark 跑完自动打印性能计数器
+
+**改什么**：`tests/example/coremark/core_portme.c` 的 `portable_fini()` 末尾。
+
+**为什么放这里**：`core_main.c` 在 `stop_time()` **之后**才调 `portable_fini()`，所以打印落在计时区外，**不影响 ticks**。这是关键约束。
+
+**寄存器映射**（`rtl/perips/perf_regs.v:13-40`，直接照抄 `tests/example/perf_probe/main.c:25-37` 的宏）：
+
+| 偏移 | 含义 |
+|---|---|
+| `0x00` | CTRL：写 bit0 = SNAP（必须写，读才返回快照） |
+| `0x04` | STATUS：bit0 = snapshot_valid |
+| `0x10/0x14` | CYCLE（64 位） |
+| `0x18/0x1C` | INSTRET（64 位） |
+| `0x20/0x24` | IF_WAIT（64 位） |
+| `0x28/0x2C` | LSU_WAIT（64 位） |
+| `0x30/0x34` | I_MISS（64 位） |
+| `0x38/0x3C` | D_MISS（64 位） |
+| `0x40/0x44` | RET_CF（64 位） |
+| `0x48/0x4C` | MISPRED（64 位） |
+| `0x50..0x78` | AXI 活动计数（I_AR/I_AR_LEN7/I_R_BEAT/… /D_B） |
+
+**验收**：
+- 日志出现全部 9 个计数；
+- **`Total ticks` 必须仍等于 306,415,752**。若变了，说明打印进了计时区，立即查调用位置。
+
+**排错**：
+- 全 0 → 没有先写 `CTRL.SNAP`（`perf_regs.v:36-38` 明确：不 SNAP 读到 0）；
+- 读到 0 且 STATUS 也是 0 → 位流不是 `PERF_ENABLE` 编的；
+- 计数离谱 → 64 位读取顺序错（先读 lo 再读 hi 会被撕裂）。
+
+### P0.2 建立 A/B 记录表
+
+新建 `evidence/records/optimization/ab-log.csv`，每行：阶段 / 开关状态 / ticks / IPC / I_MISS / D_MISS / IF_WAIT / LSU_WAIT / LUT / WNS / CRC 是否全对。**后面每一步都必须新增一行**。
+
+### P0.3 确认仿真确定性
+
+同一镜像连跑两次，ticks 必须完全一致。不一致说明 TB 有随机性，后续所有对比都不可信。
+
+---
+
+## P1 · 周期分诊（不改设计，只读数据）
+
+### 要回答的问题
+
+308 M 周期里，115.8 M 用于退休指令，**192.2 M 是空转**。这 192 M 花在哪？
+
+### 方法
+
+用 P0.1 打出来的计数，按下表估算占比：
+
+| 指标 | 含义 | 判断 |
+|---|---|---|
+| `I_MISS` | I-Cache 缺失次数 | 每次缺失 ≈ 8 拍突发 + 握手 ≈ 12~15 周期 |
+| `D_MISS` | D-Cache 缺失次数 | 同上 |
+| `IF_WAIT` | IF 级就绪但没取到指令的周期 | 取指饥饿 |
+| `LSU_WAIT` | load/store 等结果的周期 | 访存停顿 |
+| `MISPRED` | 预测失败次数 | ×2 周期 |
+
+**⚠️ 已知陷阱**：`perf_regs.v:41` 明确写了 `IF_WAIT` 与 `LSU_WAIT` 是**重叠视图，不可相加**。不要把它们加起来当总停顿，会得出大于 100% 的荒谬结论。
+
+### 决策树
+
+```
+I_MISS 估算代价 > 60 M 周期  → P2.1（扩 I-Cache）
+D_MISS 估算代价 > 60 M 周期  → P2.2（扩 D-Cache）
+I_MISS/D_MISS 都低，但 LSU_WAIT 很高 → P3（load-use 前递）
+MISPRED × 2 > 20 M 周期        → P4（预测增强，否则跳过）
+以上都不显著                    → 回头查 AXI 握手效率与 IFU 队列（P7 待定）
+```
+
+### 验收
+
+产出一张"周期去向表"，各来源相加 ≤ 192.2 M，剩余部分标注"未归因"。**不允许把未归因的部分硬塞进某一项。**
+
+---
+
+## P6 · 强制数据 RAM 进 BRAM（先做，零风险）
+
+### 现状纠正
+
+旧文档说"数据 RAM 是异步读，改同步读可省 2,685 LUT"——**这条已过时**。`axi_ram.v:170` 现在是 `if(read_good) read_data<=mem[read_index];`，**已经是同步读**。PDS 仍然把可写的那块推成 LUTRAM（`GTP_RAM64X1DP ×2048`），而只读的程序 RAM 正确推成了 BRAM（`GTP_DRM36K_E1 ×4`）。
+
+### 改什么
+
+在 `rtl/perips/axi_ram.v` 的存储阵列上加 PDS 认可的 RAM 风格属性（候选写法，按 PDS 语法文档选定，需先小规模试一个）：
+
+```verilog
+reg [31:0] mem[0:WORDS-1] /* synthesis syn_ramstyle = "block_ram" */;
+```
+
+或等价 PDS 属性。**不改变任何时序语义**。
+
+### 验收
+
+- `Total LUTs` 从 12,572 降到约 **9,900**（LUT-as-DRAM 2,685 → 接近 0）；
+- **ticks 必须与基线完全一致**（本改动不应改变任何时序行为）；
+- `All Constraints Met` 保持。
+
+### 排错
+
+| 症状 | 原因 | 处理 |
+|---|---|---|
+| ticks 变了 | RAM 输出变成了组合路径被 CPU 直接依赖 | 检查是否有跨模块组合依赖；本设计应无 |
+| PDS 报属性非法 | 属性名不是 PDS 的写法 | 查 PDS 语法文档，或改用综合脚本侧设置 |
+| BRAM 数量暴涨 | 两块 RAM 都被推成 BRAM | 只有可写那块需要改，只读那块保持现状 |
+
+### 回滚
+
+删掉属性即可，一行改动。
+
+---
+
+## P2 · 扩大 I/D-Cache（主攻执行效率）
+
+### P2.1 先把 I-Cache 地址切分参数化（**危险步骤，单独一个提交**）
+
+**现状**：`icache_axi.v:79` 是 `localparam SETS=32`，而 set index / tag / word 的位宽是**硬编码**的（`icache_axi.v:17-19`：set index = `addr[9:5]`，word = `addr[4:2]`，tag = `addr[31:10]`）。
+
+**做法**（不改变行为，先把结构参数化）：
+
+```verilog
+parameter integer SETS = 32,              // 改成 parameter，由顶层传入
+localparam integer IDXW = $clog2(SETS),   // 32 组 → 5 位
+// 所有 addr[9:5] 改成 addr[4+IDXW : 5]
+// 所有 tag 位宽 22 改成 32-(5+IDXW)
+```
+
+**验收**：
+- `SETS=32` 时编译后的仿真 ticks **与基线完全一致**（证明参数化本身零行为改变）；
+- `tb_icache_axi` 单元测试全绿。
+
+**这是本计划里最容易引入新 bug 的一步**，所以单独一个提交、单独验收、不允许和扩容量混在一起。
+
+### P2.2 扩 I-Cache 容量
+
+修改顺序（一次一档，每档都要过三重门）：
+
+| 档 | SETS | 容量 | 预期 I_MISS 变化 |
+|---|---|---|---|
+| 基线 | 32 | 2 KB | — |
+| 档1 | 64 | 4 KB | −40~50% |
+| 档2 | 128 | 8 KB | −70~85% |
+
+**验收**：I_MISS 显著下降 → ticks 下降 → CRC 全对 → LUT 增量可接受（目标总 LUT ≤ 16 k）。
+
+**排错**：
+- CRC 错 → 99% 是 tag 比较位宽没跟着改，或 line 有效位与 index 错位；
+- 用 `sim/run_icache_tests.py` 单跑 Cache 随机测试定位，**不要**在整机层面猜；
+- 若只有某些地址出错 → 看地址跨 4 KB 边界的突发是否越界（AXI 规定突发不能跨 4 KB）。
+
+### P2.3 扩 D-Cache
+
+`dcache_axi.v` 已参数化（`SETS`/`WAYS`），只需改 `pangoriscv_axi_top.v` 的实例参数。风险低于 P2.1。
+
+**验收**：D_MISS 下降、ticks 下降、CRC 全对。
+
+### P2.4 记录代价
+
+每档都要记 LUT 增量与 WNS 变化。**Cache 增大通常会让 WNS 变好**（miss 少、切换少），但也可能因 tag RAM 变大而变差，必须实测。
+
+---
+
+## P3 · load-use 前递（高风险，必须先有 P1 证据）
+
+### 前置条件（硬性）
+
+**只有 P1 明确显示 `LSU_WAIT` 是主要空转来源，才做这一步。** 没有测量就做，等于赌博。
+
+### 现状
+
+`regs.v` 只有**同周期写回旁路**（EX 级写、ID 级读同一拍），load 的结果必须等 EX 完成才可用。所以 `lw` 后紧跟依赖指令必然停顿。
+
+### 改什么
+
+新增开关 `LOAD_FWD_ENABLE`，在 `pangoriscv.v` 里把 EX 的 `load_value` 反馈到 ID 级操作数选择（经典 EX→ID 前递），或在 `regs.v` 增加一个旁路口。
+
+**必须遵守的约束**：
+- 不改 `regs.v` 的端口列表（铁律 3）→ 优先在 `pangoriscv.v` 里做操作数选择；
+- 前递必须带 `valid` 条件：只有 EX 当前确实是 load 且 `done_fire` 时才前递，否则会把垃圾数据推进去。
+
+### 验收
+
+- `LSU_WAIT` 下降；
+- ticks 下降；
+- **CRC 全对**（这是唯一可信的正确性判据）；
+- `run_isa_e2e.py` 用例 2「load-use 冒险」通过。
+
+### 排错
+
+| 症状 | 原因 |
+|---|---|
+| CRC 错但 ISA 全绿 | 前递条件用了组合 `done_valid` 而不是握手完成的 `done_fire` |
+| 只有某些指令错 | `access_size` 不同（LB/LH 的符号扩展）没走前递，反而用了原始字 |
+| trap 计数非 0 | 前递把 fault 路径的垃圾数据带进了寄存器 |
+
+### 回滚
+
+关掉 `LOAD_FWD_ENABLE`，编译结果应与基线逐位等价。
+
+---
+
+## P4 · 分支预测增强（小收益，最后做）
+
+### 先算清账
+
+`MISPRED = 3,040,222`，每次惩罚 ≈ 2 周期 → 约 6 M 周期，占 308 M 的 **2%**。
+**因此本阶段最高只能拿到 ~2% 的收益**，排在 P2/P3/P5 之后。若 P2/P3 之后 MISPRED 占比升到 10% 以上再回来做。
+
+### 可选动作（按性价比）
+
+1. **BTB 项数 32 → 64/128**（`branch_predictor.v`）：改动小；
+2. **加返回地址栈 RAS**：CoreMark 有大量函数调用（`core_list_join` 的 `cmp_complex` 回调），JALR 返回是 BTB 的弱项；
+3. **索引异或 PC 高位**：减少别名冲突。
+
+### 验收
+
+`MISPRED` 下降 + ticks 下降 + CRC 全对。
+
+### 禁止
+
+不要为了降 MISPRED 而去改 CoreMark 的编译分支布局（`-falign-*` 已在 flag 里，属于编译参数而不是架构优化，且会污染 A/B 结论）。
+
+---
+
+## P5 · 提频（评分项②，独立线，可与 P2~P4 并行）
+
+### P5.1 先拿到真实的最差路径
+
+现在的归档里**只有时序汇总，没有路径明细**（`pds_timing_summary_after_hold_fix.txt` 只有 WNS/TNS 表）。第一步必须重跑 PDS 并导出详细路径：
+
+```tcl
+report_timing -detail -max_paths 20
+```
+
+**验收**：能说出"最差路径是从 A 到 B"，不然下面的拆流水全是猜。
+
+### P5.2 频率扫描实验
+
+用现成的 `platform/pango_native/pango_native_50mhz_overconstraint.fdc` 思路，逐档收紧：
+
+| 档 | 周期约束 | 等效频率 |
+|---|---|---|
+| 基线 | 37.037 ns | 27 MHz |
+| 1 | 30 ns | 33 MHz |
+| 2 | 25 ns | 40 MHz |
+| 3 | 22 ns | 45 MHz |
+| 4 | 20 ns | 50 MHz |
+
+每档记录：是否 `All Constraints Met`、WNS、失败端点数。**收敛点 = 仍然 0 失败的最紧约束。**
+
+### P5.3 针对性拆流水
+
+只有 P5.1 拿到路径后才知道拆哪。已知的高概率嫌疑：
+
+| 嫌疑 | 位置 | 拆法 |
+|---|---|---|
+| 除法组合链 | `div.v`（134 行迭代移位相减） | 已经是多周期，检查是否被综合成单拍大组合 |
+| Cache tag 比较 + 数据选择 | `icache_axi`/`dcache_axi` | tag 比较寄存一拍 |
+| AXI 互连仲裁 | `axi_interconnect.v` | 组合仲裁改寄存仲裁 |
+| 乘法器 | `ex.v` APM | 若 APM 后还有宽加法，考虑打拍 |
+
+**禁止**：为了解决时序而加 `set_false_path` 掩盖路径。这会同时破坏赛题「频率合规」的口径。
+
+### P5.4 ⚠️ 提频会破坏「运行时间 ≥10 s」
+
+**这是最容易翻车的点**。迭代数必须随频率重算：
+
+```
+N ≥ ceil(10.5 × f_Hz / 每迭代周期数)        // 10.5 s 留 5% 余量
+```
+
+按当前 770,002 周期/迭代：
+
+| 频率 | 需要迭代数 | 建议取值 | 实际运行时间 |
+|---|---|---|---|
+| 27 MHz | 369 | **400**（现值） | 11.35 s ✓ |
+| 33 MHz | 451 | 500 | 11.67 s |
+| 40 MHz | 546 | 600 | 11.55 s |
+| 45 MHz | 614 | 700 | 11.98 s |
+| 50 MHz | 683 | 700 | 10.78 s |
+
+**而且：P2/P3 优化成功后每迭代周期会下降，迭代数还要再涨！** 例如降到 500,000 周期/迭代、跑 45 MHz 时：
+
+```
+N ≥ ceil(10.5 × 45e6 / 500000) = 945  → 建议 1000
+```
+
+**每次改完性能或频率，必须重算一次，否则成绩作废**（赛题硬性规则，见 skill §4）。
+
+---
+
+## 3. 三重门（每一步都必须全过，缺一不可）
+
+```powershell
+# 工作目录：firmware/code
+
+# 门1：RTL 编译 0 error 0 warning
+vlog -sv -work work +incdir+rtl/core -f sim/native_axi_sources.f
+
+# 门2：ISA 端到端（真实工具链程序 vs 参考模型，15 个用例）
+python tools/run_isa_e2e.py --cases all
+
+# 门3：CoreMark 五项 CRC 全对 + ticks 对比基线
+vsim -c -do "run -all; quit -f" -l transcript.txt work.tb_coremark_uart ...
+python build/coremark_score/parse_score.py transcript.txt --iterations 400 --mhz 27
+```
+
+**外加（改到 Cache/预测器/流水时必须跑）：**
+
+```powershell
+python sim/run_icache_tests.py --modelsim "<ModelSim>"
+python sim/run_dcache_tests.py --modelsim "<ModelSim>"
+python sim/run_predictor_tests.py --modelsim "<ModelSim>"
+python sim/run_pipeline_tests.py --modelsim "<ModelSim>"
+python sim/run_perf_tests.py --modelsim "<ModelSim>"
+python tools/run_halt_reset_tests.py
+```
+
+**改到总线/外设时再加：**
+
+```powershell
+python sim/run_interconnect_tests.py --seeds 20
+python sim/run_engine_tests.py
+python sim/run_ram_tests.py
+python sim/run_ifu_engine_tests.py
+```
+
+---
+
+## 4. 排错手册（本次已经踩过或极可能踩的坑）
+
+| 症状 | 原因 | 怎么查 | 怎么修 |
+|---|---|---|---|
+| `vopt-7063 Failed to find 'xxx'` | 测试台探针名与 RTL 信号名不一致 | 对照 RTL 的 `reg/wire` 声明 | 改测试台探针名，**不改 RTL** |
+| `extension 'zicsr' required` | GCC 12+ 不再把 Zicsr 隐含在 rv32i 里 | 看报错行 | 加 `-march=rv32im_zicsr` |
+| 仿真时间推进但无任何输出 | ModelSim 复用了陈旧的 `_opt` 优化缓存 | 看 `work/@_opt*` 目录 | 删 `work/@_opt*` 重跑 |
+| `QProcess: CreateFile failed` / `Flow-0189` | PDS 建子进程管道被安全策略拦 | PDS 日志 | 用完整权限跑 PDS |
+| 日志里 `Correct operation val` 被截断 | TB 只等 12000 周期就 `$finish` | `tb_coremark_uart.sv:330` | 加长等待；结论不受影响（该串只在 `total_errors==0` 分支打印） |
+| `Total ticks` 两位数字都不对 | 32 位截断 | `core_portme.h:84` 的 `CORE_TICKS` | 长跑取 `CPM_TICKS hi/lo` 行或 perf 的 64 位 CYCLE |
+| `Total ticks` 变了但 CRC 对 | 优化生效（正常） | — | 记录进 A/B 表 |
+| `Total ticks` 变了且 CRC 错 | 功能 bug | 先跑 ISA e2e | **立即回滚**，不要试图在优化分支上调试正确性 |
+| PDS 记忆体为空（位流没程序） | `$readmemh` 路径错，PDS 不报错仍出位流 | `build.tcl` 已内置检查 `Loading memory data from file` 计数 | 照 `build.tcl:104-121` 的检查走 |
+| 时序报告 Recovery/Removal 为空 | 复位输入没有 I/O 时序约束 | 约束文件只有 `create_clock` | 见 §7 的 I/O 约束补全 |
+
+---
+
+## 5. 排期与优先级
+
+| 序 | 阶段 | 预期收益 | 风险 | 建议工作量 |
+|---|---|---|---|---|
+| 1 | P0 测量脚手架 | 0（前提） | 低 | 半天 |
+| 2 | P1 分诊 | 0（决策依据） | 无 | 半天（含一次仿真） |
+| 3 | **P6 强制 BRAM** | ③ LUT −21% | 低 | 半天 |
+| 4 | **P2 I/D-Cache 扩容** | ① IPC 可能 +40~70% | 中 | 2~3 天 |
+| 5 | P5 提频 | ② 27→~40 MHz | 中 | 2 天 |
+| 6 | P3 load-use 前递 | ① 中 | **高** | 2 天 |
+| 7 | P4 预测增强 | ① ≤5% | 低 | 1 天 |
+
+**建议先做 P0+P1+P6+（P2 档1）**，这四步就能拿到大部分收益，且风险可控。
+
+---
+
+## 6. 明确不做的事（防止范围蔓延）
+
+- ❌ 不上双发射、不改 ISA 语义、不加 DMA/乱序执行（超出赛题范围，且会让"三项数据同一份位流"难以自证）
+- ❌ 不用 `set_false_path` 做时序收敛
+- ❌ 不改 CoreMark 源码或编译参数来"美化"分数（`core_*.c` 必须与官方逐字节一致）
+- ❌ 不在优化分支上修正确性 bug（先回滚到能过的版本，再单独修）
+- ❌ 不同时改多个模块（一次一个变量）
+
+---
+
+## 7. 两个必须一起处理的已知遗留
+
+### 7.1 fdc 的 I/O 时序警告（19 条）
+
+补齐即可消除（详见之前的分析）：
+
+```tcl
+set_input_delay  -clock clk 5.0 [get_ports {rst_n uart_rx key}]
+set_output_delay -clock clk 5.0 [get_ports {uart_tx}]
+set_output_delay -clock clk 5.0 [get_ports {led[*]}]
+```
+
+同时给 `pangoriscv_top.v` 的 `key` 补两级同步器（`rst_n`、`uart_rx` 已有）。
+
+### 7.2 SCBV 未设置
+
+`C: Bitstream-2001`。需要按板卡 PCB 确定 SCBV，现有资料无权威来源。**在有板子之前不猜值**，只在报告里如实标注"未设置，可烧录性未验证"。
+
+---
+
+## 8. 有板子之后的收尾（不在本计划范围内，但要预留）
+
+本计划所有产出都是仿真 + PDS。拿到板子后必须补：
+
+1. 下载位流，串口抓完整 CoreMark 报告（**板上 ≥10 s 必须重新验证**）；
+2. ILA 抓 CoreMark 关键算法波形（赛题文档评分项，目前 NOT RUN）；
+3. 板上实测频率（约束值 → 收敛实测值，两个口径分开写）；
+4. 用板上数据**替换**仿真分数，并重算迭代数。
+
+---
+
+## 9. 每阶段的归档约定
+
+每完成一步，在 `evidence/records/optimization/<阶段号>/` 下留：
+
+- `change.patch`（改了什么）
+- `before_after.csv`（A/B 数字，一行）
+- `transcript.txt`（CoreMark 日志）
+- `timing_summary.txt` + `resource_summary.txt`（PDS 产物）
+- `notes.md`（为什么这么做、遇到什么坑）
+
+**没有这五项，这一步不算完成。**
+
+---
+
+# 附：执行结果汇总（2026-10-17 实测）
+
+| 族 | 结论 | 数字 | 证据 |
+|---|---|---|---|
+| **P0/P1 测量** | 完成 | 访存 36.5% / 取指饥饿 18.1% / 预测 1.8% / 除法 0.04% | `evidence/records/optimization/early/P1-measurement.md` |
+| **P2 D-Cache 扩容** | **否决** | 2→8 KB 只快 0.53%，面积 ×4 | `.../P2/` |
+| **P2' store 路径** | **采纳** | **周期 −8.98%**（ticks 15,316,450→13,940,928），等 B 从 1,775,055→3,808 拍；CRC 一致、ISA 15/15 | `.../P2-store/` |
+| **P4 分支预测** | **否决** | 64/128 项快 1.68%/1.84%，但 LUT +15%/+32%，指标③ −12%/−23%，净亏；恢复 32 项 | `.../P4/` |
+| **P5 时钟频率** | **完成（实验）** | 50 MHz 过约束收敛，WNS +2.372 ns，0/66,247 失败；27 MHz 交付约束 WNS +17.920 ns | `.../P5/` |
+| **P7 IFU 取指吞吐** | **完成（采纳）** | 两笔未完成请求 + I-Cache 背靠背命中：**周期 −12.97%**（ticks 13,940,928→11,887,687，−14.73%），`if_wait` **−77.30%**（3,269,814→742,122），`lsu_wait` 纹丝不动；CRC 逐项一致、ISA 15/15 | `.../P7/` |
+| **P8 访存快发** | **完成（采纳）** | LSU 请求改在受理拍发出、命中则跳过 `REQUEST`：**ticks −9.71%**（11,887,687→10,733,373），`LSU request` 1,852,431→**490,318**，`ex_mem_post` −1,265,115；面积仅 **+41 LUT（+0.31%）**、触发器零增量 | `.../P8/` |
+| **P9 完成提前报** | **完成（采纳）** | 访存完成改在引擎响应拍报出、响应后直接回 `EMPTY`（`COMPLETE` 仅作反压保持）：**ticks −10.67%**（10,733,373→9,588,579），`LSU complete` 1,600,800→**0**，`ex_mem_post` −1,284,003；面积 **+40 LUT（+0.31%）**、触发器零增量 | `.../P9/` |
+| **P10 零延迟命中** | **完成（采纳）** | D-Cache 命中改在**受理当拍**应答（跨 `dcache`/`lsu`/`pangoriscv` 三文件）+ 写请求在受理拍就交给写引擎：**ticks −12.07%**（9,588,579→8,432,493），`rdwait` −882,642、`wdata` 精确减半；面积 **+499 LUT（+3.82%）**、触发器零增量 | `.../P10/` |
+| **P13 读命中不阻塞** | **完成（采纳）** | 读命中只需要 RAM，不必等写状态机：`req_ready`/`accept_hit` 允许在 `ST_WR_HOLD`/`ST_WR_DRAIN` 期间受理读：**ticks −7.64%**（8,432,493→7,788,468），`LSU request` 708,411→**244,654**；**面积与触发器零增量** | `.../P13/` |
+| **P14 store 当拍拿确认** | **完成（采纳）** | "早释放"的 OKAY 在 W 握手当拍就交给 CPU（P13 打通读路径后重做）：**ticks −1.67%**（7,788,468→7,658,647），`wrwait` 291,155→**4,140**；面积 **+18 LUT**、触发器零增量。同步把 halt-reset 场景 2/4 的注入点从 LSU `WRITE_WAIT` 换成 **AW 握手**（更准且不依赖缓存实例化） | `.../P14/` |
+| **P16 突发气泡清除** | **完成（采纳）** | `axi_ram` 在 READ_DELAY=0 时仍在 READ_WAIT 白等一拍，致使每个突发拍要 3 个周期：去掉后 **ticks −2.35%**（7,658,647→7,478,647），if_wait −134,008，I-Cache 填充 26→18 拍/缺失；**面积 −2 LUT / −2 FF** | .../P16/ |
+| **P17 LRU 修复** | **完成（采纳）** | 独立复核 R03：P10 的快命中路径直接回 `ST_IDLE`，跳过了写在 `ST_HIT` 里的 LRU 更新 → 替换退化。补上同值更新后 `d_miss` **4,655→4,270（−8.3%）**；重新出分 **2.6740→2.6757**，并按复核意见把 27/50 MHz 的 slack 改引 `multiseed_summary.csv` 收尾值、LUT 标明 device_map 阶段 | `.../P17/` |
+
+## 当前交付状态
+
+- **CoreMark/MHz**：**2.6757**（768 迭代有效跑分，ticks 287,030,751，10.63 s，
+  `Correct operation validated`，五项 CRC 正确）
+  - 上一版为 2.6740（P16）→ 本轮 **+0.06%**；本版主要修掉复核 R03（LRU 漏更新）
+  - 链条：S0 1.3054 → store 1.4342 → 取指 1.6815 → 访存快发 1.8622 → 完成提前报 2.0843
+    → 零延迟命中 2.3708 → 读命中不阻塞 2.5674 → store 当拍确认 2.6109 → 突发气泡清除 2.6740 → **LRU 修复 2.6757**
+    （累计 **+104.97%**）
+- **频率**：**27 MHz 与 50 MHz 约束均 All Constraints Met**
+  - 27 MHz：setup WNS **+14.578 ns**、hold WHS **+0.115 ns**，0 失败端点（取 `multiseed_summary.csv`）
+  - 50 MHz 过约束：setup **+1.262 ns**、hold **+0.121 ns**，0 失败端点
+- **资源**：**13,481 LUT（device_map）**，synthesis 为 13,574、后布线更小 —— 引用必须写阶段；
+  触发器 8,507；CoreMark/LUTs **0.1985 每 kLUT**（累计 +91.24%）
+- **回归**：单元 5/5、ISA 15/15、ram 40/40、halt-reset 5/5、IFU 引擎 20/20、dcache PASS
+
+**PDS 收敛经验（务必保留）**：27 MHz 的 hold 必须用
+`-fix_hold_violation_threshold 500`（不是 300），否则留下 1~5 个 −0.001~−0.027 ns 端点
+（D-Cache LUTRAM 写口跨时钟树分支偏斜）。**50 MHz 是种子敏感的**：本版 seed 11→−0.001、
+seed 41→−0.155、seed 23 才通过，换一次 PnR 就可能不收敛。
+
+**下一步：性价比已到拐点，建议不要再加功能，转上板验证。**
+
+计分窗口的**精确**分解（新增 `SCORE_WINDOW`/`EX_SPLIT`/`DCACHE_PATH`/`ADDR_REGION`/`MISPRED_MIX`
+探针，以"第一次写 UART TXDATA"为窗口边界；20 迭代，`sw_cycles=7,694,091` ≈ `ticks=7,658,647`）：
+
+| 来源 | 拍数 | 占额外开销 | 结论 |
+|---|---|---|---|
+| `if_wait`（取指饥饿 ≈ I-Cache 缺失 × 43 拍） | ~775 K | **40.5%** | 见下，**已实测否决** |
+| store 占 EX（2.3 拍/笔） | 681 K | 35.6% | 下限 2.0 拍，只剩 0.3 拍（1.2%） |
+| 分支预测失败 | ~308 K | 16.1% | 72.9% 是普通分支；BTB 加倍要 +15~32% LUT，**③ 净亏** |
+| load 占 EX | 148 K | 7.7% | **已经免费**（受理即退休 + 寄存器堆写透前递） |
+
+> 早期按 `report_seen` 门控的统计是**有偏的**——它直到报告最后一行才置位，
+> 会把整段报告打印（UART 忙等 0x3000_0000）算进去，导致误判 load 占 54.8%。
+
+**已实测否决：I-Cache 2 KB → 4 KB（组数 32→64）**
+- 收益：`i_miss` 18,289→8,913（−51%）、`if_wait` −245 K、**ticks −3.44%**、CM/MHz 2.6109→2.7040
+- 代价：**LUT 13,576→14,667（+8.04%）、FF 8,639→10,016（+1,377）**
+- 三项算下来 **① +3.56% 但 ③ −4.11%**，净亏 → **已回退**（`icache_axi.v` 与 HEAD 逐字节一致）
+- 早起动（early restart）同样不做：CPU 恢复后下一条取指仍落在正在填充的行上，只是把停顿挪位置
+
+明确不再碰：D-Cache/BTB 扩容、I-Cache 扩容、非法提频（板载 27 MHz）。
+**要继续压 ① 就必须付面积（③ 的分母）或改流水线结构**（从 ID 发访存 / 双发射），
+余下价值在上板验证（ILA 波形、实板串口实测）而不是再挤百分比。
+
+## P7 已完成（原"下一轮"清单的落实结果）
+
+1. I-Cache：`req_ready = rst_n && (state==IC_IDLE || rsp_leaving)`，
+   `IC_IDLE`/`IC_RESP` 合并受理分支 → 连续命中 1 拍 1 条；
+2. IFU：`state` 与单份 `req_pc_q` 换成 2 深 PC FIFO（`pcf0/pcf1`、`pdf0/pdf1`）+ `ocnt_q`，
+   响应按槽 0 配对；`count_q + ocnt_q < DEPTH` 预留队列表项，故 `eng_rsp_ready` 可无条件为高；
+3. 重定向丢弃改为 `stale_cnt_q` 按笔计数（同拍响应当场扣减，`redirect_valid` 持续多拍也正确）；
+   `idle` 也纳入 `stale_cnt_q==0`，halt 握手不会误报空闲；
+4. `tb_ifu_axi` 已覆盖：2 笔未完成上限、绝不反压响应、背靠背连续受理（`run_max=8`）、
+   重定向撞响应同拍；`tb_icache_axi` 新增 T9 背靠背命中 7 个字；
+5. 入口门槛全过：单元 PASS + ISA 15/15 + 五项 CRC 与基线一致。
+
+**到此三项评分都有数据，剩下的只有上板**（实板串口、ILA 波形、板上实测频率、按实测重算迭代数）。
+
+---
+
+## §6 CoreMark 优化文献综述
+
+*原文件：`docs/design.md`*
+
+### tinyriscv-AXI4 RV32IM 软核：CoreMark 提分文献调研（有引用来源）
+
+**日期**：2026-10-13
+**对象**：`01_code/pangoriscv_axi4`（RV32IM 顺序单发射，三级流水，AXI4 单 master 对，I/D-Cache 2 路×32 组×32 B，BTB 32 项 + 2 位饱和计数器，perf_regs 计数器）
+**平台**：Pango Logos2 PG2L100H-6，CPU 27 MHz，CLMA 2,538/11,675（22%）
+**实测基线**：CoreMark 200 迭代——无 Cache 656,167,771 ticks（IPC 0.0931）→ 加 I/D-Cache 351,948,617（IPC 0.1735）→ 加动态预测 326,735,694（IPC 0.1871）；错预测率 60.18%→15.83%，每次错预测代价 4.10 cycles。
+
+---
+
+## 0. 从 RTL 读出的瓶颈（本文所有排序的事实基础）
+
+需求方给的 perf 线索（`if_wait`≫`lsu_wait`）在 RTL 里能定位到三条硬约束，它们决定了"哪个优化有收益"：
+
+| 位置 | 事实（源码） | 推论 |
+| --- | --- | --- |
+| `rtl/core/ifu_axi.v:19,26,27,33,47-70` | `localparam EMPTY=0,WAIT_DATA=1,HOLD=2`；`eng_req_valid = rst_n && idle && enable && !redirect_valid && !local_fault`；`fetch_valid = state==HOLD && …`；HOLD 的出口条件是 `fetch_valid && fetch_ready` | **IFU 是"一发一等"的 3 态机**：EMPTY(发请求)→WAIT_DATA(收数据)→HOLD(交给流水线)。只有流水线**吃掉**当前指令后，下一拍才回到 EMPTY 发下一个请求。取指吞吐被钉死在 <1 IPC |
+| `rtl/core/icache_axi.v:101,137-164` | `req_ready = rst_n && state==IC_IDLE`；命中后 `IC_IDLE→IC_HITRD→IC_RESP`，`IC_RESP` 等握手才回 `IC_IDLE` | **I-Cache 命中本身也是 2~4 拍**（tag 比较 1 拍 + 同步 BRAM 数据 1 拍 + 响应握手 1 拍），再叠加 IFU 的 3 态机 |
+| `rtl/core/lsu_axi.v:42-48,82,89-92` | `eng_w_valid = state==WRITE_DATA`；`eng_b_ready = state==WRITE_WAIT`；`WRITE_WAIT: if(eng_b_valid && eng_b_ready) state<=COMPLETE`；`op_ready = rst_n && idle` | **每条 store 至少 4 拍且必须等 AXI B 响应**；LSU 全程 `idle=0`，没有任何 store buffer 吸收 |
+| `rtl/core/branch_predictor.v:52-61,73` | 32 项直接映射，索引 `PC[6:2]`，tag `PC[31:7]`；`always @(posedge clk) … else if (train_valid && train_control)`，`train_valid = retire_fire` | **没有 RAS**（`JALR` 一律 predicted taken，目标来自 BTB 单表项）；**训练在 retire 边界**，不投机训练；32 项表小，CoreMark 控制流易冲突 |
+
+> 一句话结论：**当前每取一条指令的最低成本 ≈ 5 拍**（IFU 3 拍 + I-Cache 命中 2 拍 + 重定向/停顿），这解释了 IPC 0.187 和 `if_wait` 主导。所以**收益最大的方向是"取指解耦 + I-Cache 命中路径流水化"，而不是继续加 Cache 容量**。
+
+---
+
+## 排序后的技术清单
+
+> 排序依据 = 预期收益 ÷（风险 × 工作量），并只在"能落到本项目模块"的前提下排序。
+> "预估收益"里标 ★ 的为我基于上表 RTL 事实的推断（无公开同规模数据）；标数字的为文献报告值。
+
+| # | 技术 | 来源与报告收益 | 本设计适配性 | 预估收益（CoreMark） | 风险/工作量 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **取指解耦：小指令队列（fetch queue）+ 提前取下一拍 PC** | Shanley & Anderson, *PCI System Architecture* 类"预取缓冲"描述属经典教材级；学术上最贴合的是 Skadron/Ahuja/Martonosi, *Instruction Fetching: A Case for Fetch-Directed Prefetching*, ISCA 2002（[IEEE](https://ieeexplore.ieee.org/document/809439/)）——主张用预测流驱动取指、把已预测路径的指令提前搬进队列。另：Continual Flow Pipelines, ASPLOS 2004（[PDF](https://uwaterloo.ca/scholar/sites/ca.scholar/files/z399huan/files/continual_flow_pipelines.pdf)）论证"窄发射核的瓶颈常在取指供给而非执行" | **极高**：改 `ifu_axi.v` 即可，不动 AXI/Cache。把 EMPTY→WAIT_DATA→HOLD 改成"IFU 可连续向 I-Cache 发请求、结果入 4~8 项 FIFO"，重定向只 flush FIFO，不再把在途请求标 `stale_q` 丢弃 | ★ IF 等待几乎清零，保守 +25~40%（IPC 0.187→0.24~0.26） | 低。改动 ~80 行；需处理 redirect 与在途响应、FIFO 空/满与 `enable` 门控。有 `tb_ifu_axi.sv`/`tb_ifu_axi_engine.sv` 现成 TB |
+| 2 | **BTB 扩容：32→128/256 项 + 加 RAS（8 项）+ 索引去掉低位对齐** | TAGE/COTTAGE 的"等价存储预算下显著优于 CBP-2004 所有预测器"（Seznec & Michaud, JILP 8, 2006，[HAL](https://inria.hal.science/hal-03408381v1)）；RAS 属教科书级结构（Hennessy & Patterson, *CA:AQA*）。软核上唯一的公开同规模对照：*Exploration of High-Performance Branch Predictors for Softcore Implementations*（FPL 投稿，[Southampton ePrints](https://eprints.soton.ac.uk/513929/)）报告 2 位预测器把错预测率从 **60.96% 降到 7.08%**（−88.4%），面积代价仅 3.x% 量级（该数字来自检索片段，**未核实**其核型与工艺） | **极高**：`branch_predictor.v` 是纯寄存器表，`ENTRIES` 已是参数；33 KB 空间里加 96 项只多几百 LUT/FF。RAS 对 CoreMark 的 `list_*`/`core_*` 函数调用返回尤其有效 | ★ 错预测率 15.83%→10~12%，约 +3~6%；RAS 单独可能 +1~3% | 低。`ENTRIES` 直接加大即可，但 tag 位宽会变（需同步改 `TAG_BITS`）；RAS 需新增 push/pop 语义与 TB 用例 |
+| 3 | **I-Cache 命中路径流水化 + way prediction（把 2~4 拍命中延迟压到 1~2 拍）** | Way prediction 属商用核常用微架构（ARM/Xilinx 专利与手册有描述，如 [US11048637](https://patentimages.storage.googleapis.com/9f/76/98/1da3981eee5274/US11048637.pdf) "way predictor tables … leverage the spatial locality of cache accesses"）；延迟降低的收益可用 Amdahl 直接推算 | **高**：`icache_axi.v` 命中路径现在走 `IC_HITRD`（同步 BRAM 读）→`IC_RESP`。可改为"tag 比较与数据 BRAM 读同拍发起、命中即当拍出数据"，再用 1 位 way 预测表省掉读后再选路一拍 | ★ 每条指令省 1~3 拍 ≈ +15~30%（与 #1 有重叠，先做 #1 再做 #3 可叠加剩余部分） | 中。命中组合路径变长，**27 MHz 不紧张但要注意保持时序**；`invalidate` 与在途 fill 的互锁逻辑要重审 |
+| 4 | **I-Cache next-line / sequential prefetch（顺序预取下一行）** | Jouppi, *Improving Direct-Mapped Cache Performance by the Addition of a Small Fully-Associative Cache and Prefetch Buffers*, ISCA 1990（[ACM](https://dl.acm.org/doi/abs/10.1145/325164.325162)）首创 stream buffer/prefetch buffer；同派生的 next-line 预取在 Berkeley CS152 讲义（Kubiatowicz, Spring 2004, [lec20-cache.pdf](https://people.eecs.berkeley.edu/~kubitron/courses/cs152-S04/lectures/lec20-cache.pdf)）中引用了 16 B/项配置下 **1.23×~1.32×** 的等效收益曲线（二手引用，**未核实**具体对应关系） | **高**：`icache_axi.v` 已有 8 拍 `ARLEN=7` 整行补行机制（`m_arlen = 8'd7`），加"预取下一行"只需在 fill 完成后追加一次 `AR` 请求 + 一个 1 位 pending 寄存器；`I_AR_LEN7` 计数器现成可量 | ★ `i_miss=48` 相对 `cycle=123,535` 很小，但每次 miss 代价 = 8 拍突发 + 总线延迟；预取可把这部分藏到当前行执行之后，约 +3~8% | 中。必须保证**预取不越过可执行区**（`EXEC_BASE/EXEC_BYTES`）与 MMIO 边界；与 `invalidate`（halt/下载后）的互锁要小心，否则会"预取回旧代码" |
+| 5 | **Store buffer + 写合并（把"等 B 才退休"变成解耦）** | 教科书级结构（Hennessy & Patterson, *CA:AQA*, Ch.3/附录 memory hierarchy）；AMBA AXI 允许 **AW 提前发出、B 乱序返回**（Arm, *AMBA AXI Protocol Specification*, IHI 0022，[documentation-service.arm.com](https://documentation-service.arm.com/documentation/ihi0022/l?lang=en&rev=0)），这正是 store buffer 的协议基础 | **中高**：`lsu_axi.v` 现在 `WRITE_WAIT` 死等 B。改成"store 入 4~8 项 FIFO 即 `COMPLETE`，后台 drain"，并把相邻同 4 KB 的 store 合并成长度>1 的 INCR 写突发。**必须保持 MMIO 区强序**（`dcache_axi.v` 的 `CACHED_LIMIT` 旁路路径） | ★ `lsu_wait=5,963` 只占 4.8%，但每条 store 的 4+ 拍是流水线气泡；实测约 +4~8%，配合写合并涨 AXI 有效带宽后对 DDR/慢 slave 收益更大 | 中高。**B 响应与 fault 语义**：store 的 fault 不能再同步在 `COMPLETE` 报告；halt/reset 必须 drain FIFO（现有 `tb_halt_reset_drain.sv` 要扩展）；`d_b_fire` 计数含义变化 |
+| 6 | **D-Cache 写回 + 写分配（write-back/write-allocate）+ Victim cache** | 写回/写分配收益见 Jouppi ISCA 1990（同上）；victim cache 的原始结果同样出自该文（Berkeley 讲义引用其 16 B 配置收益曲线，**未核实**）。现代同源证据：Million/Oliete-Escuín/Fuguet, *Breaking the Memory Wall with a Flexible Open-Source L1 Data-Cache*, DATE 2024（[HAL](https://hal.science/hal-04600058v1)，DOI 10.23919/DATE58400.2024.10546547）——把 CVA6 的 L1D 换成带并发/流水化的非阻塞 HPDcache，关键基准**最高 +234% 加速，面积仅 +5.92%** | **中**：当前 `dcache_axi.v` 4 处注释写明 `write-through, no write allocate`，`d_miss=61` 很小，说明 D 侧不是主矛盾。真正值得抄的是 DATE 2024 的"内存子系统缺并发/流水"诊断 | ★ 对 CoreMark 直接收益小（D miss 少）；但对含矩阵/缓冲区的负载才是主收益。**不建议本轮做** | 高。脏行回写、fault 精确定位、`invalidate` 语义、读改写全要重做；用 CoreMark 衡量会"投入大、回报小" |
+| 7 | **非阻塞 Cache / MSHR（hit-under-miss）** | Kroft, *Lockup-free Instruction Fetch/Prefetch Cache Organization*, ISCA 1981（[ACM](https://dl.acm.org/doi/abs/10.5555/800052.801868)）是开山之作；量化收益见 DATE 2024（+234%，如上） | **中低**：本设计 I/D 各一个 engine，`axi_read_engine` 明确限制 `AXI_ENGINE_MAX_LEN`，要支持多 outstanding 需改互连与 ID 管理（`icache_axi.v` 已有 `m_rid != id_q` 的协议 fault 检查，说明 ID 机制在位） | ★ I miss 少（48 次）→ 收益有限；对小核是"结构正确但性价比低" | 高。需要 MSHR 表、多 ID 分配、与 interconnect 的 outstanding 深度协商 |
+| 8 | **TAGE / 长历史预测器（替换 2 位计数器）** | Seznec & Michaud, *A case for (partially) tagged geometric history length branch prediction*, JILP 8, 2006（[HAL](https://inria.hal.science/hal-03408381v1)）——**明确声明"在等价存储预算下，TAGE 显著优于 CBP-2004 上所有预测器"**（原文未给单一百分比）；ETH 收录的 TAGE-SC-L 讲义（[PDF](https://safari.ethz.ch/digitaltechnik/spring2023/lib/exe/fetch.php?media=tage-sc-l2014seznec.pdf)）给出实现细节 | **中**：TAGE 的最小可用配置（几个 tagged 表 + 几何历史）在 FPGA 上是 BRAM/LUTRAM 友好的，但**索引需要全局历史移位寄存器 + 多路 hash**，在 27 MHz 顺序核上主要成本是设计与验证，不是面积 | ★ 若 #2 已把错预测率压到 ~11%，TAGE 顶多再降到 7~8%，即 **+1~3%**，边际收益低 | 中高。训练/投机更新的正确性难验证（现有 `tb_branch_predictor.sv` 要重写）；建议**先做 #2，把 TAGE 留作后续** |
+| 9 | **Loop buffer / 指令行缓冲（消除循环体的 I-Cache 访问与命中延迟）** | 低能耗嵌入式取指缓冲的系统性探索：*Instruction buffering exploration for low energy embedded processors*, Journal of Embedded Computing（[ACM](https://dl.acm.org/doi/abs/10.5555/1233748.1233753)）；另有 *Reducing Power and Energy Overhead in Instruction Prefetching for Embedded Processor Systems*（IGI Global 书章，ISBN 9781466627857，[viewtitlesample](https://www.igi-global.com/viewtitlesample.aspx?id=73220&ptid=69828)）。两者的报告指标以**取指能耗下降**为主，公开的 IPC 提升数据我没找到 | **中高**：CoreMark 的 `core_list_join`/`core_state_transition` 循环体小，loop buffer 命中率高；且它同时**绕过了 IFU 状态机与 I-Cache 命中延迟**，与 #1 天然互补 | ★ 与 #1 叠加后可能是"压死 if_wait"的最后一步，+5~15%；但**无同规模公开数据，属推断** | 中。循环边界检测（后向分支 + 迭代计数）与重定向交互是主要复杂度；建议在 #1/#3 之后按 perf 数据决定是否做 |
+| 10 | **取指-分支预测解耦（predictor 与取指队列握手重构）** | Skadron et al., ISCA 2002（[IEEE](https://ieeexplore.ieee.org/document/809439/)）的核心论点；Continual Flow Pipelines, ASPLOS 2004（[PDF](https://uwaterloo.ca/scholar/sites/ca.scholar/files/z399huan/files/continual_flow_pipelines.pdf)） | **高**：这一条其实是 #1 的"另一半"——`ifu_axi.v` 的 `redirect_valid` 会 `stale_q<=1` 并在 WAIT_DATA 直接丢弃响应，是纯浪费。解耦后可让在途响应"落地但不交付" | ★ 已包含在 #1 的收益里 | 低（与 #1 同一次改动） |
+| 11 | **分支预测训练前移（retire 训练 → EX 训练 / 投机训练）** | 无直接对口文献；`branch_predictor.v:15-17` 的注释说明当前是刻意选择 retire 训练以保证"与 predict-not-taken 架构等价" | **高**：CoreMark 错预测 15.83%，而 4.10 cycles/miss 的代价里有一部分来自"表更新太晚导致同一分支连续错两次" | ★ +1~3%；**无公开数据，属推断** | 中。会破坏"预测开关不影响架构结果"的等价性论证，`run_predictor_tests.py` 需要新增断言 |
+| 12 | **双发射（最小代价做法）** | 最贴合的公开数据：Mendes/Figueiredo/Menotti, *TORVS: A Lightweight Dual-Issue Superscalar RISC-V Core for FPGA-Based Systems*, SBESC 2025（[SBC OpenLib 摘要](https://sol.sbc.org.br/index.php/sbesc/article/view/40351)，IEEE Xplore 11288856）——RV32I 五级双流水，CoreMark **1.176–1.600 CoreMark/MHz**（参数化设计点），Dhrystone 1.708–2.331 DMIPS/MHz，结论是"轻量设计在基础操作上有竞争力，复杂负载下效率下降"。另有 FPGA 软处理器并行执行单元/writeback 设计研究（[IEEE 9114632](https://ieeexplore.ieee.org/document/9114632)） | **中**：需再加一条流水线 + 寄存器堆第二读口/写口 + 旁路网络 + 冲突检测。当前 CLMA 余量（22%）够，但**三级流水双发射的冒险检测复杂度上升很快** | ★ TORVS 的参数化结果暗示双发射相对单发射有可观提升，但它没有给出"单发射基线"，**不能直接外推到本设计**；本项目自测单发射 0.61 CoreMark/MHz，即使到 1.0 也只 ~1.6× | 高。属"重写半个核"，不应与 #1~#5 并行做 |
+| 13 | **寄存器堆 banking / 多端口化** | FPGA 上多泵多端口寄存器堆的实现与面积曲线：*Efficient Implementations of Multi-pumped Multi-port Register Files in FPGAs*, DSD 2013（DOI 10.1109/DSD.2013.28，检索命中，**未核实**细节） | **低（除非做 #12）**：当前 `rtl/core/regs.v` 仅 95 行，单发射不需要 banking | ★ 单发射下 ≈0% | 中。只有 #12 落地后才有意义 |
+| 14 | **位串行 / 流水化 ALU** | *Study of Interlock Collapsing ALUs for RISC-V Microprocessors*（TU Delft 学位论文，[PDF](https://repository.tudelft.nl/file/File_5494a8b8-c690-4e80-a089-6069cfc3ebbb?preview=1)）——研究互锁合并型 ALU；检索片段还命中"serialized ALU 由 control/shift/… 组成"的描述（[ACM DL](https://dlnext.acm.org/doi/pdf/10.1145/3801488.3807977)），**两处细节均未核实** | **低**：27 MHz 下 ALU 不是时序瓶颈；`ex.v` 862 行里真正贵的是一次除法（`div.v` 205 行，逐位迭代） | ★ 若 CoreMark 有除法热点才有收益；否则 ≈0%。**无公开数据，属推断** | 中。会改变多周期指令的时序契约 |
+| 15 | **频率提升（27 MHz → 更高）** | FPGA 侧方法论引用 AMD/Xilinx 官方指南 UG949 *Vivado Design Methodology*（[PDF](https://china.xilinx.com/content/dam/xilinx/support/documents/sw_manuals/xilinx2017_2/ug949-vivado-design-methodology.pdf)）、UG901 *Vivado Synthesis*（[PDF](https://www.ecs.csun.edu/~smirzaei/docs/ece524/ug901-vivado-synthesis-en-us-2025.1.pdf)）。**Pango 官方 PDS 时序/综合指南我未取得可引用链接，标注"未核实"** | **高（但要先证明时序余量）**：CoreMark 分数 ∝ 频率，若 27 MHz 时 WNS 富余很大，提频是**唯一"零架构风险"的线性收益** | 频率 ×1.5 → 分数 ×1.5（若 WNS 允许） | 低~中。风险全在时序收敛：`icache_axi.v` 的 tag 比较 + `ex.v` 的旁路/比较器是关键路径。CLMA 22% 说明有布线余量 |
+| 16 | **I-Cache 容量/行大小/相联度调整** | Jouppi ISCA 1990 的 stream buffer + victim cache 组合是"小 Cache 提命中"的经典答案（[ACM](https://dl.acm.org/doi/abs/10.1145/325164.325162)） | **中**：CoreMark 代码体积约几 KB 量级（官方口径下 `core_list_join`/`core_matrix`/`core_state` 为主体；精确值**未核实**），当前 I-Cache 2,048 B 已接近临界；CLMA 只用 22%，扩到 4 KB 几乎免费 | ★ 若 CoreMark 代码 > 2 KB，扩到 4 KB I-Cache 可能直接消掉一部分 `i_miss` | 低。改 `SETS` 参数即可，但要同步 `tb_icache_axi.sv` 的几何断言与板级 CLMA 记录 |
+| 17 | **软件/工具链：`-O3` / `-funroll-loops` / `-flto` / `-march=rv32im`** | **CoreMark 官方口径**：`eembc/coremark` 仓库说明与 `core_portme.mak` 的 `PORT_CFLAGS`/`ITERATIONS` 机制（[GitHub](https://github.com/eembc/coremark)，检索片段确认存在；`raw.githubusercontent.com` 在本环境超时，正文**未能逐字核对**）；官方 Run Rules PDF 的旧链接 <http://www.eembc.org/coremark/CoreMarkRunRules.pdf> 现已 404。Embench 侧的权威公开材料：Bennett, *How good is RISC-V: Comparing benchmark results*, FOSDEM 2025 RISC-V devroom（[日程页](https://archive.fosdem.org/2025/schedule/event/fosdem-2025-5678-how-good-is-risc-v-comparing-benchmark-results/)）——明确讲"不同扩展与编译器对编译代码性能的影响"，并给出用 ML 辅助调优在 **24 小时内把 OpenHW CV32E40Pv2 的代码密度改善 7%** 的实测 | **极高（零 RTL 风险）** | 官方口径下 `-O3`/LTO 通常比 `-O2` 高个位数百分比，但**我没有找到可核实的 CoreMark `-O2`→`-O3` 具体百分比**，必须本地 A/B 实测 | 极低。你的构建器已支持传参（见 `README.md` 的 `tools/build_native_software.py`）；只需扩成矩阵扫描 |
+| 18 | **软件：不改代码只改放置（I-Cache 感知的链接/对齐、去掉 `printf` 等冷路径）** | 同 FOSDEM 2025（代码密度 −7% 的实测）；CoreMark 官方明令**不得**为跑分而预计算/改算法（见"口径"小节） | **极高**：把热循环对齐到 32 B 行边界、让 `core_state_transition` 的状态机表不跨行，能直接减少 `i_miss` | ★ 与 #17 一起做，合计可能 +5~15%；**无公开同规模数据，属推断** | 极低。纯构建/链接配置 + `nm`/反汇编核对 |
+
+### CoreMark 跑分口径（必须先钉死，否则所有 A/B 都不可比）
+- 官方用 `-DITERATIONS=<n>`（或 `core_portme.mak` 的 `ITERATIONS`）控制迭代次数，`-DPERFORMANCE_RUN=1` 走性能口径、`-DVALIDATION_RUN` 走校验口径；性能口径用固定种子（CoreMark 1.0 常见为 `0,0,0x66`，**我未能逐字核对官方源码，标注未核实**）。[[eembc/coremark](https://github.com/eembc/coremark)]
+- 因此**200 迭代的自定义跑分不是官方成绩**，只能做本项目内部 A/B。建议同时报 `CoreMark/MHz = 1e6 / (ticks_per_iteration × MHz_factor)` 归一化值；按你现有数据：326,735,694 ticks / 200 迭代 / 27 MHz ≈ **0.61 CoreMark/MHz**——这个数字可以直接拿去和公开软核对照（例如 TORVS 报 1.176–1.600 CoreMark/MHz，[SBESC 2025](https://sol.sbc.org.br/index.php/sbesc/article/view/40351)）。
+- 官方要求**每次测量前重新编译并重新验证**（`-DVALIDATION_RUN` 输出必须匹配期望 CRC）。CI 里把 validation run 作为 gate 是防"优化把算法算错还跑得快"的唯一有效手段。
+
+---
+
+## Top 5 落地方案
+
+### T1. 取指解耦：IFU 加指令队列 + 提前发下一拍请求
+**改哪里**：`01_code/pangoriscv_axi4/rtl/core/ifu_axi.v`（72 行，主改动）；`rtl/core/if_id.v` 的握手条件可能要放松；`rtl/perips/perf_regs.v` 的 `if_wait` tap 保持不变以便对照。
+
+**怎么改**（三段）：
+1. **拆掉"一发一等"**：把 `EMPTY/WAIT_DATA/HOLD` 语义改为 `IDLE/REQ/WAIT/FILL`，允许 `eng_req_valid` 在当前请求被接受后**立即**再次拉高（不再要求 `idle`）；`eng_req_ready` 到 `eng_rsp_valid` 之间用一个小 `pending` 计数跟踪在途请求数（I-Cache 当前 `req_ready = state==IC_IDLE`，所以实际在途 ≤1，这对第一版够用；若 #3 一起做则可 >1）。
+2. **加 4~8 项指令 FIFO**：`fetch_valid/result_*` 由 FIFO 非空驱动，而不是由状态机 `HOLD` 驱动。`fetch_ready` 变成 FIFO 的 pop 信号。
+3. **重定向只 flush，不丢弃在途响应**：现在 `if(redirect_valid && state!=EMPTY) stale_q<=1;` 会让在途响应白跑。改成：redirect 只清 FIFO 并切 `fetch_pc`，在途响应回来时**如果地址已过期就丢弃数据但不回 IDLE**（继续发新请求）。这正是文献里"取指与重定向解耦"的最小形态 [[Skadron et al., ISCA 2002](https://ieeexplore.ieee.org/document/809439/)]。
+
+**为什么能提分**：当前每条指令取指占用 ≥3 拍（EMPTY→WAIT_DATA→HOLD），I-Cache 命中再加 2 拍，`if_wait=80,962 / cycle=123,535`（65.5%）就是它的直接证据。解耦后稳态下 I-Cache 命中延迟被 FIFO 深度掩盖，`if_wait` 应大幅下降。按 IPC 0.187 → 0.24~0.26 估，**分数 +25~40%**。
+
+**风险**：(a) FIFO 与 `enable`/halt 的门控——halt 时不能继续预取；(b) `EXEC_BASE/EXEC_BYTES` 边界与 `local_fault` 路径必须逐条复核，fault 指令也要按序进 FIFO；(c) redirect 与 FIFO 满的交互要穷举。
+
+**怎么验证**：
+- `sim/tb/unit/tb_ifu_axi.sv` + `sim/run_ifu_engine_tests.py`：新增"连续 4 条指令背靠背、无流水线气泡"断言（`if_wait` 在稳态 N 拍内 =0）。
+- `sim/run_pipeline_tests.py` + `sim/test_all_isa.py`（ISA E2E 15 项）：FIFO 不得改变任何架构可见结果；fault/重定向用例要新增。
+- `tb/integration/tb_coremark_uart.sv` A/B 跑核心：读 `perf_regs` 的 `IF_WAIT`/`CYCLE`/`INSTRET`，要求 `IF_WAIT` 绝对值下降 ≥40% 且 `INSTRET` 不变。
+- 板上：CLI 烧录 + UART 采 CoreMark 200 迭代 ticks，与 326,735,694 对比。
+
+---
+
+### T2. BTB 32→128 项 + 8 项 RAS
+**改哪里**：`rtl/core/branch_predictor.v`（98 行）。
+
+**怎么改**：
+1. `ENTRIES` 参数 32→128（`IDX_BITS` 5→7，`TAG_BITS` 25→23 自动跟随）；索引改成 `PC[8:2]`（保持按 4 B 对齐），**顺带消掉现在 `PC[6:2]` 索引在 CoreMark 小函数密集时的整行冲突**。
+2. 加 **8 项 RAS**：`JAL/JALR` 且 `rd == x1/x5` 判定为 call，push `pc+4`；`JALR` 且 `rs1 == x1/x5` 且 `rd != x1/x5` 判定为 return，pop 作为 `predict_target`。返回地址栈在软核上的成本约 8×(32+1) FF。
+3. 保留 `train_valid = retire_fire` 的训练语义不动（这是现有"预测开关不影响架构结果"等价性的基础，见 `branch_predictor.v:15-22` 注释）。
+
+**为什么能提分**：错预测率 15.83%、代价 4.10 cycles/miss。32 项直接映射对 CoreMark 的 `core_list_join`/`core_state_transition` 明显偏小；而**没有 RAS** 意味着每个函数返回都靠 BTB 单表项——CoreMark 里 call/return 密度高。文献侧：软核上 2 位预测器可从 60.96% 降到 7.08% 错预测率 [[FPL 投稿, Southampton](https://eprints.soton.ac.uk/513929/)]，说明"表变大 + 计数变好"在软核上收益显著。**估 +3~6%**。
+
+**风险**：索引位宽变了以后，`tb_branch_predictor.sv` 里所有硬编码索引/tag 位要同步；RAS 需要精确的 push/pop 条件（误判 return 会让预测目标彻底跑偏，比不预测更差，但架构正确性不受影响）。
+
+**怎么验证**：`sim/run_predictor_tests.py`（新增 RAS 溢出/下溢、call-return 配对、预测 vs 不预测架构等价）；`run_pipeline_tests.py`；CoreMark A/B 看 `MISPRED`/`RET_CF` 比值下降。
+
+---
+
+### T3. I-Cache 命中路径流水化 + way prediction
+**改哪里**：`rtl/core/icache_axi.v`（220 行）。
+
+**怎么改**：
+1. **命中去掉一拍**：现在 `IC_IDLE`（比较 tag）→ `IC_HITRD`（读 BRAM）→ `IC_RESP`。把数据 BRAM 索引改成"用 `req_addr` 直接读、不等 tag 比较结果"，即 `req_valid` 当拍就发起数据读，`IC_HITRD` 只做选路。若 BRAM 读延迟固定 1 拍，命中延迟可压到 2 拍。
+2. **加 1 位 way 预测表**（32 项，索引 = set）：预测上次命中的 way，先按预测 way 读数据，tag 比较失败再回退读另一路。这需要数据读与 tag 比较**并行**，代价是回退路径一拍。参考商用实现思路 [[US11048637](https://patentimages.storage.googleapis.com/9f/76/98/1da3981eee5274/US11048637.pdf)]。
+3. **保持 fill 语义不变**：`IC_AR/IC_FILL/IC_MISS_RD` 与 `fill_kill` 逻辑不动，避免破坏已验证的"线在全部 8 拍 OKAY 后才有效"契约（`icache_axi.v:14-18` 注释）。
+
+**为什么能提分**：与 T1 叠加——T1 让请求能连续发，T3 让每个请求更快返回。命中延迟从 2~4 拍降到 1~2 拍，直接抬高 IPC 上限。按每条指令省 1~2 拍估，**+15~30%（与 T1 部分重叠）**。
+
+**风险**：命中组合路径变长（`req_addr` → BRAM → 选路 → IFU），27 MHz 下应无问题但需重跑 PDS 时序并记录 WNS；way 预测错误时必须**无副作用地**回退（不能污染 LRU）；`invalidate` 落在预测窗口内要正确处理。
+
+**怎么验证**：`sim/run_icache_tests.py` + `tb/unit/tb_icache_axi.sv`（新增 way-prediction 命中/回退/与 invalidate 并发用例）；`run_ifu_engine_tests.py` 保证 IFU-Cache 握手协议不破；板上看 `I_MISS`（必须不变）与 `CYCLE`（必须下降）。
+
+---
+
+### T4. I-Cache next-line 顺序预取（含可执行区边界保护）
+**改哪里**：`rtl/core/icache_axi.v`（加一个 `PF_*` 子状态与 1 位 `pf_pending`）。
+
+**怎么改**：在一次 fill 成功后（`state==IC_MISS_RD` 出口），若 `line_addr + 32` 仍落在 `[EXEC_BASE, EXEC_BASE+EXEC_BYTES)` 内，则挂一个待处理预取，在 `IC_IDLE` 空闲时发起 `ARLEN=7` 读下一行、填进预期受害 way（用 `lru_mem` 选 way，但**不更新 LRU、不交付响应**）。预取命中已有的 8 拍 INCR 机制，`m_arlen` 保持 `8'd7`。
+
+**落地前先量**：把 `i_miss=48` 的绝对数放到整跑（200 迭代）尺度上重新读一遍。48 次是探针样本（`cycle=123,535`），如果整跑 I miss 也只有几百次，那 T4 的收益主要来自"把 8 拍突发藏起来"而不是"少 miss"，此时 T4 的优先级应排在 T3 之后。
+
+**为什么能提分**：CoreMark 的 `core_list_join` 是长顺序遍历，next-line 预取对这种模式几乎全命中；Jouppi 的 prefetch buffer 正是为这类顺序流设计 [[ISCA 1990](https://dl.acm.org/doi/abs/10.1145/325164.325162)]，Berkeley 讲义引用的同族配置收益曲线在 1.23×~1.32× 量级（**二手引用，未核实**）。**估 +3~8%**。
+
+**风险**：(a) **必须**做可执行区边界与 MMIO 检查，否则会向非存储区发读 → interconnect 报错甚至挂死；(b) 与 `invalidate`（halt/下载后由 SoC 驱动，见 `icache_axi.v:21-23`）竞争——预取在途时 invalidate 必须 kill 掉它，否则会"复活旧代码"；(c) 预取占用的 AR 通道会与 demand miss 抢带宽，需要"demand 优先"。
+
+**怎么验证**：`tb/unit/tb_icache_axi.sv` 新增"预取不发往 MMIO/越界"断言（这是回归的第一优先级）；`tb/integration/tb_halt_reset_drain.sv` 扩展预取在途 + invalidate 用例；perf 侧新增 `I_AR_LEN7` 对比（预取会使它上升而 `CYCLE` 下降，这是"预取真的在藏延迟"的证据）。
+
+---
+
+### T5. Store buffer + 写合并（带 MMIO 强序旁路）
+**改哪里**：`rtl/core/lsu_axi.v`（97 行）+ `rtl/core/dcache_axi.v` 的写通道（393 行里的写路径）。
+
+**怎么改**：
+1. 在 `lsu_axi.v` 的 store 路径上加 4~8 项 FIFO：`REQUEST` 后 store 直接 `COMPLETE`（不再进 `WRITE_WAIT` 等 B），FIFO 项在后台由 AXI 写通道 drain。
+2. **写合并**：相邻、同 4 KB 页、地址连续的 store 合并为一次 `AWLEN>0` 的 INCR 突发（现在是 `eng_req_len=0` 的单拍写，见 `lsu_axi.v:40`）。AXI 协议允许 AW 提前发出、B 乱序返回 [[AMBA AXI IHI 0022](https://documentation-service.arm.com/documentation/ihi0022/l?lang=en&rev=0)]，这是 store buffer 能成立的前提。
+3. **MMIO 强序旁路**：`dcache_axi.v` 已有 `CACHED_LIMIT` 旁路（注释 `MMIO / non-cacheable space (addr >= CACHED_LIMIT) bypasses the arrays`）。旁路区必须**先 drain FIFO 再单拍发**。
+4. **Fault 语义**：store 的 B 响应错误不能再在 `COMPLETE` 同步报告。要么在 FIFO 项上带 fault 并在下一次访存/CSR 读取时报告，要么（更保守）对旁路区的 store 保持同步等待。
+
+**为什么能提分**：现在每条 store ≥4 拍（REQUEST→WRITE_DATA→WRITE_WAIT→COMPLETE，还要加 B 往返）且 LSU 全程 `idle=0`，流水线在 EX 阶段被钉住。`lsu_wait=5,963` 只占 4.8%，但那是"等待"计数，实际气泡还包括握手本身。经典 store buffer 就是为解耦这件事存在的 [Hennessy & Patterson, *CA:AQA*]。**估 +4~8%**。
+
+**风险**：高——(a) halt/reset 必须 drain 所有在途写，否则最后一次 store 会丢（`tb_halt_reset_drain.sv` 是现成的扩展点）；(b) MMIO 顺序语义必须保持，UART/GPIO 的写时序不能变；(c) `perf_regs` 的 `D_AW`/`D_W_BEAT`/`D_B` 三个计数的语义会变（写合并后一次 AW 覆盖多个 store），改完后**旧基线数据不可直接对比**，需要在 `04_change_notes` 里显式记录口径变更。
+
+**怎么验证**：`sim/run_dcache_tests.py` + `tb/unit/tb_lsu_axi.sv` + `tb/axi/tb_lsu_axi_ram.sv`（新增：合并正确性——合并后的字节内容逐字节比对；乱序 B；旁路区强序）；`run_halt_reset_tests.py`（drain 用例）；ISA E2E 15 项全过；最后 CoreMark A/B，并**同时比对 UART 输出的 validation CRC**。
+
+---
+
+## 参考文献
+
+> 标注约定：**[已核实]** = 我在本次调研中实际打开过该 URL 并读到相关内容；**[检索命中]** = 在搜索结果中确认条目存在（作者/标题/会议），但正文未能打开（PDF 或反爬）；**[未核实]** = 信息来自二手引用或我无法确认的片段，**不应作为准确数字的来源**。
+
+### Cache / 访存
+1. **[已核实]** D. Million, N. Oliete-Escuín, C. Fuguet, "Breaking the Memory Wall with a Flexible Open-Source L1 Data-Cache," *DATE 2024*. DOI [10.23919/DATE58400.2024.10546547](https://dx.doi.org/10.23919/DATE58400.2024.10546547) · [HAL 记录页](https://hal.science/hal-04600058v1)。**摘要原文**："The lack of concurrency and pipelining in the memory sub-system of recent open-source RISC-V processors, such as the CVA6, is increasingly becoming the performance bottleneck. Recent updates to the new RISC-V High Performance L1 Data-cache (HPDcache), now fully integrated with the CVA6, bring significant (up to +234%) speedups in key benchmarks with a negligible 5.92% area impact."
+2. **[检索命中]** N. P. Jouppi, "Improving direct-mapped cache performance by the addition of a small fully-associative cache and prefetch buffers," *ISCA 1990*, pp. 364–373. [ACM DL](https://dl.acm.org/doi/abs/10.1145/325164.325162)（另见 [SIGARCH CAN 版](https://dl.acm.org/doi/abs/10.1145/325096.325162)）。victim cache + stream buffer/prefetch buffer 的原始出处。
+3. **[未核实]** Jouppi 1990 的具体收益数字（16 B 配置下 1.23×/1.32× 之类的曲线）来自二手讲义：[J. Kubiatowicz, CS152 Spring 2004, lec20-cache.pdf, UC Berkeley](https://people.eecs.berkeley.edu/~kubitron/courses/cs152-S04/lectures/lec20-cache.pdf)（检索片段显示表格含 `| 16 | 1.23 | 1.32 | 1.32 | 1.32 |`）。**引用该数字时必须注明是二手引用。**
+4. **[检索命中]** D. Kroft, "Lockup-free instruction fetch/prefetch cache organization," *ISCA 1981*, pp. 81–87. [ACM DL](https://dl.acm.org/doi/abs/10.5555/800052.801868) · [Semantic Scholar](https://www.semanticscholar.org/paper/Lockup-free-instruction-fetch-prefetch-cache-Kroft/6ed152e43e15d69f63e2ea5d16e719ff81572c85) · [ETH Safari 镜像 PDF](https://safari.ethz.ch/architecture/fall2019/lib/exe/fetch.php?media=p81-kroft.pdf)。非阻塞 Cache / MSHR 的开山之作。
+5. **[检索命中]** "Instruction buffering exploration for low energy embedded processors," *Journal of Embedded Computing*. [ACM DL](https://dl.acm.org/doi/abs/10.5555/1233748.1233753)。loop buffer / 指令缓冲的系统性探索（报告指标以能耗为主）。
+6. **[检索命中]** "Reducing Power and Energy Overhead in Instruction Prefetching for Embedded Processor Systems," IGI Global 书章, ISBN 9781466627857. [样例页](https://www.igi-global.com/viewtitlesample.aspx?id=73220&ptid=69828)（抓取被 429 拦截，仅确认条目存在）。
+
+### 取指 / 分支预测
+7. **[检索命中]** G. Skadron, P. Ahuja, M. Martonosi, "Instruction Fetching: A Case for Fetch-Directed Prefetching," *ISCA 2002*. [IEEE Xplore 809439](https://ieeexplore.ieee.org/document/809439/)。取指解耦 + 预测流驱动预取的核心论点。
+8. **[检索命中]** "Continual Flow Pipelines," *ASPLOS 2004*. [ACM DL](https://dl.acm.org/doi/epdf/10.1145/1024393.1024407) · [UW 镜像 PDF](https://uwaterloo.ca/scholar/sites/ca.scholar/files/z399huan/files/continual_flow_pipelines.pdf)。窄发射核中"长延迟操作阻塞后续指令"的资源高效解决思路。
+9. **[已核实]** A. Seznec, P. Michaud, "A case for (partially) tagged geometric history length branch prediction," *The Journal of Instruction-Level Parallelism*, vol. 8, 2006. [HAL 记录页](https://inria.hal.science/hal-03408381v1)。**摘要原文含**："at equivalent storage budgets, the TAGE predictor significantly outperforms all the predictors that were presented at the Championship Branch Prediction in december 2004"。**注意：原文没有给出单一加速百分比。**
+10. **[检索命中]** A. Seznec, "TAGE-SC-L Branch Predictors," CBP-2016 描述文档。 [ETH Safari 镜像 PDF](https://safari.ethz.ch/digitaltechnik/spring2023/lib/exe/fetch.php?media=tage-sc-l2014seznec.pdf)（PDF 未能解析为文本）。
+11. **[检索命中/部分未核实]** "Exploration of High-Performance Branch Predictors for Softcore Implementations," FPL 投稿（Southampton ePrints [513929](https://eprints.soton.ac.uk/513929/)）。检索片段称 "2-bit predictor reduces the misprediction rate from **60.96% to 7.08%**, an **88.4%** improvement, with only a **3.x%** area overhead"——百分比数字来自搜索片段，**工艺/核型未能核实**；页面本身有反爬（Anubis PoW）。
+12. **[检索命中]** "Skia: Exposing Shadow Branches," *ASPLOS 2025*. [Princeton 镜像 PDF](http://liberty.cs.princeton.edu/Publications/asplos25_skia.pdf)。用于说明"分支解析前取指浪费"仍是活跃研究方向（非本设计直接可用）。
+
+### 结构 / 微架构
+13. **[已核实]** L. A. Mendes, M. Figueiredo, R. Menotti, "TORVS: A Lightweight Dual-Issue Superscalar RISC-V Core for FPGA-Based Systems," *SBESC 2025*, pp. 127–132. [SBC OpenLib 摘要页](https://sol.sbc.org.br/index.php/sbesc/article/view/40351) · [IEEE Xplore 11288856](https://ieeexplore.ieee.org/document/11288856)。**摘要原文**：RV32I 五级双流水，参数化于 (i) 分支预测器选择 (ii) 可派发到第二条流水线的指令子集；CoreMark **1.176–1.600 CoreMark/MHz**，Dhrystone 1.708–2.331 DMIPS/MHz；结论"轻量设计在基础操作上有竞争力，复杂负载下效率下降"。
+14. **[检索命中]** "Exploring Writeback Designs for Efficiently Leveraging Parallel-Execution Units in FPGA-Based Soft-Processors," *FCCM 2020*（DOI 10.1109/FCCM.2018.00010 相关条目见 [IEEE 9114632](https://ieeexplore.ieee.org/document/9114632)）。FPGA 软处理器并行执行单元 / 写回设计。
+15. **[未核实]** "Efficient Implementations of Multi-pumped Multi-port Register Files in FPGAs," *DSD 2013*, DOI [10.1109/DSD.2013.28](https://doi.org/10.1109/DSD.2013.28)。检索命中条目，细节未核实。
+16. **[未核实]** "Study of Interlock Collapsing ALUs for RISC-V Microprocessors," TU Delft 学位论文. [TU Delft Repository](https://repository.tudelft.nl/file/File_5494a8b8-c690-4e80-a089-6069cfc3ebbb?preview=1)（PDF 无法解析，仅确认条目存在）。
+
+### 协议 / FPGA 工具 / 基准口径
+17. **[检索命中]** Arm, *AMBA AXI Protocol Specification*, IHI 0022（最新修订版 L）. [documentation-service.arm.com](https://documentation-service.arm.com/documentation/ihi0022/l?lang=en&rev=0)。AW 可早于 W 发出、B 响应可乱序返回——store buffer 的协议基础。
+18. **[检索命中]** AMD/Xilinx, *Vivado Design Methodology*, UG949. [PDF 镜像](https://china.xilinx.com/content/dam/xilinx/support/documents/sw_manuals/xilinx2017_2/ug949-vivado-design-methodology.pdf)；*Vivado Synthesis*, UG901. [PDF 镜像](http://www.ecs.csun.edu/~smirzaei/docs/ece524/ug901-vivado-synthesis-en-us-2025.1.pdf)。时序收敛与方法论。
+19. **[未核实]** Pango（紫光同创）PDS 综合/时序指南与 Logos2 PG2L100H 器件手册——**本次调研未取得可引用的官方链接**，频率提升方案必须由你们自己的 PDS 报告（WNS/TNS）作依据。
+20. **[已核实（条目）/未核实（正文）]** EEMBC, *CoreMark* 官方仓库与说明. [github.com/eembc/coremark](https://github.com/eembc/coremark)。`ITERATIONS` / `PERFORMANCE_RUN` / `VALIDATION_RUN` 口径的权威出处；`raw.githubusercontent.com` 在本环境超时，**正文未能逐字核对**；官方 Run Rules 旧链接 <http://www.eembc.org/coremark/CoreMarkRunRules.pdf> **已 404**。
+21. **[已核实]** J. Bennett, "How good is RISC-V: Comparing benchmark results," *FOSDEM 2025, RISC-V devroom*. [日程页](https://archive.fosdem.org/2025/schedule/event/fosdem-2025-5678-how-good-is-risc-v-comparing-benchmark-results/)。讲"不同扩展与编译器对编译代码性能的影响"，并以 OpenHW CV32E40Pv2 为例给出"用 ML 辅助调优在 **24 小时内改善代码密度 7%**"的实测。
+22. **[检索命中]** Embench 相关论文与文档（Embench 0.5 / Embench IoT 2.0）。示例：[CARRV 2020 paper 12 (Perotti et al.)](https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/461404/CARRV2020_paper_12_Perotti.pdf?sequence=1&isAllowed=y)。
+
+---
+
+## 我只能说"无公开数据 / 未核实"的部分（请勿当作结论引用）
+
+- **CoreMark `-O2`→`-O3` / `-flto` / `-funroll-loops` 的具体百分比**：本次调研**没有找到可核实的权威数字**（EEMBC 官方 Run Rules PDF 已下线，`eembc/coremark` 正文抓取超时）。这一项必须**本地 A/B 实测**，而且它的性价比（零 RTL 风险）决定了它应该排在所有 RTL 改动之前。
+- **本项目规模（2 KB I-Cache / 单发射 / 32 项 BTB）下各技术的公开加速数据**：几乎没有。上面标 ★ 的数字都是我基于 `ifu_axi.v`/`icache_axi.v`/`lsu_axi.v` 源码事实（取指 3 拍、命中 2~4 拍、store 等 B）做的推断，**不是文献结论**。落地必须按 A/B 实测校准。
+- **27 MHz → 更高频率的可行性**：完全取决于你们 PDS 的 WNS 报告，我没有可引用的 Pango 官方时序文档。
+- **Victim cache 的具体 miss 降低百分比**：Jouppi 原文数字我只能通过二手讲义引用，未直接在原文核实。
+
+## 建议的执行顺序（含口径纪律）
+
+1. **先做 T0（软件/口径）**：#17+#18 的编译矩阵 A/B，同时把 `PERFORMANCE_RUN` / 迭代数 / 种子 / 归一化 `CoreMark/MHz` 写进 `04_change_notes`，并加一个 `-DVALIDATION_RUN` 的 CI gate。零 RTL 风险，且之后的硬件改动都在同一个可比口径上评估。
+2. **T1 → T2 → T3**：都只碰单文件（`ifu_axi.v` / `branch_predictor.v` / `icache_axi.v`），彼此独立可分别 A/B。按现有计数器（`IF_WAIT`、`MISPRED`、`CYCLE`、`INSTRET`）就能判定每步是否真的赚了。
+3. **T4 / T5**：先看 T1~T3 之后 `i_miss`/`lsu_wait` 的占比是否已经小到不值得动。T5 会改变 perf 计数口径，动手前先在 `04_change_notes` 冻结旧基线。
+4. **#12 双发射 与 #8 TAGE**：不建议本轮做。等 T1~T5 把 IPC 从 0.187 推到 0.3 以上后，再重新评估哪一项变成新的主要瓶颈。
+
+---
+
+## §7 实施状态
+
+*原文件：`docs/design.md`*
+
+### 实施记录
+
+最新范围：用户要求先完成基础版，Cache、动态预测、DDR、DMA、AI
+暂不实施。用户将完整验证交给其他AI；后续“语法编译通过”不代表
+仿真、综合、上板或比赛验收通过。
+
+> **板级资料核对轮更新（m03415，2026-10-11）—— 本文件中的 "50MHz / 20ns" 均为修改前的历史记录。**
+> 本文件写于 T00-T02 实施期，当时按"板钟 50 MHz"假设工作。官方资料已证明板载系统时钟是
+> **27 MHz 单端晶振 → D18，周期 37.037 ns**（教程1 §2.1.2.2.3.2；教程2 §7.2「27MHZ…周期约为 37.037ns」；
+> 官方 `2_8_uart_test` 的 `uart_top.v` 分频 234 = 27e6/115200）。因此本文件中出现的
+> `50MHz`、`20ns`、`setup slack 16.588ns`、LED 例程时序报告等数值只描述**当时**的排查过程，
+> **不能**当作当前工程的板钟或时序结论。
+> 当前约束、镜像、PDS 复验与上板步骤见 `09_validation_results/board_material_audit/`
+> （`01`~`05` 与 `BOARD_MATERIAL_AUDIT_FINAL.md`）。
+
+日期：2026-10-10。唯一实施依据为上级目录
+`docs/superpowers/plans/2026-10-09-tinyriscv-native-axi4-contest-plan.md`。
+此文件只记录执行结果，不是第二份计划。获用户本轮授权进入实施，原计划中的
+“本轮只修改计划”属于历史记录；其测试依赖和停止条件继续生效。
+
+## 修改前赛题核对
+
+已重新提取并目视核对用户提供的紫光同创选题指南 PDF 第10页，
+提取第11页。证据保存在 `docs/evidence/baseline/`，
+包括两页 PDF、文本、渲染图、原 PDF SHA256 和批准计划的快照。
+
+结论：计划对选题一的需求映射相符，可以按关卡开始实施；
+这不是最终代码符合性或参赛资格确认。
+
+| 赛题要求 | 计划覆盖 | 尚需取得的实施证据 |
+| --- | --- | --- |
+| RV32I、至少三级流水线、数据冲突与分支 | B1/B2、T02/T05-I/T07a | 真实CPU回归和提交轨迹 |
+| UART/GPIO基础外设 | B3、T05/T08a | 本板输出与控制演示 |
+| 两路组相联指令和数据Cache、突发效率 | H1、T09 | 两侧Cache测试及优化前后对比 |
+| 动态预测及完整异常/中断 | H2、T07b/T10 | 功能矩阵；M-only范围需确认 |
+| YOLO或轻量大模型与传感/显示集成 | H3、T11/T12 | 模型、DDR契约、完整应用实测 |
+| 指定工具链、CoreMark v1.0至少10秒 | E2/E3、T00-P/T13 | 实际编译、CRC、时钟、运行时间 |
+| 性能、资源、时序及CoreMark关键算法波形 | E4/E6、T13 | PDS实现报告及板上采集 |
+
+AXI4、不使用RIB桥、OV5640、HDMI不是赛题强制要求。
+本轮保留用户批准的原生AXI4路线。不能把基础阶段完成说成高阶任务全部完成。
+开源许可不等于比赛允许复用已有CPU；组织方答复及队伍贡献声明仍待提供。
+
+## 备份与隔离
+
+- 原始目录：`E:/donwload/tinyriscv-master/tinyriscv-master`，只读使用。
+- 完整备份：`E:/file/pango/backups/tinyriscv_original_20261010_01`。
+- 实施副本：`E:/file/pango/tinyriscv_axi4`。
+- 修改前790个文件逐一比较SHA256，原目录、备份、副本一致。
+- 清单：`docs/evidence/baseline/original-files.sha256.csv`。
+- 原始Git提交：`6741872`，工作分支：`implementation/native-axi4`。
+- Git原始提交记录787个文件；另外3个文件受原忽略规则影响，
+  但全部790个文件均包含在独立完整备份与哈希清单中。
+
+## 关卡状态
+
+| 任务 | 状态 |
+| --- | --- |
+| 修改前核对赛题与计划 | 已完成本地PDF对照，保留以上待确认边界 |
+| 完整备份及实施副本 | 已完成并校验 |
+| G0来源与贡献 | 记录本地来源；上游提交、队友改动、赛事书面答复待提供 |
+| N00/T00工具链 | ModelSim可用；已取得真实riscv32-unknown-elf-gcc 7.1.1，默认libgcc含C扩展，完整无C构建尚未验收 |
+| N01测试入口 | 28项清单及runner已新增，15项Python测试通过，含真实进程树超时清理 |
+| N01新编译原CPU回归 | 两处声明顺序兼容修复后，add及47/47预编译指令镜像通过 |
+| T00-P平台前置 | 本轮ADS重新编译/综合/布局布线/位流完成，20ns时钟；尚未下载上板 |
+| T01独立AXI环境 | 已实现，最终复测结果见下文 |
+| T02流水线 | 已替换为操作接口CPU，保留原译码/ALU/div算法；单元测试27退休/9异常/5访存通过，尚未接AXI SoC |
+| T03/T04 | IFU真实读引擎20 seed通过；LSU真实数据引擎/RAM20 seed通过，尚未接CPU整体 |
+| N04/N05引擎 | 单拍读/数据AXI引擎64项测试本轮重跑通过，规范及质量复核通过 |
+| N06 AXI RAM | 单拍RAM及真实LSU集成40/40通过，规范/质量复核通过；GPIO和实际综合未完成 |
+| N07 IFU/LSU | 操作单元及引擎组合已实现，完整CPU接入待N09 |
+| N08 互连 | 原生互连/error slave已写入，语法编译0错误0警告；按用户要求未仿真 |
+| N09 CPU接入 | 原生CPU封装、2主2从SoC及production manifest已写入，语法编译通过；未运行指令 |
+| N10/N12 CSR/中断 | 原生CSR、同步异常、MRET和中断边界代码已写入，语法编译通过；未仿真 |
+| 基础外设接入 | UART/GPIO/Timer/SPI/IRQ共7目标SoC已写入，语法编译通过；未仿真 |
+| 基础软件 | 启动/异常/计时已改，CoreMark无libgcc构建已编译链接；未运行 |
+| 基础板级工程 | 顶层、官方引脚约束、PDS脚本已写入；语法编译通过，未综合/上板 |
+| Cache/预测/DDR/DMA/AI | 按用户最新要求暂不实施 |
+
+当前Python使用Codex运行时的完整路径，不依赖失效的`py`默认解释器配置。
+已发现WCH交叉编译器，但未用它替代赛题指定的`riscv32-unknown-elf-gcc`，
+也未修改现有软件Makefile去假装已经满足指定工具链要求。
+
+## 复现入口
+
+在实施副本根目录使用：
+
+```powershell
+$python = 'C:\Users\lenovo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe'
+$env:PATH = 'E:\donwload\win64;' + $env:PATH
+& $python sim/run_baseline.py --case rv32ui-p-add
+& $python sim/run_baseline.py --all
+```
+
+预编译的ISA测试镜像只能验证此次新编译RTL对这些镜像的行为，
+不能证明本机已重新编译测试软件，也不构成完整RV32I认证。
+
+## N01失败定位与已授权修复
+
+新增文件为 `sim/baseline_sources.f`、`sim/run_baseline.py`、
+`sim/test_baseline_runner.py`；原有仿真脚本保留。
+runner按第27.3节实现，仅抽取日志判定与镜像转换函数用于单元测试。
+15项测试已复跑通过，包括进程返回0但日志Fatal时必须拒绝、缺少或重复PASS、
+失败/超时标记以及不足四字节的镜像尾部填充。
+
+实际执行 `--case rv32ui-p-add` 返回1，编译日志位于
+`.sim_runs/baseline-kgd50ugy/compile.log`，精简证据副本保存在
+`docs/evidence/baseline/first-compile-failure.log`。
+
+- `rtl/utils/full_handshake_rx.v:60,68`：`req`在第81行声明之前使用。
+- `rtl/utils/full_handshake_tx.v:71,79`：`ack`在第92行声明之前使用。
+- ModelSim 10.6e报告 `Errors: 4, Warnings: 0`。
+- 仅去掉`-sv`再编译这两个原文件，同样失败；不能归因于`-sv`单一选项。
+- 该首次失败时add仿真没有启动；后续结果见下面，不能覆盖原失败证据。
+- 不通过关闭JTAG、删源文件、压制错误或复用旧仿真产物绕过失败。
+
+用户再次明确授权后，已仅在实施副本将上述声明移到首次使用之前，
+保留逻辑、端口、复位和同步级数。这是原工程编译兼容修复，不是AXI CPU改造。
+修改前源码再次备份至
+`E:/file/pango/backups/tinyriscv_source_before_resume_20261010_171938`，
+805个文件哈希一致；本次不含`.git`和存在访问限制的旧`.sim_runs`。
+之前790文件完整原版备份继续保留。
+
+新编译日志：`.sim_runs/baseline-3wl8mqev/compile.log`，
+0 Errors / 0 Warnings。该目录47个用例日志全部唯一PASS，
+当时逐项日志位于 `evidence/records/baseline/compatible-original/`，该目录已于 2026-10-18 清理（属早期 2026-10-10 的兼容性验证，已被后续 ISA 15/15 与优化轮次取代）。
+ModelSim仿真各日志含15条原模型警告，未隐藏；
+PASS只表示这些预编译镜像通过，不证明完整ISA、FENCE.I维护或本机软件编译。
+
+`sim/check_baseline_negative.py`在隔离副本将真实TB成功条件固定false，
+实际产生TEST_FAIL并被runner拒绝，原TB哈希未变。
+日志：`.sim_runs/negative-ngbjb5w2/rv32ui-p-add-negative.log`。
+随后add重跑通过：`.sim_runs/baseline-4yicpcw9/rv32ui-p-add.log`。
+Python超时测试实际启动父/子进程并检查二者结束，15/15通过。
+
+## T01与后续关卡
+
+新增完整AXI字段的验证接口、字节内存模型、监视器、测试台与PowerShell入口。
+测试覆盖同拍、AW先5拍、W先5拍，WSTRB与窄访问，
+R/B阻塞7拍、8拍随机等待突发、未映射读写错误、读写同时请求、
+ID/拍数/LAST/稳定性及结束清空。固定seed 1至20。
+故意改变受阻AR地址必须触发`AXI_MONITOR AR_STABILITY` Fatal。
+最终复测20/20通过，负向注入被检测，编译0 Errors / 0 Warnings。
+最终目录：`.sim_runs/t01-eeb3241ce7ea4171ab04f71e5d9f1548/`，
+日志证据副本位于`docs/evidence/axi/`。这仅是验证环境验收，
+不是CPU原生AXI、Cache或SoC集成通过。
+
+`docs/cpu_memory_contract.md`已按计划冻结接口与生命周期。
+`pipe_slot.v`和`div_adapter.v`已实现并通过独立测试及规范/质量复核。
+覆盖无替换消费后不重复输出、除法持续请求时只接收一次、
+立即消费结果、活动运算/被阻塞结果期间复位及恢复。
+除法测试14次请求、12次响应，另外2次被复位取消。
+负向停顿清valid注入触发`stall lost A`。
+日志：`.sim_runs/unit-pipe_slot-ngubucut/`、
+`.sim_runs/unit-div_adapter-fdouod0n/`、
+`.sim_runs/unit-pipe_slot-z5nwzkkn/`（预期失败）。
+T02完整流水线控制链正在实施，尚未集成验收。
+
+本轮新增修改前备份：
+`E:/file/pango/backups/tinyriscv_before_cpu_20261010_174502`，
+887个文件复制后逐一哈希一致，不含`.git/.sim_runs/__pycache__`。
+
+已实际排查PDS：Synplify许可未配置，但原工程使用的ADS路径可用，
+不能把Synplify失败泛化成PDS不可用。首次批处理约束加载过晚，
+时序报告使用默认1000ns，不算50MHz通过；修正后于17:58:53生成
+新的20ns报告，请以`docs/evidence/platform/counter_led.rtr`为准，
+requested 50MHz、setup slack 16.588ns。这是LED例程，不是CPU时序。
+位流生成完成，SCBV尚有配置提示，未下载板卡、未取得现场输出。
+复现脚本及日志见`docs/evidence/platform/`。
+
+指定编译器已经获取；实际板卡下载、DDR标准接口仍待验证。
+继续实施不依赖这些物理输入的RTL单元，不以仿真代替上板关卡。
+完整计划尚未完成。
+原目录与完整备份各790文件已再次按原哈希清单通过核验。
+
+## 流水线与操作单元本轮续作
+
+新增 `retire_ctrl.v` 并改造 IF/ID、ID/EX、PC、控制与CPU连接。
+EX当前采用内部操作接口，不再接旧RIB。CSR/SYSTEM/FENCE.I暂按非法
+指令处理，尚未完成T07；不能把此阶段结果当成完整ISA符合性。
+原CPU模块复制到 `tb/reference/`，仅由独立baseline manifest使用，
+不会混入新CPU。隔离后原镜像47/47再次通过，
+日志 `.sim_runs/baseline-uhlxnx_7/`。
+
+流水线新日志 `.sim_runs/pipeline-74kt4oc2/`：
+27次退休、9次异常、5次访存，0 errors / 0 warnings。
+测试包括真实排队年轻fault的分支冲刷、正确路径取指fault、
+访存ready背压及halt排空、load/store总线错误等待trap_ready、
+依赖旁路、除法、JALR bit0和目标对齐。只读复核确认原三项覆盖缺口已补齐。
+老分支停顿使用测试台force模拟EX延迟；不是真实AXI系统回归。
+
+`ifu_axi.v` 保存请求PC/预测PC及保留返回槽，从内部握手起标记在途。
+重定向排空旧请求并丢弃错误返回；只允许程序RAM取指。
+`lsu_axi.v` 保存操作身份，生成窄访问数据/WSTRB并只扩展一次，
+对齐失败不发总线描述符，store只在B返回后完成。
+描述符层测试：
+`.sim_runs/unit-ifu_axi-7cnqe9gp/`（5请求/5结果），
+`.sim_runs/unit-lsu_axi-wc812hjh/`（10请求/3写/13完成），均0 errors。
+这些模块与真实AXI引擎、互连、RAM尚未整体集成，不标完整T03/T04完成。
+
+引擎已有证据：
+`.sim_runs/engines-o6jthykx/`、`.sim_runs/engines-hw-2td27ph0/`，
+40个正常seed、12个预期fatal、12个SYNTHESIS宏故障保持用例。
+首版只接受len=0；突发留到T09，不能称现有引擎已支持Cache补行。
+SYNTHESIS宏仿真不代表实际综合通过。
+
+工具链压缩包位于上级 `toolchains/openisa-1.0.0-windows.zip`，
+SHA256 `7E5D27F7B71F578547A9CEE87A6C6E4A9AF1055045DD8C6F8673E8570C9D5E9C`。
+GCC实际安装于 `toolchains/openisa-1.0.0/gcc/riscv32-unknown-elf-gcc/bin`。
+原CoreMark试编译目录 `.sim_runs/coremark-original-build/`，
+ELF含RVC及libgcc压缩指令，故该镜像不能用于当前无C CPU验收。
+计时端口尚需64位整数转换与high-low-high读取修正；
+不得改CoreMark关键算法或把编译成功误报为CPU运行成功。
+
+## 追加独立复跑与复核
+
+引擎本轮独立复跑：
+`.sim_runs/engines-m9mses1p/`、`.sim_runs/engines-hw-lbdyl_ok/`，
+64/64通过。规范及质量复核均通过，只适用于单拍引擎。
+仍缺主动保持第二个请求的争用用例；SYNTHESIS宏只跑故障路径，
+不把普通功能宏等价性、综合和板测算作已验证。
+
+流水线质量复核新增并修复重定向断言：
+正常分支/JALR纠正、trap向量与halt-resume的redirect信号及目标
+都在实际发生边沿检查，覆盖计数2/9/2，并拒绝额外redirect。
+取指描述符层用不同指令字并在返回后改变输入，逐拍检查保持数据，
+不再仅检查PC。两项修复经只读质量复核通过。
+父任务独立复跑日志：
+`.sim_runs/pipeline-ek0auz54/`，
+`.sim_runs/unit-ifu_axi-bnlebxa0/`，
+`.sim_runs/unit-lsu_axi-6j16186m/`，全部通过。
+
+新增真实IFU/read-engine测试 `tb/axi/tb_ifu_axi_engine.sv`，
+入口 `sim/run_ifu_engine_tests.py`。
+20 seed独立复跑 `.sim_runs/ifu-real-engine-e2i8mpn9/`，每例
+14次内部请求/AR/R/引擎结果、8次有效交付，其余旧请求被排空丢弃。
+覆盖内部接单边沿、AR受阻、等待R、引擎RD_HOLD与IFU返回槽，
+连续redirect、旧错误返回、正确路径fault和禁用期间排空。
+规范及质量复核通过。负向临时指令清零变异被检测：
+`.sim_runs/ifu-real-engine-55qoqzpt/`。
+测试台手动提供新PC，不宣称CPU自主重启取指或真实指令退休已联测。
+
+## RAM Endpoint Integration
+
+Added `rtl/perips/axi_ram.v`: synchronous 4096-word memory, optional
+initialization, no array reset, checked full-address indexing, independent
+AW/W capture, byte enables and held responses. Unsupported bursts are
+fully framed SLVERR transactions; malformed WLAST fails closed. Actual
+cache-fill bursts remain for T09.
+
+Added standalone RAM and real LSU/data-engine/RAM benches plus
+`sim/run_ram_tests.py`. Fresh parent run `.sim_runs/ram-19d8d_wx/`
+passed 40/40 (20 RAM and 20 LSU seeds). Specification and quality reviews
+approved this subset. Real LSU coverage includes SW/LW/SB/LBU, bus errors,
+local alignment rejection and 20/30-cycle read/write target delays.
+The arithmetic result in that bench is a testbench model, not CPU execution.
+
+Still unverified: full lane coverage in the real composition, malformed
+mid-burst WLAST, maximum LEN, PDS BRAM inference, GPIO and full T05/CPU.
+Supported RAM parameters assume word-aligned BASE_ADDR, positive WORDS
+and nonnegative delays.
+
+N08 interconnect/error-slave code is implemented; syntax-only compilation
+reported zero errors and warnings. No interconnect simulation was run.
+Original reference modules remain isolated and unchanged.
+
+## Code-First Handoff
+
+User delegated full verification to another AI. Subsequent code changes
+receive syntax checks only, not acceptance claims. Verification instructions
+are in `docs/external-verification-plan.md`.
+
+N09 added `tinyriscv_axi_top.v`, `tinyriscv_axi_soc.v`,
+`native_axi_macros.vh` and `sim/native_axi_sources.f`. Packed port zero
+is instruction and port one data. The SoC connects both engines through
+the interconnect to program/data RAM without RIB. Program RAM disables
+writes via the new optional RAM `WRITE_ENABLE` parameter. Halt drains
+existing work and engine/fabric faults block fresh acceptance.
+Native-manifest syntax compile passed with zero errors and warnings.
+This is not native ISA execution, synthesis or board evidence.
+
+## Basic Version Delivery
+
+Latest user scope defers Cache, prediction, DDR, DMA and AI. No such
+advanced implementation was added.
+
+Native CSR/interrupts and seven-target peripheral SoC code are present.
+Software startup, trap dispatch, 64-bit timing and freestanding CoreMark
+build were updated. CoreMark compiled/linked with GCC 7.1.1 without
+libc/libgcc; execution and CRC/duration are unverified.
+
+Board entry: `rtl/soc/pango_native_top.v`.
+Build instructions: `platform/pango_native/README.md`.
+Official UART pins are TX C24 / RX B24; provenance is recorded there.
+The PDS SystemVerilog project setting must be enabled externally before
+the provided build script is used; its Tcl equivalent is not established.
+No native PDS synthesis, timing report, bitstream or board run was performed.
+
+Final basic-release manifest includes `pipe_slot.v` and the board top.
+Fresh library `sim/native_release_load_work` compiled and loaded
+`pango_native_top` with zero errors and warnings. Logs:
+`sim/native_release_compile.log`, `sim/native_release_load.log`.
+The load command immediately quit; no simulation `run` was issued.
+
+---
+
+## §8 基础版最终实现
+
+*原文件：`docs/design.md`*
+
+### 基本版本落地实现记录（2026-10-10）
+
+> **板级资料核对轮更新（m03415，2026-10-11，最新）—— 本文所有 "50 MHz" 一律作废。**
+> 官方板卡资料证明本板系统时钟是 **27 MHz 单端晶振 → D18**（教程1 §2.1.2.2.3.2；教程2 §7.2 与 §7.3；
+> 官方 `2_8_uart_test` 的 `uart_top.v BPS_NUM = 234`），板上没有 50 MHz 晶振。
+> 本轮据此修改了 `platform/pango_native/pango_native.fdc`（37.037 ns）、`rtl/perips/axi_uart.v`（分频 234）、
+> `tests/example/include/utils.h`（`CPU_FREQ_MHZ 27U`）、`tests/example/lib/uart.c`（写 `UART0_BAUD`）、
+> `tools/build_native_software.py`（默认 `--cpu-mhz 27`）、三个测试台分频常量、`platform/pango_native/build.tcl`
+> （`PANGO_NATIVE_FDC` 覆盖 + 板钟/镜像一致性检查 + 空 ROM 守卫）与 `platform/pango_native/README.md`。
+> **本轮改动的逐条记录（旧值/新值/证据/影响/哈希）以
+> `09_validation_results/board_material_audit/03_CONSTRAINT_CHANGE_LOG.md` 为准**；
+> 复验结论见同目录 `04_PDS_REVALIDATION_REPORT.md`。
+
+> 本文记录"把基本版本做完"这一轮（任务 m01844）对生产文件的**全部**改动。
+>
+> 阅读边界：`09_validation_results/BASIC_VERSION_VERIFICATION_REPORT.md` 是**验证轮**的报告，
+> 该轮的边界是"不改生产文件"，因此它写的"RTL / C / 汇编 / 板级约束未做任何修改"只对该轮成立。
+> 本轮（实现轮）的任务就是按验证轮给出的最小修复建议把问题修掉，所以**有**生产文件改动，逐条列在下面。
+>
+> 全部改动前都有备份，见 §7。
+
+工程根：`E:\file\pango\project\01_code\tinyriscv_axi4`
+所有仿真 / 综合命令都必须在该目录下执行（`sim/native_axi_sources.f` 内是相对工程根的路径）。
+
+---
+
+## 1. 改动总表
+
+| # | 文件 | 性质 | 解决验证轮的哪个问题 | 回归证据 |
+|---|---|---|---|---|
+| 1 | `rtl/bus/axi_interconnect.v` | RTL 修复 | S1（PDS `bmsSMOD` 无法映射，综合直接失败） | `run_interconnect_tests.py --seeds 20` → 20/20 PASS；PDS 综合通过 |
+| 2 | `rtl/perips/axi_ram.v` | RTL 修复 | S5（全清单唯一的 SystemVerilog-only 构造，逼着 PDS 开 SV 前端） | 29 源整体编译 0 error；RAM/LSU 40/40 PASS |
+| 3 | `platform/pango_native/build.tcl` | 工程脚本修复 | S4（`pds_shell -file` 下相对约束路径不可读，流程 `Flow-0049` 中断） | 完整 PDS 流程 exit 0，产出 `.sbit` |
+| 4 | `tb/unit/tb_pipeline.sv` | 测试台修复 | S2（回归台还在连已废弃的 `trap_vector` 端口，跑起来数值就是错的） | `run_pipeline_tests.py` → `PASS N03_PIPELINE` |
+| 5 | `rtl/soc/pango_native_top.v` | 可观测性增强 | S6（CPU 内部状态没有引出观测点，板上无法抓 ILA） | 编译 0 error 0 warning；端口未变 |
+| 6 | `tests/example/coremark/core_portme.c` | C 修复 | S8（CoreMark 用时只能靠 32 位 `Total ticks` 打印，长跑必然截断） | 1 迭代 CRC 与黄金值一致；200 迭代 `Total ticks 655032761`（13.1007 s ≥ 10 s）、成功行前缀、无 `Errors detected` |
+| 7 | `tb/integration/tb_coremark_uart.sv` | 测试台增强 | —（让 CoreMark 回归能自己认出报告结尾，不必烧满周期上限） | CoreMark 回归正常收敛 |
+| 8 | `platform/pango_native/README.md` | 文档 | S6 余项（ILA 探针清单与触发配方） | — |
+| 9 | `tests/halt_reset/*`、`tb/integration/tb_halt_reset_drain.sv`、`tools/run_halt_reset_tests.py` | **新增**测试覆盖 | 清单第 5 项（halt/reset 事务排空与恢复） | 5/5 PASS |
+| 10 | `rtl/soc/pango_native_top.v`（**同一文件再改一次**） | RTL 修复（收尾轮） | **新发现**：第 5 项用的 `(* keep = "true" *)` 被 PDS 拒绝（`PAP_KEEP` 值非法），19 个观测点里 14 个 + 两个计数器**根本没进网表**；`(* ASYNC_REG = "TRUE" *)` 也是非法属性 | 见 §13：新网表中 18 个 `obs_*` 名全部存在；29 源重新精化 0 error 0 warning；完整 PDS 流程重跑 |
+
+前 8 项都是**最小修复**：只动必须动的那几行，不改架构、不改接口、不降断言。
+第 10 项是**收尾轮**（任务 m02843）的追加修复，原因、证据、影响面见 §13。
+
+**改造轮（修复前）综合/实现结果（一句话，证据见 `05_verification/native-basic-final-status.md` §4）**：`pds_shell` 完整流程 exit 0，`Design Summary : All Constraints Met`；Slack Setup `WNS 3.258 ns`（慢角，29238 端点 0 失败）、Hold `WHS 0.139 ns`；关键路径 20 − 3.258 = 16.742 ns（等效 Fmax 约 59.7 MHz，**推算**），50 MHz 板振下有余量；`Total LUTs 7622 / 66600 (11.44%)`、`Total Registers 2984 / 133200 (2.24%)`；比特流 `build/pango_native/generate_bitstream/pango_native_top.sbit`（3791112 B，SHA256 `A8D616B3…`）。**未上板下载。**（**以下数值已被收尾轮取代，见下方引用块与 §13.4**）
+
+> **上表的时序/资源/比特流数值已被收尾轮（任务 m02843）取代**：收尾轮修掉观测点属性后重跑同一套 PDS 流程，
+> 最终数值见 §13.3 与 §13.4——`WNS 5.219 ns`（慢角，29018 端点）、`WHS 0.124 ns`、
+> `Total LUTs 7761 / 66600 (11.65%)`、`Total Registers 3114 / 133200 (2.34%)`、
+> 比特流 SHA256 `5ED76142…`。上方 3.258 ns / 7622 LUT / `A8D616B3…` 是**修复前**那一轮的数值，
+> 只作为前后对比保留，**不得**再当作最终交付数值引用。
+
+---
+
+## 2. S1 —— `rtl/bus/axi_interconnect.v`：把取模/除法换成环绕扫描 + 位选择
+
+### 原因
+PDS 的 ADS/Synplify 前端把参数化取模当成真的取模器，在 `MASTERS=2`（即 `2*MASTERS=4`，明明是 2 的幂）时也没有常量折叠，留下 `bmsSMOD` 原语无法映射，`synthesize` 直接以 exit code 1 结束且**没有产出网表**。
+
+### 改法
+- `rtl/bus/axi_interconnect.v:125-135`：仲裁扫描不再用 `(rr+k)%(2*MASTERS)`
+
+```verilog
+choice=-1;
+candidate=rr;
+// Rotating scan instead of (rr+k)%(2*MASTERS) and /2: modulo and
+// division are not folded ...
+    if(choice==-1 && (candidate[0]==1'b0 ? m_arvalid[candidate>>1] :
+                                             m_awvalid[candidate>>1]))
+        choice=candidate;
+    candidate=(candidate>=2*MASTERS-1)?0:candidate+1;
+```
+
+- `:147-148`：`if(choice[0]==1'b0) m_arready[choice>>1]=1; else m_awready[choice>>1]=1;`
+- `:184-185`：`owner<=choice>>1; rr<=(choice+1>=2*MASTERS)?0:(choice+1);`
+- 其余 16 处 `(choice/2)` → `(choice>>1)`，`choice%2==0` → `choice[0]==1'b0`。
+
+语义等价（`MASTERS` 为 2 的幂，`choice/2 == choice>>1`，`choice%2 == choice[0]`），但不再要求综合器做代数化简。
+全文件已无 `%` 与 `/2`。
+
+### 验证
+```
+python sim/run_interconnect_tests.py --seeds 20      →  SUMMARY 20 / 20 PASS
+```
+PDS 全流程随后在**同一份 RTL** 上通过（§6）。
+
+---
+
+## 3. S5 —— `rtl/perips/axi_ram.v`：去掉唯一的 SystemVerilog-only 构造
+
+### 原因
+对 `sim/native_axi_sources.f` 里 29 个源文件做了一次 SV-only 构造扫描（`always_ff` / `always_comb` / `logic` / `typedef` / `struct` / `enum` / `interface` / `for(integer ...)`），
+命中**恰好一处**：`rtl/perips/axi_ram.v:93`（原行号）的 `for(integer lane=0;lane<4;lane=lane+1)`。
+它使 PDS 必须在工程设置里打开 SystemVerilog 前端，而 `pds_shell -file` 批处理模式下这个设置项不可靠。
+
+### 改法
+- 在已有 `integer delay_left;` 旁加声明 `integer lane;`（现 `:48`，附注释说明为什么不能内联）。
+- `:93`（现 `:98`）改为 `for(lane=0;lane<4;lane=lane+1)`。
+
+改完后 29 个源文件全部是 Verilog-2001 合法，**PDS 用默认前端**即可综合。
+（`rtl/core/axi_read_engine.v`、`rtl/core/axi_data_engine.v` 里的 `$fatal` 都在 `ifndef SYNTHESIS` 内，安全。）
+
+---
+
+## 4. S4 —— `platform/pango_native/build.tcl`：批处理模式下的路径解析
+
+### 原因
+`pds_shell -file <script>` 的批处理解析器下 `[info script]` 取不到可用路径，`./pango_native.fdc` 这类相对路径报：
+```
+E: Flow-0049: The file {./pango_native.fdc} is not readable
+E: Flow-0163: ... build.tcl at line 33/37
+```
+
+### 改法
+- 布局目录：优先 `$::env(PANGO_NATIVE_BOARD_DIR)`；否则只在 `[file dirname [file normalize [info script]]]` 下确实存在 `native_sources.tcl` 时才采用；都不成立就报错并提示调用方设置环境变量。
+- 仓库根：优先 `$::env(PANGO_NATIVE_REPO)`，否则 `$board_dir/../..`。
+- 先断言 `native_sources.tcl` / `pango_native.fdc` / `pango_native.pcf` 三个文件都在。
+- `add_constraint` 使用**绝对路径** `$fdc_file` / `$pcf_file`。
+
+流程主体未变：逐源 `add_design` 到 `build/pango_native/sources/**`，从 `$repo/build/native_software/coremark/performance`（或 `$::env(NATIVE_IMAGE_DIR)`）拷 `program.hex`/`data.hex`，
+`cd $run_dir` → `set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG676` →
+`compile -top_module pango_native_top -include_path [list $repo/rtl/core]` →
+`synthesize -ads -selected_syn_tool_opt 2` → `dev_map` → `pnr` → `report_timing` → `gen_bit_stream`。
+
+### 实际调用（可复现）
+```powershell
+$pds='E:\donwload\PDS_2022.2-SP6.4\PDS_2022.2-SP6.1\bin\pds_shell.exe'
+$env:PANGO_NATIVE_REPO='E:\file\pango\project\01_code\tinyriscv_axi4'
+$env:PANGO_NATIVE_BOARD_DIR='E:\file\pango\project\01_code\tinyriscv_axi4\platform\pango_native'
+Set-Location 'E:\file\pango\project\01_code\tinyriscv_axi4\build\pango_native'
+& $pds -file 'E:\file\pango\project\01_code\tinyriscv_axi4\platform\pango_native\build.tcl'
+```
+结果 exit 0，见 §6。
+
+---
+
+## 5. S2 —— `tb/unit/tb_pipeline.sv`：回归台对齐架构 `mtvec`
+
+### 原因
+原生 CPU 的陷入重定向走的是架构 `mtvec` CSR，旧顶层端口 `trap_vector` 已经不再使用（`pango_native_top`/原生 SoC 里被接 0）。
+回归台还在给 `trap_vector` 喂值，于是"陷入目标正确"这条检查实际上在测一个悬空信号——即使通过也不构成证据。
+
+### 改法
+- 新增 `wire ... halt_pending;` 与 `wire [31:0] ... csr_mtvec;`
+- 端口连接补 `.halt_pending(halt_pending)`、`.irq_software(1'b0),.irq_timer(1'b0),.irq_external(1'b0),.csr_mtvec(csr_mtvec)`（顺带消掉 5 个 vopt 悬空端口告警）。
+- 检查改为
+  ```systemverilog
+  if(!redirect_valid || redirect_pc!==csr_mtvec) $fatal(1,"trap redirect missing or wrong target");
+  ```
+- 在第一个陷入用例前插入 CSR 引导（`mtvec` 必须先被程序写进去）：
+  ```systemverilog
+  insn(236,32'h00001fb7,1,31,32'h1000);   // lui  x31,1
+  insn(240,32'h305f9073,0,0,0);           // csrrw x0,mtvec,x31
+  drain();
+  if(csr_mtvec!==32'h1000) $fatal(1,"mtvec was not programmed");
+  ```
+  （用 x31 是因为后面 x1 要当除法操作数。）
+
+### 验证
+```
+python sim/run_pipeline_tests.py    →  PASS N03_PIPELINE   (运行目录 .sim_runs/pipeline-ydi0l7pu)
+```
+
+---
+
+## 6. S6 —— `rtl/soc/pango_native_top.v`：板级可观测性（ILA 观测点）
+
+### 原因
+赛题要求提交"CPU 流水线在 CoreMark 关键算法上的 ILA 波形"。原顶层把 CPU 状态输出接成匿名表达式后就没再用，综合器会全部优化掉，板上根本抓不到。
+
+### 改法
+**端口完全不变**（`clk, rst_n, key, uart_rx, uart_tx, led[7:0]`）——不臆造引脚。
+所有 CPU 状态改接到带 `(* keep = "true" *)` 的**命名内部网线**：
+
+`obs_retire_fire`、`obs_retire_order[63:0]`、`obs_retire_pc`、`obs_retire_inst`、`obs_rd_valid`、`obs_rd[4:0]`、`obs_wdata`、
+`obs_trap_fire`、`obs_trap_cause`、`obs_trap_pc`、`obs_trap_tval`、`obs_halted`、`obs_arch_next_pc`、`obs_protocol_fault`、
+`obs_csr_mtvec`、`obs_uart_tx`，外加两个自由运行计数器 `obs_retire_count` / `obs_trap_count`（用来做 ILA 触发条件）。
+
+探针清单与触发配方写在 `platform/pango_native/README.md`。
+**本次没有做任何 ILA 采集**（无物理板），该项仍为 `NOT RUN`。
+
+---
+
+## 7. S8 —— `tests/example/coremark/core_portme.c`：64 位 tick 打印
+
+### 原因
+比赛判据是 `CoreMark_Iterations / (Total_Time × Frequency)`，且要求 CoreMark v1.0 **运行 ≥ 10 秒**才算有效。
+但：
+- `tests/example/coremark/core_main.c:288` 打印 `Total ticks` 时显式做了 `(ee_u32)total_time` 截断；
+- `tests/example/lib/xprintf.c` 只实现了 32 位 `long` 转换（第 76/97/127 行）。
+
+于是长跑（几十秒）时 tick 数必然被截断，无法从串口证明"确实跑够了 10 秒"。
+
+### 改法
+`stop_time()` 里增加一行：
+
+```c
+t1 = get_cycle_value();
+ee_printf("CPM_TICKS hi=%lu lo=%lu\n", (unsigned long)(t1 >> 32), (unsigned long)(t1 & 0xffffffffUL));
+```
+
+注释里写明：**比赛用时证据只能取这一行或 ILA，不能取被截断的 `Total ticks`**。
+计分路径不受影响——`core_main.c` 用 `time_in_secs(get_time())` 算时间，本来就是 64 位。
+
+---
+
+## 8. 清单第 5 项 —— 新增 halt/reset 事务排空与恢复回归
+
+| 文件 | 作用 |
+|---|---|
+| `tests/halt_reset/link.ld` | 极简链接脚本（text 落 0x0） |
+| `tests/halt_reset/halt_reset.S` | 持续 lw/sw 到数据 RAM 的循环，保证 halt/reset 一定打在**真实 AXI 事务**中间 |
+| `tb/integration/tb_halt_reset_drain.sv` | 在完整原生 SoC 上跑 5 个场景，含逐周期 AXI VALID/载荷稳定性监视器 |
+| `tools/run_halt_reset_tests.py` | 汇编 → 转 4096 字 hex → 编译清单+TB → 逐场景跑 |
+
+5 个场景：
+1. 事务进行中 halt（等 `lsu.state==3` LSU_READ_WAIT）
+2. 事务进行中 halt（等 `lsu.state==4` LSU_WRITE_WAIT）
+3. 事务进行中 reset
+4. 事务进行中 reset
+5. 空闲时 reset
+
+检查项：已接受的读必须仍返回 R、已接受的写必须仍返回 B（HR_DRAIN）；halt 后 `halted` 必须拉高且 `arch_next_pc` 不再前进；halt 期间 400 周期内任何主设备不得再拉 ARVALID/AWVALID/WVALID（HR_HALTED_QUIET）；释放后第一个 AR 地址必须等于之前捕获的 `arch_next_pc`（HR_RESUME）且退休恢复；reset 场景中所有主设备 valid/ready 必须为低 100 周期（HR_RESET_QUIET）且没有从设备驱动 VALID；释放后首个取指必须是 PC 0（HR_RESTART）且退休恢复；全程 `protocol_fault` 保持低。
+
+验证：`python tools/run_halt_reset_tests.py` → **5 / 5 PASS**。
+
+---
+
+## 9. 其它（测试台/文档，不改设计行为）
+
+- `tb/integration/tb_coremark_uart.sv`：加滚动匹配器 `match_reg`/`report_seen`/`report_cycle`，主 `initial` 改为
+  `fork begin wait(cycles>=max_cycles); end begin wait(report_seen); repeat(12000) @(posedge clk); end join_any`
+  ——CoreMark 打印完报告就收尾，不烧满周期上限；删掉失效的 PC_HIST 打印。
+  触发串同时匹配 `"CoreMark 1.0"`、`"Correct operation"`、`"Errors detected"`（第三条永远不会出现，见 §12；第二条是本固件唯一的成功终点）。
+- `platform/pango_native/README.md`：状态小节更新为本次真实综合结果；SystemVerilog 选项一节改为"**不再需要**"；补 PDS 环境变量说明、200 迭代 CoreMark 构建命令与 13.1007 s 仿真实测、`Timing-4087/-4086` 属预期、以及完整 ILA 探针清单 + 触发配方。
+
+---
+
+## 10. 备份
+
+| 备份 | 位置 |
+|---|---|
+| 本轮改动前的整棵源码树 | `E:\file\pango\project\02_original_backups\tinyriscv_source_before_resume_20261010_171938` |
+| 本轮改动前的备份脚本与清单 | `E:\file\pango\project\09_validation_results\basic_final\backup_before_basic_final.ps1` |
+| 10000 迭代 CoreMark 镜像（被本轮重建替换前） | `E:\file\pango\project\09_validation_results\basic_final\coremark\performance_10000_iter`（含 `SHA256.csv`） |
+
+改动后全部源文件的 SHA256 清单：`E:\file\pango\project\09_validation_results\basic_final\FINAL_SOURCE_SHA256.csv`。
+
+---
+
+## 11. 明确未做的事
+
+- 没有改 `rtl/core/**`（CPU 数据通路、CSR、IFU/LSU 引擎）——验证轮定的冻结契约不动。
+- 没有改 `platform/pango_native/pango_native.fdc` / `.pcf`（时钟 20 ns、引脚定义保持原样；FDC 故意不加 blanket false path）。
+- 没有实现 Cache / 动态分支预测 / DDR / DMA（属高级任务，本轮范围外）。
+- 没有改 `FENCE.I` 译码（保持非法指令，不声称 Zifencei）。
+- 没有更快的取指改造（IPC 提升属后续优化项）。
+- 没有上板下载、没有 ILA 采集。
+
+**收尾轮（任务 m02843）额外"没有做"的**：
+
+- 没有为了修观测点去改 `syn_probe`（会把探针变成顶层端口，本设计引脚已固定）。
+- 没有猜 SCBV 值：本地 Pango 文档只写"按实际板卡电压选择"，`07_board_references` 里没有任何板卡原理图/用户手册，**缺少资料就如实标 BLOCKED**。
+- 没有动 `platform/pango_native/pango_native.fdc` 去加 blanket false path 来"消掉"未约束路径告警。
+- 没有改动 9 组功能回归所依赖的任何 RTL（收尾轮唯一的 RTL 改动是 `rtl/soc/pango_native_top.v` 的属性写法）。
+- 没有把仿真的 13.1007 s / 0.3053 CoreMark/MHz 写成板上成绩；板级项全部 `NOT RUN`。
+
+---
+
+## 12. CoreMark 用时取证结论（V11 / V12），以及一处**软件侧**能力限制
+
+本节不记录"改动"，只记录跑完之后的取证边界，因为签名/交付时一定会被问到。
+
+### 12.1 已取得的
+
+| 项 | 结果 |
+|---|---|
+| 1 迭代性能镜像（V11） | 串口报告 5 项 CRC 与 `core_main.c` 黄金表 index 3 一致；`Total ticks 3274904`；打印 `Total time (secs): 0` 与 `ERROR! Must execute for at least 10 secs…` —— **该镜像本身不满足 ≥10 s** |
+| 200 迭代性能镜像（V12） | `Total ticks 655032761`、`Total time (secs): 13`、`Iterations/Sec : 15`、`Iterations : 200`、CRC 全对（`crcfinal 0x382f`）、成功行**前缀** `Correct operation v`、**无** `Errors detected` |
+| 64 位原始 tick | `CPM_TICKS hi=0 lo=655213650` → `t1=655213650`，`t0=180889`，**无 32 位回绕** |
+| 仿真规模 | `cycles=658177948 retires=61293205 traps=0 faults=0 uart_chars=652 txd_writes=652`；vsim 墙钟 38 分 01 秒；0 error 0 warning |
+| ≥10 s 判据 | `655032761 / 50000000 = 13.1007 s ≥ 10 s` —— 在**仿真内实测**成立 |
+| 推算自校验 | 线性推算 654,980,800 与实测 655,032,761 差 0.008% |
+| 分数（算术推导） | `200 / 13.10065522 = 15.2665 iter/s` → CoreMark/MHz `0.3053` |
+| 证据路径 | `09_validation_results/basic_final/coremark/coremark_perf_200iter_50MHz.log`、`coremark_perf_200iter_compile.log`、`performance_200_iter/`（`coremark.elf` `5EDB52BA…`、`program.bin` `B0A03D96…`，与 `manifest.json` 的 `artifact_sha256` 逐项一致） |
+
+### 12.2 **没有**取得的
+
+- **板上实测**：无物理板，V14/V15/V16 全部 `NOT RUN`；仿真的 13.1007 s **不能**当作板上用时证据。
+- 板上真实 CoreMark 分数、板上最高实际频率：**均未实测**。
+
+### 12.3 本固件**永远打印不出**标准 `CoreMark 1.0 : <分数>` 行（新发现，未修）
+
+| 位置 | 内容 | 后果 |
+|---|---|---|
+| `tests/example/coremark/core_portme.h:16` | `#define HAS_FLOAT 0` | 关掉全部浮点打印分支 |
+| `tests/example/lib/xprintf.c:122-123` | `default: xputc(c); continue;`（`%f` 走 default，回显一个 `f` 且**不消耗** va_arg 的 double） | 该 port 的 `ee_printf` 无浮点能力；`xprintf.c:66` 自带注释就是 `<xprintf lacks floating point support>` |
+| `tests/example/coremark/core_main.c:294,296` | `#else` 分支用 `%d` 打印 `Total time (secs)` / `Iterations/Sec` | 小数被截断，故打印 `13` / `15` |
+| `tests/example/coremark/core_main.c:325-339` | `#if HAS_FLOAT` 包住 `if (known_id==3) ee_printf("CoreMark 1.0 : %f …")` | `HAS_FLOAT 0` 时**整段被预处理剔除**，该行在本镜像里不可能出现 |
+
+结论：本镜像唯一的成功终点是 `Correct operation validated.`（`core_main.c:324`），这也是 `total_errors==0` 能给出的最强证据；分数只能由 `Total ticks` + 已知 `CPU_FREQ_MHZ=50` 算出。
+
+> **日志截断（必须如实说明）**：200 迭代日志里只捕获到该行的**前缀** `# Correct operation v`（log 第 2827 行），其后 TB 就 `$finish` 了（`tb/integration/tb_coremark_uart.sv(319)`，`stop_cycle=658177948`），`alidated. See readme.txt …` 没有传完——TB 匹配到 `"Correct operation"` 后只等 12000 周期。
+> **结论不受影响**：`ee_printf("Correct operation validated. …")` 只在 `total_errors==0` 分支执行，`Errors detected` 只在 `total_errors>0` 分支，两者互斥，**收到任意前缀即等价于 `total_errors==0`**；且 5 个 CRC 检查点全部等于黄金值。引用时不要写成完整原文。
+
+**要不要修**：属**软件/port** 改动，不在本轮 RTL+平台交付范围；不改也能满足"≥10 s 有效结果"（判据是 `Total ticks`，不是分数行）。若评审坚持要看到原文，最小改法是让 `ee_printf` 支持 `%f` 后重建镜像，**不要**改 `core_main.c` 的判据逻辑。
+
+**读日志注意**：`tb_coremark_uart.sv` 的 `PROGRESS`/`LIVE` 行会**插进被解码的固件输出中间**，把一行拆成多段（如 `Iterations/Sec : 1` 之后隔两行才是续下来的 `5`；`CPM_TICKS` 前缀被吃掉只剩 `hi=0 lo=655213650`）。引用固件输出时必须容忍这种交错。
+
+---
+
+## 13. 收尾轮（任务 m02843）追加修复：上表第 5 项的观测点原本**没有进网表**
+
+### 13.1 发现
+
+上表第 5 项给 `rtl/soc/pango_native_top.v` 的 19 个观测信号加了 `(* keep = "true" *)`，当时的判据只是"编译 0 error 0 warning、端口未变"，**没有检查综合网表**。收尾轮核对 PDS 日志时发现该属性被工具**拒绝并忽略**：
+
+| 日志位置 | 原文 |
+|---|---|
+| `build/pango_native/compile/run.log:188-205` | `I: [... pango_native_top.sv(line number: 36..54)] Convert attribute name from keep to PAP_KEEP` |
+| `build/pango_native/compile/run.log:214+` | `W: [... pango_native_top.sv(line number: 36..54)] The value of attribute PAP_KEEP is invalid, ignore it.` |
+| `build/pango_native/compile/run.log:213` | `W: Sdm-2008: The attribute named ASYNC_REG is not legal, then it has no effect, ignore its value.` |
+
+后果（旧综合网表 `build/pango_native/synthesize/pango_native_top_syn.vm`，2026-10-10 23:14:57 生成）：19 个观测名里**只剩 4 个**（`obs_rd`/`obs_retire_fire`/`obs_retire_inst`/`obs_trap_fire`），`obs_retire_order`、`obs_retire_pc`、`obs_wdata`、`obs_trap_cause/pc/tval`、`obs_halted`、`obs_arch_next_pc`、`obs_protocol_fault`、`obs_csr_mtvec`、`obs_uart_tx` 全部消失，两个计数器 `retire_count`/`trap_count` 在 `build/pango_native` 下**0 次命中**。同一网表里 `uart_tx`/`led`/`gpio_data`/`gpio_ctrl` 都在，说明这是死端网络被真实优化掉，不是命名问题。**即：按原样交付，`platform/pango_native/README.md` 里那张 ILA 探针表在实现后的网表上根本抓不到点。**
+
+### 13.2 改动（只动属性写法，不动逻辑、不动端口）
+
+依据本机 Pango 文档 `E:\donwload\PDS_2022.2-SP6.4\PDS_2022.2-SP6.1\syn\doc\fpga_attribute_reference.pdf`（Synplify Pro for Pango Attribute Reference，202 页）：
+
+| 指令 | 页 | 用法与原文要点 |
+|---|---|---|
+| `syn_keep` | 85/87 | `object /* synthesis syn_keep = 1 */;`，保留指定连线不被优化；"object is a wire or reg declaration for combinational logic"，且对象名与注释斜杠之间**必须有空格** |
+| `syn_preserve` | 123 | "Prevents sequential optimizations such as constant propagation, inverter push-through, and FSM extraction"，用于保留寄存器 |
+| `syn_probe` | 127 | 会**把探针变成顶层端口**——本设计引脚已固定，**不能用** |
+
+改动内容（`rtl/soc/pango_native_top.v`，85 行 3603 B → 101 行 5027 B）：
+
+1. `(* ASYNC_REG = "TRUE" *) reg [1:0] reset_sync;` → `reg [1:0] reset_sync /* synthesis syn_preserve = 1 */;`（本 wrapper 单时钟域，复位同步器只需保持结构）。
+2. 16 个组合观测信号 → `wire obs_x /* synthesis syn_keep = 1 */;`。
+3. 2 个死端计数器 → `reg [31:0] obs_retire_count /* synthesis syn_keep = 1, syn_preserve = 1 */;`（`obs_trap_count` 同）。
+4. 删掉全部 `(* keep = "true" *)`（否则每次编译仍有 19 条 `PAP_KEEP` 警告）。
+
+### 13.3 复验
+
+- **重新精化**：`vlib .sim_runs/closure_elab/work` + `vlog -sv -work .sim_runs/closure_elab/work +incdir+rtl/core -f sim/native_axi_sources.f`（CWD = 工程根）→ 29 个模块全部编译，`Top level modules: pango_native_top`，**Errors: 0, Warnings: 0**（日志 `.sim_runs/closure_elab/elab.log`，收尾轮证据里另存一份 `pds_rerun/elab.log`）。
+- **属性已被工具接受**：新编译日志 `build/pango_native/compile/run.log:188-207` 只有
+  `I: [... pango_native_top.sv(line number: 20)] Convert attribute name from syn_preserve to PAP_PRESERVE`
+  与 17 条 `I: [... (line number: 51..70)] Convert attribute name from syn_keep to PAP_KEEP`，
+  **不再有** `The value of attribute PAP_KEEP is invalid, ignore it.`，也**不再有** `W: Sdm-2008` 的 `ASYNC_REG` 警告。
+- **重新综合/实现**：删除 `build/pango_native/{compile,constraint_check,synthesize,device_map,place_route,generate_bitstream}` 后重跑 `platform/pango_native/build.tcl`。
+  新网表 `build/pango_native/synthesize/pango_native_top_syn.vm`（5,477,576 B，SHA256 `CED470656CC29D2C4F0A2CC80585863EBA32A5C2B16FD2876208BF2F4DD5A2B5`）中 18 个观测名**全部存在**，
+  出现次数：`obs_retire_fire` 34、`obs_retire_order` 2、`obs_retire_pc` 33、`obs_retire_inst` 103、`obs_rd_valid` 2、`obs_rd` 4、`obs_wdata` 2、`obs_trap_fire` 34、`obs_trap_cause` 6、`obs_trap_pc` 2、`obs_trap_tval` 2、`obs_halted` 1、`obs_arch_next_pc` 2、`obs_protocol_fault` 2、`obs_csr_mtvec` 31、`obs_uart_tx` 3、`obs_retire_count` 137、`obs_trap_count` 137。修复**已生效**。
+  （上面提到的"旧网表只剩 4 个名、两个计数器 0 次命中"指修复前那一版 `pango_native_top_syn.vm`；此处数字以**收尾轮重跑后的最终网表**为准。）
+- **影响面判断（必须如实写明）**：`pango_native_top` 不被任何仿真 testbench 例化（SoC 级 testbench 例化的是 `tinyriscv_axi_soc`），所以本轮**没有重跑功能回归**，理由是 9 组回归所依赖的 RTL 一行未改；但该文件是 `sim/native_axi_sources.f` 的 29 个源之一，**必须**重新精化——已做。
+
+### 13.4 收尾轮重跑后的最终实现数值（取代 §1 上方的旧数值）
+
+| 项 | 修复前（2026-10-10 那一轮） | **收尾轮重跑（最终）** | 证据 |
+|---|---|---|---|
+| 流程结果 | `Design Summary : All Constraints Met.` | **同上，exit 0** | `09_validation_results/basic_closure/pds_rerun/pds_rerun_closure.log` |
+| 时序端点 | 29238 | **29018** | `pds_rerun/place_route/pango_native_top_timing_summary_after_hold_fix.txt` |
+| 慢角 Setup WNS | 3.258 ns | **5.219 ns**（TNS 0.000，0 失败） | 同上 |
+| 慢角 Hold WHS | 0.139 ns | **0.124 ns**（THS 0.000，0 失败） | 同上 |
+| 快角 Setup / Hold | 8.368 ns / 0.101 ns | **10.156 ns / 0.088 ns** | 同上 |
+| Recovery / Removal / 最小脉宽 | 空（无违例） | **空（无违例）** | 同上 |
+| 关键路径 / 等效 Fmax | 16.742 ns / 约 59.7 MHz | **20 − 5.219 = 14.781 ns / 约 67.6 MHz** | 算术推导 |
+| Total LUTs | 7622 / 66600 (11.44%) | **7761 / 66600 (11.65%)**（其中 `LUTs as dram` 2080、`LUTs as logic` 5681） | `pds_rerun/place_route/run.log` |
+| Total Registers | 2984 / 133200 (2.24%) | **3114 / 133200 (2.34%)** | 同上 |
+| Latches / APM / I/O | 0 / 6.00 of 240 / 13 of 300 | **0 / 6.00 of 240 (2.50%) / 13 of 300 (4.33%)** | 同上 |
+| 比特流 | `A8D616B31B2E53B91A668F5883E82A423FBC8F3B6874EA32181B80454DC693B1` | **`5ED76142DF321F752F01E9637F8616B54AB7083DCE85C040E21B44BC1CE529F4`**（3,791,112 B） | `pds_rerun/generate_bitstream/pango_native_top.sbit` |
+| 流程耗时 | — | compile→gen_bit_stream CPU 0h:4m:43s，进程总 CPU 0h:5m:20s | `pds_rerun_closure.log` |
+
+**代价与收益（如实记录）**：把观测点真正留在网表里，代价是 **+139 个 LUT、+130 个寄存器**（`+0.21%` LUT、`+0.10%` 寄存器），
+收益是 `platform/pango_native/README.md` 的 ILA 探针表在**实现后的网表上确实抓得到**——这是"能上板"和"只能上板但抓不到"的区别。
+时序数值的变化（3.258 → 5.219 ns）来自修复后网表布线结果不同，**不是**"改属性提升了主频"，不要把两者写成因果关系。
+
+> **仍未做**：比特流**没有下载、没有上板、没有 ILA 采集**；`C: Bitstream-2001: SCBV has not been set.` 警告依旧存在（原因见 `09_validation_results/basic_closure/01_PLAN_RECONCILIATION.md` §5 B2），**未猜值**。
+> `Timing-4086/4087`（`led[0..7]`、`uart_tx`、`key`、`rst_n`、`uart_rx` 未约束）依旧存在，属 FDC 故意不加 blanket false path 的预期结果。
+
+---
+
+## §9 基础版交接
+
+*原文件：`docs/design.md`*
+
+### 基础版交付入口
+
+本次按用户最新要求只交付基础版代码。Cache、动态预测、DDR、
+DMA、AI暂不做。原版及修改前备份保留在上级 `backups` 目录。
+
+## 代码
+
+- CPU：`rtl/core/tinyriscv.v`，三级流水线、32个32位寄存器、
+  RV32IM译码/执行、单次退休、访存等待及分支重定向。
+- 原生AXI封装：`rtl/core/tinyriscv_axi_top.v`。
+- SoC：`rtl/soc/tinyriscv_axi_soc.v`，程序/数据RAM及
+  UART、GPIO、Timer、SPI、IRQ控制器。
+- CSR/异常：`rtl/core/csr_native.v`，同步异常与M模式中断，
+  FENCE.I暂按非法指令处理。
+- 板级顶层：`rtl/soc/pango_native_top.v`。
+- 原生源码清单：`sim/native_axi_sources.f`；不要混编旧RIB顶层。
+- 软件构建：`tools/build_native_software.py`。
+- PDS工程脚本及引脚：`platform/pango_native/`。
+
+## 当前证据
+
+新增基础版源码做过语法编译和板级顶层加载，均0错误、0警告；
+没有执行仿真run。日志为 `sim/native_release_compile.log`、
+`sim/native_release_load.log`。CoreMark做过编译链接。
+这些不代表完整CPU仿真、ISA符合性、CoreMark有效成绩、
+PDS综合/时序合格或上板通过。早期单元测试结果只适用于
+当时的代码，后续CSR和SoC改动需重新验证。
+
+PDS运行前须按 `platform/pango_native/README.md`
+启用SystemVerilog工程选项；尚未确认相应Tcl开关。
+
+## 交给其他AI的验证任务
+
+请在当前目录阅读 `docs/external-verification-plan.md`，
+只执行基础版范围。先确认原生清单和顶层连接，再检查CPU退休、
+AXI背压/错误、外设、CSR/异常、软件镜像，最后综合及上板。
+遇到失败应报告最早错误位置和实际日志，不把编译成功当成功运行。
+旧流水线测试需适配新增IRQ输入和内部mtvec，而不是继续依赖
+已不控制异常入口的外部trap_vector。
+
+完整验证由用户交给其他AI执行，本次没有启动完整回归。

@@ -99,7 +99,7 @@ Correct operation validated. See readme.txt for run and reporting rules.
 频率一栏是约束收敛结果，按赛题诚信边界不得写成"实测最高频率"。
 
 上板后必须补的三件事：实板串口抓完整报告、ILA 抓 CoreMark 关键算法波形、
-以及用实测数据重算迭代数。详见 `docs/verification/handoff-2026-10-18-ifu-done.md` 与
+以及用实测数据重算迭代数。详见 `docs/verification.md` 与
 `evidence/records/optimization/P16/measurement.md`。
 
 **已取代**：`pangoriscv_i400.sbit`、`pangoriscv_i512.sbit`、`pangoriscv_i576.sbit`、

@@ -17,7 +17,7 @@
 数字随时会变，**别背这里，去查**：
 
 - 分数与三项指标口径 → `bitstream/README.md`（顶部有"仿真非有效成绩"声明）
-- 未修项与编号问题 → `docs/verification/issue-register-2026-10-18.md`
+- 未修项与编号问题 → `docs/verification.md`
 - 每一轮怎么做的、数据多少 → `evidence/records/optimization/P*/measurement.md`
 
 **已知且影响报分资格的三件事**：① 没有板载实测（赛题 §4 要求分数必须来自板上）；
@@ -29,7 +29,7 @@
    可复用经验。**遇到问题先查这里**，别从头踩。
 2. **[`rules.md`](rules.md)** —— 引数口径（slack 取哪个文件、LUT 写哪个阶段、
    仿真不等于成绩、串口块只贴原文）+ 动手前后的逐项清单。
-3. `docs/verification/issue-register-2026-10-18.md` —— 编号问题总表（含未修项）。
+3. `docs/verification.md` —— 编号问题总表（含未修项）。
 4. `evidence/records/optimization/P*/measurement.md` —— 每一轮的记录。
 
 ## 三条铁律（其余都是展开）

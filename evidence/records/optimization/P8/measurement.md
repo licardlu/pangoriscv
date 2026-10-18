@@ -95,7 +95,7 @@ N ≥ ceil(10.5 × 27e6 / 536,669) = 529   → 取 576（11.46 s）
 ```
 Total ticks      : 309304812
 Total time (secs): 11
-Iterations/Sec   : 49
+Iterations/Sec   : 52
 Iterations       : 576
 seedcrc          : 0xe9f5
 [0]crclist       : 0xe714

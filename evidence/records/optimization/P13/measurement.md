@@ -101,6 +101,10 @@ seedcrc          : 0xe9f5
 [0]crcfinal      : 0x3c53
 Correct operation validated. See readme.txt for run and reporting rules.
 ```
+> （本行串口输出被 `PROGRESS` 控制行打断，数值由已核验的整数截断模型推导：`floor(ticks/27e6)` 秒、`iterations / 该整数`）
+
+> 注：固件的 `Total time (secs)` 与 `Iterations/Sec` 是**整数截断**打印的（`core_portme.h` 里 `HAS_FLOAT 0`，见 `native-basic-final-status.md`）。所以它们的值来自 `floor(ticks/27e6)` 与 `iterations / 那个整数`，**不能用它们反推分数**——分数必须用 `Total ticks` 计算，即 `iterations / ticks × 1e6`。
+
 
 | 项 | 值 |
 |---|---|

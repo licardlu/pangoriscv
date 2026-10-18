@@ -31,7 +31,7 @@
 ```
 Total ticks      : 287211317
 Total time (secs): 10
-Iterations/Sec   : 72
+Iterations/Sec   : 76
 Iterations       : 768
 seedcrc          : 0xe9f5
 [0]crclist       : 0xe714
@@ -40,6 +40,8 @@ seedcrc          : 0xe9f5
 [0]crcfinal      : 0x3c53
 Correct operation validated. See readme.txt for run and reporting rules.
 ```
+> 注：`Total time (secs)` 与 `Iterations/Sec` 是固件的**整数截断**打印（`core_portme.h` 里 `HAS_FLOAT 0`）。真实时间是 10.637 s，固件按 `floor(10.637)=10` 打印，故 `Iterations/Sec = 768/10 = 76`。**分数必须用 `Total ticks` 计算**：`768 / 287,211,317 × 1e6 = 2.6740`，不能用 `Iterations/Sec` 反推。
+
 
 `crcfinal` 随迭代数变化（最终 CRC 是跨迭代累积的）：20→`0x4983`、400→`0x25b5`、
 512→`0xdfc8`、576→`0x7b65`、640→`0x382f`、768→`0x3c53`。官方只与已知表比对

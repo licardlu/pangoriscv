@@ -84,7 +84,7 @@ N ≥ ceil(10.5 × 27e6 / 373,932) = 759   → 取 768（10.64 s）
 ```
 Total ticks      : 287211317
 Total time (secs): 10
-Iterations/Sec   : 72
+Iterations/Sec   : 76
 Iterations       : 768
 seedcrc          : 0xe9f5
 [0]crclist       : 0xe714
@@ -93,6 +93,8 @@ seedcrc          : 0xe9f5
 [0]crcfinal      : 0x3c53
 Correct operation validated. See readme.txt for run and reporting rules.
 ```
+> 注：固件的 `Total time (secs)` 与 `Iterations/Sec` 是**整数截断**打印的（`core_portme.h` 里 `HAS_FLOAT 0`，见 `native-basic-final-status.md`）。所以它们的值来自 `floor(ticks/27e6)` 与 `iterations / 那个整数`，**不能用它们反推分数**——分数必须用 `Total ticks` 计算，即 `iterations / ticks × 1e6`。
+
 
 | 项 | 值 |
 |---|---|

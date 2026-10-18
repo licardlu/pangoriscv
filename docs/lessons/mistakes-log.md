@@ -444,6 +444,31 @@
 
 ---
 
+- **根因（已定位到具体连线）**：`tb/axi/tb_lsu_axi_ram.sv:33-53` 把 `lsu_axi` 的
+  `eng_w_*` **直连到 `axi_data_engine`**，中间**没有 D-Cache**。
+  新协议下 LSU 一进 `WRITE_WAIT` 就不再输出 W 拍（数据已经在请求拍递过了），
+  而引擎在 `WR_PREP` 才需要 W → **永远等不到 → `LSU_RAM timeout`**。
+  真实 SoC 里 D-Cache 用自己锁存的 `wdata_q/wstrb_q` 驱动引擎，所以 SoC 仿真能过；
+  这个 harness 直连引擎，就暴露了缺口。
+- **最干净的修法（下一轮直接做）**：让 LSU **把 W 拍保持到引擎取走为止**，而不是"递一拍就撤"：
+  ```verilog
+  reg wtake_q;                                   // 本笔 store 的 W 拍尚未被引擎取走
+  always @(posedge clk) begin
+    if (!rst_n)                                  wtake_q <= 1'b0;
+    else begin
+      if (eng_w_valid && eng_w_ready)            wtake_q <= 1'b1;   // 已被取走
+      if (fast_issue || state==REQUEST)          wtake_q <= 1'b0;   // 新的一笔 store
+    end
+  end
+  ```
+  `eng_w_valid` 的表达式在 `REQUEST / WRITE_WAIT` 两态下都保持有效，直到 `wtake_q` 置位。
+  这样：① `tb_lsu_axi_ram`（直连引擎）能过；② 真实 SoC 不受影响
+  （D-Cache 忽略 LSU 的 W，用自己的寄存器）；③ 语义上"数据可用直到被取走"更规范。
+- **顺序（重要）**：先改 LSU 的 W 保持（单独一个提交，跑 `run_ram_tests` 验证），
+  再把 P28 的 D-Cache 部分叠上去。**两个改动分开提交**，否则又会分不清谁坏。
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

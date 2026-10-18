@@ -427,6 +427,23 @@
 
 ---
 
+- **第三次尝试（P28，按 §4.15 修竞态、按 §4.16 两阶段提交）**：
+  `unit 5/5`、`ISA 15/15`、`halt-reset 5/5` **全过**，20 迭代 A/B 与 P25 完全一致
+  （`7,300,826`，CRC 全同，`store req=0`）。
+  但 `run_ram_tests` 里的 **`lsu-seed1`** 报 `Fatal: LSU_RAM timeout` ——
+  那是**第三个**按旧契约建模的测试台（直接驱动 LSU + RAM 的集成 harness），
+  它期望 W 在受理后单独握手。
+- **教训再升级**：一次 store 协议改动会牵动**至少三个**测试台模型：
+  ① `tb_lsu_axi`（单元，引擎模型 + 计分器）
+  ② `tb_lsu_ram`（`run_ram_tests` 里的集成 harness）
+  ③ 任何在 `run_*` 里直接给 `eng_w_valid/eng_w_ready` 建模的地方。
+  **改协议前先 `grep eng_w_valid`/`eng_w_ready` 把全部落点列出来**，逐个评估，
+  否则会连续三次撞在不同 harness 上。
+- **可复用**：搜索协议信号名，比逐个跑测试发现失败更快；
+  `grep -rn "eng_w_valid\|eng_w_ready" tb/` 应在动手前就做。
+
+---
+
 ## 5. 工具类：写文件把内容写坏
 
 ### 5.1 用 PowerShell 写文件 → BOM / 控制字符

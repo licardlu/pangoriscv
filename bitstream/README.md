@@ -6,15 +6,15 @@
 >
 > | 项 | 值 |
 > |---|---|
-> | 板测 `Total ticks` | **273,172,370** |
+> | 板测 `Total ticks` | **288,558,769** |
 > | 板测 `Iterations` | 768 |
-> | 板测用时 | 10.117 s（≥10 s ✓） |
+> | 板测用时 | 10.687 s（≥10 s ✓，**832 迭代**） |
 > | 板测五项 CRC | `0xe9f5 / 0xe714 / 0x1fd7 / 0x8e3a / 0x3c53` |
 > | 板测结论 | `Correct operation validated` |
 > | 板测 `Compiler version` | GCC15.2.0 |
-> | 板测 **CoreMark/MHz** | **2.8115** |
+> | 板测 **CoreMark/MHz** | **2.8833** |
 >
-> 原始串口抓取：`evidence/records/optimization/P20/board_uart_score.txt`
+> 原始串口抓取：`evidence/records/optimization/P21/board_uart_score.txt`
 > （691 B）；烧写记录与 PDS 全套：同目录。
 > 板卡 PG2L100H、27 MHz 晶振、Pango USB Cable II 下载、串口 CP210x @115200 8N1。
 >
@@ -27,13 +27,16 @@
 
 | 文件 | 大小 | SHA256 |
 |---|---|---|
-| `pangoriscv_i768.sbit` | 3,791,112 B | `88461E7167319BBD0713C8B4C134496C6765A835B8B25D7CD5618BCBCF15B6BE` |
+| `pangoriscv_i768.sbit` | 3,791,112 B | `1FAC6F435BA34641BB8D16285CFFFA7811D2F787AEAF08805B4F5369A2B41F23` |
 
 **板卡**：Pango PG2L100H，27 MHz 晶振。
 
 **配置**：`CACHE_ENABLE` / `PREDICT_ENABLE` / `PERF_ENABLE` 三开关全开（全功能配置），BTB 32 项。
 
-**固件**：CoreMark v1.0 性能跑（`PERFORMANCE_RUN=1`），**768 次迭代**，`-DCPU_FREQ_MHZ=27`。
+**固件**：CoreMark v1.0 性能跑（`PERFORMANCE_RUN=1`），**832 次迭代**，`-DCPU_FREQ_MHZ=27`。
+> 迭代数随性能变化而重算：本版每迭代 346,827 ticks，
+> `N ≥ ceil(10.5 × 27e6 / 346,827) = 818`，取 832 → 实测 10.687 s。
+> **性能每提升一次都必须重算，否则 <10 s 会被判无效**（本版曾用 768 迭代跑出 9.865 s 而作废）。
 
 > 迭代数为什么是 768：赛题要求单次运行 ≥10 s。本轮把 AXI RAM 猝发读的两个白等周期去掉后，
 > 每迭代 ticks 降到 373,738，按 `N ≥ ceil(10.5 × 27e6 / 373,738) = 759` 重算后取 768，
@@ -42,7 +45,7 @@
 **串口输出（2026-10-19 板上实测，同一镜像 `score768`）**：
 
 ```
-Total ticks      : 273172370
+Total ticks      : 288558769
 Total time (secs): 10
 Iterations/Sec   : 76
 Iterations       : 768
@@ -85,7 +88,8 @@ Correct operation validated. See readme.txt for run and reporting rules.
 | LRU 修复 + 重新实现（768 迭代） | 287,030,751 | 2.6757 | 13,481 | 0.1985 |
 | 复核 R01/R02/R04 修复 + 重建（768 迭代） | 284,997,892 | 2.6948 | 13,503 | 0.1995 |
 | store 数据随请求拍递出（768 迭代） | 280,487,382 | 2.7381 | 13,555 | 0.2020 |
-| **I-Cache 扩到 4 KB（64 组）+ 上述改动（本版位流）** | **273,172,370** | **2.8115** | **14,622** | **0.1923** |
+| I-Cache 扩到 4 KB（64 组）+ 上述改动 | 273,172,370 | 2.8115 | 14,622 | 0.1923 |
+| **I-Cache 扩到 8 KB（128 组）+ 上述改动（本版位流，832 迭代）** | **288,558,769** | **2.8833** | **16,782** | **0.1718** |
 
 累计 **+104.97% CoreMark/MHz**（超过一倍）、**+91.24% CoreMark/kLUT**，
 面积仅 **+7.23%**（12,572 → 13,481）。本版相对上一版是 **性能 +0.06%**；主要变更是修掉独立复核提出的 R03（快命中路径漏更新 LRU，`d_miss` −8.3%）。

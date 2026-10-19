@@ -13,8 +13,8 @@
 // the caches/H1: two-way set-associative instruction cache.
 //
 // Geometry (plan section 15): 32 sets x 2 ways x 32 B lines = 2048 B.
-//   tag       = addr[31:11]   (21 bits)   4 KB variant: 64 sets
-//   set index = addr[10:5]    (6 bits)
+//   tag       = addr[31:12]   (20 bits)   8 KB variant: 128 sets
+//   set index = addr[11:5]    (7 bits)
 //   word      = addr[4:2]     (3 bits inside the 32 B line)
 // Replacement: first invalid way, otherwise the 1-bit LRU victim.
 //
@@ -78,25 +78,25 @@ module icache_axi (
     input wire [1:0] m_rresp,
     input wire m_rlast
 );
-    localparam SETS=64, WORDS=8, LINE_BEATS=8;   // 64 x 2 x 32 B = 4096 B
+    localparam SETS=128, WORDS=8, LINE_BEATS=8;  // 128 x 2 x 32 B = 8192 B
     localparam IC_IDLE=3'd0, IC_RESP=3'd1, IC_AR=3'd2,
                IC_FILL=3'd3, IC_MISS_RD=3'd4, IC_FAULT=3'd5;
 
     // Flat arrays: PDS parses these sources as Verilog, so no packed/unpacked
     // multidimensional memories are used here.
     reg [31:0] data_mem [0:SETS*2*WORDS-1];   // {set,way,word}
-    reg [20:0] tag_mem  [0:SETS*2-1];         // {way,set}
+    reg [19:0] tag_mem  [0:SETS*2-1];         // {way,set}
     reg        valid_mem[0:SETS*2-1];         // {way,set}
     reg        lru_mem  [0:SETS-1];           // 1 = way1 is the LRU victim
 
     reg [2:0] state;
     reg [31:0] addr_q;
     reg [3:0] id_q;
-    reg [5:0] set_q;
+    reg [6:0] set_q;
     reg [2:0] word_q;
-    reg [20:0] tag_q;
+    reg [19:0] tag_q;
     reg way_q;
-    reg [9:0] rd_index_q;
+    reg [10:0] rd_index_q;
     reg [31:0] rsp_data_q;
     reg [1:0] rsp_resp_q;
     reg [2:0] beat_q;
@@ -104,8 +104,8 @@ module icache_axi (
     reg [1:0] fill_resp_q;
     integer i;
 
-    wire [5:0] req_set = req_addr[10:5];
-    wire [20:0] req_tag = req_addr[31:11];
+    wire [6:0] req_set = req_addr[11:5];
+    wire [19:0] req_tag = req_addr[31:12];
     wire hit0 = valid_mem[{1'b0,req_set}] && (tag_mem[{1'b0,req_set}]==req_tag);
     wire hit1 = valid_mem[{1'b1,req_set}] && (tag_mem[{1'b1,req_set}]==req_tag);
     wire miss_way = !valid_mem[{1'b0,req_set}] ? 1'b0 :
@@ -114,7 +114,7 @@ module icache_axi (
     // request, so a hit can be answered on the accept edge instead of going
     // through a separate read state. The address the miss path uses later is
     // still registered into rd_index_q.
-    wire [9:0] hit_index = {req_addr[10:5], hit0 ? 1'b0 : 1'b1, req_addr[4:2]};
+    wire [10:0] hit_index = {req_addr[11:5], hit0 ? 1'b0 : 1'b1, req_addr[4:2]};
     wire [31:0] hit_word = data_mem[hit_index];
     // The line address is {tag,set,5'b0}: the 32 B line the requested word is in.
     wire [31:0] line_addr = {tag_q, set_q, 5'b0};
@@ -178,13 +178,13 @@ module icache_axi (
                     if(req_valid && req_ready) begin
                         addr_q<=req_addr;
                         id_q<=req_id;
-                        set_q<=req_addr[10:5];
+                        set_q<=req_addr[11:5];
                         word_q<=req_addr[4:2];
-                        tag_q<=req_addr[31:11];
+                        tag_q<=req_addr[31:12];
                         if(hit0 || hit1) begin
                             access_pulse<=1;
                             way_q<=hit0 ? 1'b0 : 1'b1;
-                            lru_mem[req_addr[10:5]]<=hit0 ? 1'b1 : 1'b0;
+                            lru_mem[req_addr[11:5]]<=hit0 ? 1'b1 : 1'b0;
                             // Fast hit: answer on the accept edge (engine sees the
                             // response one cycle after req_valid/req_ready). Both the
                             // holding register and the output register are loaded so

@@ -281,7 +281,18 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // cache is then unavailable to the CPU only for genuine read misses, which is
     // what the LSU's "engine busy" fallback was really paying for.
     wire read_hit_now = req_valid && !req_write && req_in_cache && hit_any;
-    assign req_ready = rst_n && !protocol_fault && !config_fault &&
+    // A posted data-RAM store must still be ORDERED against later accesses: the CPU is
+    // answered on the accept edge, so without this a following read (e.g. polling a
+    // UART status register right after writing its data register) can overtake the
+    // write on the AXI channel and read stale state.  On the board that shows up as
+    // the firmware hanging with no UART output at all, while the fast AXI RAM in
+    // simulation hides it.  Only reads that need the AXI channel are held; cache hits
+    // are already coherent (the write-through merge landed at accept) and stores are
+    // unaffected, so the wdata_store saving is preserved.
+    wire write_inflight = rst_n && (wreq_q || wsent_q || (state_q==ST_WR_DRAIN) ||
+                                    (state_q==ST_WR_RESP) || (state_q==ST_WR_HOLD));
+    wire pend_blocks_req = write_inflight && !req_write && !(req_in_cache && hit_any);
+    assign req_ready = rst_n && !protocol_fault && !config_fault && !pend_blocks_req &&
                        ((state_q==ST_IDLE) ||
                         ((state_q==ST_WR_HOLD || state_q==ST_WR_DRAIN) && read_hit_now));
     assign w_ready   = i_w_ready;              // inner engine latches in WR_PREP

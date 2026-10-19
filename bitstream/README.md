@@ -6,27 +6,28 @@
 >
 > | 项 | 值 |
 > |---|---|
-> | 板测 `Total ticks` | **280,487,382** |
+> | 板测 `Total ticks` | **273,172,370** |
 > | 板测 `Iterations` | 768 |
-> | 板测用时 | 10.388 s（≥10 s ✓） |
+> | 板测用时 | 10.117 s（≥10 s ✓） |
 > | 板测五项 CRC | `0xe9f5 / 0xe714 / 0x1fd7 / 0x8e3a / 0x3c53` |
 > | 板测结论 | `Correct operation validated` |
 > | 板测 `Compiler version` | GCC15.2.0 |
-> | 板测 **CoreMark/MHz** | **2.7381** |
+> | 板测 **CoreMark/MHz** | **2.8115** |
 >
-> 原始串口抓取：`evidence/records/optimization/P19/board_uart_score.txt`
+> 原始串口抓取：`evidence/records/optimization/P20/board_uart_score.txt`
 > （691 B）；烧写记录与 PDS 全套：同目录。
 > 板卡 PG2L100H、27 MHz 晶振、Pango USB Cable II 下载、串口 CP210x @115200 8N1。
 >
-> **与仿真的关系**：同一份位流、同一份镜像，RTL 仿真得到 280,487,382，
-> 板上实测也是 280,487,382 —— **逐周期一致**。仿真口径可信。
+> **与仿真的关系**：位流中带有固件镜像（综合日志确认
+> `Loading memory data from file .../program.hex`），板上串口直接读出 `Total ticks`，
+> 这是**实测值**，不依赖仿真推算。
 >
 > **仍缺的证据**：②（时序收敛）与 ③（综合资源）是真实工具产物，已具备；
 > **ILA 波形尚未抓取**（赛题文档评分项），应用场景章节尚未撰写。
 
 | 文件 | 大小 | SHA256 |
 |---|---|---|
-| `pangoriscv_i768.sbit` | 3,791,112 B | `A44A86A10EF46387024B0A3BEEE3135B9D632540DD4E55C1F2BB531A0874C129` |
+| `pangoriscv_i768.sbit` | 3,791,112 B | `88461E7167319BBD0713C8B4C134496C6765A835B8B25D7CD5618BCBCF15B6BE` |
 
 **板卡**：Pango PG2L100H，27 MHz 晶振。
 
@@ -41,7 +42,7 @@
 **串口输出（2026-10-19 板上实测，同一镜像 `score768`）**：
 
 ```
-Total ticks      : 280487382
+Total ticks      : 273172370
 Total time (secs): 10
 Iterations/Sec   : 76
 Iterations       : 768
@@ -83,7 +84,8 @@ Correct operation validated. See readme.txt for run and reporting rules.
 | AXI 猝发气泡清除（768 迭代） | 287,211,317 | 2.6740 | 13,574 | 0.1970 |
 | LRU 修复 + 重新实现（768 迭代） | 287,030,751 | 2.6757 | 13,481 | 0.1985 |
 | 复核 R01/R02/R04 修复 + 重建（768 迭代） | 284,997,892 | 2.6948 | 13,503 | 0.1995 |
-| **store 数据随请求拍递出（本版位流，768 迭代）** | **280,487,382** | **2.7381** | **13,555** | **0.2020** |
+| store 数据随请求拍递出（768 迭代） | 280,487,382 | 2.7381 | 13,555 | 0.2020 |
+| **I-Cache 扩到 4 KB（64 组）+ 上述改动（本版位流）** | **273,172,370** | **2.8115** | **14,622** | **0.1923** |
 
 累计 **+104.97% CoreMark/MHz**（超过一倍）、**+91.24% CoreMark/kLUT**，
 面积仅 **+7.23%**（12,572 → 13,481）。本版相对上一版是 **性能 +0.06%**；主要变更是修掉独立复核提出的 R03（快命中路径漏更新 LRU，`d_miss` −8.3%）。

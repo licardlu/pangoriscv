@@ -74,15 +74,24 @@ module lsu_axi(
     always @(posedge clk) begin
         if (!rst_n)                          wtake_q <= 1'b0;
         else begin
-            if (eng_w_valid && eng_w_ready)  wtake_q <= 1'b1;
+            if ((state==WRITE_DATA || state==WRITE_WAIT) &&
+                eng_w_valid && eng_w_ready)  wtake_q <= 1'b1;
             if (fast_issue || (state==REQUEST)) wtake_q <= 1'b0;   // fresh store
         end
     end
-    assign eng_w_valid=rst_n && (state==WRITE_DATA ||
+    // The store data is available on the REQUEST cycle (a data cache may capture it
+    // there) and is HELD until the engine takes it.  IMPORTANT: the live inputs are
+    // only meaningful on the accept edge -- the caller is free to change them right
+    // afterwards, so every later cycle must use the latched value_q/address_q.
+    wire wdata_on_req = rst_n && (state==REQUEST);
+    wire wdata_on_iss = rst_n && fast_issue && is_store;
+    assign eng_w_valid=rst_n && (wdata_on_req || wdata_on_iss || state==WRITE_DATA ||
                                  ((state==WRITE_WAIT) && !wtake_q));
-    assign eng_w_data=value_q << (8*address_q[1:0]);
-    assign eng_w_strb=(size_q==0?4'b0001:size_q==1?4'b0011:4'b1111)
-                      << address_q[1:0];
+    assign eng_w_data=(wdata_on_iss) ? (store_value << (8*address[1:0]))
+                                     : (value_q     << (8*address_q[1:0]));
+    assign eng_w_strb=(wdata_on_iss)
+                      ? ((access_size==0?4'b0001:access_size==1?4'b0011:4'b1111) << address[1:0])
+                      : ((size_q==0?4'b0001:size_q==1?4'b0011:4'b1111) << address_q[1:0]);
     assign eng_w_last=1;
     // P10: also be ready for a response on the ACCEPT edge.  The data cache
     // answers a hit combinationally there, so a load retires in one cycle instead
@@ -93,7 +102,8 @@ module lsu_axi(
     // the cache reports the early-release OKAY right there, so a store finishes in
     // two cycles instead of three.
     assign eng_b_ready  =rst_n && (state==WRITE_WAIT ||
-                                   (state==WRITE_DATA && eng_w_valid && eng_w_ready));
+                                   (state==WRITE_DATA && eng_w_valid && eng_w_ready) ||
+                                   wdata_on_iss || wdata_on_req);
     // P9/P10/P14: report completion on the RESPONSE edge, not one cycle later.
     wire rsp_fire=eng_rsp_valid&&eng_rsp_ready;
     wire b_fire  =eng_b_valid&&eng_b_ready;
@@ -145,14 +155,21 @@ module lsu_axi(
                         fault_q<=eng_rsp_resp!=0;
                         load_value_q<=(eng_rsp_resp==0)?load_now:32'd0;
                         state<=done_ready?EMPTY:COMPLETE;
+                    end else if(b_fire) begin
+                        fault_q<=eng_b_resp!=0;
+                        state<=done_ready?EMPTY:COMPLETE;
                     end else begin
-                        state<=is_store?WRITE_DATA:READ_WAIT;
+                        state<=is_store?WRITE_WAIT:READ_WAIT;
                     end
                 end
                 else state<=REQUEST;
             end
-            REQUEST: if(eng_req_valid && eng_req_ready)
-                state<=store_q?WRITE_DATA:READ_WAIT;
+            REQUEST: if(eng_req_valid && eng_req_ready) begin
+                if(b_fire) begin
+                    fault_q<=eng_b_resp!=0;
+                    state<=done_ready?EMPTY:COMPLETE;
+                end else state<=store_q?WRITE_WAIT:READ_WAIT;
+            end
             WRITE_DATA: if(eng_w_valid && eng_w_ready) begin
                 // P14: the cache answers on this same edge for a released write.
                 if(b_fire) begin

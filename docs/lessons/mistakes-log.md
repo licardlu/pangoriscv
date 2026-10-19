@@ -685,6 +685,24 @@
 
 ---
 
+- **补充（2026-10-19，用户反馈"每次烧写都看到报错"）**：
+  这个报错**每次都会出现**，因为烧写脚本里保留了 `cfg_verify`：
+  ```
+  E: Configuration-0004: Can not open file: .../pangoriscv.fdc
+  E: Configuration-0009: Operation error : cfg_verify command can't be exec.
+  W: Public-4023: Error has occurred, please run command clean before running again.
+  ```
+  `cfg_verify`（不带参数）在**SRAM 下载**模式下会去找与位流同名的伴随 `.fdc`，
+  这里根本不存在 → 必然失败。而它发生在 **`cfg_program succeed` 之后**，
+  所以从来不代表烧写失败，**纯粹把每一次成功的烧写都显示成失败**。
+  → **处置：把 `cfg_verify` 从烧写脚本里删掉**（保留注释说明原因）。
+  删掉后同一次烧写日志变为 `program OK: 1` + `PROGRAM_SRAM_DONE`，
+  板上照常打印 `284,997,892`。
+- **成功判据只认两条**：`configuration_tcl.log` 出现 `cfg_program succeed`，
+  且 `cfg_scan_chain` 报 `done bit: 1`。**不要用 `cfg_verify` 的成败判断烧写。**
+
+---
+
 ## 8. 提分天花板类：先算边界，再动手
 
 ### 8.1 单发射的 CoreMark/MHz 上限 = 1e6 / 每迭代指令数

@@ -152,8 +152,6 @@ module dcache_axi #(
     reg        early_q;           // this write may be released before B
     reg        drain_q;           // a released write still owes an AXI B
     reg        b_seen_q;          // B was already handed over by the write engine
-    reg        wreq_q;            // our AW still owes to the engine
-    reg        wsent_q;           // our AW was accepted: the next W beat is ours
     reg        hit_q;
     reg        hit_way_q;
     reg        fill_way_q;
@@ -202,8 +200,6 @@ module dcache_axi #(
     wire hit_any = hit0 | hit1;
     wire hit_way = hit1;                       // way 0 wins if both match
 
-    wire        eng_w_valid = rst_n && wsent_q;
-
     // ---- inner write engine (AW/W/B framing, error checks) -----------------
     wire        i_req_ready, i_w_ready, i_b_valid;
     wire [1:0]  i_b_resp;
@@ -226,7 +222,7 @@ module dcache_axi #(
     // The registered i_req_*_r remain as the fallback/keep-alive (the engine only
     // looks at req_valid in WR_IDLE, so the extra pulse is harmless).
     wire i_write_accept = rst_n && (state_q==ST_IDLE) && req_valid && req_ready && req_write;
-    wire        i_req_valid = i_req_valid_r || i_write_accept || wreq_q;
+    wire        i_req_valid = i_req_valid_r || i_write_accept;
     wire [31:0] i_req_addr  = i_write_accept ? req_addr    : i_req_addr_r;
     wire [2:0]  i_req_size  = i_write_accept ? req_size     : i_req_size_r;
     wire [7:0]  i_req_len   = i_write_accept ? 8'd0         : i_req_len_r;
@@ -238,7 +234,7 @@ module dcache_axi #(
         .req_valid(i_req_valid), .req_ready(i_req_ready), .req_write(i_req_write),
         .req_addr(i_req_addr), .req_size(i_req_size), .req_len(i_req_len),
         .req_id(i_req_id),
-        .w_valid(eng_w_valid), .w_ready(i_w_ready), .w_data(wdata_q), .w_strb(wstrb_q),
+        .w_valid(w_valid), .w_ready(i_w_ready), .w_data(w_data), .w_strb(w_strb),
         .w_last(w_last),
         .rsp_valid(), .rsp_ready(1'b0), .rsp_data(), .rsp_resp(), .rsp_last(),
         .rsp_id(),
@@ -318,16 +314,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     wire [31:0] merged_now = (data_mem[didx(hit_way_q,set_wr_q,word_q)] & ~strb_mask_now) |
                              (w_data & strb_mask_now);
 
-    wire [31:0] strb_mask_acc = {{8{w_strb[3]}},{8{w_strb[2]}},
-                                 {8{w_strb[1]}},{8{w_strb[0]}}};
-    wire [31:0] merged_accept = (data_mem[didx(hit_way,req_set,req_word)] & ~strb_mask_acc) |
-                                (w_data & strb_mask_acc);
-    wire early_req = (req_addr >= 32'h1000_0000) && (req_addr < DATA_RAM_LIMIT);
-    wire accept_early = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
-                        req_write && early_req;
-
-    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now || accept_early);
-    assign b_resp  = (early_now || accept_early) ? `AXI_RESP_OKAY : resp_q;
+    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now);
+    assign b_resp  = early_now ? `AXI_RESP_OKAY : resp_q;
     assign b_id    = id_q;
     assign miss_event = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         !req_write && req_in_cache && !hit_any;
@@ -351,8 +339,6 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             early_q     <= 1'b0;
             drain_q     <= 1'b0;
             b_seen_q    <= 1'b0;
-            wreq_q      <= 1'b0;
-            wsent_q     <= 1'b0;
             hit_q       <= 1'b0;
             hit_way_q   <= 1'b0;
             fill_way_q  <= 1'b0;
@@ -403,19 +389,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         i_req_size_r  <= req_size;
                         i_req_len_r   <= 8'd0;
                         i_req_id_r    <= req_id;
-                        wdata_q <= w_data;
-                        wstrb_q <= w_strb;
-                        wreq_q  <= 1'b1;
-                        if (req_in_cache && hit_any)
-                            data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
-                        if (early_req) begin
-                            resp_q   <= `AXI_RESP_OKAY;
-                            drain_q  <= 1'b1;
-                            b_seen_q <= 1'b0;
-                            state_q  <= (i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
-                        end else begin
-                            state_q  <= ST_WR_RESP;
-                        end
+                        state_q       <= ST_WR_REQ;
                     end else if (req_in_cache && hit_any) begin
                         resp_q  <= 2'b00;
                         // P10: if the engine takes the response on this very edge,
@@ -557,12 +531,6 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             // background drain could wait for a response that was consumed while
             // the CPU response was being held (observed as an early deadlock).
             if (i_b_valid) b_seen_q <= 1'b1;
-            if (i_req_valid && i_req_ready) begin
-                wreq_q  <= 1'b0;
-                wsent_q <= 1'b1;
-            end else if (wsent_q && i_w_ready) begin
-                wsent_q <= 1'b0;
-            end
         end
     end
 endmodule

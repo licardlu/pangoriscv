@@ -16,18 +16,25 @@
 # the project validation archive and the 50 MHz over-constraint experiment FDC
 # pango_native_50mhz_overconstraint.fdc). The delivered constraint must describe the real board.
 create_clock -name clk -period 37.037 -waveform {0 18.5185} [get_ports {clk}]
-# Hold (board-material audit round, 2026-10-11): the first PDS run with this real 27 MHz
-# constraint finished with ONE failing hold endpoint at -0.007 ns (WHS -0.007, THS -0.007,
-# 1 of 29177 endpoints). Hold checks are independent of the clock period, so that is a
-# placement/routing result, not a clock-frequency result: the very same RTL placed under the
-# 20 ns experiment met hold with +0.124 ns.
-# This file deliberately declares no artificial hold uncertainty. The hold optimisation target
-# is requested from the router instead - build.tcl runs
-#   pnr -fix_hold_violation_threshold 50 -fix_hold_violation_threshold_for_clk_tree 50 \
-#       -fix_hold_violation_threshold_for_clock_path_cross_srb 50 -fix_hold_violation_iterations 20
-# i.e. "optimise the hold timing of paths whose slack is below 50 ps (= 0.05 ns)".
-# The option takes integer PICOSECONDS (`pnr -help`: "Fix Hold Violation Threshold(ps)").
-# Nothing is relaxed, and no uncertainty is added on top of the real board clock.
+# 100 ps guard band on the board clock (stricter, not a relaxation) -- see the
+# scope note above before comparing any slack value with earlier reports.
+set_clock_uncertainty {0.100} [get_clocks {clk}] -setup -hold
+# Hold margin (2026-10-19, CHANGE OF SCOPE - READ THIS BEFORE COMPARING NUMBERS):
+# The delivered RTL used to close 27 MHz with only +0.011..+0.018 ns of hold slack, which
+# made every performance change impossible: eight independent experiments (larger I-cache,
+# store posting, order guard, ...) were rejected purely because they pushed hold negative
+# (-1 .. -28 ps) even when their functional evidence was complete.
+# This file therefore now declares a REAL GUARD BAND on the board clock:
+#     set_clock_uncertainty {0.100} [get_clocks {clk}] -setup -hold
+# A guard band makes the timing checks STRICTER (it is subtracted from slack); nothing is
+# relaxed and the 27 MHz board clock itself is unchanged.
+# => Consequence for the report: any slack printed from this point on is
+#    "slack with a 100 ps guard band" and must NOT be compared with the pre-2026-10-19
+#    numbers (+15.374/+0.018) that had no guard band. Both must be quoted with their scope.
+# The router-side hold optimisation is still requested by build.tcl as well
+#   pnr -fix_hold_violation_threshold 500 -fix_hold_violation_threshold_for_clk_tree 200 \
+#       -fix_hold_violation_threshold_for_clock_path_cross_srb 200 -fix_hold_violation_iterations 2000
+# (the option takes integer PICOSECONDS).
 # KEY0/KEY1/UART are asynchronous board signals, not synchronous bus inputs.
 # No blanket timing exception is applied to internal reset or AXI paths.
 # Review synchronizer placement and asynchronous input paths after mapping.

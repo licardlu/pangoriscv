@@ -18,7 +18,14 @@ module pipe_slot #(parameter WIDTH = 32)(
     assign in_ready = rst_n && !flush && (!valid_q || out_ready);
     assign out_valid = rst_n && !flush && valid_q;
     assign out_data = data_q;
-    always @(posedge clk) begin
+    // P33: asynchronous reset on purpose.  A LUTRAM primitive has no asynchronous
+    // reset, so this forces the synthesizer to implement data_q as flip-flops instead
+    // of packing the wide enabled register into 32x2 LUTRAM cells.  Those cells were
+    // the worst hold paths in the delivered build (FF -> LUTRAM WADDR/DI pins with
+    // 0.55 ns of clock skew, slack +0.024 ns), and hold is the binding constraint at
+    // 27 MHz.  rst_n comes from the reset synchroniser, so the deassertion is still
+    // synchronous in practice.
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             valid_q <= 1'b0;
             data_q <= {WIDTH{1'b0}};

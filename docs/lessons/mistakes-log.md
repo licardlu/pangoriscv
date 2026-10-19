@@ -751,3 +751,55 @@
   ③ 真正改变约束的**时钟频率**（27 MHz 已固定）。
 - **可复用**：看到"加 guardband 就能过"这类说法，先做一个**同 RTL 的 A/B**：
   报告值应当恰好下移 guardband 的数值。如果不是，才说明工具真的改了实现。
+
+---
+
+## 11. 【严重】新建构建目录跑 PDS 会得到"没有程序"的位流（且日志只报 C 级提示）
+
+### 11.1 事实
+
+PDS 的 `build.tcl` 会把固件镜像以**相对文件名** `program.hex` / `data.hex` 交给综合器，
+这些文件必须**位于 PDS 进程的当前工作目录**。我为了做种子扫描，给每次实验都新建了目录
+（`p22_4k`、`p31s41`、`ff11`、`a2s3` …，共 40 个），**但都没把这两个 hex 放进去**，
+于是每个位流都变成了**没有程序**的空设计，日志里只有一行：
+
+```
+C: Verilog-3001: [ .../axi_ram.sv(line 118)] Cannot open specified data file "program.hex"
+C: Verilog-3001: [ .../axi_ram.sv(line 118)] Cannot open specified data file "data.hex"
+```
+
+`C:` 级别（不是 `E:`），混在几千行综合日志里，**我整晚都没看见**。
+只有 `pango_native/`（早期由别的流程生成的目录）里有这两个文件，所以**只有从它出的位流能在板上跑**。
+
+对比同一次综合的两种日志：
+
+```
+pango_native（能跑）: I: Loading memory data from file .../pango_native/program.hex
+ff11        （不能跑）: C: Cannot open specified data file "program.hex"
+```
+
+### 11.2 这直接推翻了我之前三个"板上不跑"的结论
+
+| 我之前的结论 | 真实情况 |
+|---|---|
+| P25「store 数据提前一拍」仿真全绿但**板上不跑** | **位流没装程序**，板子跑的是空设计 |
+| P31「同上 + 归属修复」仿真全绿但**板上不跑** | 同上 |
+| 「pipe_slot 异步复位」时序更好但**板上不跑** | 同上 |
+| §4.13「仿真全绿+时序全过≠硬件可用」 | 这三例的**真因是构建缺镜像**，不是硬件玄学 |
+
+**教训：一次"板上零输出"必须先确认"位流里到底有没有程序"，再谈 RTL。**
+判据：综合日志里有 `Loading memory data from file .../program.hex`。
+
+### 11.3 正确做法（以后每次都必须做）
+
+1. 新目录跑 PDS 前，**先复制** `program.hex` 与 `data.hex` 进去：
+   ```powershell
+   Copy-Item "$code\build\pango_native\program.hex" $newdir
+   Copy-Item "$code\build\pango_native\data.hex"    $newdir
+   ```
+2. 综合日志里 **grep 这两条**：
+   `Loading memory data from file`（正常） / `Cannot open specified data file`（致命）
+3. **镜像会改变时序结果**：同一份 RTL、同一个种子，带镜像时 hold **−28 ps**，
+   不带镜像时曾报 `All Constraints Met (+18 ps)` —— 因为 BRAM 的实现/布局随镜像变化。
+   所以**不带镜像的 PDS 结果连时序都不可信**。
+4. 任何位流在烧板前，先确认它来自"有镜像"的构建目录。

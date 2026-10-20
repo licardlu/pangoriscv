@@ -428,10 +428,15 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
     排队期间读命中见合并值 / 读缺失不得越过在途写 / `dc_idle` 覆盖队列）、`run_dcache_tests.py`；
     集成侧 `tb_coremark_uart.sv` 的 `ST_REFUSE`/`STQ_OCC`/`STORE_SCOREBOARD` 探针。
 11. **变更**：2026-10-21 立卡；M6 只做归属分析（3 个阵列 vs 2 KB 容量 → 疑似副本；另有 212 primitive 差额待查）。**明确不缩 tag 位宽**（MMIO 混用，别名风险高）。
-    **P34（2026-10-21，性能专项）**：单条 `hold` → 4 深队列。A/B：20 迭代 cycles 7,677,085 → 7,530,451
-    （评分窗口 5,843,953 → 5,697,334，−2.51%），五项 CRC 逐项相同。同时修正两处**正确性**缺陷：
-    ① `accept_post` 扩到 `ST_WR_POST` 后行合并仍只在 `ST_WR_DRAIN` 分支 → 在 POST 被接受的 store 不合并
-    （CoreMark `crcfinal` 变、指令数 +49%）；② 读缺失的顺序门控只挡了"队列非空"、没挡"在途写 `drain_q`"。
+    **P34（2026-10-21）**：单条 `hold` → posted store 队列。A/B 窗口 5,843,953 → 5,697,334（−2.51%），
+    五项 CRC 逐项相同。同时修正两处**正确性**缺陷：① `accept_post` 扩到 `ST_WR_POST` 后行合并仍只在
+    `ST_WR_DRAIN` 分支 → 在 POST 被接受的 store 不合并（`crcfinal` 变、指令数 +49%）；② 读缺失的顺序门控
+    只挡了"队列非空"、没挡"在途写 `drain_q`"。
+    **P35/P36a（2026-10-21）**：`STQ_DEPTH` 4 → **2**（省 150 FF，A/B 仅 +0.78%，为缓解 `R_DCACHE`
+    拥塞让 hold 能闭合）；新增 `tag_di_q`（tag RAM 写数据的**真实流水级**，源 `tag_q`，综合无法折叠）
+    把 `tag_q → tag_mem/DI` 这条连续三个构建都失败的 hold 路径切成两段；队头改为**释放拍组合递交**
+    （`i_release`）并让 W 拍随请求同拍（`eng_w_now`）。定版：窗口 5,498,599，**板上 3.6345**，
+    hold +0.002/+0.001、失败端点 0，LUT/FF/LUTRAM = 18,099/9,931/3,628。
 
 #### M20 `axi_read_engine` — `rtl/core/axi_read_engine.v` — 访存
 2. **职责**：AXI4 读引擎（AR/R），支持猝发；不做地址译码。
@@ -444,8 +449,12 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 2. **职责**：AXI4 写引擎（AW/W/B），写掩码与错误响应。
 7. **面积**：17/82/0/0/0 → **不变**。
 8. **物理区域**：`R_IO`。
-10. **测试**：`tb/axi/tb_axi_data_engine.sv`。
+10. **测试**：`tb/axi/tb_axi_data_engine.sv`、`sim/run_engine_tests.py`（64 例，含 8 例粘滞故障）。
 11. **变更**：2026-10-21 立卡。
+    **P35（2026-10-21，性能专项）**：① 允许在与主机交 B 的**同拍**接收下一笔
+    （`req_ready` 门控在 `b_valid && b_ready`，`WRITE_OWNERSHIP`/`EARLY_STORE_COMPLETION` 契约不变）；
+    ② 请求与 W 同拍到达时跳过 `WR_PREP`（`w_ready` 加故障门控，粘滞故障契约不变）。
+    效果：drain 7.6 → 6.15 拍/笔，窗口 5,697,334 → 5,498,599。**契约未放松，64/64 原样通过**。
 
 ### 5.5 存储
 

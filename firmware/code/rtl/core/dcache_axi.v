@@ -47,7 +47,7 @@ module dcache_axi #(
     // demand: 97.2% of stores are isolated, the rest run 2 (4,478) / 3 (5,114) /
     // 4+ (453) deep, max 12.  One entry is always in flight, so depth 4 lets a
     // run of five back-to-back stores retire without touching the AXI B.
-    parameter integer STQ_DEPTH = 4
+    parameter integer STQ_DEPTH = 2
 )(
     input wire clk, rst_n,
     // LSU-facing request interface (identical to axi_data_engine)
@@ -145,6 +145,14 @@ module dcache_axi #(
 
     reg [3:0]  state_q;
     reg [TAGW-1:0] tag_q;
+    // Retiming stage for the tag-RAM write data (hold closure).  `tag_q -> tag_mem/DI`
+    // is the worst hold path in every build of this design (area plan section 7):
+    // the tag flop also drives the AR address, so the placer parks it away from the
+    // tag RAMs and PDS's hold fixer stops after 6 iterations at -2..-25 ps.  A real
+    // one-cycle stage (source = tag_q, so the mapper cannot fold it away) gives the
+    // RAMs a write-data flop that only feeds them.  The tag is stable from the
+    // lookup until the last fill beat, so the extra cycle is free.
+    reg [TAGW-1:0] tag_di_q;
     reg [IDXW-1:0] set_q;
     // Physical duplicate of set_q, used only as the write address of the line
     // RAMs (tag/data/valid/lru).  Both registers load the same value on the
@@ -439,6 +447,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
         if (!rst_n) begin
             state_q     <= ST_IDLE;
             tag_q       <= {TAGW{1'b0}};
+            tag_di_q    <= {TAGW{1'b0}};
             set_q       <= {IDXW{1'b0}};
             set_wr_q    <= {IDXW{1'b0}};
             word_q      <= 3'd0;
@@ -569,7 +578,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         if (m_rlast || beat_q==LINE_WORDS-1) begin
                             if (!rd_err_q && m_rresp==2'b00) begin
                                 valid_mem[widx(fill_way_q,set_wr_q)] <= 1'b1;
-                                tag_mem[widx(fill_way_q,set_wr_q)]   <= tag_q;
+                                tag_mem[widx(fill_way_q,set_wr_q)]   <= tag_di_q;
                                 lru_mem[set_wr_q] <= ~fill_way_q;
                                 resp_q <= 2'b00;
                             end else begin
@@ -717,6 +726,9 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 ST_FAULT: ;
                 default: state_q <= ST_FAULT;
             endcase
+            // tag write-data retiming stage (see the declaration comment)
+            tag_di_q <= tag_q;
+
             // ---- posted store queue bookkeeping (P34) ---------------------------
             // NOTE: the cache-line merge of an accepted posted store deliberately
             // lives INSIDE the per-state branches (ST_WR_DRAIN / ST_WR_POST) and

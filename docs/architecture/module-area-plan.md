@@ -45,6 +45,15 @@ LUT 19,113 | FF 11,183 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 33,924（相对基�
 20 迭代 A/B 与改前逐项一致：cycles 7,681,846 / mispred 137,933 / 五项 CRC 完全相同
 ```
 
+**M4a 落地后（取指队列 DEPTH 16→8，2026-10-21 实测）**
+
+```
+LUT 18,006 | FF 9,877 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 31,511（相对基线 −20.59%）
+证据：evidence/records/optimization/area-M4a/measurement.md
+20 迭代 A/B：cycles 7,677,085（−0.06%，不回退）/ mispred 137,933 / CRC 全同
+CoreMark/kLUT = 3.4194 / 18.006 = 0.1899（P21 为 0.1718，+10.5%）
+```
+
 ---
 
 ## 2. 模块卡模板（11 个字段，缺一项不得进 RTL）
@@ -153,8 +162,8 @@ LUT 19,113 | FF 11,183 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 33,924（相对基�
 | M1 仪表 | 1,444 LUT / 1,665 FF（采样） | **实测 −1,527 LUT / −1,769 FF（2026-10-21）** | 删 `perf_regs` + 其从机；证据 `area-M1/measurement.md` |
 | M2 数据 RAM | 2,048 LUTRAM | **受阻（2026-10-21）**：三次尝试均未让映射器换表，已回退 | 见 `area-M2/measurement.md`；后续可改读端口形态或查 `PAP_RAM_STYLE` 取值 |
 | M3 BTB | 1,952 FF | **实测 −1,152 FF / −1,309 LUT（2026-10-21）** | tag 25→7、target 32→14；LUT 收益远超预期（三个查表口的比较器一起塌下来） |
-| M4b `q_pred_hi` | 512 FF | **FF −512（确定）** | 16×32 |
-| M4a `DEPTH` 16→8 | 1,320 FF | **FF −1,320（确定）** | 4×32×16 → ×8 |
+| M4b `q_pred_hi` | 8×32 = 256 FF（DEPTH 8 后） | **暂不做**：它是 BTB 对配对第二条（PC+4）的预测，不是常量；删它要加第 4 个查表口（+~100 LUT），净收益仅约 −400 站点 | 计划更正，见 M4a/measurement.md §6 |
+| M4a `DEPTH` 16→8 | 1,336 FF + 索引/多路器 | **实测 −1,306 FF / −1,107 LUT（2026-10-21）** | 8 × 167 位 ≈ 1,336 FF；LUT 收益来自指针/读多路器变窄 |
 | M5 I-Cache 副本（条件） | 1,024 LUTRAM | LUTRAM −512 | 需实例名级证据 |
 | M6 D-Cache 副本（条件） | 556 LUTRAM | LUTRAM −256 | 需实例名级证据 |
 
@@ -174,7 +183,7 @@ LUT 19,113 | FF 11,183 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 33,924（相对基�
 > M1 已落地（S 39,681 → 36,385）；M3/M4 是确定性的 FF 收益，仍在计划内。
 
 **结论口径**：验收以"必成项达成 S ≤ 31,900 且 LUT ≤ 20,900"为准；条件项达成则更好。
-`CoreMark/kLUT` 由 0.1558 升到 **≈0.164**（LUT 取 20,900），**仍低于 P21 的 0.1718**——
+`CoreMark/kLUT` 由 0.1558 升到 **0.1899**（LUT 18,006），**已高于 P21 的 0.1718（+10.5%）**——
 继续压 LUT 只能动 `pangoriscv` 旁路网络（2,410 LUT）或 IFU 结构，属高风险，**不在本专项**。
 
 ### 4.2 动作总表
@@ -184,8 +193,8 @@ LUT 19,113 | FF 11,183 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 33,924（相对基�
 | M1 | `perf_regs` + 从机 | 交付构建关 `PERF_ENABLE`；`set_switches.py` 支持按名开关 | **实测 −1,527 LUT / −1,769 FF** | 分析计数器消失 → 改用仿真 | **已完成 2026-10-21**（delta 门禁 PASS） |
 | M2 | `axi_ram`(data) | `/* synthesis syn_ramstyle = "block_ram" */`（必要时 `no_rw_check`） | ~~−2,048 LUTRAM~~ **受阻** | 读端口是组合读，映射器不认 | **已试用 3 次并回退**（`area-M2/measurement.md`） |
 | M3 | `branch_predictor` | `TAG_BITS` 25→7、`target_q` 32→14（由 `PGM_BYTES` 派生） | **实测 −1,309 LUT / −1,152 FF** | 程序 >16 KB 别名（只影响预测） | **已完成 2026-10-21**（A/B 逐项一致，delta 门禁 PASS） |
-| M4b | `ifu_axi` | 删 `q_pred_hi`（配对第二条 = `pc+4`） | −512 FF | 预测信息重算 | ticks +0.5% 即回退 |
-| M4a | `ifu_axi` | `DEPTH` 16→8 | −1,320 FF | 取指突发下降 | ticks +0.5% 即回退 |
+| M4b | `ifu_axi` | 删 `q_pred_hi`（原以为"配对第二条 = pc+4"） | ~~−512 FF~~ **暂不做** | **假设更正**：它是 BTB 对 PC+4 的预测，删它要加第 4 个查表口 | 计划更正，见 `area-M4a/measurement.md` §6 |
+| M4a | `ifu_axi` | `DEPTH` 16→8 | **实测 −1,107 LUT / −1,306 FF** | 取指突发下降 | **已完成 2026-10-21**（A/B −0.06%，不回退） |
 | M5 | `icache_axi` | 归属分析 → 证据成立才删阵列副本 | 条件性 −512 LUTRAM | 判断错会取错指令 | 任一 CRC 变即回退 |
 | M6 | `dcache_axi` | 归属分析（含 212 primitive 差额） | 条件性 −256 LUTRAM | 同上 | 同上 |
 | M7 | `regs` | 只做"4R2W 能否 LUTRAM/BRAM 化"调研 | 潜在 −857 LUT（不承诺） | 多端口不可行 | 只出报告，不改 RTL |
@@ -651,7 +660,8 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 | M1 | 关 `PERF_ENABLE`（交付）+ 按名开关 | `perf_regs`/`soc_config.vh` | **完成 2026-10-21**：LUT −1,527 / FF −1,769（`area-M1/measurement.md`） |
 | M2 | 数据 RAM 强制 BRAM | `axi_ram.v` | **受阻（2026-10-21）**：`syn_ramstyle` 被翻译成 `PAP_RAM_STYLE` 后无效果；`block_ram`、`block_ram,no_rw_check`、显式字节写三次都试过，LUTRAM 仍 3,628 / DRM 仍 4。RTL 已回退。诊断与后续方案见 `evidence/records/optimization/area-M2/measurement.md` |
 | M3 | BTB 位宽按 `PGM_BYTES` 派生 | `branch_predictor.v` | **完成 2026-10-21**：LUT −1,309 / FF −1,152（`area-M3/measurement.md`） |
-| M4b/4a | 取指队列去 `q_pred_hi` / `DEPTH` 8 | `ifu_axi.v` | 待执行 |
+| M4b | 删 `q_pred_hi`（配对第二条的预测） | `ifu_axi.v` | **暂不做**：原假设"pc+4 可派生"错误；它来自 BTB 第 3 查表口，删它要加第 4 个口（+~100 LUT），净收益仅 ~−400 站点。见 `area-M4a/measurement.md` §6 |
+| M4a | 取指队列 `DEPTH` 16→8 | `ifu_axi.v` | **完成 2026-10-21**：LUT −1,107 / FF −1,306（`area-M4a/measurement.md`） |
 | M5 | I-Cache 3,071 FF 归属 + 副本判定 | `icache_axi.v` | 待分析 |
 | M6 | D-Cache 3 阵列归属 + **556 vs 768 的 212 primitive 差额** | `dcache_axi.v` | 待分析 |
 | M7 | 4R2W 寄存器堆能否 LUTRAM/BRAM 化 | `regs.v` | 只调研 |

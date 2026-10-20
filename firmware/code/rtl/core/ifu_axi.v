@@ -37,7 +37,13 @@
 module ifu_axi #(
     parameter [31:0] EXEC_BASE=32'h00000000,
     parameter [31:0] EXEC_BYTES=32'h00004000,
-    parameter integer DEPTH=16
+    // Queue depth.  Area workstream M4a: 16 -> 8.  The queue carries five
+    // 32-bit arrays plus per-entry flags, so every entry is ~165 FF; the
+    // outstanding-request accounting already bounds prefetch by DEPTH-2, so a
+    // shallower queue only shortens the prefetch runway.  The unit tests have
+    // always driven this module at DEPTH=8, so 8 is the tested configuration.
+    // See docs/architecture/module-area-plan.md M4a.
+    parameter integer DEPTH=8
 )(
     input wire clk,rst_n,enable,redirect_valid,
     input wire [31:0] fetch_pc,predicted_next_pc,

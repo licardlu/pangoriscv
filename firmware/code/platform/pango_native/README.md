@@ -313,3 +313,8 @@ and trigger on `obs_protocol_fault` or `obs_trap_fire` to catch a fault.
 `obs_retire_count` makes a "capture N retirements and stop" trigger trivial.
 Timing a capture so the window covers a meaningful slice of a >= 10 s run is
 still an open board activity; no capture has been taken.
+
+> **2026-10-21 更新**：抓取流程、触发写法（按 `obs_retire_pc` 内核区间 + `obs_retire_count` 窗口）
+> 与**本轮确认的阻塞点**已写进 `docs/ila-capture-procedure.md`。
+> 要点：无头 `cdt_dbg -file <tcl>` 会在 `open_cable` 处**挂死**（本轮实测），
+> 所以抓波必须在 **GUI Fabric Debugger 的 Tcl Console**（`dbg_*` 命令族）里做。

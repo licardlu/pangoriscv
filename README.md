@@ -7,7 +7,13 @@
 > 下文的 400 迭代 / 1.35 / 12,694 LUT / “四级流水线”等均为历史版本。
 > 完整问题、验收缺口与修复顺序见 **[docs/verification.md](docs/verification.md)**。
 
-> **面积 / 效率专项（2026-10-21 起）**：本阶段**只做面积与资源效率**，性能只要求"不回退"。
+> **性能专项（2026-10-21）**：**当前交付 3.6345 CoreMark/MHz**（板上实测，1024 迭代 / 10.435 s /
+> 五项 CRC 全对 / 27 MHz `All Constraints Met`，hold +0.002、失败端点 0 / 18,099 LUT）。
+> 位流 `bitstream/pangoriscv_i1024_p36.sbit`；证据 `evidence/records/optimization/perf-writepath-3.63/`；
+> 计划、A/B 与下一步（3.8 需写引擎 2 outstanding）见 [docs/plan-perf-3.6.md](docs/plan-perf-3.6.md)。
+> 相对面积专项定版 3.4222：**+6.21% 分数、站点 +0.47%**（CoreMark/kLUT 0.1901 → 0.2008）。
+>
+> **面积 / 效率专项（2026-10-21）**：该阶段结论已并入上表，其后不再限制性能改动。
 > 动手前必读 **[docs/architecture/module-area-plan.md](docs/architecture/module-area-plan.md)**
 > （34 个模块的 11 字段面积合同）与 [area-budget.csv](docs/architecture/area-budget.csv)；
 > 门禁脚本 `firmware/code/tools/check_area_budget.py`（非零退出不得提交）。

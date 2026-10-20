@@ -12,7 +12,7 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -423,7 +423,13 @@ def main() -> int:
             print(f"BLOCKED: ModelSim tool not found: {tool}")
             return 2
 
-    work_dir = Path(tempfile.mkdtemp(prefix="isa-e2e-", dir=str(args.out)))
+    # Explicit mkdir instead of tempfile.mkdtemp: on this Windows workspace the
+    # 0700 directory created by tempfile is not writable by the next process
+    # (verification.md E02).  A normal directory with a unique suffix works.
+    out_root = Path(args.out)
+    out_root.mkdir(parents=True, exist_ok=True)
+    work_dir = out_root / ("isa-e2e-" + uuid.uuid4().hex[:8])
+    work_dir.mkdir(parents=True, exist_ok=False)
     src = ROOT / "tests" / "isa_e2e" / "isa_e2e.S"
     elf = work_dir / "isa_e2e.elf"
     raw = work_dir / "isa_e2e.bin"

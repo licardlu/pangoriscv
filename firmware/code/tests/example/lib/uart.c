@@ -5,10 +5,15 @@
 #include "../include/xprintf.h"
 
 
-// send one char to uart
+// send one char to uart.
+// The TXDATA push is accepted only while STATUS[0] is clear. Bound the wait so a
+// stuck/lost done_q cannot hang the whole firmware (the CoreMark banner would
+// otherwise never print even though the CPU is running).
 void uart_putc(uint8_t c)
 {
-    while (UART0_REG(UART0_STATUS) & 0x1);
+    for (volatile uint32_t i = 0; i < 200000U && (UART0_REG(UART0_STATUS) & 0x1); ++i) {
+        /* bounded wait for the previous byte to leave the shifter */
+    }
     UART0_REG(UART0_TXDATA) = c;
 }
 

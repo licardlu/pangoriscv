@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import shutil
 import sys
-import tempfile
+import uuid
 
 from runner_common import run, validate_test
 
@@ -28,7 +28,8 @@ def main():
         raise RuntimeError("ModelSim tools not in PATH: " + str(tools))
     parent = root / ".sim_runs"
     parent.mkdir(exist_ok=True)
-    work = Path(tempfile.mkdtemp(prefix="ram-", dir=parent))
+    work = parent / ("ram-" + uuid.uuid4().hex[:8])
+    work.mkdir(parents=True, exist_ok=False)
     print("RUN_DIR", work, flush=True)
     shutil.copyfile(root / "tb/axi/ram_init.hex", work / "ram_init.hex")
     run([tools["vlib"], "work"], work, work / "vlib.log", 30)

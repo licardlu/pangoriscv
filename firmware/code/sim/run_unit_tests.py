@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 import shutil
 import sys
-import tempfile
+import uuid
 
 from runner_common import run, validate_test
 
@@ -34,7 +34,9 @@ def main():
     negative_source = None
     if args.negative_stall_clear:
         source = root / "rtl/core/pipe_slot.v"
-        negative_source = Path(tempfile.mkdtemp(prefix="negative-pipe-slot-", dir=parent)) / "pipe_slot_bug.v"
+        neg_dir = parent / ("negative-pipe-slot-" + uuid.uuid4().hex[:8])
+        neg_dir.mkdir(parents=True, exist_ok=False)
+        negative_source = neg_dir / "pipe_slot_bug.v"
         original = source.read_text(encoding="ascii")
         anchor = "if (in_valid) data_q <= in_data;\n        end"
         if original.count(anchor) != 1:
@@ -44,7 +46,8 @@ def main():
         ), encoding="ascii")
         print("NEGATIVE_SOURCE", negative_source, flush=True)
     for case in cases:
-        work = Path(tempfile.mkdtemp(prefix="unit-" + case + "-", dir=parent))
+        work = parent / ("unit-" + case + "-" + uuid.uuid4().hex[:8])
+        work.mkdir(parents=True, exist_ok=False)
         print("RUN_DIR", work, flush=True)
         if case == "pipe_slot":
             sources = [negative_source if negative_source else

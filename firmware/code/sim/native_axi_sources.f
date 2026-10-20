@@ -2,7 +2,9 @@ rtl/core/div.v
 rtl/core/div_adapter.v
 rtl/core/ctrl.v
 rtl/core/ex.v
+rtl/core/ex_alu.v
 rtl/core/id.v
+rtl/core/id_alu.v
 rtl/core/pipe_slot.v
 rtl/core/id_ex.v
 rtl/core/if_id.v

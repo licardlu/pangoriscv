@@ -111,10 +111,12 @@ module tb_coremark_uart;
     // soc.core.pred_miss is driven in every configuration (predict-not-taken
     // reference included), so default/cached static mispredictions are measurable here.
     integer ctrl_retired=0, mispred_retired=0;
+    integer pair_retired=0;
     always @(posedge clk) if(rst_n) begin
         cycles=cycles+1;
         if(retire_fire) begin
-            retired=retired+1;
+            retired=retired+((soc.core.cpu.ex_valid_h)?2:1);
+            if(soc.core.cpu.ex_valid_h) pair_retired=pair_retired+1;
             last_retire_cycle=cycles;
             if(retire_order[31:0]!==prev_order) prev_order=retire_order[31:0];
             // retired control transfers (same decode as rtl/perips/perf_regs.v)
@@ -541,7 +543,7 @@ module tb_coremark_uart;
         $display("CORE_REPORT_SEEN %0d report_cycle=%0d stop_cycle=%0d",report_seen,report_cycle,cycles);
         if(trace_fd) $fclose(trace_fd);
         $display("");
-        $display("CORE_SUMMARY cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d txd_writes=%0d ctrl=%0d mispred=%0d", cycles, retired, traps, faults, chars, txd_writes, ctrl_retired, mispred_retired);
+        $display("CORE_SUMMARY cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d txd_writes=%0d ctrl=%0d mispred=%0d pair=%0d", cycles, retired, traps, faults, chars, txd_writes, ctrl_retired, mispred_retired, pair_retired);
         $display("EX_OCCUPANCY ex_busy=%0d ex_mem_post=%0d ex_div_busy=%0d lsu_nonidle=%0d", ex_busy, ex_mem_post, ex_div_busy, lsu_nonidle);
         $display("EX_SPLIT load=%0d store=%0d other=%0d id_stall=%0d no_retire=%0d retire_cyc=%0d",
                  exb_load, exb_store, exb_other, id_stall, no_retire, retire_cyc);

@@ -27,11 +27,15 @@ module pangoriscv_axi_top(
  wire if_idle,ls_idle,if_req_ready,ls_req_ready,if_engine_ready,ls_engine_ready;
  wire halt_pending;
  wire if_pf,if_cf,ls_pf,ls_cf;
- wire if_cache_miss,data_cache_miss;
- wire fetch_valid,fetch_ready,fetch_fault,redirect_valid;
+ wire if_cache_miss,data_cache_miss,dc_idle;
+ wire fetch_valid,fetch_ready,fetch_ready2,fetch_fault,fetch_fault_hi,fetch_pair,redirect_valid;
  wire [31:0] fetch_pc,fetch_inst,fetch_pred,fetch_tval,request_pc,redirect_pc;
+ wire [31:0] fetch_pc_hi,fetch_inst_hi,fetch_pred_hi,fetch_tval_hi;
+ wire [4:0] fetch_cause_hi;
  wire [31:0] predict_next_pc;
- wire [31:0] ifu_chain_c,ifu_chain_pred;
+ wire [31:0] ifu_chain_c,ifu_chain_pred,ifu_chain_c2,ifu_chain_pred2;
+ wire [31:0] if_rsp_data_hi;
+ wire if_rsp_pair;
  wire ifu_flush_lost;
  wire pred_miss;
  wire [4:0] fetch_cause;
@@ -60,33 +64,45 @@ module pangoriscv_axi_top(
  wire cpu_op_ready=op_ready && !protocol_fault;
  pangoriscv cpu(
   .clk(clk),.rst_n(rst_n),`CPU_STATUS_CONNECT,.halt_pending(halt_pending),
-  .fetch_valid(fetch_valid),.fetch_ready(fetch_ready),.fetch_pc(fetch_pc),
-  .fetch_inst(fetch_inst),.fetch_fault(fetch_fault),.fetch_fault_cause(fetch_cause),
+  .fetch_valid(fetch_valid),.fetch_ready(fetch_ready),.fetch_ready2(fetch_ready2),
+  .fetch_pc(fetch_pc),.fetch_inst(fetch_inst),
+  .fetch_pc_hi(fetch_pc_hi),.fetch_inst_hi(fetch_inst_hi),.fetch_pair(fetch_pair),
+  .fetch_fault(fetch_fault),.fetch_fault_cause(fetch_cause),
   .fetch_fault_tval(fetch_tval),.fetch_predicted_next_pc(fetch_pred),
+  .fetch_fault_hi(fetch_fault_hi),.fetch_fault_cause_hi(fetch_cause_hi),
+  .fetch_fault_tval_hi(fetch_tval_hi),.fetch_predicted_next_pc_hi(fetch_pred_hi),
   .request_pc(request_pc),.predict_next_pc(predict_next_pc),.pred_miss(pred_miss),
   .redirect_valid(redirect_valid),.redirect_pc(redirect_pc),
   .fetch_idle(if_idle && if_req_ready && !protocol_fault),
-  .data_idle(ls_idle && ls_req_ready && !protocol_fault),
+  .data_idle(ls_idle && ls_req_ready && dc_idle && !protocol_fault),
   .op_valid(op_valid),.op_ready(cpu_op_ready),.is_store(is_store),
   .address(address),.store_value(store_value),.op_pc(op_pc),
   .access_size(access_size),.load_unsigned(load_unsigned),.op_rd(op_rd),
   .done_valid(done_valid),.done_ready(done_ready),.load_value(load_value),
   .fault(fault),.fault_addr(fault_addr),
-  .chain_c(ifu_chain_c),.chain_predict_next_pc(ifu_chain_pred)
+  .chain_c(ifu_chain_c),.chain_predict_next_pc(ifu_chain_pred),
+  .chain_c2(ifu_chain_c2),.chain_predict_next_pc2(ifu_chain_pred2)
  );
  ifu_axi ifu(.clk(clk),.rst_n(rst_n),.enable(fetch_enable),
   .redirect_valid(redirect_valid || halt_req || halt_pending || halted || protocol_fault),
   .fetch_pc(request_pc),.predicted_next_pc(predict_next_pc),
   .chain_c(ifu_chain_c),.chain_predict_next_pc(ifu_chain_pred),
+  .chain_c2(ifu_chain_c2),.chain_predict_next_pc2(ifu_chain_pred2),
   .flush_lost(ifu_flush_lost),
-  .fetch_valid(fetch_valid),.fetch_ready(fetch_ready),.result_pc(fetch_pc),
-  .result_inst(fetch_inst),.result_predicted_next_pc(fetch_pred),
+  .fetch_valid(fetch_valid),.fetch_ready(fetch_ready),.fetch_ready2(fetch_ready2),
+  .result_pc(fetch_pc),.result_pc_hi(fetch_pc_hi),
+  .result_inst(fetch_inst),.result_inst_hi(fetch_inst_hi),
+  .result_pair(fetch_pair),.result_predicted_next_pc(fetch_pred),
+  .result_predicted_next_pc_hi(fetch_pred_hi),
   .result_fault(fetch_fault),.result_fault_cause(fetch_cause),
-  .result_fault_tval(fetch_tval),.idle(if_idle),
+  .result_fault_tval(fetch_tval),
+  .result_fault_hi(fetch_fault_hi),.result_fault_cause_hi(fetch_cause_hi),
+  .result_fault_tval_hi(fetch_tval_hi),.idle(if_idle),
   .eng_req_valid(if_req_valid),.eng_req_ready(if_req_ready),
   .eng_req_addr(if_req_addr),.eng_req_size(if_req_size),.eng_req_len(if_req_len),
   .eng_req_id(if_req_id),.eng_rsp_valid(if_rsp_valid),.eng_rsp_ready(if_rsp_ready),
-  .eng_rsp_data(if_rsp_data),.eng_rsp_resp(if_rsp_resp)
+  .eng_rsp_data(if_rsp_data),.eng_rsp_data_hi(if_rsp_data_hi),
+  .eng_rsp_pair(if_rsp_pair),.eng_rsp_resp(if_rsp_resp)
  );
 `ifdef CACHE_ENABLE
  // the caches/H1: the two-way set-associative I-cache takes the place of the single-beat
@@ -96,6 +112,7 @@ module pangoriscv_axi_top(
   .req_valid(if_req_valid && !protocol_fault),.req_ready(if_engine_ready),
   .req_addr(if_req_addr),.req_size(if_req_size),.req_len(if_req_len),.req_id(if_req_id),
   .rsp_valid(if_rsp_valid),.rsp_ready(if_rsp_ready),.rsp_data(if_rsp_data),
+  .rsp_data_hi(if_rsp_data_hi),.rsp_pair(if_rsp_pair),
   .rsp_resp(if_rsp_resp),.rsp_id(),.protocol_fault(if_pf),.config_fault(if_cf),
   .miss_pulse(if_cache_miss),.access_pulse(),`AXI_READ_CONNECT(m,m,0)
  );
@@ -108,6 +125,8 @@ module pangoriscv_axi_top(
   .protocol_fault(if_pf),.config_fault(if_cf),`AXI_READ_CONNECT(m,m,0)
  );
  assign if_cache_miss=1'b0;
+ assign if_rsp_data_hi=32'd0;
+ assign if_rsp_pair=1'b0;
 `endif
  lsu_axi lsu(.clk(clk),.rst_n(rst_n),
   .op_valid(op_valid && !protocol_fault),.op_ready(op_ready),.is_store(is_store),
@@ -134,7 +153,8 @@ module pangoriscv_axi_top(
   .rsp_valid(ls_rsp_valid),.rsp_ready(ls_rsp_ready),.rsp_data(ls_rsp_data),
   .rsp_resp(ls_rsp_resp),.rsp_last(),.rsp_id(),.b_valid(ls_b_valid),
   .b_ready(ls_b_ready),.b_resp(ls_b_resp),.b_id(),.protocol_fault(ls_pf),
-  .config_fault(ls_cf),.miss_event(data_cache_miss),`AXI_READ_CONNECT(m,m,1),
+  .config_fault(ls_cf),.miss_event(data_cache_miss),.dc_idle(dc_idle),
+  `AXI_READ_CONNECT(m,m,1),
   `AXI_WRITE_CONNECT(m,m,1)
  );
 `else
@@ -150,6 +170,7 @@ module pangoriscv_axi_top(
   `AXI_READ_CONNECT(m,m,1),`AXI_WRITE_CONNECT(m,m,1)
  );
  assign data_cache_miss=1'b0;
+ assign dc_idle=1'b1;
 `endif
  assign m_awvalid[0]=0;
  assign m_awaddr[0+:32]=0;

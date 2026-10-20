@@ -7,6 +7,12 @@
 #
 # 115200 8N1 is what the delivered firmware configures (CPU_FREQ_MHZ=27,
 # BAUD_DIV=234 -> 27e6/(234+1)/16 = 115200 approximately).
+#
+# IMPORTANT: "captured 0 chars" does NOT mean the design is silent. The CoreMark
+# image prints its whole report ONCE, ~10.7 s after configuration, and start.S
+# then spins forever (see docs/lessons/mistakes-log.md 7.6). This capture must be
+# running BEFORE the FPGA is programmed -- use flash_and_capture.ps1, which starts
+# this script first, then flashes.
 param(
   [string]$Port = 'COM13',
   [int]$Baud = 115200,

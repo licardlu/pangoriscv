@@ -751,6 +751,36 @@ Select-String -Path "$newdir\pds.log" -Pattern "Loading memory data|Cannot open 
 - **成功判据只认两条**：`configuration_tcl.log` 出现 `cfg_program succeed`，
   且 `cfg_scan_chain` 报 `done bit: 1`。**不要用 `cfg_verify` 的成败判断烧写。**
 
+### 7.6 抓串口必须先开、后烧（"板上零输出"最常见的一次假警报）
+
+- **现象**：位流 SHA 与上一次**能打出成绩的那一份完全相同**、`cfg_program succeed`、
+  `done bit: 1`，串口却 **0 字节**；换一个"自由运行发送"的测试位流（每 20 ms 发一次）
+  又能收到。于是得出一堆错误结论："`axi_uart` 没发"、"CPU 没跑到 UART"。
+- **查什么**：**抓串口的时刻**与**固件开始打印的时刻**谁先谁后。
+  本项目 CoreMark 的打印在 `core_main.c` 的 **`start_time()→iterate()→stop_time()` 之后**，
+  整份报告（691 B）**只发一次**，之后 `start.S` 停在 `loop: j loop`，**永不重发**；
+  832 迭代在 2.88 CoreMark/MHz 下是 **10.7 s**，所以板上只在前 **11 s** 左右有输出。
+- **原因**：`run_flash.ps1` 里的 `cdt_cfg.exe` 在 file-only Tcl 结束后**不会退出**，
+  脚本要等满 `-TimeoutSec`（默认 120 s）才杀掉它。**同步**调用它之后再启动
+  `capture_uart.ps1`，串口打开时距配置完成已约 100 s —— 报告早在 11 s 就发完并丢了。
+  实测：一次"烧写+抓取"总耗时恒为 **144 s = 120(阻塞) + 20(抓取) + 开销**，
+  这就是铁证。
+- **怎么办**：**抓串口放后台先开，再烧**。现成脚本
+  `evidence/records/bottleneck_audit/board/flash_and_capture.ps1`：
+  它先启动 `capture_uart.ps1`（`-Seconds` 取 ≥3 倍运行时间，如 90 s），
+  `Start-Sleep` 几秒后调 `run_flash.ps1`，最后校验五项 CRC 和
+  `ticks/27e6 ≥ 10 s` 并按 `iterations/ticks*1e6` 算分。
+- **验证记录（2026-10-20 22:50）**：同一份交付位流 `1FAC6F43…B41F23`，
+  改顺序后一次就抓到 `288,558,769 ticks / 832 迭代 / 五项 CRC 全对 / 2.8833`，
+  与 10-19 完全一致；报告前面那 91 行 `P21UART` 是"抓取已在听、而 FPGA 里还是
+  上一次的 `uart_free`"的痕迹，正好证明窗口盖住了启动与打印。
+  证据：`evidence/records/optimization/P21/board_uart_score_recheck_2026-10-20.txt`
+  （根因与复核清单同在 `P21/uart_zero_output_diagnosis.md`）
+- **可复用**：**任何"跑完才打印一次"的固件（CoreMark、自检、崩溃日志）都必须
+  在复位/配置前就打开串口**；只有"周期重发"的测试设计才允许事后抓。
+  看到"0 字节"先问一句"我的接收窗口真的盖住了打印窗口吗"，
+  不要先去改 RTL。**判据**：一次烧写+抓取的总耗时里，抓取之前是否还有 ≥运行时间的阻塞。
+
 ---
 
 ## 8. 提分天花板类：先算边界，再动手

@@ -12,9 +12,9 @@
 // ---------------------------------------------------------------------------
 // the caches/H1: two-way set-associative instruction cache.
 //
-// Geometry (plan section 15): 32 sets x 2 ways x 32 B lines = 2048 B.
-//   tag       = addr[31:12]   (20 bits)   8 KB variant: 128 sets
-//   set index = addr[11:5]    (7 bits)
+// Geometry: 64 sets x 2 ways x 32 B lines = 4096 B.
+//   tag       = addr[31:11]   (21 bits)
+//   set index = addr[10:5]    (6 bits)
 //   word      = addr[4:2]     (3 bits inside the 32 B line)
 // Replacement: first invalid way, otherwise the 1-bit LRU victim.
 //
@@ -52,6 +52,10 @@ module icache_axi (
     output reg rsp_valid,
     input wire rsp_ready,
     output reg [31:0] rsp_data,
+    // Second word of the requested 8 B pair.  rsp_pair=0 when the pair would
+    // cross the 32 B line (word offset 7), in which case the IFU issues single.
+    output reg [31:0] rsp_data_hi,
+    output reg rsp_pair,
     output reg [1:0] rsp_resp,
     output reg [3:0] rsp_id,
     output reg protocol_fault,
@@ -78,34 +82,48 @@ module icache_axi (
     input wire [1:0] m_rresp,
     input wire m_rlast
 );
-    localparam SETS=128, WORDS=8, LINE_BEATS=8;  // 128 x 2 x 32 B = 8192 B
+    // 4 KB variant: 64 sets x 2 ways x 32 B.  The 8 KB/128-set geometry is what
+    // the dual-issue build used first, but the 25k-LUT design could not be
+    // routed on this PDS flow; 4 KB recovers ~2.2k LUT / 2.6k FF.  Score trade-
+    // off must be measured, not assumed (see evidence: P20 4 KB vs P21 8 KB).
+    localparam SETS=64, WORDS=8, LINE_BEATS=8;  // 64 x 2 x 32 B = 4096 B
     localparam IC_IDLE=3'd0, IC_RESP=3'd1, IC_AR=3'd2,
                IC_FILL=3'd3, IC_MISS_RD=3'd4, IC_FAULT=3'd5;
 
     // Flat arrays: PDS parses these sources as Verilog, so no packed/unpacked
     // multidimensional memories are used here.
-    reg [31:0] data_mem [0:SETS*2*WORDS-1];   // {set,way,word}
-    reg [19:0] tag_mem  [0:SETS*2-1];         // {way,set}
+    //
+    // T3/T10 two-word fetch: the line is split into an even-word bank and an
+    // odd-word bank, one 32 b read port each.  A lookup at any word offset
+    // w != 7 can therefore return words w and w+1 in one cycle:
+    //   even bank index = {way,set,(w+1)>>1}, odd bank index = {way,set,w>>1}
+    //   w even -> (even,odd);  w odd -> (odd,even)
+    // The total bit count is unchanged (SETS*2*WORDS*32).
+    reg [31:0] even_mem[0:SETS*2*(WORDS/2)-1];
+    reg [31:0] odd_mem [0:SETS*2*(WORDS/2)-1];
+    reg [20:0] tag_mem  [0:SETS*2-1];         // {way,set}
     reg        valid_mem[0:SETS*2-1];         // {way,set}
     reg        lru_mem  [0:SETS-1];           // 1 = way1 is the LRU victim
 
     reg [2:0] state;
     reg [31:0] addr_q;
     reg [3:0] id_q;
-    reg [6:0] set_q;
+    reg [5:0] set_q;
     reg [2:0] word_q;
-    reg [19:0] tag_q;
+    reg [20:0] tag_q;
     reg way_q;
-    reg [10:0] rd_index_q;
+    reg [9:0] rd_index_q;
     reg [31:0] rsp_data_q;
+    reg [31:0] rsp_data_hi_q;
+    reg        rsp_pair_q;
     reg [1:0] rsp_resp_q;
     reg [2:0] beat_q;
     reg fill_bad_q, fill_kill;
     reg [1:0] fill_resp_q;
     integer i;
 
-    wire [6:0] req_set = req_addr[11:5];
-    wire [19:0] req_tag = req_addr[31:12];
+    wire [5:0] req_set = req_addr[10:5];
+    wire [20:0] req_tag = req_addr[31:11];
     wire hit0 = valid_mem[{1'b0,req_set}] && (tag_mem[{1'b0,req_set}]==req_tag);
     wire hit1 = valid_mem[{1'b1,req_set}] && (tag_mem[{1'b1,req_set}]==req_tag);
     wire miss_way = !valid_mem[{1'b0,req_set}] ? 1'b0 :
@@ -114,10 +132,36 @@ module icache_axi (
     // request, so a hit can be answered on the accept edge instead of going
     // through a separate read state. The address the miss path uses later is
     // still registered into rd_index_q.
-    wire [10:0] hit_index = {req_addr[11:5], hit0 ? 1'b0 : 1'b1, req_addr[4:2]};
-    wire [31:0] hit_word = data_mem[hit_index];
+    wire       hit_way  = hit0 ? 1'b0 : 1'b1;
+    wire [2:0] hit_word_off = req_addr[4:2];
+    wire [2:0] hit_e_off = (hit_word_off + 3'd1) >> 1;   // ceil(w/2)
+    wire [2:0] hit_o_off = hit_word_off >> 1;            // floor(w/2)
+    wire       hit_pair  = (hit_word_off != 3'd7);
+    wire [8:0] hit_e_index = {req_addr[10:5], hit_way, hit_e_off[1:0]};
+    wire [8:0] hit_o_index = {req_addr[10:5], hit_way, hit_o_off[1:0]};
+    wire [31:0] hit_even = even_mem[hit_e_index];
+    wire [31:0] hit_odd  = odd_mem [hit_o_index];
+    wire [31:0] hit_word    = hit_word_off[0] ? hit_odd  : hit_even;
+    wire [31:0] hit_word_hi = hit_pair ?
+                              (hit_word_off[0] ? hit_even : hit_odd) : 32'd0;
     // The line address is {tag,set,5'b0}: the 32 B line the requested word is in.
     wire [31:0] line_addr = {tag_q, set_q, 5'b0};
+
+    // Miss-path pair reconstruction.  rd_index_q is {set[6:0],way,word[2:0]}
+    // for the delivered 8 KB geometry (SETS=128); keep the two bank indices
+    // derived from it so a missed lookup also returns both words.
+    wire [2:0]  rd_word   = rd_index_q[2:0];
+    wire [5:0]  rd_set    = rd_index_q[9:4];
+    wire        rd_way    = rd_index_q[3];
+    wire [2:0]  rd_e_off  = (rd_word + 3'd1) >> 1;
+    wire [2:0]  rd_o_off  = rd_word >> 1;
+    wire        rd_pair   = (rd_word != 3'd7);
+    wire [8:0]  rd_e_index = {rd_set, rd_way, rd_e_off[1:0]};
+    wire [8:0]  rd_o_index = {rd_set, rd_way, rd_o_off[1:0]};
+    wire [31:0] rd_even = even_mem[rd_e_index];
+    wire [31:0] rd_odd  = odd_mem [rd_o_index];
+    wire [31:0] rd_word0 = rd_word[0] ? rd_odd : rd_even;
+    wire [31:0] rd_word1 = rd_pair ? (rd_word[0] ? rd_even : rd_odd) : 32'd0;
     wire beat_bad = (m_rresp!=`AXI_RESP_OKAY);
     wire line_bad = fill_bad_q || beat_bad;
 
@@ -143,9 +187,10 @@ module icache_axi (
         if(!rst_n) begin
             state<=IC_IDLE;
             addr_q<=0; id_q<=0; set_q<=0; word_q<=0; tag_q<=0; way_q<=0;
-            rd_index_q<=0; rsp_data_q<=0; rsp_resp_q<=0; beat_q<=0;
+            rd_index_q<=0; rsp_data_q<=0; rsp_data_hi_q<=0; rsp_pair_q<=0;
+            rsp_resp_q<=0; beat_q<=0;
             fill_bad_q<=0; fill_kill<=0; fill_resp_q<=0;
-            rsp_valid<=0; rsp_data<=0; rsp_resp<=0; rsp_id<=0;
+            rsp_valid<=0; rsp_data<=0; rsp_data_hi<=0; rsp_pair<=0; rsp_resp<=0; rsp_id<=0;
             protocol_fault<=0; config_fault<=0; miss_pulse<=0; access_pulse<=0;
             for(i=0;i<SETS*2;i=i+1) begin
                 valid_mem[i]<=0;
@@ -169,6 +214,8 @@ module icache_axi (
                     if(state==IC_RESP && !(rsp_valid && rsp_ready)) begin
                         rsp_valid<=1;
                         rsp_data<=rsp_data_q;
+                        rsp_data_hi<=rsp_data_hi_q;
+                        rsp_pair<=rsp_pair_q;
                         rsp_resp<=rsp_resp_q;
                         rsp_id<=id_q;
                     end
@@ -178,21 +225,25 @@ module icache_axi (
                     if(req_valid && req_ready) begin
                         addr_q<=req_addr;
                         id_q<=req_id;
-                        set_q<=req_addr[11:5];
+                        set_q<=req_addr[10:5];
                         word_q<=req_addr[4:2];
-                        tag_q<=req_addr[31:12];
+                        tag_q<=req_addr[31:11];
                         if(hit0 || hit1) begin
                             access_pulse<=1;
                             way_q<=hit0 ? 1'b0 : 1'b1;
-                            lru_mem[req_addr[11:5]]<=hit0 ? 1'b1 : 1'b0;
+                            lru_mem[req_addr[10:5]]<=hit0 ? 1'b1 : 1'b0;
                             // Fast hit: answer on the accept edge (engine sees the
                             // response one cycle after req_valid/req_ready). Both the
                             // holding register and the output register are loaded so
                             // the IC_RESP hold path stays correct if rsp_ready is late.
                             rsp_data_q<=hit_word;
+                            rsp_data_hi_q<=hit_word_hi;
+                            rsp_pair_q<=hit_pair;
                             rsp_resp_q<=`AXI_RESP_OKAY;
                             rsp_valid<=1;
                             rsp_data<=hit_word;
+                            rsp_data_hi<=hit_word_hi;
+                            rsp_pair<=hit_pair;
                             rsp_resp<=`AXI_RESP_OKAY;
                             rsp_id<=req_id;
                             state<=IC_RESP;
@@ -222,7 +273,10 @@ module icache_axi (
                             fill_bad_q<=1;
                             fill_resp_q<=m_rresp;
                         end
-                        if(!fill_kill) data_mem[{set_q,way_q,beat_q}]<=m_rdata;
+                        if(!fill_kill) begin
+                            if(!beat_q[0]) even_mem[{set_q,way_q,beat_q[2:1]}]<=m_rdata;
+                            else           odd_mem [{set_q,way_q,beat_q[2:1]}]<=m_rdata;
+                        end
                         if(m_rlast) begin
                             if(beat_q!=3'd7) begin
                                 protocol_fault<=1;
@@ -246,7 +300,9 @@ module icache_axi (
                     end
                 end
                 IC_MISS_RD: begin
-                    rsp_data_q<= data_mem[rd_index_q];
+                    rsp_data_q   <= rd_word0;
+                    rsp_data_hi_q<= rd_word1;
+                    rsp_pair_q   <= rd_pair;
                     state<=IC_RESP;
                 end
                 IC_FAULT: state<=IC_FAULT;
@@ -258,3 +314,4 @@ module icache_axi (
         end
     end
 endmodule
+

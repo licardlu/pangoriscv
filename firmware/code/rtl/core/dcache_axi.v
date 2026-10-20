@@ -72,6 +72,9 @@ module dcache_axi #(
     output wire        config_fault,
     // one-cycle lookup-miss indicator for perf_regs
     output wire        miss_event,
+    // no pending background write and no write engine transaction in flight;
+    // the SoC's data_idle must include this so a halt cannot drop a posted store
+    output wire        dc_idle,
 
     // AXI4 master port
     output wire        m_arvalid,
@@ -130,7 +133,10 @@ module dcache_axi #(
                ST_BYP_RESP  = 4'd7,
                ST_FAULT     = 4'd8,
                // Background drain of a write's B response (optimization P2').
-               ST_WR_DRAIN  = 4'd9;
+               ST_WR_DRAIN  = 4'd9,
+               // A data-RAM store accepted while the previous B was in flight,
+               // waiting one cycle to be released to the write engine.
+               ST_WR_POST   = 4'd10;
 
     reg [3:0]  state_q;
     reg [TAGW-1:0] tag_q;
@@ -151,6 +157,20 @@ module dcache_axi #(
     // stays precise (ISA e2e case 11).
     reg        early_q;           // this write may be released before B
     reg        drain_q;           // a released write still owes an AXI B
+    // One-entry posted store buffer: a data-RAM store accepted while the
+    // previous write is draining.  Its cache-line merge is done on the accept
+    // edge; the AXI write is released when the engine is free.
+    reg        hold_valid;
+    reg [31:0] hold_addr;
+    reg [31:0] hold_data;
+    reg [3:0]  hold_strb;
+    reg [2:0]  hold_size;
+    reg [3:0]  hold_id;
+    reg [IDXW-1:0] hold_set;
+    reg [2:0]  hold_word;
+    reg        hold_way;
+    reg        hold_hit;
+    reg        hold_cached;
     reg        b_seen_q;          // B was already handed over by the write engine
     reg        wreq_q;            // our AW still owes to the engine
     reg        wsent_q;           // our AW was accepted: the next W beat is ours
@@ -197,6 +217,7 @@ module dcache_axi #(
     wire [IDXW-1:0] req_set  = req_addr[5+IDXW-1:5];
     wire [2:0]      req_word = req_addr[4:2];
     wire req_in_cache = (req_addr < CACHED_LIMIT);
+    wire early_req = (req_addr >= 32'h1000_0000) && (req_addr < DATA_RAM_LIMIT);
     wire hit0 = valid_mem[widx(0,req_set)] && (tag_mem[widx(0,req_set)]==req_tag);
     wire hit1 = valid_mem[widx(1,req_set)] && (tag_mem[widx(1,req_set)]==req_tag);
     wire hit_any = hit0 | hit1;
@@ -283,7 +304,11 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     wire read_hit_now = req_valid && !req_write && req_in_cache && hit_any;
     assign req_ready = rst_n && !protocol_fault && !config_fault &&
                        ((state_q==ST_IDLE) ||
-                        ((state_q==ST_WR_HOLD || state_q==ST_WR_DRAIN) && read_hit_now));
+                        ((state_q==ST_WR_HOLD || state_q==ST_WR_DRAIN ||
+                          state_q==ST_WR_POST) && read_hit_now) ||
+                        // a data-RAM store may enter the posted buffer while the
+                        // previous write's B is still outstanding
+                        ((state_q==ST_WR_DRAIN) && req_write && early_req && !hold_valid));
     assign w_ready   = i_w_ready;              // inner engine latches in WR_PREP
 
     // P10: answer a cache READ hit on the ACCEPT edge.  The tag comparison already
@@ -322,13 +347,20 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                                  {8{w_strb[1]}},{8{w_strb[0]}}};
     wire [31:0] merged_accept = (data_mem[didx(hit_way,req_set,req_word)] & ~strb_mask_acc) |
                                 (w_data & strb_mask_acc);
-    wire early_req = (req_addr >= 32'h1000_0000) && (req_addr < DATA_RAM_LIMIT);
     wire accept_early = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         req_write && early_req;
+    wire accept_post = rst_n && (state_q==ST_WR_DRAIN) && req_valid && req_ready &&
+                       req_write && early_req && !hold_valid;
+    wire hold_start_release = (state_q==ST_WR_DRAIN) && i_b_valid && hold_valid;
 
-    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now || accept_early);
-    assign b_resp  = (early_now || accept_early) ? `AXI_RESP_OKAY : resp_q;
-    assign b_id    = id_q;
+    assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now || accept_early ||
+                               accept_post);
+    assign b_resp  = (early_now || accept_early || accept_post) ? `AXI_RESP_OKAY : resp_q;
+    assign b_id    = accept_post ? req_id : id_q;
+    // Halt/reset must drain the posted buffer and the write engine before the
+    // SoC's data_idle is allowed to go high.
+    assign dc_idle = rst_n && (state_q==ST_IDLE) && !hold_valid && !i_req_valid &&
+                     !wsent_q && !drain_q;
     assign miss_event = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         !req_write && req_in_cache && !hit_any;
 
@@ -350,6 +382,17 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             cached_q    <= 1'b0;
             early_q     <= 1'b0;
             drain_q     <= 1'b0;
+            hold_valid  <= 1'b0;
+            hold_addr   <= 32'd0;
+            hold_data   <= 32'd0;
+            hold_strb   <= 4'd0;
+            hold_size   <= 3'd0;
+            hold_id     <= 4'd0;
+            hold_set    <= {IDXW{1'b0}};
+            hold_word   <= 3'd0;
+            hold_way    <= 1'b0;
+            hold_hit    <= 1'b0;
+            hold_cached <= 1'b0;
             b_seen_q    <= 1'b0;
             wreq_q      <= 1'b0;
             wsent_q     <= 1'b0;
@@ -538,13 +581,102 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         state_q <= ST_IDLE;
                     end
                 end
-                // Background drain: no new request is served here, but the CPU has
-                // already been released, so this overlaps with non-memory work.
-                ST_WR_DRAIN: if (i_b_valid) begin
-                    if ((i_b_resp!==2'b00) && cached_q && hit_q)
-                        valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
-                    drain_q <= 1'b0;
-                    state_q <= ST_IDLE;
+                // Background drain.  A data-RAM store may be accepted here into
+                // the one-entry posted buffer; its cache-line merge happens on
+                // the accept edge and its AXI write is released once the engine
+                // is free.
+                ST_WR_DRAIN: begin
+                    if (i_b_valid) begin
+                        // The old write's line must be invalidated on an error
+                        // before cached_q/hit_q are replaced by the parked store.
+                        if ((i_b_resp!==2'b00) && cached_q && hit_q)
+                            valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
+                        if (hold_valid) begin
+                            // release the parked store to the write engine
+                            i_req_valid_r <= 1'b1;
+                            i_req_write_r <= 1'b1;
+                            i_req_addr_r  <= hold_addr;
+                            i_req_size_r  <= hold_size;
+                            i_req_len_r   <= 8'd0;
+                            i_req_id_r    <= hold_id;
+                            wdata_q       <= hold_data;
+                            wstrb_q       <= hold_strb;
+                            wreq_q        <= 1'b1;
+                            early_q       <= 1'b1;
+                            drain_q       <= 1'b1;
+                            b_seen_q      <= 1'b0;
+                            cached_q      <= hold_cached;
+                            hit_q         <= hold_hit;
+                            hit_way_q     <= hold_way;
+                            set_q         <= hold_set;
+                            set_wr_q      <= hold_set;
+                            word_q        <= hold_word;
+                            id_q          <= hold_id;
+                            hold_valid    <= 1'b0;
+                            state_q       <= ST_WR_DRAIN;
+                        end else if (accept_post) begin
+                            // new store accepted on the same edge as the old B:
+                            // park it for one cycle (ST_WR_POST)
+                            hold_valid  <= 1'b1;
+                            hold_addr   <= req_addr;
+                            hold_data   <= w_data;
+                            hold_strb   <= w_strb;
+                            hold_size   <= req_size;
+                            hold_id     <= req_id;
+                            hold_set    <= req_set;
+                            hold_word   <= req_word;
+                            hold_way    <= hit_way;
+                            hold_hit    <= hit_any;
+                            hold_cached <= req_in_cache;
+                            if (req_in_cache && hit_any)
+                                data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                            drain_q <= 1'b0;
+                            state_q <= ST_WR_POST;
+                        end else begin
+                            drain_q <= 1'b0;
+                            state_q <= ST_IDLE;
+                        end
+                    end else if (accept_post) begin
+                        // park the store until the outstanding B arrives
+                        hold_valid  <= 1'b1;
+                        hold_addr   <= req_addr;
+                        hold_data   <= w_data;
+                        hold_strb   <= w_strb;
+                        hold_size   <= req_size;
+                        hold_id     <= req_id;
+                        hold_set    <= req_set;
+                        hold_word   <= req_word;
+                        hold_way    <= hit_way;
+                        hold_hit    <= hit_any;
+                        hold_cached <= req_in_cache;
+                        if (req_in_cache && hit_any)
+                            data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                        state_q <= ST_WR_DRAIN;
+                    end
+                end
+                // Release a parked store to the engine.
+                ST_WR_POST: begin
+                    i_req_valid_r <= 1'b1;
+                    i_req_write_r <= 1'b1;
+                    i_req_addr_r  <= hold_addr;
+                    i_req_size_r  <= hold_size;
+                    i_req_len_r   <= 8'd0;
+                    i_req_id_r    <= hold_id;
+                    wdata_q       <= hold_data;
+                    wstrb_q       <= hold_strb;
+                    wreq_q        <= 1'b1;
+                    early_q       <= 1'b1;
+                    drain_q       <= 1'b1;
+                    b_seen_q      <= 1'b0;
+                    cached_q      <= hold_cached;
+                    hit_q         <= hold_hit;
+                    hit_way_q     <= hold_way;
+                    set_q         <= hold_set;
+                    set_wr_q      <= hold_set;
+                    word_q        <= hold_word;
+                    id_q          <= hold_id;
+                    hold_valid    <= 1'b0;
+                    state_q       <= ST_WR_DRAIN;
                 end
 
                 // ------------------------------------------ non-cacheable read
@@ -556,7 +688,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             // Latch "the write engine already handed B over". Without this the
             // background drain could wait for a response that was consumed while
             // the CPU response was being held (observed as an early deadlock).
-            if (i_b_valid) b_seen_q <= 1'b1;
+            if (i_b_valid && !hold_start_release) b_seen_q <= 1'b1;
             if (i_req_valid && i_req_ready) begin
                 wreq_q  <= 1'b0;
                 wsent_q <= 1'b1;

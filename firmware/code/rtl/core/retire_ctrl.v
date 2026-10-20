@@ -10,6 +10,7 @@
 module retire_ctrl(
     input wire clk,rst_n,
     input wire ex_valid,ex_done,ex_fault,trap_ready,irq_pending,
+    input wire [1:0] retire_count,
     input wire [31:0] actual_next_pc,trap_vector,
     input wire halt_req,fetch_idle,data_idle,
     output wire retire_fire,trap_fire,ex_leave,
@@ -29,7 +30,7 @@ module retire_ctrl(
             halt_pending<=0; halted<=0;
         end else begin
             if(retire_fire) begin
-                retire_order<=retire_order+1'b1;
+                retire_order<=retire_order+retire_count;
                 arch_next_pc<=actual_next_pc;
             end
             if(trap_fire) arch_next_pc<=trap_vector;

@@ -25,9 +25,33 @@
 > **仍缺的证据**：②（时序收敛）与 ③（综合资源）是真实工具产物，已具备；
 > **ILA 波形尚未抓取**（赛题文档评分项），应用场景章节尚未撰写。
 
-| 文件 | 大小 | SHA256 |
-|---|---|---|
-| `pangoriscv_i768.sbit` | 3,791,112 B | `1FAC6F435BA34641BB8D16285CFFFA7811D2F787AEAF08805B4F5369A2B41F23` |
+| 文件 | 大小 | SHA256 | 板上实测 |
+|---|---|---|---|
+| `pangoriscv_i768.sbit` | 3,791,112 B | `1FAC6F435BA34641BB8D16285CFFFA7811D2F787AEAF08805B4F5369A2B41F23` | 2.8833（2026-10-19） |
+| `pangoriscv_i1024.sbit` | 3,791,112 B | `8D12C9D114C0DBE4455E0A50C0F944B7D8506273DB28ADAEBC3755205FA6A643` | **3.4194（2026-10-20）** |
+
+## 2026-10-20 追加：4 KB I-Cache + 最小 lane1 双发射（板上 3.4194）
+
+> 这个文件是**备份**，不改变上面 2.8833 那份的交付地位；用哪一份交付由评审/作者决定。
+> 之所以必须备份：它是**踩线收敛**的唯一一份位流（同一 RTL 的其它种子在 22k 上布不通）。
+
+| 项 | 值 |
+|---|---|
+| 板测 `Total ticks` | **299,467,030** |
+| 板测 `Iterations` | 1024 |
+| 板测用时 | 11.091 s（≥10 s ✓） |
+| 板测五项 CRC | `0xe9f5 / 0xe714 / 0x1fd7 / 0x8e3a / 0x9ce8` |
+| 板测结论 | `Correct operation validated` |
+| 板测 **CoreMark/MHz** | **3.4194**（= 1024 / 299,467,030 × 1e6） |
+| 资源（device_map） | 21,949 LUT / 14,104 FF / DRM 4 / APM 6 / 分布式 RAM 3,628 |
+| 时序（`multiseed_summary.csv`） | `All Constraints Met`；setup +14.750 / +22.341；**hold +0.015 / +0.002**；失败端点 0 |
+| 配置 | 三开关全开；I-Cache 64 组（4 KB）；双发射最小 lane1 |
+| 镜像 | `program.hex` = 1024 迭代（`F67A0299…`），`data.hex` = `5D5F267A…` |
+| 构建目录 | `firmware/code/build/code_ic4k`（**禁止在该目录再跑第二次实现**） |
+| 原始抓取 | `evidence/records/optimization/4kb_3.423/uart_4kb_recheck.txt` |
+
+**风险（交付前必须写进口径）**：hold 仅 **+0.015 / +0.002 ns**，是"刚好过"的量级；
+换种子/换温度都可能翻负。若重新实现，先看 `multiseed_summary.csv` 的 hold 列。
 
 **板卡**：Pango PG2L100H，27 MHz 晶振。
 

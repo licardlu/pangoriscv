@@ -16,6 +16,14 @@
   NOTE: cdt_cfg.exe may not exit after a file-only Tcl script, so the client is
   killed after -TimeoutSec and success is judged from configuration_tcl.log.
 
+  IMPORTANT -- this script BLOCKS for up to -TimeoutSec (default 120 s), because
+  the client above is killed only at that timeout. Do NOT start a UART capture
+  after it returns: the CoreMark report is sent ONCE, ~10.7 s after configuration
+  (core_main.c prints only after iterate(); start.S then spins in `j loop`), so a
+  late capture reads 0 bytes even though the design printed correctly.
+  Use flash_and_capture.ps1, which opens the port first and then programs.
+  See docs/lessons/mistakes-log.md 7.6.
+
   ASCII only on purpose: Windows PowerShell 5.1 decodes .ps1 as the ANSI codepage,
   so non-ASCII comments in a BOM-less file corrupt the parse.
 #>

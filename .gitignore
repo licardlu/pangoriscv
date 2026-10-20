@@ -69,6 +69,11 @@ archive/
 # ---- 例外：主动入库的产物（复现与上板必需） ----
 # 发布位流：保证拿到仓库就能直接上板，不必重跑综合。
 !bitstream/pangoriscv_i768.sbit
+# 2026-10-20 追加：4 KB I-Cache + 双发射（板上 3.4194）的位流。
+# 必须入库的理由：同一 RTL 在 22k 上只有这一个种子收敛，是"踩线收敛"的孤本，
+# 丢了就要重赌一次布线。测量与口径见 bitstream/README.md 与
+# evidence/records/optimization/4kb_3.423/measurement.md。
+!bitstream/pangoriscv_i1024.sbit
 # PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
 !firmware/code/platform/pango_native/*.pds
 

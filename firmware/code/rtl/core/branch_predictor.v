@@ -53,6 +53,14 @@ module branch_predictor #(
     input  wire [31:0] fetch_pc2,
     output wire        predict_taken2,
     output wire [31:0] predict_target2,
+    // ---- third lookup port: the second word of an 8 B fetch pair ----------
+    // CoreMark pairs an ALU-class instruction with the branch that follows it
+    // often enough that the pair's successor must be known in the same cycle as
+    // the first word's.  A flop-based table makes a third read port only a third
+    // index/tag compare (no shared RAM port).
+    input  wire [31:0] fetch_pc3,
+    output wire        predict_taken3,
+    output wire [31:0] predict_target3,
     // ---- training at the real completion boundary (retire) ---------------
     input wire        train_valid,          // retire_fire
     input wire [31:0] train_pc,             // retired PC
@@ -85,6 +93,13 @@ module branch_predictor #(
 
     assign predict_taken2  = fetch_hit2 && (uncond_q[fetch_idx2] || count_q[fetch_idx2][1]);
     assign predict_target2 = target_q[fetch_idx2];
+
+    wire [IDX_BITS-1:0] fetch_idx3 = fetch_pc3[IDX_BITS+1:2];
+    wire [TAG_BITS-1:0] fetch_tag3 = fetch_pc3[31:IDX_BITS+2];
+    wire fetch_hit3 = valid_q[fetch_idx3] && (tag_q[fetch_idx3]==fetch_tag3);
+
+    assign predict_taken3  = fetch_hit3 && (uncond_q[fetch_idx3] || count_q[fetch_idx3][1]);
+    assign predict_target3 = target_q[fetch_idx3];
 
     wire [IDX_BITS-1:0] train_idx = train_pc[IDX_BITS+1:2];
     wire [TAG_BITS-1:0] train_tag = train_pc[31:IDX_BITS+2];

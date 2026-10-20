@@ -11,6 +11,7 @@ module csr_native(
  input wire clk,rst_n,
  input wire [11:0] addr,
  input wire write_intent,commit,retire,mret_fire,trap_enter,
+ input wire [1:0] retire_count,
  input wire [31:0] write_data,trap_pc,trap_cause,trap_tval,
  input wire irq_software,irq_timer,irq_external,
  output reg [31:0] read_data,
@@ -54,7 +55,7 @@ module csr_native(
  // This pre-trap state also drives interrupt eligibility and the redirect vector.
  always @(*) begin
    ns=status; ne=mie; nv=mtvec; nsc=mscratch; np=mepc; nc=mcause; nt=mtval;
-   ncy=mcycle+64'd1; ni=minstret+{63'd0,retire};
+   ncy=mcycle+64'd1; ni=minstret+{62'd0,retire_count};
    if(commit) begin
     case(addr)
      12'h300: ns=(write_data & 32'h88) | 32'h1800;

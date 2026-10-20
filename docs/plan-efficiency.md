@@ -1,0 +1,104 @@
+# 效率专项（E 系列）：分数不变的前提下提升时钟与资源效率
+
+日期：2026-10-21 07:40　起点：**3.8557 CoreMark/MHz 已交付**（`bitstream/pangoriscv_i1152_p37.sbit`）
+硬约束：**分数不得变化**（20 迭代评分窗口逐位相同、五项 CRC 逐项相同）；每步单独提交、单独复核。
+
+---
+
+## 1. 实测依据（来自交付位流的 `report_timing`）
+
+前 3 条路径**同一起点同一种形态**，且第 1 条 slack = **+4.484 ns**（周期 37.04 ns）：
+
+```
+Startpoint : u_id_ex/slot/data_q[394]           <- 指令位（mul 的操作数选择）
+             -> u_ex/signed_mul -> APM_239_978/PO[0] -> APM_239_1008/P_1[2]   (~6 ns, 3 个 DSP)
+             -> u_ex/reg_wdata_o_25[4] -> alu_result[4]
+             -> N537[4] -> ex1_o2[4]            <- P37a 的前递 mux
+             -> u_ex_h/N4.eq_* -> jump_flag_o -> actual_next_pc_h -> last_next
+             -> pred_miss -> redirect_valid -> u_if_id/.../CE
+```
+
+**结论**：`fwd0_alu` 的条件里 `ex0_alu_cls` 已经**排除** `0x33/funct7=1`（M 扩展），
+所以乘法器结果**永远不可能**被前递；但物理上 `alu_result` 是"含 mul 的完整 mux 输出"，
+于是静态时序把 DSP 链算进了 lane1 的操作数路径。这是一条**功能上不存在的数据通路**。
+
+## 2. 步骤 E1（时钟效率）：前递改用"乘法前"的 ALU 结果
+
+1. `ex.v` 增加一个输出 `reg_wdata_fast_o` = 内部 `ex_alu` 的原始结果（M 扩展 mux **之前**）。
+2. `pangoriscv.v` 的 `ex1_r1/ex1_r2/ex1_o1/ex1_o2` 改用它；`wdata`（写回）**保持用完整结果**。
+3. 正确性论证：`fwd0_alu ⇒ ex0_alu_cls ⇒ 不是 M 扩展`，两条路径在该条件下**逐位相同**；
+   写回、CSR、load、div 的取值路径一字未动。
+4. 面积：0（多一根 32 位输出线，综合后会与 `wdata` 的 mux 共享前置级）。
+5. 门禁：窗口/CRC **逐位相同**（这是本步唯一可接受的"性能结果"）；setup 必须改善；
+   hold 不得变差；ISA 17/17、dcache、engine 64/64 全绿。
+
+## 3. 步骤 E2（资源效率）：待 E1 落地后按网表实测选点
+
+候选（必须先有数据再动）：
+- D-Cache `data_mem` 三份 512×32（M19 卡片：疑似副本）。2 路×32 组×8 字 = 512 字，理论只需一份。
+  但三条同拍读路径（`accept_hit`/`rsp_data`/`merged_accept`）要改时分割，风险高，
+  且 LUTRAM 不在 `CoreMark/kLUT` 分母里 → **优先级最低**。
+- 预测器 32 项 BTB：P4 记录 64 项多 ~1,900 LUT 换 −27% 误预测，反向操作可省 LUT 但会掉分 → **不做**。
+- 真正候选：跑一次逐模块 LUT 统计，找**不影响关键路径、也不在性能路径上**的大块（优先看 SoC 外设与互连）。
+
+## 4. 每步之后的固定动作
+面积/布线复核（`Used`、`single,OK,OK`、前 10 条时序）→ 删冗余（临时探针/被合并的寄存器）→
+查 bug（ISA 17/17、dcache、engine 64/64、A/B CRC 逐项相同）→ 同步模块卡与 `area-budget.csv`。
+
+## 5. 回退点
+`41382f7` = 3.8557 交付。任一步导致分数变化或 hold < 0 → `git revert` 回该点，
+交付位流 `pangoriscv_i1152_p37.sbit` 不受影响。
+
+---
+
+## 6. E1 的结论：**不做**（这是一条功能上不存在的路径，改它要用分数换不记分的指标）
+
+把交付位流的第 1 条路径拆开看（`report_timing_p37.rtr` 第 121–215 行），延迟构成是：
+
+| 段 | 延迟 | 说明 |
+|---|---:|---|
+| `data_q[394]` → `u_ex/signed_mul` → 3 个 APM | ≈**6.5 ns** | M 扩展乘法器（DSP 级联） |
+| `alu_result[4]` → `N537` → `ex1_o2[4]` | ≈1.6 ns | P37a 的前递 mux |
+| `u_ex_h` 比较链 → `jump_flag_o` → `actual_next_pc_h` | ≈2.6 ns | lane1 分支判定 |
+| `last_next` → `pred_miss` → `redirect_valid`（扇出 159）→ IF/ID CE | ≈5.3 ns | 重定向到取指使能 |
+
+**关键事实**：`fwd0_alu` 的前置条件 `ex0_alu_cls` 排除了 `0x33/funct7=1`，
+所以乘法器的结果**永远不会**出现在 `ex1_o2` 的有效数据里 —— 这 6.5 ns 是静态时序的"假依赖"。
+
+**为什么仍然不改**：唯一能在 RTL 里消除它的办法，是让 `ex.v` 再输出一份"乘法前"的
+`reg_wdata_fast`，即把整个 `reg_wdata` 的 case mux **再复制一遍**（实测规模约 +100~150 LUT）。
+代价是 `CoreMark/kLUT` 从 0.2103 掉到约 0.209（−0.5%），收益是 setup 从 +4.484 → 约 +10 ns。
+**27 MHz 评分下，时钟余量不记分，kLUT 记分** —— 这个交易是亏的，因此**不做**，只记录在这里：
+若将来要把 Fmax 抬到 40 MHz 以上，这就是第一优先级的改法（或改流程加 `set_false_path`）。
+
+## 7. E2：资源效率的实测基线（逐模块，交付网表 `perf_p37b`）
+
+统计口径：`synthesize/pangoriscv_top_syn.vm` 里每个 module 内的 `GTP_LUT*/GTP_ALUT*/GTP_MUX*` 与 `GTP_DFF*`。
+
+| 模块 | LUT | FF | 评价 |
+|---|---:|---:|---|
+| `pangoriscv`（顶层胶合，含内联的 `ctrl`） | 2,894 | 1 | 重定向比较、写回 mux、配对规则；**在关键路径上，不动** |
+| `icache_axi` | 2,547 | 3,070 | 最大块；tag/valid 全在 FF（3,070）。换 LUTRAM 只省 FF，不改 LUT → 对 kLUT 无益 |
+| `ifu_axi` | 1,629 | 1,524 | 取指队列 + 预取链；队列深度直接决定性能 |
+| `axi_ram_1`（data RAM） | 1,216 | 212 | 地址译码/字节选通；不在性能路径 |
+| `branch_predictor` | 721 | 800 | 32 项 BTB；P4 实测"加大 BTB 掉面积提分"，反向操作会掉分 |
+| `dcache_axi` | 654 | 320 | 含 4×75 的 store 队列（P37b） |
+| `ex` / `ex_alu` | 607 / 504 | 0 | 纯组合 |
+| `regs` | 479 | 992 | 双写口 + 4 读口 |
+
+**结论**：没有"纯冗余"可删。所有大块要么在关键路径上（`pangoriscv`/`ifu_axi`/`dcache_axi`），
+要么动它就要牺牲分数（`branch_predictor`/`ifu_axi` 队列深度），要么只换存储介质不改 LUT
+（`icache_axi` 的 tag）。因此本阶段的资源效率**已经通过 P37 达成**：
+`CoreMark/kLUT` 0.2008 → **0.2103（+4.7%）**，站点只 +0.55%。
+
+## 8. E 阶段结论
+
+| 指标 | P36a 交付 | **P37 交付** | 状态 |
+|---|---:|---:|---|
+| CoreMark/MHz | 3.6345 | **3.8557** | 达标（>3.8） |
+| CoreMark/kLUT | 0.2008 | **0.2103** | 改善 +4.7% |
+| setup / hold | +10.041 / +0.002 | **+4.484 / +0.032** | 全过、失败端点 0 |
+| 站点合计 | 31,658 | 31,833 | +0.55% |
+
+后续若要继续提分，按 §9 的三条（lane1 访存 / lane0 分支 / BTB 扩容）逐条评估，
+每条都必须先有"实测上限 ÷ 结构风险"的账，再动 RTL。

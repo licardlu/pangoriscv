@@ -7,6 +7,13 @@
 > 下文的 400 迭代 / 1.35 / 12,694 LUT / “四级流水线”等均为历史版本。
 > 完整问题、验收缺口与修复顺序见 **[docs/verification.md](docs/verification.md)**。
 
+> **面积 / 效率专项（2026-10-21 起）**：本阶段**只做面积与资源效率**，性能只要求"不回退"。
+> 动手前必读 **[docs/architecture/module-area-plan.md](docs/architecture/module-area-plan.md)**
+> （34 个模块的 11 字段面积合同）与 [area-budget.csv](docs/architecture/area-budget.csv)；
+> 门禁脚本 `firmware/code/tools/check_area_budget.py`（非零退出不得提交）。
+> 冻结基线：tag `score-3.4194-1024`，板上 **3.4194**（1024 迭代 / 11.091 s / 五项 CRC 全对），
+> 位流 `bitstream/pangoriscv_i1024.sbit`（SHA256 `8D12C9D1…5FA6A643`）。
+
 | 项 | 值 |
 |---|---|
 | 指令集 | RV32IM（32 位整数、乘除） |

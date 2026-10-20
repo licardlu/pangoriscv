@@ -34,6 +34,8 @@
 param(
   [Parameter(Mandatory = $true)][string]$RunName,
   [string]$ImageDir,
+  [ValidateSet('delta', 'budget', 'baseline', 'none')][string]$Gate = 'budget',
+  [string]$Against,
   [string]$PdsBin = 'D:\FPGA_Project\zi_guang_tong_chuang\pds\PDS_2022.2-SP6.1\bin',
   [int]$TimeoutMin = 25
 )
@@ -122,8 +124,28 @@ if (Test-Path $util) {
 }
 
 Write-Host ""
-Write-Host "check_area_budget.py --mode baseline (drift gate):"
-$py = $env:DSH_PYTHON
-if (-not $py) { $py = 'python' }
-& $py (Join-Path $PSScriptRoot 'check_area_budget.py') --mode baseline --from-used $mapLog
-exit $LASTEXITCODE
+switch ($Gate) {
+  'none' { Write-Host "gate: skipped (-Gate none)" ; exit 0 }
+  'delta' {
+    if (-not $Against) { throw "-Gate delta needs -Against <previous build's device_map/run.log>" }
+    Write-Host "gate: delta against $Against"
+    $py = $env:DSH_PYTHON
+    if (-not $py) { $py = 'python' }
+    & $py (Join-Path $PSScriptRoot 'check_area_budget.py') --mode delta --from-used $mapLog --against $Against
+    exit $LASTEXITCODE
+  }
+  'baseline' {
+    Write-Host "gate: baseline drift"
+    $py = $env:DSH_PYTHON
+    if (-not $py) { $py = 'python' }
+    & $py (Join-Path $PSScriptRoot 'check_area_budget.py') --mode baseline --from-used $mapLog
+    exit $LASTEXITCODE
+  }
+  default {
+    Write-Host "gate: end-of-plan budget"
+    $py = $env:DSH_PYTHON
+    if (-not $py) { $py = 'python' }
+    & $py (Join-Path $PSScriptRoot 'check_area_budget.py') --mode budget --from-used $mapLog
+    exit $LASTEXITCODE
+  }
+}

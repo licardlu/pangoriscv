@@ -131,8 +131,10 @@ def fmt(v):
 def main():
     ap = argparse.ArgumentParser(add_help=True)
     ap.add_argument("--csv", default=DEFAULT_CSV)
-    ap.add_argument("--mode", choices=("budget", "baseline"), default="budget")
+    ap.add_argument("--mode", choices=("budget", "baseline", "delta"), default="budget")
     ap.add_argument("--from-used", dest="actual")
+    ap.add_argument("--against",
+                    help="delta mode: a previous build's device_map/run.log (or multiseed_summary.csv)")
     ap.add_argument("--tolerance", type=float, default=1.0,
                     help="baseline mode tolerance in percent (default 1.0)")
     args = ap.parse_args()
@@ -181,6 +183,30 @@ def main():
             print("%-8s %10s %10s %+8.2f" % (f.upper(), fmt(b[f]), fmt(a[f]), pct))
             if abs(pct) > args.tolerance:
                 failures.append("%s drifted %+0.2f%% (limit %.2f%%)" % (f, pct, args.tolerance))
+    elif args.mode == "delta":
+        # Per-step gate for the area workstream: a change may reduce anything but
+        # must not increase LUT, FF, LUTRAM or DRM.  This is the machine form of
+        # "area only goes down" in module-area-plan.md.
+        if not args.against:
+            die("--mode delta needs --against <previous build's device_map/run.log>")
+        ref = parse_used(args.against)
+        print("against totals  : " + " ".join("%s=%s" % (f, fmt(ref[f])) for f in FIELDS))
+        print("%-8s %10s %10s %10s" % ("metric", "previous", "actual", "delta"))
+        for f in FIELDS:
+            if ref[f] is None or a[f] is None:
+                continue
+            d = a[f] - ref[f]
+            print("%-8s %10s %10s %+10d" % (f.upper(), fmt(ref[f]), fmt(a[f]), d))
+            limit = 0 if f in ("lut", "ff", "lutram") else None
+            if limit is not None and d > limit:
+                failures.append("%s increased by %d (%s -> %s)"
+                                % (f, d, ref[f], a[f]))
+        s_ref = sum(ref[f] for f in ("lut", "ff", "lutram") if ref[f] is not None)
+        s_now = sum(a[f] for f in ("lut", "ff", "lutram") if a[f] is not None)
+        print("%-8s %10s %10s %+10d   (S = LUT+FF+LUTRAM)"
+              % ("S", fmt(s_ref), fmt(s_now), s_now - s_ref))
+        if s_now > s_ref:
+            failures.append("station total S increased by %d" % (s_now - s_ref))
     else:
         print("%-8s %10s %10s %8s" % ("metric", "budget", "actual", "margin"))
         for f in FIELDS:

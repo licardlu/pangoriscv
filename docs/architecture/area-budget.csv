@@ -1,8 +1,9 @@
 kind,module,file,stage,lut,ff,lutram,drm,apm,region,status,note
 baseline,__totals__,,,21949,14104,3628,4,6,,frozen,device_map Used @ tag score-3.4194-1024 (build code_ic4k)
 budget,__max__,,,20800,9455,1580,8,6,,active,"M1+M2+M3+M4 must-do set; LUT budget is conservative (-1000..-1200)"
-delta,perf_regs,perips/perf_regs.v,instrument,0,-1665,0,0,0,none,active,"M1: drop PERF_ENABLE from delivery build (its AXI slave goes with it)"
-delta,axi_reg_slave,perips/axi_reg_slave.v,periph,0,0,0,0,0,R_IO,active,"M1: 6 instances -> 5; the 594-LUT one belongs to perf_regs"
+measured,__totals_m1__,,,20422,12335,3628,4,6,,measured,"M1 delivery profile (PERF off) 2026-10-21: LUT -1527, FF -1769, S 39681->36385"
+delta,perf_regs,perips/perf_regs.v,instrument,0,-1665,0,0,0,none,done,"M1 MEASURED (jointly with axi_reg_slave): -1527 LUT / -1769 FF; see area-M1/measurement.md"
+delta,axi_reg_slave,perips/axi_reg_slave.v,periph,0,0,0,0,0,R_IO,done,"M1: 6 instances -> 5; the 594-LUT one belongs to perf_regs (measured delta includes it)"
 delta,axi_ram_data,perips/axi_ram.v,mem,0,0,-2048,4,0,R_MEM,active,"M2: data RAM syn_ramstyle=block_ram"
 delta,branch_predictor,core/branch_predictor.v,fetch,-100,-1152,0,0,0,R_FETCH,active,"M3: BTB tag 25->7, target 32->14 (PGM_BYTES driven)"
 delta,ifu_axi,core/ifu_axi.v,fetch,-100,-1832,0,0,0,R_FETCH,active,"M4b q_pred_hi removed + M4a DEPTH 16->8"

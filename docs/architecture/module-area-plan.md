@@ -29,6 +29,14 @@ LUT 21,949 | FF 14,104 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 39,681
 板上：299,467,030 ticks / 1024 迭代 / 11.091 s / 3.4194 / 五项 CRC 全对
 ```
 
+**M1 落地后（`PERF_ENABLE` 关，2026-10-21 实测）**
+
+```
+LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
+证据：evidence/records/optimization/area-M1/measurement.md
+控制组（PERF on）与上面的基线逐项一致 → 资源检查（compile+synthesize+dev_map）可作面积 A/B 代理
+```
+
 ---
 
 ## 2. 模块卡模板（11 个字段，缺一项不得进 RTL）
@@ -134,7 +142,7 @@ LUT 21,949 | FF 14,104 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 39,681
 
 | 分项 | 现状 | Δ（可信度） | 依据 |
 |---|---|---|---|
-| M1 仪表 | 1,444 LUT / 1,665 FF（采样） | **FF −1,665（确定）**；LUT **−1,000~1,444（区间）** | 删 `perf_regs` + 其从机 |
+| M1 仪表 | 1,444 LUT / 1,665 FF（采样） | **实测 −1,527 LUT / −1,769 FF（2026-10-21）** | 删 `perf_regs` + 其从机；证据 `area-M1/measurement.md` |
 | M2 数据 RAM | 2,048 LUTRAM | **LUTRAM −2,048（确定）**；DRM +4 | 映射日志给的就是 2,048 |
 | M3 BTB | 1,952 FF | **FF −1,152（确定）**；LUT −100（估） | 1,888 FF 存储 → 736 |
 | M4b `q_pred_hi` | 512 FF | **FF −512（确定）** | 16×32 |
@@ -155,7 +163,7 @@ LUT 21,949 | FF 14,104 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 39,681
 
 | 编号 | 模块 | 动作 | 预期 | 风险 | 回退条件 |
 |---|---|---|---|---|---|
-| M1 | `perf_regs` + 从机 | 交付构建关 `PERF_ENABLE`；`set_switches.py` 支持按名开关 | **FF −1,665**；LUT −1,000~−1,444（实测） | 分析计数器消失 → 改用仿真 | LUT 未降则查开关是否真被编译 |
+| M1 | `perf_regs` + 从机 | 交付构建关 `PERF_ENABLE`；`set_switches.py` 支持按名开关 | **实测 −1,527 LUT / −1,769 FF** | 分析计数器消失 → 改用仿真 | **已完成 2026-10-21**（delta 门禁 PASS） |
 | M2 | `axi_ram`(data) | `/* synthesis syn_ramstyle = "block_ram" */`（必要时 `no_rw_check`） | −2,048 LUTRAM，DRM 4→8 | BRAM 端口模式不匹配 | 两次尝试失败即跳过 |
 | M3 | `branch_predictor` | `TAG_BITS` 25→7、`target_q` 32→14（由 `PGM_BYTES` 派生） | −1,152 FF / −100 LUT | 程序 >16 KB 别名（只影响预测） | `mispred` +5% 即回退 |
 | M4b | `ifu_axi` | 删 `q_pred_hi`（配对第二条 = `pc+4`） | −512 FF | 预测信息重算 | ticks +0.5% 即回退 |
@@ -622,7 +630,7 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 
 | 编号 | 事项 | 归属 | 状态 |
 |---|---|---|---|
-| M1 | 关 `PERF_ENABLE`（交付）+ 按名开关 | `perf_regs`/`soc_config.vh` | 待执行 |
+| M1 | 关 `PERF_ENABLE`（交付）+ 按名开关 | `perf_regs`/`soc_config.vh` | **完成 2026-10-21**：LUT −1,527 / FF −1,769（`area-M1/measurement.md`） |
 | M2 | 数据 RAM 强制 BRAM | `axi_ram.v` | 待执行 |
 | M3 | BTB 位宽按 `PGM_BYTES` 派生 | `branch_predictor.v` | 待执行 |
 | M4b/4a | 取指队列去 `q_pred_hi` / `DEPTH` 8 | `ifu_axi.v` | 待执行 |
@@ -631,3 +639,34 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 | M7 | 4R2W 寄存器堆能否 LUTRAM/BRAM 化 | `regs.v` | 只调研 |
 | M8 | 304 位 payload 恒零字段 | `if_pipe`/`pipe_slot` | 仅评估 |
 | — | `icache_axi.v` 头注释 "32 sets" 过时（实际 64 组） | `icache_axi.v` | 随 M5 修正 |
+
+---
+
+## 12. 构建 profile：交付 vs 分析
+
+本专项引入两种 profile，**必须分开，不许混用**：
+
+| profile | 开关 | 用途 | 谁生成 |
+|---|---|---|---|
+| **交付**（delivery） | `PERF_ENABLE=off`；`CACHE_ENABLE`/`PREDICT_ENABLE` 保持 on | 出位流、上板报分 | `set_switches.py PERF_ENABLE=off` → 构建 → `PERF_ENABLE=on` 还原 |
+| **分析**（analysis） | 三开关全 on | 仿真、停顿/缺失统计、ILA 波形 | 仓库默认状态 |
+
+纪律：
+
+1. **仓库默认永远是三开**（`soc_config.vh` 不改死）；交付构建在独立 staging 目录里关 PERF，构建后立刻还原，
+   并 `git status` 确认 `soc_config.vh` 与 HEAD 一致（教训 §4.12）。
+2. 两个 profile 的 `device_map` 必须分别留证据（本专项的 M1 就是这样测的）。
+3. **任何 CoreMark 对比必须在同一 profile 内做**：交付 vs 交付、分析 vs 分析。
+   拿"PERF off 的交付位流"和"PERF on 的仿真"比 ticks 是错的。
+4. 交付 profile 少一层 AXI 从机（0x6000_2000 消失），固件不得引用该窗口。
+
+命令：
+
+```powershell
+cd firmware\code
+python tools\set_switches.py status
+python tools\set_switches.py PERF_ENABLE=off        # 交付/profile A
+# ... 构建 ...
+python tools\set_switches.py PERF_ENABLE=on         # 立即还原
+python tools\set_switches.py status
+```

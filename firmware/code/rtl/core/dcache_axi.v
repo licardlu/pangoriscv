@@ -332,8 +332,14 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         // queue has room, without waiting for the previous B
                         ((state_q==ST_WR_DRAIN || state_q==ST_WR_POST) &&
                          req_write && early_req && !q_full)) &&
-                       // ordering: queued writes land before any refill reads
-                       (!read_mem_now || q_empty);
+                       // ordering: a read that must reach memory may not overtake
+                       // ANY outstanding store -- neither one still queued nor the
+                       // one already handed to the write engine (drain_q).  The
+                       // original design got the second half implicitly from
+                       // state_q==ST_IDLE, but ST_IDLE is also reachable on the
+                       // accept edge of a store (state_q <= i_b_valid ? ST_IDLE :
+                       // ST_WR_DRAIN), so it has to be explicit.
+                       (!read_mem_now || (q_empty && !drain_q));
     assign w_ready   = i_w_ready;              // inner engine latches in WR_PREP
 
     // P10: answer a cache READ hit on the ACCEPT edge.  The tag comparison already
@@ -610,6 +616,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 // accept edge, and its AXI write is released when the current B
                 // arrives (in program order).
                 ST_WR_DRAIN: begin
+                    // merge an accepted posted store on its accept edge
                     if (accept_post && req_in_cache && hit_any)
                         data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
                     if (i_b_valid) begin
@@ -653,6 +660,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 end
                 // Release the queue head that was accepted on the previous edge.
                 ST_WR_POST: begin
+                    // A store may also be accepted here -- merge it like any other
+                    // posted store.  Missing this line was the P34 correctness bug
+                    // (queued + answered but never merged, so a following load hit
+                    // stale data; CoreMark crcfinal changed, +49% instructions).
+                    if (accept_post && req_in_cache && hit_any)
+                        data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
                     i_req_valid_r <= 1'b1;
                     i_req_write_r <= 1'b1;
                     i_req_addr_r  <= q_addr[q_head_q];
@@ -679,6 +692,15 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 default: state_q <= ST_FAULT;
             endcase
             // ---- posted store queue bookkeeping (P34) ---------------------------
+            // NOTE: the cache-line merge of an accepted posted store deliberately
+            // lives INSIDE the per-state branches (ST_WR_DRAIN / ST_WR_POST) and
+            // not here.  Hoisting it into this common tail is what broke the RAM
+            // inference once: with a write site that is not state-exclusive, the
+            // mapper could no longer prove it disjoint from the refill write, turned
+            // data_mem into 16,384 flip-flops plus a 42k-LUT mux, and the design
+            // went from 18k to 52k LUT (67,326 unrouted nets).  Keep it in the
+            // branches, and put it in EVERY branch that can accept a store.
+            //
             // One place for the pointers, so a push and a pop on the same edge
             // (a B arriving while the next store is accepted) leave the count
             // unchanged and the order intact.

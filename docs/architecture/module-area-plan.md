@@ -411,13 +411,27 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 
 #### M19 `dcache_axi` — `rtl/core/dcache_axi.v` — 存储
 2. **职责**：2 路组相联 D-Cache，**32 组 × 2 路 × 8 字 = 2 KB**，写通 + 行填充，MMIO 走 bypass；不做一致性。
-5. **内部状态**：`state_q`、`tag_q`、`lru`、`wdata_q/wstrb_q`、`rsp_*`。
-6. **存储**：`data_mem`/`data_mem_1`/`data_mem_3`（512×32 ×3）+ `tag_mem/tag_mem_1`（64×22）。
-7. **面积**：740/366/556/0/0 → **740/366/556~300**（M6 条件）。
+   自 P34 起额外承担 **posted store 队列**（深度 `STQ_DEPTH=4`，默认参数）：只对 `0x1000_0000..0x1000_3FFF`
+   的数据 RAM 区间提前应答，**完成时刻与写合并时刻不变**。**不做**：写回、写分配、多 outstanding AXI 写。
+5. **内部状态**：`state_q`、`tag_q`、`lru`、`wdata_q/wstrb_q`、`rsp_*`；
+   P34 起有 `q_addr/q_data/q_strb/q_size/q_id[0:3]`（各 75 bit/项）+ `q_head_q/q_tail_q/q_count_q`
+   （取代原单条 `hold_*`，原 hold 的 `set/word/way/hit/cached` **有意不再保存**：合并已在 accept 拍完成）。
+6. **存储**：`data_mem`/`data_mem_1`/`data_mem_3`（512×32 ×3）+ `tag_mem/tag_mem_1`（64×22）；
+   P34 的队列是 **FF**（4×75 bit），**不新增任何 LUTRAM/BRAM**。
+7. **面积**：740/366/556/0/0 → **740/366/556~300**（M6 条件，未做）；
+   P34 实测增量见 `area-budget.csv` 的 `delta,dcache_axi` 行（FF +约 220，LUTRAM 0）。
 8. **物理区域**：`R_DCACHE`（与 `R_CORE` 的 LSU 相邻；**不与 `R_ICACHE` 共用走廊**）。
-9. **关键路径**：**hold 最差**：`tag_q[11] → tag_mem_1_11/ram64x1d/DI`（**+0.015 ns**）。
-10. **测试**：`tb/unit/tb_dcache_axi.sv`、`run_dcache_tests.py`。
+   P34 的新 FF 全部在此区内；FIFO→写引擎保持 `wdata_q` 寄存边界，AXI 侧时序与改前逐位相同。
+9. **关键路径**：**hold 最差**：`tag_q[11] → tag_mem_1_11/ram64x1d/DI`（**+0.015 ns**）；
+   P34 后必须复核这条 hold 是否仍在首位（新增逻辑只落在 `req_ready` 与 `merged_accept` 两条已有路径上）。
+10. **测试**：`tb/unit/tb_dcache_axi.sv`（D1–D9 原用例 + **E1–E5**：背靠背吸收 / 入队顺序 /
+    排队期间读命中见合并值 / 读缺失不得越过在途写 / `dc_idle` 覆盖队列）、`run_dcache_tests.py`；
+    集成侧 `tb_coremark_uart.sv` 的 `ST_REFUSE`/`STQ_OCC`/`STORE_SCOREBOARD` 探针。
 11. **变更**：2026-10-21 立卡；M6 只做归属分析（3 个阵列 vs 2 KB 容量 → 疑似副本；另有 212 primitive 差额待查）。**明确不缩 tag 位宽**（MMIO 混用，别名风险高）。
+    **P34（2026-10-21，性能专项）**：单条 `hold` → 4 深队列。A/B：20 迭代 cycles 7,677,085 → 7,530,451
+    （评分窗口 5,843,953 → 5,697,334，−2.51%），五项 CRC 逐项相同。同时修正两处**正确性**缺陷：
+    ① `accept_post` 扩到 `ST_WR_POST` 后行合并仍只在 `ST_WR_DRAIN` 分支 → 在 POST 被接受的 store 不合并
+    （CoreMark `crcfinal` 变、指令数 +49%）；② 读缺失的顺序门控只挡了"队列非空"、没挡"在途写 `drain_q`"。
 
 #### M20 `axi_read_engine` — `rtl/core/axi_read_engine.v` — 访存
 2. **职责**：AXI4 读引擎（AR/R），支持猝发；不做地址译码。

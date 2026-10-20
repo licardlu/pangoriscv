@@ -42,6 +42,7 @@ NAME = {
     13: "GPIO output mode",
     14: "timer one-shot and W1C",
     15: "machine timer interrupt and MRET",
+    16: "WAW in one issue pair: the younger lane wins the register",
 }
 
 
@@ -304,7 +305,7 @@ class Ref:
 # case -> entry address of the case body in tests/isa_e2e/isa_e2e.S
 CASE_PC = {1: 0x000, 2: 0x200, 3: 0x300, 4: 0x400, 5: 0x500, 6: 0x600,
            7: 0x700, 8: 0x900, 9: 0xA00, 10: 0xB00, 11: 0xC00,
-           12: 0xD00, 13: 0xE00, 14: 0xF00, 15: 0x1000}
+           12: 0xD00, 13: 0xE00, 14: 0xF00, 15: 0x1000, 16: 0x1100}
 # The shared trap handler lives in its own 0x1000-aligned section.
 TRAP_HANDLER = 0x1000
 # mtvec value the test cases program: the trap section is linked at 0x1000

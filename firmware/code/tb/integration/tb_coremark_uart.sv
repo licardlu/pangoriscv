@@ -566,6 +566,67 @@ module tb_coremark_uart;
         end else pw_no_ret=pw_no_ret+1;
     end
     integer mem_ops=0, mem_ld=0, mem_st=0;
+    // Queue occupancy / operation counters (P34 sizing evidence).
+    integer qocc [0:8];
+    integer qpush=0, qpop=0, qk=0;
+    initial for(qk=0; qk<9; qk=qk+1) qocc[qk]=0;
+`ifdef CACHE_ENABLE
+    always @(posedge clk) if(rst_n && !sw_done) begin
+        qocc[soc.core.data_cache.q_count_q] = qocc[soc.core.data_cache.q_count_q] + 1;
+        if(soc.core.data_cache.q_push) qpush = qpush + 1;
+        if(soc.core.data_cache.q_pop)  qpop  = qpop  + 1;
+    end
+`endif
+    // ---- STORE SCOREBOARD (P34 bring-up, temporary) ---------------------------
+    // Ground truth for the posted-store queue: every store the CPU hands to the
+    // D-Cache must appear on the AXI write channel exactly once, in order, with
+    // the same address, strobe and data.  A mismatch names the address instead of
+    // leaving "CoreMark diverged" to guesswork.
+    reg [31:0] sc_addr [0:1023];
+    reg [31:0] sc_data [0:1023];
+    reg [3:0]  sc_strb [0:1023];
+    integer sc_wr=0, sc_rd=0, sc_err=0;
+    reg [31:0] sc_aw_addr=0;
+`ifdef CACHE_ENABLE
+    function [31:0] sc_mask;
+        input [3:0] s;
+        begin
+            sc_mask = {{8{s[3]}},{8{s[2]}},{8{s[1]}},{8{s[0]}}};
+        end
+    endfunction
+    always @(posedge clk) if(rst_n) begin
+        if(soc.core.data_cache.req_valid && soc.core.data_cache.req_ready &&
+           soc.core.data_cache.req_write) begin
+            sc_addr[sc_wr[9:0]] = soc.core.data_cache.req_addr;
+            sc_data[sc_wr[9:0]] = soc.core.data_cache.w_data & sc_mask(soc.core.data_cache.w_strb);
+            sc_strb[sc_wr[9:0]] = soc.core.data_cache.w_strb;
+            sc_wr = sc_wr + 1;
+        end
+        if(soc.core.data_cache.m_awvalid && soc.core.data_cache.m_awready)
+            sc_aw_addr = soc.core.data_cache.m_awaddr;
+        if(soc.core.data_cache.m_wvalid && soc.core.data_cache.m_wready) begin
+            if(sc_rd < sc_wr) begin
+                if(sc_err < 6) begin
+                    if(sc_addr[sc_rd[9:0]] !== sc_aw_addr ||
+                       sc_strb[sc_rd[9:0]] !== soc.core.data_cache.m_wstrb ||
+                       sc_data[sc_rd[9:0]] !== (soc.core.data_cache.m_wdata &
+                                                sc_mask(soc.core.data_cache.m_wstrb))) begin
+                        sc_err = sc_err + 1;
+                        $display("SC_MISMATCH idx=%0d exp_addr=%08x act_addr=%08x exp_data=%08x act_data=%08x exp_strb=%b act_strb=%b",
+                                 sc_rd, sc_addr[sc_rd[9:0]], sc_aw_addr,
+                                 sc_data[sc_rd[9:0]], soc.core.data_cache.m_wdata,
+                                 sc_strb[sc_rd[9:0]], soc.core.data_cache.m_wstrb);
+                    end
+                end
+                sc_rd = sc_rd + 1;
+            end else if(sc_err < 6) begin
+                sc_err = sc_err + 1;
+                $display("SC_EXTRA_WRITE addr=%08x data=%08x strb=%b (no matching CPU store)",
+                         sc_aw_addr, soc.core.data_cache.m_wdata, soc.core.data_cache.m_wstrb);
+            end
+        end
+    end
+`endif
     // ---- STORE ACCEPTANCE decomposition (performance workstream) --------------
     // A data-RAM store is answered early (posted) only if the cache can take it.
     // req_ready is gated by the cache state and by the single-entry posted buffer,
@@ -697,6 +758,9 @@ module tb_coremark_uart;
                  sb_stores, sb_runs, sb_max,
                  sb_hist[1],sb_hist[2],sb_hist[3],sb_hist[4],sb_hist[5],
                  sb_hist[6],sb_hist[7],sb_hist[8],sb_hist[9]);
+        $display("STORE_SCOREBOARD pushed=%0d popped=%0d mismatches=%0d", sc_wr, sc_rd, sc_err);
+        $display("STQ_OCC push=%0d pop=%0d occ=%0d/%0d/%0d/%0d/%0d",
+                 qpush, qpop, qocc[0],qocc[1],qocc[2],qocc[3],qocc[4]);
         $display("SCORE_WINDOW cycles=%0d retires=%0d no_retire=%0d load=%0d store=%0d other=%0d id_stall=%0d",
                  sw_cycles, sw_retires, sw_noretire, sw_load, sw_store, sw_other, sw_idstall);
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);

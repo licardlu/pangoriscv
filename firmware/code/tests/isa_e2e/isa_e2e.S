@@ -341,6 +341,21 @@ spin15:
   beq   x8, x0, spin15
   HALT
 
+/* ----------------------------------------------------------------- test 16
+ * WAW inside one issue pair: two independent ALU ops write the SAME rd.  They
+ * may issue together because lane 1's sources do not depend on lane 0's result,
+ * and in-order commit means the younger lane (lane 1) must win the register.
+ * Expected: x20 = 13 (x7 + 2, lane 1), x21 = 13.
+ */
+  .org 0x1100
+test16:
+  li    x6, 3
+  li    x7, 11
+  addi  x20, x6, 1              /* lane 0: x20 = 4  (older, must be overwritten) */
+  addi  x20, x7, 2              /* lane 1: x20 = 13 (younger, must win) */
+  addi  x21, x20, 0             /* observe the surviving value */
+  HALT
+
 /* ------------------------------------------------------------------ trap
  * Shared trap handler, linked into the .trap section at address 0x3f00 by
  * link.ld. It reads mepc/mcause/mtval into x5/x6/x7. Synchronous exceptions

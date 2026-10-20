@@ -192,10 +192,16 @@ module icache_axi (
             fill_bad_q<=0; fill_kill<=0; fill_resp_q<=0;
             rsp_valid<=0; rsp_data<=0; rsp_data_hi<=0; rsp_pair<=0; rsp_resp<=0; rsp_id<=0;
             protocol_fault<=0; config_fault<=0; miss_pulse<=0; access_pulse<=0;
-            for(i=0;i<SETS*2;i=i+1) begin
-                valid_mem[i]<=0;
-                tag_mem[i]<=0;
-            end
+            // Only the VALID bits are reset.  tag_mem is deliberately left
+            // uninitialised: a distributed-RAM array cannot be cleared entry by
+            // entry, and the per-entry clear above was exactly what kept the
+            // 128x21 tag array (2,688 registers) out of LUTRAM -- the D-cache tag
+            // has always been cleared only through valid_mem and infers as
+            // ram64x1d.  Correctness is unchanged: a line is only a hit when
+            // valid_mem is set, and valid is only set on the fill edge that also
+            // writes its tag (see the IC_FILL branch), so stale tags are never
+            // compared against a valid entry.
+            for(i=0;i<SETS*2;i=i+1) valid_mem[i]<=0;
             for(i=0;i<SETS;i=i+1) lru_mem[i]<=0;
         end else begin
             miss_pulse<=0;

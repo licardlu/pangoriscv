@@ -144,8 +144,12 @@ CoreMark/kLUT = 3.4194 / 18.006 = 0.1899（P21 为 0.1718，+10.5%）
 | `soc/core/data_cache/data_mem`/`_1`/`_3` | 512 × 32 ×3 | `GTP_RAM64X1DP` | 256 ×3 | LUTRAM（M6 待判） |
 | `.../tag_mem`、`tag_mem_1` | 64 × 22 | `GTP_RAM64X1DP` | 22 + 22 | LUTRAM |
 
-> **已知口径差异（待 M6 查清）**：映射日志给 D-Cache 的 3 个数据阵列共 768 个 primitive，
-> 网表按模块计数为 556。两者差 212，登记为 `M6` 的必查项，**在查清前不得引用 768 这个数**。
+> **已查清（2026-10-21，M5/M6）**：I-Cache 每个 bank 有**两个异步读口**
+> （`hit_even` 与 `rd_even`），Pango `GTP_DRM36K_E1` 在映射日志里只有 `SINGLE_PORT`，
+> 所以综合器把阵列**复制成 4 个**（4 KB → 8 KB）并给每个读口加**输出寄存器**
+> —— 这就是 `icache_axi` 的 3,070 FF 与 D-Cache 那 212 个 primitive 差额的来源。
+> **不是冗余，是"多读口"的物理必然**；删副本等于砍读端口，属功能重构，本专项不改。
+> 证据：`evidence/records/optimization/area-M5/measurement.md`。
 
 ---
 
@@ -164,8 +168,8 @@ CoreMark/kLUT = 3.4194 / 18.006 = 0.1899（P21 为 0.1718，+10.5%）
 | M3 BTB | 1,952 FF | **实测 −1,152 FF / −1,309 LUT（2026-10-21）** | tag 25→7、target 32→14；LUT 收益远超预期（三个查表口的比较器一起塌下来） |
 | M4b `q_pred_hi` | 8×32 = 256 FF（DEPTH 8 后） | **暂不做**：它是 BTB 对配对第二条（PC+4）的预测，不是常量；删它要加第 4 个查表口（+~100 LUT），净收益仅约 −400 站点 | 计划更正，见 M4a/measurement.md §6 |
 | M4a `DEPTH` 16→8 | 1,336 FF + 索引/多路器 | **实测 −1,306 FF / −1,107 LUT（2026-10-21）** | 8 × 167 位 ≈ 1,336 FF；LUT 收益来自指针/读多路器变窄 |
-| M5 I-Cache 副本（条件） | 1,024 LUTRAM | LUTRAM −512 | 需实例名级证据 |
-| M6 D-Cache 副本（条件） | 556 LUTRAM | LUTRAM −256 | 需实例名级证据 |
+| M5 I-Cache 副本（条件） | 1,024 LUTRAM | **已查清：不是冗余** | 每 bank 2 个异步读口 → 综合器复制；DRM 仅单读口 |
+| M6 D-Cache 副本（条件） | 556 LUTRAM | **已查清：不是冗余** | 命中读 + 写合并读两个口 → 副本 |
 
 | 场景 | ΔFF | ΔLUTRAM | ΔLUT | ΔS | 目标 S | 目标 LUT |
 |---|---:|---:|---:|---:|---:|---:|
@@ -662,8 +666,8 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 | M3 | BTB 位宽按 `PGM_BYTES` 派生 | `branch_predictor.v` | **完成 2026-10-21**：LUT −1,309 / FF −1,152（`area-M3/measurement.md`） |
 | M4b | 删 `q_pred_hi`（配对第二条的预测） | `ifu_axi.v` | **暂不做**：原假设"pc+4 可派生"错误；它来自 BTB 第 3 查表口，删它要加第 4 个口（+~100 LUT），净收益仅 ~−400 站点。见 `area-M4a/measurement.md` §6 |
 | M4a | 取指队列 `DEPTH` 16→8 | `ifu_axi.v` | **完成 2026-10-21**：LUT −1,107 / FF −1,306（`area-M4a/measurement.md`） |
-| M5 | I-Cache 3,071 FF 归属 + 副本判定 | `icache_axi.v` | 待分析 |
-| M6 | D-Cache 3 阵列归属 + **556 vs 768 的 212 primitive 差额** | `dcache_axi.v` | 待分析 |
+| M5 | I-Cache 3,071 FF 归属 + 副本判定 | `icache_axi.v` | **已查清（2026-10-21）**：每 bank 两个异步读口（`hit_even`/`rd_even`）→ 综合器复制阵列（4 KB→8 KB）并给每个读口加输出寄存器，即那 3,070 FF。Pango DRM 只有单读口，**删副本=砍读端口**，属功能重构 → 不改 RTL。见 `area-M5/measurement.md` |
+| M6 | D-Cache 3 阵列归属 + **556 vs 768 的 212 primitive 差额** | `dcache_axi.v` | **已查清（同上）**：同样源于多读口（命中读 + 写合并读）的副本，212 差额即副本。不改 RTL |
 | M7 | 4R2W 寄存器堆能否 LUTRAM/BRAM 化 | `regs.v` | 只调研 |
 | M8 | 304 位 payload 恒零字段 | `if_pipe`/`pipe_slot` | 仅评估 |
 | — | `icache_axi.v` 头注释 "32 sets" 过时（实际 64 组） | `icache_axi.v` | 随 M5 修正 |

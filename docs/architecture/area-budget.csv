@@ -4,10 +4,10 @@ budget,__max__,,,20400,9900,3628,4,6,,active,"M1+M3+M4a must-do set (M2 blocked,
 measured,__totals_m1__,,,20422,12335,3628,4,6,,measured,"M1 delivery profile (PERF off) 2026-10-21: LUT -1527, FF -1769, S 39681->36385"
 measured,__totals_m3__,,,19113,11183,3628,4,6,,measured,"M3 delivery profile (PERF off) 2026-10-21: LUT -1309, FF -1152, S 36385->33924"
 measured,__totals_m4a__,,,18006,9877,3628,4,6,,measured,"M4a delivery profile (PERF off) 2026-10-21: LUT -1107, FF -1306, S 33924->31511"
-delta,perf_regs,perips/perf_regs.v,instrument,0,-1665,0,0,0,none,done,"M1 MEASURED (jointly with axi_reg_slave): -1527 LUT / -1769 FF; see area-M1/measurement.md"
-delta,axi_reg_slave,perips/axi_reg_slave.v,periph,0,0,0,0,0,R_IO,done,"M1: 6 instances -> 5; the 594-LUT one belongs to perf_regs (measured delta includes it)"
+delta,perf_regs,perips/perf_regs.v,instrument,0,-1665,0,0,0,none,done,M1 MEASURED (jointly with axi_reg_slave): -1527 LUT / -1769 FF; see area-M1/measurement.md
+delta,axi_reg_slave,perips/axi_reg_slave.v,periph,0,0,0,0,0,R_IO,done,M1: 6 instances -> 5; the 594-LUT one belongs to perf_regs (measured delta includes it)
 delta,axi_ram_data,perips/axi_ram.v,mem,0,0,-2048,4,0,R_MEM,blocked,"M2 BLOCKED 2026-10-21: syn_ramstyle translated to PAP_RAM_STYLE then ignored; block_ram, block_ram+no_rw_check and explicit byte lanes all tried, reverted; see area-M2/measurement.md"
 delta,branch_predictor,core/branch_predictor.v,fetch,-1309,-1152,0,0,0,R_FETCH,done,"M3 MEASURED: -1309 LUT / -1152 FF (tag 25->7, target 32->14); A/B bit-identical; see area-M3/measurement.md"
 delta,ifu_axi,core/ifu_axi.v,fetch,-1107,-1306,0,0,0,R_FETCH,done,"M4a MEASURED: DEPTH 16->8, -1107 LUT / -1306 FF; A/B -0.06% cycles, CRC same. M4b (q_pred_hi) DEFERRED: it is the BTB prediction for PC+4, needs a 4th lookup port; see area-M4a/measurement.md"
-delta,icache_axi,core/icache_axi.v,mem,0,0,-512,0,0,R_ICACHE,conditional,"M5: only after instance-level proof of duplicate arrays"
-delta,dcache_axi,core/dcache_axi.v,mem,0,0,-256,0,0,R_DCACHE,conditional,"M6: only after instance-level proof of duplicate arrays"
+delta,icache_axi,core/icache_axi.v,mem,0,0,0,0,0,R_ICACHE,closed,"M5 CLOSED 2026-10-21: 2 async read ports per bank -> the mapper replicates the arrays and registers each port's output (3,070 FF, 8 KB LUTRAM for a 4 KB cache). DRM has a single read port, so deleting a copy removes a read port. No RTL change; see area-M5/measurement.md"
+delta,dcache_axi,core/dcache_axi.v,mem,0,0,0,0,0,R_DCACHE,closed,M6 CLOSED 2026-10-21: same multi-read-port replication (hit read + write-merge read); the 212-primitive gap is the replica. No RTL change

@@ -7,8 +7,11 @@ from runner_common import run, validate_test
 root = Path(__file__).resolve().parents[1]
 work = Path(tempfile.mkdtemp(prefix="pipeline-", dir=root / ".sim_runs"))
 print("RUN_DIR", work, flush=True)
-sources = ["pipe_slot", "if_id", "id_ex", "pc_reg", "ctrl", "regs", "id",
-           "ex", "div", "div_adapter", "retire_ctrl", "csr_native", "pangoriscv"]
+# id_alu / ex_alu / branch_predictor are instantiated by pangoriscv.v; without
+# them vopt fails with "Module ... is not defined" (the list had drifted).
+sources = ["pipe_slot", "if_id", "id_ex", "pc_reg", "ctrl", "regs", "id", "id_alu",
+           "ex", "ex_alu", "div", "div_adapter", "retire_ctrl", "csr_native",
+           "branch_predictor", "pangoriscv"]
 run([shutil.which("vlib"), "work"], work, work / "vlib.log", 30)
 run([shutil.which("vlog"), "-sv", "+incdir+" + str(root / "rtl/core")] +
     [str(root / ("rtl/core/" + name + ".v")) for name in sources] +

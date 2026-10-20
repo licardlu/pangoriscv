@@ -47,7 +47,7 @@ module dcache_axi #(
     // demand: 97.2% of stores are isolated, the rest run 2 (4,478) / 3 (5,114) /
     // 4+ (453) deep, max 12.  One entry is always in flight, so depth 4 lets a
     // run of five back-to-back stores retire without touching the AXI B.
-    parameter integer STQ_DEPTH = 2
+    parameter integer STQ_DEPTH = 4
 )(
     input wire clk, rst_n,
     // LSU-facing request interface (identical to axi_data_engine)
@@ -203,6 +203,7 @@ module dcache_axi #(
     // q_pop further down; declared here because the engine request mux above
     // uses it).
     wire i_release;
+    wire q_pop;                   // assigned further down; needed by req_ready
     // The W beat travels with the request on the same edge (P35b).
     wire eng_w_now;
     reg        b_seen_q;          // B was already handed over by the write engine
@@ -363,7 +364,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         // a data-RAM store may enter the posted queue whenever the
                         // queue has room, without waiting for the previous B
                         ((state_q==ST_WR_DRAIN || state_q==ST_WR_POST) &&
-                         req_write && early_req && !q_full)) &&
+                         req_write && early_req && (!q_full || q_pop))) &&
+                       // A full queue is not full on the edge one entry leaves:
+                       // counting the concurrent pop as free removes a store stall
+                       // that would otherwise cost a whole queue turnaround.
                        // ordering: a read that must reach memory may not overtake
                        // ANY outstanding store -- neither one still queued nor the
                        // one already handed to the write engine (drain_q).  The
@@ -415,12 +419,13 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // Enqueue an extra data-RAM store while a write drains (or while the just
     // queued one is being released).  This replaces the one-entry hold buffer.
     wire accept_post = rst_n && (state_q==ST_WR_DRAIN || state_q==ST_WR_POST) &&
-                       req_valid && req_ready && req_write && early_req && !q_full;
+                       req_valid && req_ready && req_write && early_req &&
+                       (!q_full || q_pop);
     // Release the queue head to the write engine: on the B edge of the current
     // write, or from ST_WR_POST where the head is the store just accepted.
     wire q_pop_drain = (state_q==ST_WR_DRAIN) && i_b_valid && !q_empty;
     wire q_pop_post  = (state_q==ST_WR_POST)  && !q_empty;
-    wire q_pop       = rst_n && (q_pop_drain || q_pop_post);
+    assign q_pop     = rst_n && (q_pop_drain || q_pop_post);
     // same edge, combinational view: the head leaves the queue and enters the engine
     assign i_release = q_pop;
     wire q_push      = rst_n && accept_post;

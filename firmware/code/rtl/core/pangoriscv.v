@@ -107,13 +107,18 @@ module pangoriscv(
  // D3: slot 0 may also be the pair's single memory operation.  Slot 1 remains
  // ALU/branch only, so the LSU still sees at most one request per cycle.
  wire mem0=(op0==7'h03) || (op0==7'h23);
+ // P37a: RAW inside a pair is no longer a reason to refuse it.  Lane 0 is ALU
+ // class here (see the term below), so its result is combinational in the very
+ // cycle lane 1 executes: ex1_r1/ex1_r2 below forward it into lane 1's operands.
+ // A load in lane 0 must still block (its data arrives cycles later, and its
+ // alu_result is only the address), so the check is kept for mem0 only.
  wire pair_ok=id_valid && id_valid_h &&
               (dpch==dpc+32'd4) &&
               (alu0 || mem0) && (alu1 || ctrl1) &&
               !dillegal && !dillegalh &&
               !dcwe && !dcweh &&
               !ifault && !ifaulth &&
-              (drd==5'd0 || (drd!=rs1h && drd!=rs2h)) &&
+              (drd==5'd0 || !mem0 || (drd!=rs1h && drd!=rs2h)) &&
               (drdh==5'd0 || (drdh!=rs1 && drdh!=rs2)) &&
               (drd==5'd0 || drdh==5'd0 || drd!=drdh);
 
@@ -269,6 +274,45 @@ module pangoriscv(
                     (retire0 && ewe   && erd!=0   && erd==rs1h)   ? wdata : rv1h;
  wire [31:0] rv2hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs2h) ? alu_result_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2h)   ? wdata : rv2h;
+ // EX -> EX forwarding inside one issue pair (P37a).  Both lanes execute in the
+ // same cycle, so lane 0's ALU output is already available when lane 1's ALU
+ // needs it -- no extra stage, no change to the retire rule.  Only lane 0 ALU
+ // class qualifies: `alu0` excludes loads/stores (whose result is not the ALU
+ // output) and the M extension (multi-cycle, see the pair_ok term).
+ // Every condition below is decoded from the EX-stage instructions (ei / ei_h).
+ // The ID-stage aliases (alu0, mem0, op1, rs1h...) describe the packet that has
+ // already moved on, and using them silently forwards the wrong operand (that bug
+ // cost two debug rounds; see mistakes-log 13.6).
+ wire [6:0] ex0_op = ei[6:0];
+ wire [6:0] ex1_op = ei_h[6:0];
+ wire ex0_alu_cls = (ex0_op==7'h33 && ei[31:25]!=7'h01) || ex0_op==7'h13 ||
+                    ex0_op==7'h37 || ex0_op==7'h17;
+ wire fwd0_alu = ex_valid && ex_valid_h && ex0_alu_cls && ewe &&
+                 !ex_fault && erd!=5'd0;
+ // The register operand reaches the ALU through TWO ports: `op1_i/op2_i` (already
+ // selected between register and immediate by ID) and `reg1_rdata_i/reg2_rdata_i`
+ // (used directly by the shift results).  Both have to be patched, and the
+ // selection has to know whether the slot really reads a register:
+ //   * op1/reg1 only when the instruction consumes rs1 (`du1h`) -- otherwise
+ //     lui/auipc would have their immediate replaced by lane 0's result;
+ //   * op2/reg2 only for R-type and branch, the two forms whose second operand is
+ //     rs2 -- an I-type's second operand is an immediate (`uses_rs2` is still
+ //     high for addi, so the opcode is the safe discriminator).
+ // NOTE: the register NUMBERS must come from the EX-stage instruction (`ei_h`),
+ // not from rs1h/rs2h -- those belong to the ID stage, which by then already holds
+ // the NEXT packet (first attempt forwarded against the wrong numbers and left the
+ // operand at X).  Whether a slot reads rs1/rs2 is decoded from its opcode:
+ // 0x33 (R) and 0x63 (branch) read both, 0x13 reads rs1 only, 0x37/0x17/0x6f none.
+ wire [4:0] ex1_rs1 = ei_h[19:15];
+ wire [4:0] ex1_rs2 = ei_h[24:20];
+ wire fwd0_r1 = fwd0_alu && (erd==ex1_rs1) &&
+                ((ex1_op==7'h33) || (ex1_op==7'h13) || (ex1_op==7'h63));
+ wire fwd0_r2 = fwd0_alu && (erd==ex1_rs2) &&
+                ((ex1_op==7'h33) || (ex1_op==7'h63));
+ wire [31:0] ex1_r1 = fwd0_r1 ? alu_result : er1_h;
+ wire [31:0] ex1_r2 = fwd0_r2 ? alu_result : er2_h;
+ wire [31:0] ex1_o1 = fwd0_r1 ? alu_result : eo1_h;
+ wire [31:0] ex1_o2 = fwd0_r2 ? alu_result : eo2_h;
  regs u_regs(.clk(clk),.rst(rst_n),.we_i(rd_valid),.waddr_i(rd),.wdata_i(wdata),
    .we2_i(rd_valid_h),.waddr2_i(rd_h),.wdata2_i(wdata_h),
    .raddr1_i(rs1),.raddr2_i(rs2),.rdata1_o(rv1),.rdata2_o(rv2),
@@ -324,8 +368,8 @@ module pangoriscv(
    .div_start_o(),.div_dividend_o(),.div_divisor_o(),.div_op_o(),.div_reg_waddr_o(),
    .hold_flag_o());
  ex_alu u_ex_h(.rst(rst_n),.inst_i(ei_h),.inst_addr_i(ep_h),
-   .reg1_rdata_i(er1_h),.reg2_rdata_i(er2_h),
-   .op1_i(eo1_h),.op2_i(eo2_h),
+   .reg1_rdata_i(ex1_r1),.reg2_rdata_i(ex1_r2),
+   .op1_i(ex1_o1),.op2_i(ex1_o2),
    .op1_jump_i(ej1_h),.op2_jump_i(ej2_h),
    .reg_wdata_o(alu_result_h),.jump_flag_o(alu_taken_h),.jump_addr_o(alu_target_h));
  div_adapter u_div_adapter(.clk(clk),.rst_n(rst_n),.req_valid(div_req_valid),

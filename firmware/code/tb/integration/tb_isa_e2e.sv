@@ -46,6 +46,7 @@ module tb_isa_e2e;
     wire spi_mosi, spi_ss, spi_clk;
     wire trap_fire_d;
     wire [31:0] trap_cause_d, trap_pc_d, trap_tval_d;
+    wire [63:0] retire_order_d;
     integer trap_seen = 0;
 
     pangoriscv_axi_soc soc (
@@ -59,7 +60,7 @@ module tb_isa_e2e;
         .irq_software(1'b0), .irq_timer(1'b0), .irq_external(1'b0),
         .csr_mtvec(),
         .trap_fire(trap_fire_d), .trap_cause(trap_cause_d), .trap_pc(trap_pc_d), .trap_tval(trap_tval_d),
-        .retire_fire(), .retire_order(), .retire_pc(), .retire_inst(),
+        .retire_fire(), .retire_order(retire_order_d), .retire_pc(), .retire_inst(),
         .rd_valid(), .rd(), .wdata(),
         .debug_addr(5'b0), .debug_data(), .protocol_fault()
     );
@@ -121,6 +122,20 @@ module tb_isa_e2e;
 
     // -------------------------------------------------------------- sequences
     integer trace_n = 0;
+    // Pair coverage: retire_count is 2 on the cycle both lanes leave EX.  Without
+    // this, a "the pair formed" claim is unfalsifiable from the register dump --
+    // a test that silently de-pairs would still pass (P37a).
+    integer pair_n = 0;
+    reg fire_d = 0;
+    reg [63:0] ord_d = 0;
+    always @(posedge clk) if(rst_n) begin
+        // retire_order is the cumulative retire count and only updates at the
+        // edge, so the delta seen one edge later is the previous edge's
+        // retire_count: 2 means both lanes left EX together.
+        if(fire_d && (retire_order_d - ord_d) == 64'd2) pair_n = pair_n + 1;
+        fire_d <= soc.core.retire_fire;
+        ord_d  <= retire_order_d;
+    end
     always @(posedge clk) if(rst_n && soc.core.retire_fire) begin
         trace_n = trace_n + 1;
         if(trace_n <= 40)
@@ -183,7 +198,7 @@ module tb_isa_e2e;
             $display("E2E_GPIO ctrl=%08x data=%08x", gpio_ctrl, gpio_data);
         if(test_case == 12)
             $display("E2E_UART chars=%0d", uart_chars);
-        $display("TEST_PASS case=%0d traps=%0d", test_case, trap_seen);
+        $display("TEST_PASS case=%0d traps=%0d pairs=%0d", test_case, trap_seen, pair_n);
         sim_done = 1;
         $finish;
     end

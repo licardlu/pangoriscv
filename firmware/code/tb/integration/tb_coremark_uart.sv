@@ -483,6 +483,23 @@ module tb_coremark_uart;
         if(soc.core.cpu.id_valid && !soc.core.cpu.id_ready) id_stall=id_stall+1;
         if(retire_fire) retire_cyc=retire_cyc+1; else no_retire=no_retire+1;
     end
+    // ---- redirect recovery latency ------------------------------------------
+    // 137,933 mispredictions cannot explain 711k empty-EX cycles on their own; the
+    // interesting number is how long the front end needs to deliver the first
+    // instruction after a redirect.  Measured (not estimated) so the next front-end
+    // change is chosen from data.
+    integer rd_n=0, rd_lat=0;
+    reg     rd_pend=0;
+    integer rd_t0=0;
+    always @(posedge clk) if(rst_n && !report_seen) begin
+        if(soc.core.cpu.redirect_valid) begin
+            rd_pend <= 1; rd_t0 = cycles;
+        end else if(rd_pend && soc.core.cpu.fetch_valid && soc.core.cpu.fetch_ready) begin
+            rd_lat = rd_lat + (cycles - rd_t0);
+            rd_n   = rd_n + 1;
+            rd_pend <= 0;
+        end
+    end
     // Snapshot at the FIRST UART TXDATA write: CoreMark prints its report only
     // after stop_time(), so that write marks the end of the scored window.
     // Everything afterwards (the report's busy-wait polling on 0x3000_0000) must
@@ -774,6 +791,8 @@ module tb_coremark_uart;
                  ld_lo, ld_data, ld_hi, sl_lo, sl_data, sl_hi, nh_lo, nh_data, nh_hi);
         $display("HI_SPLIT hi2=%0d hi3=%0d hi4=%0d hi5=%0d hi6=%0d", hi2, hi3, hi4, hi5, hi6);
         $display("MISPRED_MIX ret=%0d jal=%0d br=%0d other=%0d", misp_ret, misp_jal, misp_br, misp_other);
+        $display("REDIRECT n=%0d lat_total=%0d lat_avg_x10=%0d", rd_n, rd_lat,
+                 rd_n ? (rd_lat*10/rd_n) : 0);
         if(txd_writes!=0 && chars==0) begin
             $display("TEST_FAIL UART_LOOPBACK no decoded byte although %0d TXDATA writes reached the UART",txd_writes);
             $fatal(1,"uat tx broken");

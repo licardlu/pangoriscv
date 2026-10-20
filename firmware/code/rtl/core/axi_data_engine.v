@@ -88,6 +88,8 @@ module axi_data_engine (
     wire aw_fire = m_awvalid && m_awready;
     wire w_fire = m_wvalid && m_wready;
     wire aw_complete_now = !aw_pending_q || aw_fire;
+    // Declared here because req_ready (above the assignments) needs it.
+    wire b_take_now;
     wire w_complete_now = !w_pending_q || w_fire;
 
     assign protocol_fault = read_protocol_fault || write_protocol_fault_q;
@@ -100,7 +102,8 @@ module axi_data_engine (
     // as a B is pending without being taken (b_valid && !b_ready), which is what
     // tb_axi_read_engine's WRITE_OWNERSHIP / EARLY_STORE_COMPLETION checks assert.
     assign req_ready = rst_n && ((state_q==WR_IDLE) ||
-                                 ((state_q==WR_HOLD) && b_valid && b_ready)) &&
+                                 ((state_q==WR_HOLD) && b_valid && b_ready) ||
+                                 ((state_q==WR_RESP) && b_take_now)) &&
                        read_ready && !protocol_fault && !config_fault;
     // P35b: the beat may arrive WITH the request (the D-cache drives w_valid from
     // the queued entry on the release edge).  Taking it on the accept edge skips
@@ -112,7 +115,12 @@ module axi_data_engine (
     wire w_take_hold = rst_n && (state_q==WR_HOLD) && b_valid && b_ready &&
                        req_valid && req_write && w_valid &&
                        !protocol_fault && !config_fault;
-    assign w_ready = rst_n && ((state_q==WR_PREP) || w_take_now || w_take_hold);
+    // ... and on the P37b early hand-over edge in WR_RESP
+    wire w_take_resp = rst_n && (state_q==WR_RESP) && b_take_now &&
+                       req_valid && req_write && w_valid &&
+                       !protocol_fault && !config_fault;
+    assign w_ready = rst_n && ((state_q==WR_PREP) || w_take_now || w_take_hold ||
+                               w_take_resp);
     assign m_awvalid = rst_n && state_q==WR_SEND && aw_pending_q;
     assign m_awaddr = addr_q;
     assign m_awid = id_q;
@@ -128,8 +136,14 @@ module axi_data_engine (
     assign m_wstrb = strb_q;
     assign m_wlast = 1'b1;
     assign m_bready = rst_n && state_q==WR_RESP;
-    assign b_valid = rst_n && state_q==WR_HOLD;
-    assign b_resp = resp_q;
+    // P37b: WR_HOLD exists only to hand the B to the consumer, and the D-cache
+    // keeps b_ready high while it drains.  When the consumer is ready in the very
+    // cycle the response arrives, hand it over right there and skip the state --
+    // one cycle off every posted store (379k of them per 20 iterations).
+    assign b_take_now = rst_n && (state_q==WR_RESP) && m_bvalid && (m_bid==id_q) &&
+                        b_ready;
+    assign b_valid = rst_n && ((state_q==WR_HOLD) || b_take_now);
+    assign b_resp = (state_q==WR_RESP) ? m_bresp : resp_q;
     assign b_id = id_q;
 
     axi_read_engine read_engine (
@@ -199,6 +213,31 @@ module axi_data_engine (
 `ifndef SYNTHESIS
                         $fatal(1,"ENGINE_B_ID");
 `endif
+                    end else if(b_take_now) begin
+                        // handed over on this edge (b_take_now is exactly the
+                        // consumer-ready case), so WR_HOLD is skipped and the next
+                        // write may be latched here -- the same overlap WR_HOLD
+                        // already allows one cycle later.
+                        if(req_valid && req_ready && req_write) begin
+                            if(req_len!=`AXI_ENGINE_MAX_LEN || req_size>`AXI_ENGINE_MAX_SIZE) begin
+                                write_config_fault_q<=1;
+                                state_q<=WR_FAULT;
+`ifndef SYNTHESIS
+                                $fatal(1,"ENGINE_CONFIG_LEN_SIZE");
+`endif
+                            end else begin
+                                addr_q<=req_addr; size_q<=req_size; len_q<=req_len;
+                                id_q<=req_id;
+                                if(w_take_resp) begin
+                                    data_q<=w_data; strb_q<=w_strb;
+                                    aw_pending_q<=1'b1; w_pending_q<=1'b1;
+                                    state_q<=WR_SEND;
+                                end else begin
+                                    aw_pending_q<=1'b0; w_pending_q<=1'b0;
+                                    state_q<=WR_PREP;
+                                end
+                            end
+                        end else state_q<=WR_IDLE;
                     end else begin
                         resp_q<=m_bresp;
                         state_q<=WR_HOLD;

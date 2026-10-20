@@ -50,7 +50,18 @@ module tb_pipeline;
         .retire_fire(retire_fire),.retire_order(retire_order),.retire_pc(retire_pc),
         .retire_inst(retire_inst),.rd_valid(rd_valid),.rd(rd),.wdata(wdata),
         .trap_fire(trap_fire),.trap_pc(trap_pc),.trap_cause(trap_cause),
-        .trap_tval(trap_tval),.debug_addr(debug_addr),.debug_data(debug_data));
+        .trap_tval(trap_tval),.debug_addr(debug_addr),.debug_data(debug_data),
+        // Packet interface: this TB drives one instruction per fetch, i.e. a
+        // single-word packet (fetch_pair=0), so the second word and the prefetch
+        // chain are tied off.  (The instantiation predates dual issue and left
+        // these inputs dangling, which is why vopt/the run had drifted.)
+        .fetch_pair(1'b0),
+        .fetch_pc_hi(fetch_pc+32'd4), .fetch_inst_hi(32'd0),
+        .fetch_fault_hi(1'b0), .fetch_fault_cause_hi(5'd1),
+        .fetch_fault_tval_hi(fetch_pc+32'd4),
+        .fetch_predicted_next_pc_hi(fetch_pc+32'd8),
+        .chain_c(fetch_pc+32'd4), .chain_c2(fetch_pc+32'd8),
+        .rd_valid_h(), .rd_h(), .wdata_h());
     function [31:0] addi(input [4:0] d,s,input integer imm);
         addi={imm[11:0],s,3'b000,d,7'h13};
     endfunction

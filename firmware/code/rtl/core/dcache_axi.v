@@ -191,6 +191,12 @@ module dcache_axi #(
     reg [STQ_AW:0]   q_count_q;
     wire q_empty = (q_count_q == 0);
     wire q_full  = (q_count_q == STQ_DEPTH);
+    // The queue head leaves for the write engine on this edge (assigned with
+    // q_pop further down; declared here because the engine request mux above
+    // uses it).
+    wire i_release;
+    // The W beat travels with the request on the same edge (P35b).
+    wire eng_w_now;
     reg        b_seen_q;          // B was already handed over by the write engine
     reg        wreq_q;            // our AW still owes to the engine
     reg        wsent_q;           // our AW was accepted: the next W beat is ours
@@ -243,7 +249,7 @@ module dcache_axi #(
     wire hit_any = hit0 | hit1;
     wire hit_way = hit1;                       // way 0 wins if both match
 
-    wire        eng_w_valid = rst_n && wsent_q;
+    wire        eng_w_valid = rst_n && (wsent_q || eng_w_now);
 
     // ---- inner write engine (AW/W/B framing, error checks) -----------------
     wire        i_req_ready, i_w_ready, i_b_valid;
@@ -267,19 +273,37 @@ module dcache_axi #(
     // The registered i_req_*_r remain as the fallback/keep-alive (the engine only
     // looks at req_valid in WR_IDLE, so the extra pulse is harmless).
     wire i_write_accept = rst_n && (state_q==ST_IDLE) && req_valid && req_ready && req_write;
-    wire        i_req_valid = i_req_valid_r || i_write_accept || wreq_q;
-    wire [31:0] i_req_addr  = i_write_accept ? req_addr    : i_req_addr_r;
-    wire [2:0]  i_req_size  = i_write_accept ? req_size     : i_req_size_r;
-    wire [7:0]  i_req_len   = i_write_accept ? 8'd0         : i_req_len_r;
-    wire [3:0]  i_req_id    = i_write_accept ? req_id       : i_req_id_r;
-    wire        i_req_write = i_write_accept ? 1'b1         : i_req_write_r;
+    wire        i_req_valid = i_req_valid_r || i_write_accept || wreq_q || i_release;
+    wire [31:0] i_req_addr  = i_release ? q_addr[q_head_q] :
+                              i_write_accept ? req_addr    : i_req_addr_r;
+    // P35: the queue head is presented on the RELEASE edge itself, so the write
+    // engine (which now accepts a request in the cycle it hands over the previous
+    // B) can latch the address without waiting an extra cycle for the registered
+    // copy.  The registered i_req_*_r stay as the fallback for the case where the
+    // engine is not ready on that edge (read engine busy, fault latched).
+    wire [2:0]  i_req_size  = i_release ? q_size[q_head_q] :
+                              i_write_accept ? req_size     : i_req_size_r;
+    wire [7:0]  i_req_len   = (i_release || i_write_accept) ? 8'd0 : i_req_len_r;
+    wire [3:0]  i_req_id    = i_release ? q_id[q_head_q] :
+                              i_write_accept ? req_id       : i_req_id_r;
+    wire        i_req_write = (i_release || i_write_accept) ? 1'b1 : i_req_write_r;
+    // P35b: the W beat travels with the request, so the engine can latch address
+    // AND data on the accept edge and skip its WR_PREP cycle.  When the engine is
+    // not ready on that edge nothing is taken, and the registered wdata_q/wstrb_q
+    // plus wsent_q present the same beat again later -- one mechanism, two timings.
+    assign      eng_w_now   = i_release || i_write_accept;
+    wire [31:0] eng_w_data  = i_release ? q_data[q_head_q] :
+                              i_write_accept ? w_data : wdata_q;
+    wire [3:0]  eng_w_strb  = i_release ? q_strb[q_head_q] :
+                              i_write_accept ? w_strb : wstrb_q;
 
     axi_data_engine inner (
         .clk(clk), .rst_n(rst_n),
         .req_valid(i_req_valid), .req_ready(i_req_ready), .req_write(i_req_write),
         .req_addr(i_req_addr), .req_size(i_req_size), .req_len(i_req_len),
         .req_id(i_req_id),
-        .w_valid(eng_w_valid), .w_ready(i_w_ready), .w_data(wdata_q), .w_strb(wstrb_q),
+        .w_valid(eng_w_valid), .w_ready(i_w_ready),
+        .w_data(eng_w_data), .w_strb(eng_w_strb),
         .w_last(w_last),
         .rsp_valid(), .rsp_ready(1'b0), .rsp_data(), .rsp_resp(), .rsp_last(),
         .rsp_id(),
@@ -389,6 +413,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     wire q_pop_drain = (state_q==ST_WR_DRAIN) && i_b_valid && !q_empty;
     wire q_pop_post  = (state_q==ST_WR_POST)  && !q_empty;
     wire q_pop       = rst_n && (q_pop_drain || q_pop_post);
+    // same edge, combinational view: the head leaves the queue and enters the engine
+    assign i_release = q_pop;
     wire q_push      = rst_n && accept_post;
 
     assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now || accept_early ||
@@ -724,7 +750,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             if (i_b_valid && !q_pop_drain) b_seen_q <= 1'b1;
             if (i_req_valid && i_req_ready) begin
                 wreq_q  <= 1'b0;
-                wsent_q <= 1'b1;
+                // P35b: when the beat rides along with the request the engine
+                // takes it on this very edge, so nothing is left pending --
+                // leaving wsent_q set here kept dc_idle low forever (E2 hung).
+                wsent_q <= !i_w_ready;
             end else if (wsent_q && i_w_ready) begin
                 wsent_q <= 1'b0;
             end

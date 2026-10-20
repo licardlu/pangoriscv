@@ -217,3 +217,36 @@ drain_q  保持不变：代表"已交给写引擎、还在等 B 的那一笔"
    需求率≈吞吐；预计可到 ~4.0。需先改 `tb_axi_data_engine` 的 `WRITE_OWNERSHIP` 契约。
 2. **hold 闭合**：给 `tag_wr_q` 加 keep 属性或换默认种子重跑；否则 3.5101 只能算实验值。
 3. 次要：I-Cache 4KB→8KB（旧实测 +3.0%，但 +2.6k FF，会破坏面积专项成果，不推荐）。
+
+---
+
+## 9. 3.6 → 3.8 计划（P35：写通路吞吐，2026-10-21 05:10）
+
+### 9.1 依据（已实测，不再重复验证）
+- 评分窗口 5,697,334 周期；**drain 2.88M 周期 = 窗口的 50%**，379,252 笔 store → **7.6 拍/笔**。
+- 需求率 ≈ 吞吐（`core_list_init` 每节点 1 load + 5 store），所以**加深队列无效**（占用在"满 4"停 805k 周期）。
+- 7.6 拍的构成（逐拍对照 RTL）：IDLE 收请求(1) → PREP 收 W(1) → SEND 发 AW/W(1~2) → RESP 等 B(1) → HOLD 交 B(1)。
+
+### 9.2 两步，每步单独 A/B + PDS + 上板
+| 步 | 改动 | 预期窗口 | 预期分 |
+|---|---|---|---|
+| **P35a** | `axi_data_engine`：允许在 `WR_HOLD` 收下一笔（与交 B 同拍）；`dcache_axi`：把队头在释放拍**组合**递给引擎（P11 同款脉冲） | 5.32M | ~3.76 |
+| **P35b** | `axi_data_engine`：接受请求的同拍**锁 W 拍**（跳过 PREP），`w_ready` 需 `!protocol_fault && !config_fault` | 4.94M | ~4.05 |
+
+### 9.3 必须先改的测试契约（否则会"假红"）
+`tb/axi/tb_axi_read_engine.sv` 的 `WRITE_OWNERSHIP` 目前断言"交 B 之后 `req_ready` 必须仍为低"，
+它编码的是**旧微架构**（HOLD 期不接受）。新契约应是：
+> **B 未被主机取走之前，`req_ready` 必须为低；取走的那一拍允许接受下一笔。**
+
+改判据要在 TB 里写清"为什么改"，并在 A/B 前先跑 `run_engine_tests.py`（64 例）确认不是放松检查。
+
+### 9.4 每步之后必须做的四件事（用户要求，按顺序）
+1. 面积/布线复核：`device_map` `Used`、`R_DCACHE`/`R_IO` 不新增跨区宽总线、`report_timing` 前 10 条复核；
+2. 删冗余：被综合合并的寄存器、未用状态/信号、临时探针（保留有复用价值的）；
+3. 查 bug：ISA 16/16、dcache、engine 64/64、halt-reset、A/B 五项 CRC 逐项相同；
+4. 同步文档：`module-area-plan.md` 模块卡（11 字段）+ `area-budget.csv` + `mistakes-log.md`。
+
+### 9.5 回退点
+- `a751712` = P34 检查点（板上 3.5101，hold 未闭合）；
+- `bitstream/pangoriscv_i1024_area.sbit` = 仍可交付的 3.4222；
+- 任一步 hold<0 / 布线不收敛 / CRC 变 → `git revert` 到 `a751712` 并保留旧的 3.4222 交付。

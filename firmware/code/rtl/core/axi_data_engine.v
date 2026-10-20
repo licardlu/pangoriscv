@@ -92,9 +92,27 @@ module axi_data_engine (
 
     assign protocol_fault = read_protocol_fault || write_protocol_fault_q;
     assign config_fault = read_config_fault || write_config_fault_q;
-    assign req_ready = rst_n && state_q==WR_IDLE && read_ready &&
+    // P35: accept the next write on the very edge the CPU takes the current B.
+    // The old engine could only be re-armed one cycle AFTER WR_HOLD completed, and
+    // the CoreMark store stream (core_list_init: 1 load + 5 stores per node) is
+    // drain-bound, so that idle cycle was paid 379k times per 20 iterations.
+    // The contract is unchanged where it matters: req_ready stays LOW for as long
+    // as a B is pending without being taken (b_valid && !b_ready), which is what
+    // tb_axi_read_engine's WRITE_OWNERSHIP / EARLY_STORE_COMPLETION checks assert.
+    assign req_ready = rst_n && ((state_q==WR_IDLE) ||
+                                 ((state_q==WR_HOLD) && b_valid && b_ready)) &&
+                       read_ready && !protocol_fault && !config_fault;
+    // P35b: the beat may arrive WITH the request (the D-cache drives w_valid from
+    // the queued entry on the release edge).  Taking it on the accept edge skips
+    // the WR_PREP cycle entirely.  Gated by the same fault flags as req_ready, so
+    // a latched fault still kills every output (tb_axi_read_engine checks that).
+    wire w_take_now = rst_n && (state_q==WR_IDLE) && req_valid && req_write &&
+                      !protocol_fault && !config_fault && w_valid;
+    // same beat-with-request case on the WR_HOLD accept edge
+    wire w_take_hold = rst_n && (state_q==WR_HOLD) && b_valid && b_ready &&
+                       req_valid && req_write && w_valid &&
                        !protocol_fault && !config_fault;
-    assign w_ready = rst_n && state_q==WR_PREP;
+    assign w_ready = rst_n && ((state_q==WR_PREP) || w_take_now || w_take_hold);
     assign m_awvalid = rst_n && state_q==WR_SEND && aw_pending_q;
     assign m_awaddr = addr_q;
     assign m_awid = id_q;
@@ -146,7 +164,14 @@ module axi_data_engine (
 `endif
                     end else begin
                         addr_q<=req_addr; size_q<=req_size; len_q<=req_len; id_q<=req_id;
-                        state_q<=WR_PREP;
+                        if(w_take_now) begin
+                            data_q<=w_data; strb_q<=w_strb;
+                            aw_pending_q<=1'b1; w_pending_q<=1'b1;
+                            state_q<=WR_SEND;
+                        end else begin
+                            aw_pending_q<=1'b0; w_pending_q<=1'b0;
+                            state_q<=WR_PREP;
+                        end
                     end
                 end
                 WR_PREP: if(w_valid && w_ready) begin
@@ -179,7 +204,32 @@ module axi_data_engine (
                         state_q<=WR_HOLD;
                     end
                 end
-                WR_HOLD: if(b_valid && b_ready) state_q<=WR_IDLE;
+                // WR_HOLD lasts exactly until the CPU takes the B.  Taking the next
+                // request on that same edge overlaps its address latch with the
+                // completion handshake instead of serially waiting for WR_IDLE.
+                WR_HOLD: if(b_valid && b_ready) begin
+                    if(req_valid && req_ready && req_write) begin
+                        if(req_len!=`AXI_ENGINE_MAX_LEN || req_size>`AXI_ENGINE_MAX_SIZE) begin
+                            write_config_fault_q<=1;
+                            state_q<=WR_FAULT;
+`ifndef SYNTHESIS
+                            $fatal(1,"ENGINE_CONFIG_LEN_SIZE");
+`endif
+                        end else begin
+                            addr_q<=req_addr; size_q<=req_size; len_q<=req_len;
+                            id_q<=req_id;
+                            if(w_take_hold) begin
+                                // the beat is on the port on this very edge
+                                data_q<=w_data; strb_q<=w_strb;
+                                aw_pending_q<=1'b1; w_pending_q<=1'b1;
+                                state_q<=WR_SEND;
+                            end else begin
+                                aw_pending_q<=1'b0; w_pending_q<=1'b0;
+                                state_q<=WR_PREP;
+                            end
+                        end
+                    end else state_q<=WR_IDLE;
+                end
                 WR_FAULT: state_q<=WR_FAULT;
                 default: begin
                     write_protocol_fault_q<=1;

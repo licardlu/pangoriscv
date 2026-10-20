@@ -367,6 +367,7 @@ module tb_dcache_axi;
     reg st_acc0, st_acc1, st_acc2, st_b0, st_b1, st_b2, rd_acc;
     reg [1:0] st_r0, st_r1, st_r2;
     integer w_base = 0;
+    integer dw = 0;
 
     initial begin
         repeat(4) @(negedge clk);
@@ -462,7 +463,12 @@ module tb_dcache_axi;
         end
 
         // E2: every queued write reaches memory, in program order.
-        while(!dc_idle) @(negedge clk);
+        dw = 0;
+        while(!dc_idle && dw < 400) begin @(negedge clk); dw = dw + 1; end
+        if(!dc_idle)
+            $display("  E2_STUCK state=%0d q=%0d drain=%b wsent=%b wreq=%b ireqr=%b",
+                     dut.state_q, dut.q_count_q, dut.drain_q, dut.wsent_q,
+                     dut.wreq_q, dut.i_req_valid_r);
         if(st_acc2) begin
             if(mem[0] !== 32'h1111_0000 || mem[1] !== 32'h2222_0004 ||
                mem[2] !== 32'h3333_0008) begin

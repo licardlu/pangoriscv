@@ -54,6 +54,17 @@ LUT 18,006 | FF 9,877 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 31,511（相对基线
 CoreMark/kLUT = 3.4194 / 18.006 = 0.1899（P21 为 0.1718，+10.5%）
 ```
 
+**定版（area-final，2026-10-21 板上实测）**
+
+```
+LUT 18,006 | FF 9,877 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 31,511
+27 MHz：All Constraints Met；setup +12.972/+21.131；hold +0.020/+0.015；失败端点 0
+板上：299,226,614 ticks / 1024 迭代 / 11.082 s / 3.4222 / 五项 CRC 全对
+CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
+位流：bitstream/pangoriscv_i1024_area.sbit（SHA256 521EC6FE…5B9416BB）
+证据：evidence/records/optimization/area-final/
+```
+
 ---
 
 ## 2. 模块卡模板（11 个字段，缺一项不得进 RTL）
@@ -671,6 +682,7 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 | M7 | 4R2W 寄存器堆能否 LUTRAM/BRAM 化 | `regs.v` | 只调研 |
 | M8 | 304 位 payload 恒零字段 | `if_pipe`/`pipe_slot` | 仅评估 |
 | — | `icache_axi.v` 头注释 "32 sets" 过时（实际 64 组） | `icache_axi.v` | 随 M5 修正 |
+| **P7** | 定版：交付 profile 出位流 + 双种子 P&R + 上板复验 | `build/pango_native` | **完成 2026-10-21**：单种子 `single,OK,OK`、失败端点 0、hold +0.020/+0.015、板上 **3.4222 / 11.082 s / CRC 全对**。见 `area-final/measurement.md` |
 
 ---
 

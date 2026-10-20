@@ -37,6 +37,14 @@ LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
 控制组（PERF on）与上面的基线逐项一致 → 资源检查（compile+synthesize+dev_map）可作面积 A/B 代理
 ```
 
+**M3 落地后（BTB 缩位宽，2026-10-21 实测）**
+
+```
+LUT 19,113 | FF 11,183 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 33,924（相对基线 −14.51%）
+证据：evidence/records/optimization/area-M3/measurement.md
+20 迭代 A/B 与改前逐项一致：cycles 7,681,846 / mispred 137,933 / 五项 CRC 完全相同
+```
+
 ---
 
 ## 2. 模块卡模板（11 个字段，缺一项不得进 RTL）
@@ -144,7 +152,7 @@ LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
 |---|---|---|---|
 | M1 仪表 | 1,444 LUT / 1,665 FF（采样） | **实测 −1,527 LUT / −1,769 FF（2026-10-21）** | 删 `perf_regs` + 其从机；证据 `area-M1/measurement.md` |
 | M2 数据 RAM | 2,048 LUTRAM | **受阻（2026-10-21）**：三次尝试均未让映射器换表，已回退 | 见 `area-M2/measurement.md`；后续可改读端口形态或查 `PAP_RAM_STYLE` 取值 |
-| M3 BTB | 1,952 FF | **FF −1,152（确定）**；LUT −100（估） | 1,888 FF 存储 → 736 |
+| M3 BTB | 1,952 FF | **实测 −1,152 FF / −1,309 LUT（2026-10-21）** | tag 25→7、target 32→14；LUT 收益远超预期（三个查表口的比较器一起塌下来） |
 | M4b `q_pred_hi` | 512 FF | **FF −512（确定）** | 16×32 |
 | M4a `DEPTH` 16→8 | 1,320 FF | **FF −1,320（确定）** | 4×32×16 → ×8 |
 | M5 I-Cache 副本（条件） | 1,024 LUTRAM | LUTRAM −512 | 需实例名级证据 |
@@ -175,7 +183,7 @@ LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
 |---|---|---|---|---|---|
 | M1 | `perf_regs` + 从机 | 交付构建关 `PERF_ENABLE`；`set_switches.py` 支持按名开关 | **实测 −1,527 LUT / −1,769 FF** | 分析计数器消失 → 改用仿真 | **已完成 2026-10-21**（delta 门禁 PASS） |
 | M2 | `axi_ram`(data) | `/* synthesis syn_ramstyle = "block_ram" */`（必要时 `no_rw_check`） | ~~−2,048 LUTRAM~~ **受阻** | 读端口是组合读，映射器不认 | **已试用 3 次并回退**（`area-M2/measurement.md`） |
-| M3 | `branch_predictor` | `TAG_BITS` 25→7、`target_q` 32→14（由 `PGM_BYTES` 派生） | −1,152 FF / −100 LUT | 程序 >16 KB 别名（只影响预测） | `mispred` +5% 即回退 |
+| M3 | `branch_predictor` | `TAG_BITS` 25→7、`target_q` 32→14（由 `PGM_BYTES` 派生） | **实测 −1,309 LUT / −1,152 FF** | 程序 >16 KB 别名（只影响预测） | **已完成 2026-10-21**（A/B 逐项一致，delta 门禁 PASS） |
 | M4b | `ifu_axi` | 删 `q_pred_hi`（配对第二条 = `pc+4`） | −512 FF | 预测信息重算 | ticks +0.5% 即回退 |
 | M4a | `ifu_axi` | `DEPTH` 16→8 | −1,320 FF | 取指突发下降 | ticks +0.5% 即回退 |
 | M5 | `icache_axi` | 归属分析 → 证据成立才删阵列副本 | 条件性 −512 LUTRAM | 判断错会取错指令 | 任一 CRC 变即回退 |
@@ -642,7 +650,7 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 |---|---|---|---|
 | M1 | 关 `PERF_ENABLE`（交付）+ 按名开关 | `perf_regs`/`soc_config.vh` | **完成 2026-10-21**：LUT −1,527 / FF −1,769（`area-M1/measurement.md`） |
 | M2 | 数据 RAM 强制 BRAM | `axi_ram.v` | **受阻（2026-10-21）**：`syn_ramstyle` 被翻译成 `PAP_RAM_STYLE` 后无效果；`block_ram`、`block_ram,no_rw_check`、显式字节写三次都试过，LUTRAM 仍 3,628 / DRM 仍 4。RTL 已回退。诊断与后续方案见 `evidence/records/optimization/area-M2/measurement.md` |
-| M3 | BTB 位宽按 `PGM_BYTES` 派生 | `branch_predictor.v` | 待执行 |
+| M3 | BTB 位宽按 `PGM_BYTES` 派生 | `branch_predictor.v` | **完成 2026-10-21**：LUT −1,309 / FF −1,152（`area-M3/measurement.md`） |
 | M4b/4a | 取指队列去 `q_pred_hi` / `DEPTH` 8 | `ifu_axi.v` | 待执行 |
 | M5 | I-Cache 3,071 FF 归属 + 副本判定 | `icache_axi.v` | 待分析 |
 | M6 | D-Cache 3 阵列归属 + **556 vs 768 的 212 primitive 差额** | `dcache_axi.v` | 待分析 |

@@ -134,20 +134,22 @@ module tb_branch_predictor;
         expect_pred(32'h0000_0040, 1'b1, 32'h0000_0080);
 
         $display("--- P4 same index, different tag: replace, never alias");
-        train(32'h0000_0010, 1'b1, 1'b0, 1'b1, 32'h1111_0000);   // index 4
-        expect_pred(32'h0000_0010, 1'b1, 32'h1111_0000);
-        train(32'h0000_0110, 1'b1, 1'b0, 1'b1, 32'h2222_0000);   // index 4 as well
+        // Targets must stay inside the execution region (PGM_BYTES) since the
+        // BTB stores an ADDR_BITS-wide target (area workstream M3).
+        train(32'h0000_0010, 1'b1, 1'b0, 1'b1, 32'h0000_1100);   // index 4
+        expect_pred(32'h0000_0010, 1'b1, 32'h0000_1100);
+        train(32'h0000_0110, 1'b1, 1'b0, 1'b1, 32'h0000_2200);   // index 4 as well
         expect_pred(32'h0000_0010, 1'b0, 32'h0000_0000);        // old tag must not survive
-        expect_pred(32'h0000_0110, 1'b1, 32'h2222_0000);
-        train(32'h0000_0010, 1'b1, 1'b0, 1'b1, 32'h3333_0000);   // and back again
-        expect_pred(32'h0000_0010, 1'b1, 32'h3333_0000);
+        expect_pred(32'h0000_0110, 1'b1, 32'h0000_2200);
+        train(32'h0000_0010, 1'b1, 1'b0, 1'b1, 32'h0000_3300);   // and back again
+        expect_pred(32'h0000_0010, 1'b1, 32'h0000_3300);
         expect_pred(32'h0000_0110, 1'b0, 32'h0000_0000);
 
         $display("--- P5 JALR target change is retrained");
-        train(32'h0000_0200, 1'b1, 1'b1, 1'b1, 32'hAAAA_0000);
-        expect_pred(32'h0000_0200, 1'b1, 32'hAAAA_0000);
-        train(32'h0000_0200, 1'b1, 1'b1, 1'b1, 32'hBBBB_0000);
-        expect_pred(32'h0000_0200, 1'b1, 32'hBBBB_0000);
+        train(32'h0000_0200, 1'b1, 1'b1, 1'b1, 32'h0000_0A00);
+        expect_pred(32'h0000_0200, 1'b1, 32'h0000_0A00);
+        train(32'h0000_0200, 1'b1, 1'b1, 1'b1, 32'h0000_0B00);
+        expect_pred(32'h0000_0200, 1'b1, 32'h0000_0B00);
 
         $display("--- P6 saturating counter does not wrap");
         train(32'h0000_0300, 1'b1, 1'b0, 1'b1, 32'h0000_0400);   // 10
@@ -198,6 +200,20 @@ module tb_branch_predictor;
         expect_pred(32'h0000_0020, 1'b1, 32'h0000_0080);         // <-- fails on the old form
         train(32'h0000_0020, 1'b1, 1'b0, 1'b0, 32'h0000_0000);   // 10 -> 01
         expect_pred(32'h0000_0020, 1'b0, 32'h0000_0000);
+
+        $display("--- P11 an out-of-region target is refused, never truncated");
+        // M3 stores ADDR_BITS-wide targets.  A target outside PGM_BYTES must
+        // invalidate the entry instead of being truncated into a bogus in-range
+        // PC (0x1111_0000 would otherwise become 0x0000_0000).
+        train(32'h0000_0700, 1'b1, 1'b1, 1'b1, 32'h1111_0000);
+        expect_pred(32'h0000_0700, 1'b0, 32'h0000_0000);
+
+        $display("--- P12 an out-of-region PC never aliases onto an in-range entry");
+        // 0x1000_0200 has the same index (0) and the same low tag bits as
+        // 0x0000_0200 trained in P9; without the range guard it would hit.
+        train(32'h0000_0200, 1'b1, 1'b1, 1'b1, 32'h0000_0300);
+        expect_pred(32'h0000_0200, 1'b1, 32'h0000_0300);
+        expect_pred(32'h1000_0200, 1'b0, 32'h0000_0000);
 
         if (errors == 0) $display("TEST_PASS BRANCH_PREDICTOR checks=%0d", checks);
         else             $display("TEST_FAIL BRANCH_PREDICTOR errors=%0d checks=%0d", errors, checks);

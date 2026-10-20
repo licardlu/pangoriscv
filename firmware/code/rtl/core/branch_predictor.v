@@ -70,40 +70,61 @@ module branch_predictor #(
     input wire [31:0] train_target          // actual target
 );
     localparam integer IDX_BITS = $clog2(ENTRIES);       // 5 for 32 entries
-    localparam integer TAG_BITS = 32 - IDX_BITS - 2;     // 25 for 32 entries
+    // A BTB entry only ever describes a control transfer that lives inside the
+    // execution region, so neither the tag nor the target needs a full 32-bit
+    // PC.  Deriving both widths from PGM_BYTES keeps the table correct if the
+    // program memory ever grows, and drops the storage from 25+32 bits to 7+14
+    // bits per entry (area workstream M3: 32 entries, ~1,150 FF).
+    // See docs/architecture/module-area-plan.md M3.
+    parameter  integer PGM_BYTES = 16384;                    // 0x4000 = EXEC_BYTES
+    localparam integer ADDR_BITS = $clog2(PGM_BYTES);        // 14
+    localparam integer TAG_BITS = ADDR_BITS - IDX_BITS - 2;  // 7
 
     reg                  valid_q  [0:ENTRIES-1];
     reg [TAG_BITS-1:0]   tag_q    [0:ENTRIES-1];
-    reg [31:0]           target_q [0:ENTRIES-1];
+    reg [ADDR_BITS-1:0]  target_q [0:ENTRIES-1];
     reg                  uncond_q [0:ENTRIES-1];
     reg [1:0]            count_q  [0:ENTRIES-1];
 
+    // A PC outside [0, PGM_BYTES) must never hit: with the narrow tag it would
+    // otherwise alias onto an in-range entry and invent a prediction for an
+    // address that is supposed to take the normal out-of-range fault path.
+    function in_range;
+        input [31:0] pc;
+        begin
+            in_range = (pc[31:ADDR_BITS]=={(32-ADDR_BITS){1'b0}});
+        end
+    endfunction
+
     wire [IDX_BITS-1:0] fetch_idx = fetch_pc[IDX_BITS+1:2];
-    wire [TAG_BITS-1:0] fetch_tag = fetch_pc[31:IDX_BITS+2];
-    wire fetch_hit = valid_q[fetch_idx] && (tag_q[fetch_idx]==fetch_tag);
+    wire [TAG_BITS-1:0] fetch_tag = fetch_pc[ADDR_BITS-1:IDX_BITS+2];
+    wire fetch_hit = in_range(fetch_pc) && valid_q[fetch_idx] && (tag_q[fetch_idx]==fetch_tag);
 
     assign predict_taken  = fetch_hit && (uncond_q[fetch_idx] || count_q[fetch_idx][1]);
-    assign predict_target = target_q[fetch_idx];
+    assign predict_target = {{(32-ADDR_BITS){1'b0}}, target_q[fetch_idx]};
 
     // Identical rule on the chain port, so the prediction an instruction is
     // delivered with is bit-identical whichever port produced it.
     wire [IDX_BITS-1:0] fetch_idx2 = fetch_pc2[IDX_BITS+1:2];
-    wire [TAG_BITS-1:0] fetch_tag2 = fetch_pc2[31:IDX_BITS+2];
-    wire fetch_hit2 = valid_q[fetch_idx2] && (tag_q[fetch_idx2]==fetch_tag2);
+    wire [TAG_BITS-1:0] fetch_tag2 = fetch_pc2[ADDR_BITS-1:IDX_BITS+2];
+    wire fetch_hit2 = in_range(fetch_pc2) && valid_q[fetch_idx2] && (tag_q[fetch_idx2]==fetch_tag2);
 
     assign predict_taken2  = fetch_hit2 && (uncond_q[fetch_idx2] || count_q[fetch_idx2][1]);
-    assign predict_target2 = target_q[fetch_idx2];
+    assign predict_target2 = {{(32-ADDR_BITS){1'b0}}, target_q[fetch_idx2]};
 
     wire [IDX_BITS-1:0] fetch_idx3 = fetch_pc3[IDX_BITS+1:2];
-    wire [TAG_BITS-1:0] fetch_tag3 = fetch_pc3[31:IDX_BITS+2];
-    wire fetch_hit3 = valid_q[fetch_idx3] && (tag_q[fetch_idx3]==fetch_tag3);
+    wire [TAG_BITS-1:0] fetch_tag3 = fetch_pc3[ADDR_BITS-1:IDX_BITS+2];
+    wire fetch_hit3 = in_range(fetch_pc3) && valid_q[fetch_idx3] && (tag_q[fetch_idx3]==fetch_tag3);
 
     assign predict_taken3  = fetch_hit3 && (uncond_q[fetch_idx3] || count_q[fetch_idx3][1]);
-    assign predict_target3 = target_q[fetch_idx3];
+    assign predict_target3 = {{(32-ADDR_BITS){1'b0}}, target_q[fetch_idx3]};
 
     wire [IDX_BITS-1:0] train_idx = train_pc[IDX_BITS+1:2];
-    wire [TAG_BITS-1:0] train_tag = train_pc[31:IDX_BITS+2];
-    wire train_hit = valid_q[train_idx] && (tag_q[train_idx]==train_tag);
+    wire [TAG_BITS-1:0] train_tag = train_pc[ADDR_BITS-1:IDX_BITS+2];
+    wire train_hit = in_range(train_pc) && valid_q[train_idx] && (tag_q[train_idx]==train_tag);
+    // A target outside the region cannot be represented in ADDR_BITS; refuse it
+    // and invalidate the entry instead of storing a truncated (wrong) PC.
+    wire train_target_ok = in_range(train_target);
 
     integer i;
     always @(posedge clk) begin
@@ -111,21 +132,21 @@ module branch_predictor #(
             for (i=0;i<ENTRIES;i=i+1) begin
                 valid_q[i]  <= 1'b0;
                 tag_q[i]    <= {TAG_BITS{1'b0}};
-                target_q[i] <= 32'd0;
+                target_q[i] <= {ADDR_BITS{1'b0}};
                 uncond_q[i] <= 1'b0;
                 count_q[i]  <= 2'b00;
             end
-        end else if (train_valid && train_control) begin
+        end else if (train_valid && train_control && in_range(train_pc)) begin
             if (train_uncond) begin
-                valid_q[train_idx]  <= 1'b1;
+                valid_q[train_idx]  <= train_target_ok;
                 tag_q[train_idx]    <= train_tag;
-                target_q[train_idx] <= train_target;
+                target_q[train_idx] <= train_target[ADDR_BITS-1:0];
                 uncond_q[train_idx] <= 1'b1;
                 count_q[train_idx]  <= 2'b11;
             end else if (train_taken) begin
-                valid_q[train_idx]  <= 1'b1;
+                valid_q[train_idx]  <= train_target_ok;
                 tag_q[train_idx]    <= train_tag;
-                target_q[train_idx] <= train_target;
+                target_q[train_idx] <= train_target[ADDR_BITS-1:0];
                 uncond_q[train_idx] <= 1'b0;
                 // Saturating 2-bit counter: a newly seen taken branch starts
                 // weakly taken (10); a hit strengthens it and **saturates at 11**.

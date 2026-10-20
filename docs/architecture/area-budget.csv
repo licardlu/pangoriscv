@@ -2,10 +2,11 @@ kind,module,file,stage,lut,ff,lutram,drm,apm,region,status,note
 baseline,__totals__,,,21949,14104,3628,4,6,,frozen,device_map Used @ tag score-3.4194-1024 (build code_ic4k)
 budget,__max__,,,20400,9455,3628,4,6,,active,"M1+M3+M4 must-do set (M2 blocked 2026-10-21, so the LUTRAM cap stays at baseline)"
 measured,__totals_m1__,,,20422,12335,3628,4,6,,measured,"M1 delivery profile (PERF off) 2026-10-21: LUT -1527, FF -1769, S 39681->36385"
+measured,__totals_m3__,,,19113,11183,3628,4,6,,measured,"M3 delivery profile (PERF off) 2026-10-21: LUT -1309, FF -1152, S 36385->33924"
 delta,perf_regs,perips/perf_regs.v,instrument,0,-1665,0,0,0,none,done,"M1 MEASURED (jointly with axi_reg_slave): -1527 LUT / -1769 FF; see area-M1/measurement.md"
 delta,axi_reg_slave,perips/axi_reg_slave.v,periph,0,0,0,0,0,R_IO,done,"M1: 6 instances -> 5; the 594-LUT one belongs to perf_regs (measured delta includes it)"
 delta,axi_ram_data,perips/axi_ram.v,mem,0,0,-2048,4,0,R_MEM,blocked,"M2 BLOCKED 2026-10-21: syn_ramstyle translated to PAP_RAM_STYLE then ignored; block_ram, block_ram+no_rw_check and explicit byte lanes all tried, reverted; see area-M2/measurement.md"
-delta,branch_predictor,core/branch_predictor.v,fetch,-100,-1152,0,0,0,R_FETCH,active,"M3: BTB tag 25->7, target 32->14 (PGM_BYTES driven)"
+delta,branch_predictor,core/branch_predictor.v,fetch,-1309,-1152,0,0,0,R_FETCH,done,"M3 MEASURED: -1309 LUT / -1152 FF (tag 25->7, target 32->14); A/B bit-identical (cycles, mispred, CRC); see area-M3/measurement.md"
 delta,ifu_axi,core/ifu_axi.v,fetch,-100,-1832,0,0,0,R_FETCH,active,"M4b q_pred_hi removed + M4a DEPTH 16->8"
 delta,icache_axi,core/icache_axi.v,mem,0,0,-512,0,0,R_ICACHE,conditional,"M5: only after instance-level proof of duplicate arrays"
 delta,dcache_axi,core/dcache_axi.v,mem,0,0,-256,0,0,R_DCACHE,conditional,"M6: only after instance-level proof of duplicate arrays"

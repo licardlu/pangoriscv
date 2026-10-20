@@ -437,6 +437,10 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
     把 `tag_q → tag_mem/DI` 这条连续三个构建都失败的 hold 路径切成两段；队头改为**释放拍组合递交**
     （`i_release`）并让 W 拍随请求同拍（`eng_w_now`）。定版：窗口 5,498,599，**板上 3.6345**，
     hold +0.002/+0.001、失败端点 0，LUT/FF/LUTRAM = 18,099/9,931/3,628。
+    **P37b（2026-10-21）**：① 队列"满但同拍弹出一项"不再拒绝（`!q_full || q_pop`）——条件是
+    **同拍有 pop**，所以不会越过容量；② `STQ_DEPTH` 2 → **4**（P37b 把单笔 drain 缩短后突发才吃得下，
+    实测再省 44,061 周期）；③ 配合 M21 的 B-in-RESP，`ST_REFUSE` 128,335 → **12,310**、store EX 停顿
+    244,753 → **55,648**。窗口 5,498,599 → **5,212,477**（−5.20%）。LUT/FF/LUTRAM = 18,333/9,836/3,664。
 
 #### M20 `axi_read_engine` — `rtl/core/axi_read_engine.v` — 访存
 2. **职责**：AXI4 读引擎（AR/R），支持猝发；不做地址译码。
@@ -455,8 +459,32 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
     （`req_ready` 门控在 `b_valid && b_ready`，`WRITE_OWNERSHIP`/`EARLY_STORE_COMPLETION` 契约不变）；
     ② 请求与 W 同拍到达时跳过 `WR_PREP`（`w_ready` 加故障门控，粘滞故障契约不变）。
     效果：drain 7.6 → 6.15 拍/笔，窗口 5,697,334 → 5,498,599。**契约未放松，64/64 原样通过**。
+    **P37b（2026-10-21）**：`WR_HOLD` 的唯一作用是把 B 交给消费者，而 D-Cache 在 drain 期
+    `b_ready` 恒高，所以 `WR_RESP` 收到 B 的那一拍**直接交**（`b_take_now`）并同拍接下一笔，
+    `WR_HOLD` 只在消费者当拍没准备好时兜底。`b_resp` 在 RESP 期取 `m_bresp`（其余取 `resp_q`）。
+    `m_bid!=id_q` 仍走粘滞故障分支，且该拍**不**提前交 B。契约（B 未取走前 `req_ready` 为低）
+    不变，engine **64/64** 原样通过；drain 6.15 → 5.25 拍/笔。
 
 ### 5.5 存储
+
+#### M31 `pangoriscv` — `rtl/core/pangoriscv.v` — 流水（核心顶层）
+2. **职责**：双发射流水线的**配对决策**（`pair_ok`）、EX→ID 前递、退休/重定向汇聚，
+   并把各子模块装成核心顶层。**不做**：译码本身（M06/M07）、ALU（M12）、访存（M18）。
+   自 P37a 起额外承担 **EX→EX 同拍前递**（`fwd0_r1/fwd0_r2 → ex1_r1/ex1_r2/ex1_o1/ex1_o2`）。
+5. **内部状态**：无自有寄存器（全部在子模块）；只新增组合逻辑（2 个 32 位二选一 mux ×2 组）。
+6. **存储**：无。
+7. **面积**：`pangoriscv` 自身多被内联（M17 同样情况）；P37a 的增量计入 `area-budget.csv` 的
+   `delta,pangoriscv` 行（LUT +约 130，FF 0）。
+8. **物理区域**：`R_CORE`。前递 mux 只落在 `u_ex_h` 的操作数输入端，**不新增跨区宽总线**。
+9. **关键路径**：P37a 后 `er1/er2 → u_ex（lane0 ALU）→ fwd mux → u_ex_h → 写回` 成为新的一级，
+   setup 由 +10.041 → **+4.484 ns**（27 MHz，仍全过）。若后续要提 Fmax，这里就是第一优先级。
+10. **测试**：`tb/integration/tb_isa_e2e.sv` case 17（配对内 RAW，`pairs=` 覆盖计数）、
+    其余 16 例（前递错误会直接改寄存器值）、`tb_coremark_uart.sv` 的 `PAIR_STATS/PAIR_BLOCK` 探针。
+11. **变更**：2026-10-21 立卡（P37a）。**配对规则**：lane0 必须是 ALU/访存，lane1 必须是 ALU/分支/JAL；
+    RAW（lane0 写、lane1 读）**只在 lane0 是访存时**禁止（load 的数据多拍后才回，`alu_result` 只是地址）；
+    `drdh==rs1/rs2`（lane1 写、lane0 读）与 WAW 两项**保持原样**（前者涉 ID 写透优先级，后者实测收益≈0）。
+    **前递判据必须用 EX 级 `ei/ei_h`**，且 `op1_i/op2_i` 与 `reg1_rdata_i/reg2_rdata_i` 两个口都要改
+    （详见 `docs/lessons/mistakes-log.md` §14）。
 
 #### M22 `axi_ram`（program）— `rtl/perips/axi_ram.v` — 存储
 2. **职责**：0x0000_0000 的 16 KB 程序存储器（`WRITE_ENABLE=0`，只读），带 `$readmemh` 初始化。

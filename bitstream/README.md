@@ -1,6 +1,11 @@
 # 发布版位流
 
-> **当前交付（2026-10-21）：`pangoriscv_i1024_p36.sbit` —— 板上 3.6345**
+> **当前交付（2026-10-21）：`pangoriscv_i1152_p37.sbit` —— 板上 3.8557**
+> （298,780,717 ticks / **1152** 迭代 / **11.066 s ≥ 10 s** / 五项 CRC 全对 / `Correct operation validated`）
+> 交付镜像换用 **1152 迭代**：3.6345 那版用 1024 迭代已降到 9.83 s，CoreMark 判 "must execute for at least 10 secs"，
+> 那就不再是有效成绩。详见 `evidence/records/optimization/perf-pair-raw-3.86/measurement.md`。
+>
+> 上一版交付（历史）：`pangoriscv_i1024_p36.sbit` —— 板上 3.6345
 > （ticks 281,741,495 / 1024 迭代 / 10.435 s / 五项 CRC 全对 / 27 MHz `All Constraints Met`，
 > hold +0.002 / 失败端点 0 / LUT 18,099）。下面 2026-10-19 的声明是历史版本（2.8833），
 > 详细对比见文末「写通路吞吐版」一节。
@@ -55,7 +60,8 @@
 | `pangoriscv_i768.sbit` | 3,791,112 B | `1FAC6F435BA34641BB8D16285CFFFA7811D2F787AEAF08805B4F5369A2B41F23` | 2.8833（2026-10-19） |
 | `pangoriscv_i1024.sbit` | 3,791,112 B | `8D12C9D114C0DBE4455E0A50C0F944B7D8506273DB28ADAEBC3755205FA6A643` | 3.4194（2026-10-20，**面积优化前**） |
 | `pangoriscv_i1024_area.sbit` | 3,791,112 B | `521EC6FEFD867E244DF4C955D6DA98519BEA06F5559E36498ED928DB5B9416BB` | 3.4222（2026-10-21，面积优化版） |
-| **`pangoriscv_i1024_p36.sbit`** | 3,791,112 B | `BE749BC4830E33BB198BD2835251DE09526F4F7F267DCB19D3A08E536EA57737` | **3.6345（2026-10-21，当前交付）** |
+| `pangoriscv_i1024_p36.sbit` | 3,791,112 B | `BE749BC4830E33BB198BD2835251DE09526F4F7F267DCB19D3A08E536EA57737` | 3.6345（2026-10-21，上一版） |
+| **`pangoriscv_i1152_p37.sbit`** | 3,791,112 B | `81C1D04936D3D5B5F70945A847EF6E9C5832D5A21B38FA9B46C60543BBE72B62` | **3.8557（2026-10-21，当前交付）** |
 
 ## 2026-10-21 追加：面积优化版（板上 **3.4222**，LUT −18% / FF −30%）
 

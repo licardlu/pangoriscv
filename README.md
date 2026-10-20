@@ -7,11 +7,12 @@
 > 下文的 400 迭代 / 1.35 / 12,694 LUT / “四级流水线”等均为历史版本。
 > 完整问题、验收缺口与修复顺序见 **[docs/verification.md](docs/verification.md)**。
 
-> **性能专项（2026-10-21）**：**当前交付 3.6345 CoreMark/MHz**（板上实测，1024 迭代 / 10.435 s /
-> 五项 CRC 全对 / 27 MHz `All Constraints Met`，hold +0.002、失败端点 0 / 18,099 LUT）。
-> 位流 `bitstream/pangoriscv_i1024_p36.sbit`；证据 `evidence/records/optimization/perf-writepath-3.63/`；
-> 计划、A/B 与下一步（3.8 需写引擎 2 outstanding）见 [docs/plan-perf-3.6.md](docs/plan-perf-3.6.md)。
-> 相对面积专项定版 3.4222：**+6.21% 分数、站点 +0.47%**（CoreMark/kLUT 0.1901 → 0.2008）。
+> **性能专项（2026-10-21）**：**当前交付 3.8557 CoreMark/MHz**（板上实测，**1152** 迭代 / 11.066 s /
+> 五项 CRC 全对且 `Correct operation validated` / 27 MHz `All Constraints Met`，setup +4.484、
+> hold +0.032、失败端点 0 / 18,333 LUT / 9,836 FF）。
+> 位流 `bitstream/pangoriscv_i1152_p37.sbit`；证据 `evidence/records/optimization/perf-pair-raw-3.86/`；
+> 计划与 A/B 见 [docs/plan-perf-3.8.md](docs/plan-perf-3.8.md)。
+> 相对面积专项定版 3.4222：**+12.7% 分数、站点 +0.9%**（CoreMark/kLUT 0.1901 → **0.2103**）。
 >
 > **面积 / 效率专项（2026-10-21）**：该阶段结论已并入上表，其后不再限制性能改动。
 > 动手前必读 **[docs/architecture/module-area-plan.md](docs/architecture/module-area-plan.md)**

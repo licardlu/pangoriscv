@@ -1033,3 +1033,55 @@ ff11        （不能跑）: C: Cannot open specified data file "program.hex"
   CoreMark 报告在配置后约 10.7 s 只打印一次，串口已打开时驱动会缓存，事后再读也能拿到。
 - **可复用**：任何"脚本起的子进程没有日志"的上板/工具链问题，先怀疑**启动方式**
   （环境块、重定向、大小写冲突），不要怀疑目标 exe 或电缆。
+
+## 14. 性能类：把 ID 级译码信号用到 EX 级（2026-10-21，P37a）
+
+### 14.1 现象与代价
+给「配对内 RAW」加 EX→EX 前递，功能仿真在新增用例上直接挂死（`E2E_TIMEOUT`，x21 变 X）。
+两轮调试才定位，三轮才修对：
+
+| 轮次 | 写的条件 | 实际后果 |
+|---|---|---|
+| 1 | `erd==rs1h`（ID 阶段寄存器号） | `rs1h` 是**下一包**的 rs1，前递选不中 → 仍是旧值 |
+| 2 | `alu0 / op1`（ID 阶段译码） | 前递给"下一包"的指令类型，X 依旧 |
+| 3 | `ei`/`ei_h` 的 opcode 与 rs 字段（EX 级） | 正确 |
+
+### 14.2 为什么容易错
+`pangoriscv.v` 里有两套同名族信号：
+- **ID 级**：`rs1/rs2/rs1h/rs2h`、`dinst/dinsth`、`alu0/mem0/alu1/ctrl1`、`du1h/du2h`、`op1`
+  —— 描述**当前在 ID 的包**，用于 `pair_ok` 这类*发射决策*；
+- **EX 级**：`ei/ei_h`、`er1/er2`、`er1_h/er2_h`、`erd/erd_h`、`ep/ep_h`
+  —— 描述**这一拍在 EX 的指令**，用于执行与前递。
+
+一拍的差距就是"下一包"与"本包"的差距，而两者在仿真里都非 X，错了不会报红，只会算错。
+
+### 14.3 还有第二个坑：操作数有两个口
+`ex_alu` 的寄存器操作数分两条路：
+- `op1_i/op2_i`：ID 阶段**已经选好**寄存器或立即数的值（ADD/ADDI/XOR/分支比较都走这里）；
+- `reg1_rdata_i/reg2_rdata_i`：只有**移位**结果直接用它（`rshift_low`）。
+
+只改后者，`add` 依旧拿旧值。前递必须两条都改，且要判断该槽是否真的读寄存器：
+`lui/auipc` 的 `uses_rs1=0`；`addi` 的 `uses_rs2` 仍为高但第二操作数是立即数 —— 所以
+`op2` 只用 `opcode ∈ {0x33, 0x63}` 作判别，别信 `uses_rs2`。
+
+### 14.4 可复用判据
+1. 在 `pangoriscv.v` 里写**任何**与"这一拍正在执行的指令"有关的逻辑，先问：
+   `ei/ei_h` 还是 `dinst/dinsth`？前递/异常/写回一律用 `ei*`。
+2. 加前递时，先列出该 ALU 模块**真正使用的**每个操作数端口（读 ex_alu 源码，不看信号名猜）。
+3. 定向用例必须能证明"配对真的形成"，否则改坏了也会绿：
+   `tb_isa_e2e.sv` 现在每次 `TEST_PASS` 都打印 `pairs=`（用 `retire_order` 的差值判 2 退休），
+   case 17 的期望值是 `pairs=9`。
+
+## 15. 三个单元测试台是"陈旧红"，不是功能红（2026-10-21）
+
+跑全套回归时 `run_pipeline_tests`、`run_unit_tests`(ifu)、`run_ifu_engine_tests` 失败。
+三个都不是本轮引入，**用 `git stash` 把 RTL 退回改动前跑同一套，结果逐字相同**：
+
+| 套件 | 失败形态 | 真因 |
+|---|---|---|
+| `run_pipeline_tests` | 先 `Module 'id_alu' is not defined`，补源后 `retire identity 8` | TB 用"+4 自增 PC"驱动，架构早已改成预测+8B 包；缺 `fetch_pair/result_*_hi` 等端口 |
+| `run_unit_tests` → ifu_axi | `Fatal: IFU_PREFETCH_DEPTH reqs=3` | 断言写死旧预取深度（T1 链之后为 3） |
+| `run_ifu_engine_tests` | `vopt-2247 ... fetch_ready2/result_pc_hi/result_pair` | TB 用 `.*` 隐式连接，IFU 新增端口后不再匹配 |
+
+**纪律**：红套件要么修，要么**用改动前的 RTL 复现一次**再判定"陈旧"，不许直接当没看见。
+本轮的判定依据是 ISA 17/17（Ref 模型现场生成期望值）+ CoreMark 五项 CRC 逐项相同 + dcache/engine/ram/interconnect 全绿。

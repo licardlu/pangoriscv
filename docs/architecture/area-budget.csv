@@ -17,3 +17,7 @@ delta,dcache_axi,core/dcache_axi.v,mem,85,-69,36,0,0,R_DCACHE,active,"P34 posted
 measured,__totals_p36__,,,18099,9931,3628,4,6,,measured,"P36a delivery build 2026-10-21: board 3.6345 / 10.435 s / CRC all correct; hold +0.002/+0.001, 0 failing endpoints; window 5,498,599"
 delta,dcache_axi,core/dcache_axi.v,mem,93,54,0,0,0,R_DCACHE,active,"P34-P36a net: posted store queue (now depth 2) + tag_di_q retiming + combinational release; 18006/9877/3628 -> 18099/9931/3628 (+0.47% sites) for +6.21% CoreMark/MHz"
 delta,axi_data_engine,core/axi_data_engine.v,mem,0,0,0,0,0,R_IO,active,"P35: accept next write on the B-handover edge + skip WR_PREP when the beat rides along; contract unchanged, engine 64/64"
+measured,__totals_p37__,,,18333,9836,3664,4,6,,measured,"P37 delivery build perf_p37b 2026-10-21 (1152 iters): board 3.8557 / 298,780,717 ticks / 11.066 s / CRC all correct; hold +0.032/+0.019, setup +4.484, 0 failing endpoints"
+delta,dcache_axi,core/dcache_axi.v,mem,104,-95,36,0,0,R_DCACHE,active,"P37b: STQ_DEPTH 2->4 (4x75 FF) + accept when a pop frees a slot on the same edge; net FF still -95 vs P36 because the engine lost its WR_HOLD register path"
+delta,axi_data_engine,core/axi_data_engine.v,mem,0,0,0,0,0,R_IO,active,"P37b: hand the B over in WR_RESP when the consumer is ready (b_take_now), skip WR_HOLD; contract unchanged, 64/64"
+delta,pangoriscv,core/pangoriscv.v,pipe,130,0,0,0,0,R_CORE,active,"P37a: EX-EX forward for in-pair RAW (2 groups of 2x 32-bit mux); pair_ok keeps the RAW bar only when lane 0 is a load. setup 10.041 -> 4.484 ns"

@@ -939,6 +939,25 @@ ff11        （不能跑）: C: Cannot open specified data file "program.hex"
 - **可复用**：**"LUT 数没变"不等于"面积没变"**——LUTRAM 占的是 LUT 站点与局部走线。
   看面积必须同时看 LUT / FF / LUTRAM / DRM 四项。
 
+- **补充（2026-10-21，M2 三次尝试全部无效）**：给那个落在 LUTRAM 的数据 RAM 加
+  `/* synthesis syn_ramstyle = "block_ram" */`，综合日志打印
+  `Convert attribute name from syn_ramstyle to PAP_RAM_STYLE`，但**资源一个都没变**
+  （LUTRAM 仍 3,628 / DRM 仍 4）。再试 `"block_ram,no_rw_check"`、以及把 `for` 字节写
+  改成 4 条显式字节写，也全无效。这两个写法本身是对的——Pango 自带的存储器参考模型
+  （`syn/lib/syncore/models/memories/ram/syncore_ram.v`）里就是这两行。
+- **诊断套路（可复用）**：
+  1. 先看日志有没有 `Convert attribute name from ... to PAP_...`——**有这行不代表生效**，
+     必须回看资源表；本项目 `keep="true"` 也曾被翻译成 `PAP_KEEP` 后直接忽略；
+  2. 再看推断日志的粒度：本项目是 `Found Ram mem, depth=4096, width=8.` **×4**（按字节通道拆开），
+     说明映射器没把它当成一个 4096×32 的阵列；
+  3. 对比同模块的**只读实例**（它进了 BRAM）——差异只可能在写端口/读端口形态，
+     不要在属性名上耗时间；
+  4. 结论：**属性管的是"偏好"，管不了"端口形态"**。要让阵列进 BRAM，读必须是
+     "寄存器地址 + 寄存器输出"的同步形式；组合读（`data <= mem[addr]` 当拍取样）
+     一律落 LUTRAM。
+- **纪律**：三次无效就按停机规则回退，把否定结果与诊断写进证据（`area-M2/measurement.md`），
+  不要为了"凑一个 BRAM"去改读路径的时序——那是访存语义改动，得单独走 A/B。
+
 ### 12.3 面积口径必须一次说清（否则预算一定算错）
 
 - **现象**：给模块定面积预算时，把网表里数出来的 LUT 相加当总量，结果比 `device_map` 少 16%。

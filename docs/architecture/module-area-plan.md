@@ -143,7 +143,7 @@ LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
 | 分项 | 现状 | Δ（可信度） | 依据 |
 |---|---|---|---|
 | M1 仪表 | 1,444 LUT / 1,665 FF（采样） | **实测 −1,527 LUT / −1,769 FF（2026-10-21）** | 删 `perf_regs` + 其从机；证据 `area-M1/measurement.md` |
-| M2 数据 RAM | 2,048 LUTRAM | **LUTRAM −2,048（确定）**；DRM +4 | 映射日志给的就是 2,048 |
+| M2 数据 RAM | 2,048 LUTRAM | **受阻（2026-10-21）**：三次尝试均未让映射器换表，已回退 | 见 `area-M2/measurement.md`；后续可改读端口形态或查 `PAP_RAM_STYLE` 取值 |
 | M3 BTB | 1,952 FF | **FF −1,152（确定）**；LUT −100（估） | 1,888 FF 存储 → 736 |
 | M4b `q_pred_hi` | 512 FF | **FF −512（确定）** | 16×32 |
 | M4a `DEPTH` 16→8 | 1,320 FF | **FF −1,320（确定）** | 4×32×16 → ×8 |
@@ -155,6 +155,16 @@ LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
 | 只做必成项（M1~M4） | −4,649 | −2,048 | −1,100~−1,544 | −7,797~−8,241 | **≤ 31,900** | **≤ 20,900** |
 | 含条件项（+M5/M6） | −4,649 | −2,816 | 同上 | −8,565~−9,009 | **≤ 31,200** | 同上 |
 
+> **2026-10-21 修订（M2 受阻）**：M2（数据 RAM→BRAM，原计划 −2,048 LUTRAM）三次尝试均未生效并已回退，
+> 见 `area-M2/measurement.md`。因此修订目标：
+>
+> | 场景 | ΔS | 目标 S | 目标 LUT |
+> |---|---:|---:|---:|
+> | M1+M3+M4（必成项，去掉 M2） | −1,527 −1,769 −1,152 −1,832 ≈ **−6,280** | **≤ 33,500** | **≤ 20,400** |
+> | 再加 M5/M6（条件项） | −768 | **≤ 32,700** | 同上 |
+>
+> M1 已落地（S 39,681 → 36,385）；M3/M4 是确定性的 FF 收益，仍在计划内。
+
 **结论口径**：验收以"必成项达成 S ≤ 31,900 且 LUT ≤ 20,900"为准；条件项达成则更好。
 `CoreMark/kLUT` 由 0.1558 升到 **≈0.164**（LUT 取 20,900），**仍低于 P21 的 0.1718**——
 继续压 LUT 只能动 `pangoriscv` 旁路网络（2,410 LUT）或 IFU 结构，属高风险，**不在本专项**。
@@ -164,7 +174,7 @@ LUT 20,422 | FF 12,335 | LUTRAM 3,628 | DRM 4 | APM 6 | S = 36,385（−8.30%）
 | 编号 | 模块 | 动作 | 预期 | 风险 | 回退条件 |
 |---|---|---|---|---|---|
 | M1 | `perf_regs` + 从机 | 交付构建关 `PERF_ENABLE`；`set_switches.py` 支持按名开关 | **实测 −1,527 LUT / −1,769 FF** | 分析计数器消失 → 改用仿真 | **已完成 2026-10-21**（delta 门禁 PASS） |
-| M2 | `axi_ram`(data) | `/* synthesis syn_ramstyle = "block_ram" */`（必要时 `no_rw_check`） | −2,048 LUTRAM，DRM 4→8 | BRAM 端口模式不匹配 | 两次尝试失败即跳过 |
+| M2 | `axi_ram`(data) | `/* synthesis syn_ramstyle = "block_ram" */`（必要时 `no_rw_check`） | ~~−2,048 LUTRAM~~ **受阻** | 读端口是组合读，映射器不认 | **已试用 3 次并回退**（`area-M2/measurement.md`） |
 | M3 | `branch_predictor` | `TAG_BITS` 25→7、`target_q` 32→14（由 `PGM_BYTES` 派生） | −1,152 FF / −100 LUT | 程序 >16 KB 别名（只影响预测） | `mispred` +5% 即回退 |
 | M4b | `ifu_axi` | 删 `q_pred_hi`（配对第二条 = `pc+4`） | −512 FF | 预测信息重算 | ticks +0.5% 即回退 |
 | M4a | `ifu_axi` | `DEPTH` 16→8 | −1,320 FF | 取指突发下降 | ticks +0.5% 即回退 |
@@ -631,7 +641,7 @@ Select-String -Path evidence\records\optimization\4kb_3.423\report_timing.rtr -P
 | 编号 | 事项 | 归属 | 状态 |
 |---|---|---|---|
 | M1 | 关 `PERF_ENABLE`（交付）+ 按名开关 | `perf_regs`/`soc_config.vh` | **完成 2026-10-21**：LUT −1,527 / FF −1,769（`area-M1/measurement.md`） |
-| M2 | 数据 RAM 强制 BRAM | `axi_ram.v` | 待执行 |
+| M2 | 数据 RAM 强制 BRAM | `axi_ram.v` | **受阻（2026-10-21）**：`syn_ramstyle` 被翻译成 `PAP_RAM_STYLE` 后无效果；`block_ram`、`block_ram,no_rw_check`、显式字节写三次都试过，LUTRAM 仍 3,628 / DRM 仍 4。RTL 已回退。诊断与后续方案见 `evidence/records/optimization/area-M2/measurement.md` |
 | M3 | BTB 位宽按 `PGM_BYTES` 派生 | `branch_predictor.v` | 待执行 |
 | M4b/4a | 取指队列去 `q_pred_hi` / `DEPTH` 8 | `ifu_axi.v` | 待执行 |
 | M5 | I-Cache 3,071 FF 归属 + 副本判定 | `icache_axi.v` | 待分析 |

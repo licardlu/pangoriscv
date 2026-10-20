@@ -94,6 +94,26 @@ def parse_used(path):
         return dict(zip(("lut", "ff", "drm", "apm", "lutram"),
                         (int(x) for x in m.groups())))
 
+    # device_map/run.log "Device Utilization Summary" table:
+    #   | Logic Utilization | Used  | Available | Utilization(%)
+    #   | LUT               | 21949 | 66600     | 33
+    #   | Distributed RAM   | 3628  | 19900     | 19
+    if "Device Utilization Summary" in text:
+        table = {
+            "lut": r"\|\s*LUT\s*\|\s*([0-9]+)",
+            "ff": r"\|\s*FF\s*\|\s*([0-9]+)",
+            "lutram": r"\|\s*Distributed RAM\s*\|\s*([0-9]+)",
+            "drm": r"\|\s*DRM\s*\|\s*([0-9]+)",
+            "apm": r"\|\s*APM\s*\|\s*([0-9]+)",
+        }
+        got = {}
+        for key, pat in table.items():
+            mm = re.search(pat, text)
+            if mm:
+                got[key] = int(mm.group(1))
+        if len(got) == 5:
+            return got
+
     # device_map/run.log style:  Used | 21949 | 14104 | ...  (pipe or space separated)
     m = re.search(r"^\s*Used\s*[\|,]?\s*([0-9]+)\s*[\|,]?\s*([0-9]+)\s*[\|,]?\s*([0-9]+)"
                   r"\s*[\|,]?\s*([0-9]+)\s*[\|,]?\s*([0-9]+)", text, re.M)

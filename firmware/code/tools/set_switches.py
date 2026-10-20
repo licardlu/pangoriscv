@@ -42,8 +42,41 @@ def classify(line):
     return None, None
 
 
+def parse_args(argv):
+    """Return (mode, per_switch) from the command line.
+
+    Two forms are accepted:
+      * the original bulk form  ``on`` / ``off`` / ``status`` (all three switches)
+      * per-switch form          ``PERF_ENABLE=off`` (repeatable, any order)
+
+    The per-switch form exists for the area workstream: the DELIVERY profile
+    turns PERF_ENABLE off while the analysis/simulation profile keeps all three
+    on.  Bulk ``off`` would silently change CACHE_ENABLE/PREDICT_ENABLE too,
+    which invalidates any CoreMark comparison (lesson 4.10: a cached design and
+    a cache-less design are different designs, not two configurations of one).
+    """
+    mode = ""
+    per_switch = {}
+    for arg in argv:
+        if "=" in arg:
+            name, _, value = arg.partition("=")
+            name = name.strip()
+            value = value.strip().lower()
+            if name not in SWITCHES:
+                raise SystemExit("unknown switch %r; known: %s"
+                                 % (name, ", ".join(SWITCHES)))
+            if value not in ("on", "off"):
+                raise SystemExit("%s needs on or off, got %r" % (name, value))
+            per_switch[name] = value
+        elif mode == "":
+            mode = arg
+        else:
+            raise SystemExit("unexpected argument %r" % arg)
+    return mode, per_switch
+
+
 def main():
-    mode = sys.argv[1] if len(sys.argv) > 1 else ""
+    mode, per_switch = parse_args(sys.argv[1:])
     raw = CONFIG.read_bytes()
     lines = raw.split(b"\n")
 
@@ -70,16 +103,31 @@ def main():
                                 if state[name] == "on" else "off"))
         return 0
 
-    if mode not in ("on", "off"):
-        raise SystemExit("usage: set_switches.py on|off|status")
+    if per_switch:
+        if mode:
+            raise SystemExit("give either on|off|status or NAME=on|off, not both")
+        wanted = per_switch
+    elif mode in ("on", "off"):
+        wanted = {name: mode for name in SWITCHES}
+    else:
+        raise SystemExit("usage: set_switches.py on|off|status\n"
+                         "       set_switches.py PERF_ENABLE=off [CACHE_ENABLE=on ...]")
 
-    for name in SWITCHES:
+    changed = []
+    for name, value in wanted.items():
         i = index[name]
+        if state[name] == value:
+            continue
         active, commented = forms(name)
-        lines[i] = active if mode == "on" else commented
+        lines[i] = active if value == "on" else commented
+        changed.append("%s->%s" % (name, value.upper()))
+
+    if not changed:
+        print("nothing to do (already in the requested state)")
+        return 0
 
     CONFIG.write_bytes(b"\n".join(lines))
-    print("three switches %s" % mode.upper())
+    print("switches updated: %s" % ", ".join(changed))
     return 0
 
 

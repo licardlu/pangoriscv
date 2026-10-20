@@ -42,7 +42,12 @@ module dcache_axi #(
     // returns.  Outside it -- the 0x1000_4000..0x1FFF_FFFF hole -- a store
     // can be answered DECERR, and that must reach the CPU as a store access
     // fault, so it must NOT take the early path (independent review R01).
-    parameter [31:0]  DATA_RAM_LIMIT = 32'h1000_4000
+    parameter [31:0]  DATA_RAM_LIMIT = 32'h1000_4000,
+    // Depth of the posted store queue (P34).  4 covers the measured CoreMark
+    // demand: 97.2% of stores are isolated, the rest run 2 (4,478) / 3 (5,114) /
+    // 4+ (453) deep, max 12.  One entry is always in flight, so depth 4 lets a
+    // run of five back-to-back stores retire without touching the AXI B.
+    parameter integer STQ_DEPTH = 4
 )(
     input wire clk, rst_n,
     // LSU-facing request interface (identical to axi_data_engine)
@@ -157,20 +162,35 @@ module dcache_axi #(
     // stays precise (ISA e2e case 11).
     reg        early_q;           // this write may be released before B
     reg        drain_q;           // a released write still owes an AXI B
-    // One-entry posted store buffer: a data-RAM store accepted while the
-    // previous write is draining.  Its cache-line merge is done on the accept
-    // edge; the AXI write is released when the engine is free.
-    reg        hold_valid;
-    reg [31:0] hold_addr;
-    reg [31:0] hold_data;
-    reg [3:0]  hold_strb;
-    reg [2:0]  hold_size;
-    reg [3:0]  hold_id;
-    reg [IDXW-1:0] hold_set;
-    reg [2:0]  hold_word;
-    reg        hold_way;
-    reg        hold_hit;
-    reg        hold_cached;
+    // P34 (performance workstream): POSTED STORE QUEUE.
+    // A data-RAM store is answered before its AXI B returns, so back-to-back
+    // stores only need the cache to *take* them.  The previous one-entry hold
+    // buffer could absorb exactly one store while the previous write drained,
+    // which refused the third store of a run -- measured on CoreMark as 451,958
+    // refused cycles (7.7% of the score window), 99.99% of them
+    // "ST_WR_DRAIN && hold_valid" (evidence: ST_REFUSE / STORE_BURST probes in
+    // tb/integration/tb_coremark_uart.sv, docs/plan-perf-3.6.md).
+    //
+    // Each entry carries ONLY what the AXI write needs.  The cache-line merge
+    // already happened on the accept edge (merged_accept below), so
+    // set/word/way/hit/cached are deliberately not queued: a queued entry has
+    // nothing left to merge or invalidate.
+    //
+    // Ordering contract (unchanged, now explicit):
+    //   * entries leave in program order (circular FIFO, one release at a time);
+    //   * a read that has to reach memory is NOT accepted while the queue is
+    //     non-empty, so a queued write can never be overtaken by a refill;
+    //   * dc_idle stays low until the queue AND the in-flight write are empty.
+    localparam integer STQ_AW = (STQ_DEPTH > 1) ? $clog2(STQ_DEPTH) : 1;
+    reg [31:0]      q_addr [0:STQ_DEPTH-1];
+    reg [31:0]      q_data [0:STQ_DEPTH-1];
+    reg [3:0]       q_strb [0:STQ_DEPTH-1];
+    reg [2:0]       q_size [0:STQ_DEPTH-1];
+    reg [3:0]       q_id   [0:STQ_DEPTH-1];
+    reg [STQ_AW-1:0] q_head_q, q_tail_q;
+    reg [STQ_AW:0]   q_count_q;
+    wire q_empty = (q_count_q == 0);
+    wire q_full  = (q_count_q == STQ_DEPTH);
     reg        b_seen_q;          // B was already handed over by the write engine
     reg        wreq_q;            // our AW still owes to the engine
     reg        wsent_q;           // our AW was accepted: the next W beat is ours
@@ -302,13 +322,18 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // cache is then unavailable to the CPU only for genuine read misses, which is
     // what the LSU's "engine busy" fallback was really paying for.
     wire read_hit_now = req_valid && !req_write && req_in_cache && hit_any;
+    // A read that must go to memory: it must never overtake a queued store.
+    wire read_mem_now = req_valid && !req_write && !(req_in_cache && hit_any);
     assign req_ready = rst_n && !protocol_fault && !config_fault &&
                        ((state_q==ST_IDLE) ||
                         ((state_q==ST_WR_HOLD || state_q==ST_WR_DRAIN ||
                           state_q==ST_WR_POST) && read_hit_now) ||
-                        // a data-RAM store may enter the posted buffer while the
-                        // previous write's B is still outstanding
-                        ((state_q==ST_WR_DRAIN) && req_write && early_req && !hold_valid));
+                        // a data-RAM store may enter the posted queue whenever the
+                        // queue has room, without waiting for the previous B
+                        ((state_q==ST_WR_DRAIN || state_q==ST_WR_POST) &&
+                         req_write && early_req && !q_full)) &&
+                       // ordering: queued writes land before any refill reads
+                       (!read_mem_now || q_empty);
     assign w_ready   = i_w_ready;              // inner engine latches in WR_PREP
 
     // P10: answer a cache READ hit on the ACCEPT edge.  The tag comparison already
@@ -349,17 +374,24 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                                 (w_data & strb_mask_acc);
     wire accept_early = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         req_write && early_req;
-    wire accept_post = rst_n && (state_q==ST_WR_DRAIN) && req_valid && req_ready &&
-                       req_write && early_req && !hold_valid;
-    wire hold_start_release = (state_q==ST_WR_DRAIN) && i_b_valid && hold_valid;
+    // Enqueue an extra data-RAM store while a write drains (or while the just
+    // queued one is being released).  This replaces the one-entry hold buffer.
+    wire accept_post = rst_n && (state_q==ST_WR_DRAIN || state_q==ST_WR_POST) &&
+                       req_valid && req_ready && req_write && early_req && !q_full;
+    // Release the queue head to the write engine: on the B edge of the current
+    // write, or from ST_WR_POST where the head is the store just accepted.
+    wire q_pop_drain = (state_q==ST_WR_DRAIN) && i_b_valid && !q_empty;
+    wire q_pop_post  = (state_q==ST_WR_POST)  && !q_empty;
+    wire q_pop       = rst_n && (q_pop_drain || q_pop_post);
+    wire q_push      = rst_n && accept_post;
 
     assign b_valid = rst_n && ((state_q==ST_WR_HOLD) || early_now || accept_early ||
                                accept_post);
     assign b_resp  = (early_now || accept_early || accept_post) ? `AXI_RESP_OKAY : resp_q;
     assign b_id    = accept_post ? req_id : id_q;
-    // Halt/reset must drain the posted buffer and the write engine before the
+    // Halt/reset must drain the posted queue and the write engine before the
     // SoC's data_idle is allowed to go high.
-    assign dc_idle = rst_n && (state_q==ST_IDLE) && !hold_valid && !i_req_valid &&
+    assign dc_idle = rst_n && (state_q==ST_IDLE) && q_empty && !i_req_valid &&
                      !wsent_q && !drain_q;
     assign miss_event = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         !req_write && req_in_cache && !hit_any;
@@ -382,17 +414,9 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             cached_q    <= 1'b0;
             early_q     <= 1'b0;
             drain_q     <= 1'b0;
-            hold_valid  <= 1'b0;
-            hold_addr   <= 32'd0;
-            hold_data   <= 32'd0;
-            hold_strb   <= 4'd0;
-            hold_size   <= 3'd0;
-            hold_id     <= 4'd0;
-            hold_set    <= {IDXW{1'b0}};
-            hold_word   <= 3'd0;
-            hold_way    <= 1'b0;
-            hold_hit    <= 1'b0;
-            hold_cached <= 1'b0;
+            q_head_q    <= {STQ_AW{1'b0}};
+            q_tail_q    <= {STQ_AW{1'b0}};
+            q_count_q   <= {(STQ_AW+1){1'b0}};
             b_seen_q    <= 1'b0;
             wreq_q      <= 1'b0;
             wsent_q     <= 1'b0;
@@ -581,55 +605,41 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         state_q <= ST_IDLE;
                     end
                 end
-                // Background drain.  A data-RAM store may be accepted here into
-                // the one-entry posted buffer; its cache-line merge happens on
-                // the accept edge and its AXI write is released once the engine
-                // is free.
+                // Background drain.  Further data-RAM stores are pushed into the
+                // posted queue; each entry's cache-line merge happens on its
+                // accept edge, and its AXI write is released when the current B
+                // arrives (in program order).
                 ST_WR_DRAIN: begin
+                    if (accept_post && req_in_cache && hit_any)
+                        data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
                     if (i_b_valid) begin
                         // The old write's line must be invalidated on an error
-                        // before cached_q/hit_q are replaced by the parked store.
+                        // before cached_q/hit_q are replaced.
                         if ((i_b_resp!==2'b00) && cached_q && hit_q)
                             valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
-                        if (hold_valid) begin
-                            // release the parked store to the write engine
+                        if (!q_empty) begin
+                            // release the queue head to the write engine
                             i_req_valid_r <= 1'b1;
                             i_req_write_r <= 1'b1;
-                            i_req_addr_r  <= hold_addr;
-                            i_req_size_r  <= hold_size;
+                            i_req_addr_r  <= q_addr[q_head_q];
+                            i_req_size_r  <= q_size[q_head_q];
                             i_req_len_r   <= 8'd0;
-                            i_req_id_r    <= hold_id;
-                            wdata_q       <= hold_data;
-                            wstrb_q       <= hold_strb;
+                            i_req_id_r    <= q_id[q_head_q];
+                            wdata_q       <= q_data[q_head_q];
+                            wstrb_q       <= q_strb[q_head_q];
                             wreq_q        <= 1'b1;
                             early_q       <= 1'b1;
                             drain_q       <= 1'b1;
                             b_seen_q      <= 1'b0;
-                            cached_q      <= hold_cached;
-                            hit_q         <= hold_hit;
-                            hit_way_q     <= hold_way;
-                            set_q         <= hold_set;
-                            set_wr_q      <= hold_set;
-                            word_q        <= hold_word;
-                            id_q          <= hold_id;
-                            hold_valid    <= 1'b0;
+                            // a queued entry was merged on its accept edge, so it
+                            // has neither a line to merge nor one to invalidate
+                            cached_q      <= 1'b0;
+                            hit_q         <= 1'b0;
+                            id_q          <= q_id[q_head_q];
                             state_q       <= ST_WR_DRAIN;
                         end else if (accept_post) begin
-                            // new store accepted on the same edge as the old B:
-                            // park it for one cycle (ST_WR_POST)
-                            hold_valid  <= 1'b1;
-                            hold_addr   <= req_addr;
-                            hold_data   <= w_data;
-                            hold_strb   <= w_strb;
-                            hold_size   <= req_size;
-                            hold_id     <= req_id;
-                            hold_set    <= req_set;
-                            hold_word   <= req_word;
-                            hold_way    <= hit_way;
-                            hold_hit    <= hit_any;
-                            hold_cached <= req_in_cache;
-                            if (req_in_cache && hit_any)
-                                data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                            // the store accepted on this very edge is the only
+                            // entry: release it on the next cycle
                             drain_q <= 1'b0;
                             state_q <= ST_WR_POST;
                         end else begin
@@ -637,45 +647,28 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                             state_q <= ST_IDLE;
                         end
                     end else if (accept_post) begin
-                        // park the store until the outstanding B arrives
-                        hold_valid  <= 1'b1;
-                        hold_addr   <= req_addr;
-                        hold_data   <= w_data;
-                        hold_strb   <= w_strb;
-                        hold_size   <= req_size;
-                        hold_id     <= req_id;
-                        hold_set    <= req_set;
-                        hold_word   <= req_word;
-                        hold_way    <= hit_way;
-                        hold_hit    <= hit_any;
-                        hold_cached <= req_in_cache;
-                        if (req_in_cache && hit_any)
-                            data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                        // stay in the drain; the push bookkeeping is in the tail
                         state_q <= ST_WR_DRAIN;
                     end
                 end
-                // Release a parked store to the engine.
+                // Release the queue head that was accepted on the previous edge.
                 ST_WR_POST: begin
                     i_req_valid_r <= 1'b1;
                     i_req_write_r <= 1'b1;
-                    i_req_addr_r  <= hold_addr;
-                    i_req_size_r  <= hold_size;
+                    i_req_addr_r  <= q_addr[q_head_q];
+                    i_req_size_r  <= q_size[q_head_q];
                     i_req_len_r   <= 8'd0;
-                    i_req_id_r    <= hold_id;
-                    wdata_q       <= hold_data;
-                    wstrb_q       <= hold_strb;
+                    i_req_id_r    <= q_id[q_head_q];
+                    wdata_q       <= q_data[q_head_q];
+                    wstrb_q       <= q_strb[q_head_q];
                     wreq_q        <= 1'b1;
                     early_q       <= 1'b1;
                     drain_q       <= 1'b1;
                     b_seen_q      <= 1'b0;
-                    cached_q      <= hold_cached;
-                    hit_q         <= hold_hit;
-                    hit_way_q     <= hold_way;
-                    set_q         <= hold_set;
-                    set_wr_q      <= hold_set;
-                    word_q        <= hold_word;
-                    id_q          <= hold_id;
-                    hold_valid    <= 1'b0;
+                    // merged on its accept edge: no line to merge or invalidate
+                    cached_q      <= 1'b0;
+                    hit_q         <= 1'b0;
+                    id_q          <= q_id[q_head_q];
                     state_q       <= ST_WR_DRAIN;
                 end
 
@@ -685,10 +678,28 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 ST_FAULT: ;
                 default: state_q <= ST_FAULT;
             endcase
+            // ---- posted store queue bookkeeping (P34) ---------------------------
+            // One place for the pointers, so a push and a pop on the same edge
+            // (a B arriving while the next store is accepted) leave the count
+            // unchanged and the order intact.
+            if (q_push) begin
+                q_addr[q_tail_q] <= req_addr;
+                q_data[q_tail_q] <= w_data;
+                q_strb[q_tail_q] <= w_strb;
+                q_size[q_tail_q] <= req_size;
+                q_id[q_tail_q]   <= req_id;
+                q_tail_q         <= q_tail_q + 1'b1;
+            end
+            if (q_pop) q_head_q <= q_head_q + 1'b1;
+            case ({q_push, q_pop})
+                2'b10:   q_count_q <= q_count_q + 1'b1;
+                2'b01:   q_count_q <= q_count_q - 1'b1;
+                default: q_count_q <= q_count_q;
+            endcase
             // Latch "the write engine already handed B over". Without this the
             // background drain could wait for a response that was consumed while
             // the CPU response was being held (observed as an early deadlock).
-            if (i_b_valid && !hold_start_release) b_seen_q <= 1'b1;
+            if (i_b_valid && !q_pop_drain) b_seen_q <= 1'b1;
             if (i_req_valid && i_req_ready) begin
                 wreq_q  <= 1'b0;
                 wsent_q <= 1'b1;

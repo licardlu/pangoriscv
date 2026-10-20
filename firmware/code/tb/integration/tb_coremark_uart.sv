@@ -496,7 +496,138 @@ module tb_coremark_uart;
         sw_idstall=id_stall; sw_noretire=no_retire;
         sw_done=1;
     end
+    // ---- PAIR / FETCH supply decomposition (performance workstream) ------------
+    // Dual issue exists (D1/D2/D3) but IPC sits at ~1.0, so either the fetch
+    // stream rarely offers an adjacent pair, or the pairing rules refuse it, or
+    // the EX slots cannot take it.  Classify every cycle of the score window so
+    // the next RTL change is chosen from data, not from reading the rules.
+    // All of these are testbench-only hierarchical probes: no RTL change.
+    integer pw_pair_take=0, pw_pair_alu=0, pw_pair_mem=0;
+    integer pw_ex0_busy=0, pw_ex1_busy=0;
+    integer pw_rej=0, pw_r_notadj=0, pw_r_l0=0, pw_r_l1=0, pw_r_csr=0,
+            pw_r_fault=0, pw_r_raw=0, pw_r_waw=0;
+    integer pw_single=0, pw_none=0, pw_starve=0, pw_backpress=0;
+    integer pw_l1_alu=0, pw_l1_br=0, pw_l1_jal=0, pw_l1_other=0;
+    integer pw_ret_cyc=0, pw_ret1_cyc=0, pw_no_ret=0;
+    // Control transfers that can never be paired today: JALR (returns) and, in
+    // lane 0, any branch/JAL (lane 0 must be ALU or memory).
+    integer pw_ctrl_solo=0, pw_jalr_solo=0;
+    // Fetch queue residency: how full is the IFU queue when the pipeline asks?
+    integer pw_occ0=0, pw_occ1=0, pw_occ2p=0;
+    always @(posedge clk) if(rst_n && !sw_done) begin
+        if(soc.core.cpu.id_valid && soc.core.cpu.id_valid_h) begin
+            if(soc.core.cpu.id_ready1) begin
+                pw_pair_take=pw_pair_take+1;
+                if(soc.core.cpu.is_memory) pw_pair_mem=pw_pair_mem+1;
+                else                       pw_pair_alu=pw_pair_alu+1;
+            end else if(!soc.core.cpu.ex0_ready) begin
+                pw_ex0_busy=pw_ex0_busy+1;
+            end else if(!soc.core.cpu.ex1_ready) begin
+                pw_ex1_busy=pw_ex1_busy+1;
+            end else if(soc.core.cpu.block_entry) begin
+                pw_ex0_busy=pw_ex0_busy+1;
+            end else begin
+                // pair_ok is false: classify the FIRST blocking rule, in the same
+                // priority the RTL uses, so the buckets add up.
+                pw_rej=pw_rej+1;
+                if(soc.core.cpu.dpch!=soc.core.cpu.dpc+32'd4)      pw_r_notadj=pw_r_notadj+1;
+                else if(!((soc.core.cpu.alu0||soc.core.cpu.mem0))) pw_r_l0=pw_r_l0+1;
+                else if(!((soc.core.cpu.alu1||soc.core.cpu.ctrl1)))pw_r_l1=pw_r_l1+1;
+                else if(soc.core.cpu.dcwe||soc.core.cpu.dcweh)     pw_r_csr=pw_r_csr+1;
+                else if(soc.core.cpu.ifault||soc.core.cpu.ifaulth||
+                        soc.core.cpu.dillegal||soc.core.cpu.dillegalh) pw_r_fault=pw_r_fault+1;
+                else if(soc.core.cpu.drd!=5'd0 && soc.core.cpu.drd!=5'd0 &&
+                        soc.core.cpu.drd==soc.core.cpu.drdh)       pw_r_waw=pw_r_waw+1;
+                else                                                pw_r_raw=pw_r_raw+1;
+            end
+        end else if(soc.core.cpu.id_valid) begin
+            pw_single=pw_single+1;
+        end else begin
+            pw_none=pw_none+1;
+        end
+        if(soc.core.fetch_ready && !soc.core.fetch_valid) pw_starve=pw_starve+1;
+        if(soc.core.fetch_valid && !soc.core.fetch_ready) pw_backpress=pw_backpress+1;
+        if(soc.core.ifu.count_q==0)      pw_occ0=pw_occ0+1;
+        else if(soc.core.ifu.count_q==1) pw_occ1=pw_occ1+1;
+        else                             pw_occ2p=pw_occ2p+1;
+        if(retire_fire) begin
+            pw_ret_cyc=pw_ret_cyc+1;
+            if(soc.core.cpu.ex_valid_h) begin
+                pw_ret1_cyc=pw_ret1_cyc+1;
+                case(soc.core.cpu.ei_h[6:0])
+                    7'h33,7'h13,7'h37,7'h17: pw_l1_alu=pw_l1_alu+1;
+                    7'h63:                   pw_l1_br =pw_l1_br +1;
+                    7'h6f:                   pw_l1_jal=pw_l1_jal+1;
+                    default:                 pw_l1_other=pw_l1_other+1;
+                endcase
+            end
+            if(soc.core.cpu.pred_train_control) pw_ctrl_solo=pw_ctrl_solo+1;
+            if(soc.core.cpu.pred_is_jalr)       pw_jalr_solo=pw_jalr_solo+1;
+        end else pw_no_ret=pw_no_ret+1;
+    end
     integer mem_ops=0, mem_ld=0, mem_st=0;
+    // ---- STORE ACCEPTANCE decomposition (performance workstream) --------------
+    // A data-RAM store is answered early (posted) only if the cache can take it.
+    // req_ready is gated by the cache state and by the single-entry posted buffer,
+    // so a refused store parks the LSU in REQUEST.  Bucket every refused store by
+    // the cache state that refused it: "buffer depth" and "state window" need
+    // different fixes, and guessing which one costs a P&R run each time.
+`ifdef CACHE_ENABLE
+    integer st_refuse=0, rq_st_wrreq=0, rq_st_wrresp=0, rq_st_drain_full=0,
+            rq_st_drain_free=0, rq_st_post=0, rq_st_rd=0, rq_st_hit=0, rq_st_other=0;
+    integer st_refuse_hit=0, st_refuse_miss=0;
+    always @(posedge clk) if(rst_n && !sw_done) begin
+        // The CPU accepts the store on its own edge (op_valid && op_ready) and
+        // *then* parks in REQUEST while the cache refuses eng_req_ready, so the
+        // refusal window is "REQUEST state, store, engine not ready" -- op_valid
+        // has already dropped (issued=1) and must not be used here.
+        if(soc.core.lsu.state==3'd1 && soc.core.lsu.is_store &&
+           !soc.core.lsu.eng_req_ready) begin
+            st_refuse=st_refuse+1;
+            if(soc.core.data_cache.state_q==4'd4)      rq_st_wrreq=rq_st_wrreq+1;
+            else if(soc.core.data_cache.state_q==4'd5) rq_st_wrresp=rq_st_wrresp+1;
+            else if(soc.core.data_cache.state_q==4'd9)
+                if(soc.core.data_cache.q_full)         rq_st_drain_full=rq_st_drain_full+1;
+                else                                   rq_st_drain_free=rq_st_drain_free+1;
+            else if(soc.core.data_cache.state_q==4'd10) rq_st_post=rq_st_post+1;
+            else if(soc.core.data_cache.state_q==4'd2||
+                    soc.core.data_cache.state_q==4'd3)  rq_st_rd=rq_st_rd+1;
+            else if(soc.core.data_cache.state_q==4'd1||
+                    soc.core.data_cache.state_q==4'd6)  rq_st_hit=rq_st_hit+1;
+            else                                        rq_st_other=rq_st_other+1;
+            if(soc.core.lsu.address>=32'h1000_0000 &&
+               soc.core.lsu.address<32'h1000_4000)      st_refuse_hit=st_refuse_hit+1;
+            else                                        st_refuse_miss=st_refuse_miss+1;
+        end
+    end
+`endif
+    // ---- STORE BURST DEMAND (P34 depth sizing) --------------------------------
+    // How deep does the posted-store queue have to be?  Measured on the DEMAND
+    // side -- consecutive RETIRED stores with no intervening other instruction --
+    // because the supply side is already distorted by today's one-entry buffer
+    // (a refused store breaks any "accepted back to back" run).
+    integer sb_hist [0:9];      // index 0 unused; 9 = "9 or more"
+    integer sb_run=0, sb_max=0, sb_runs=0, sb_stores=0, sb_k=0;
+    initial for(sb_k=0; sb_k<10; sb_k=sb_k+1) sb_hist[sb_k]=0;
+    task automatic sb_close_run;
+        begin
+            if(sb_run!=0) begin
+                if(sb_run>9) sb_hist[9]=sb_hist[9]+1; else sb_hist[sb_run]=sb_hist[sb_run]+1;
+                if(sb_run>sb_max) sb_max=sb_run;
+                sb_runs=sb_runs+1;
+                sb_run=0;
+            end
+        end
+    endtask
+    always @(posedge clk) if(rst_n) begin
+        if(retire_fire) begin
+            if(soc.core.cpu.ei[6:0]==7'h23) begin
+                sb_run=sb_run+1;
+                sb_stores=sb_stores+1;
+            end else sb_close_run;
+        end
+    end
+    always @(posedge clk) if(rst_n && sw_done && sb_run!=0) sb_close_run;
     always @(posedge clk) if(rst_n) begin
         if(soc.core.cpu.ex_valid && !soc.core.cpu.ex_leave) ex_busy=ex_busy+1;
         if(soc.core.cpu.ex_valid && soc.core.cpu.is_memory &&
@@ -547,6 +678,25 @@ module tb_coremark_uart;
         $display("EX_OCCUPANCY ex_busy=%0d ex_mem_post=%0d ex_div_busy=%0d lsu_nonidle=%0d", ex_busy, ex_mem_post, ex_div_busy, lsu_nonidle);
         $display("EX_SPLIT load=%0d store=%0d other=%0d id_stall=%0d no_retire=%0d retire_cyc=%0d",
                  exb_load, exb_store, exb_other, id_stall, no_retire, retire_cyc);
+        $display("PAIR_STATS take=%0d (alu=%0d mem=%0d) ret_cyc=%0d ret1_cyc=%0d no_ret=%0d single=%0d none=%0d",
+                 pw_pair_take, pw_pair_alu, pw_pair_mem, pw_ret_cyc, pw_ret1_cyc,
+                 pw_no_ret, pw_single, pw_none);
+        $display("PAIR_BLOCK ex0_busy=%0d ex1_busy=%0d reject=%0d [notadj=%0d l0=%0d l1=%0d csr=%0d fault=%0d raw=%0d waw=%0d]",
+                 pw_ex0_busy, pw_ex1_busy, pw_rej, pw_r_notadj, pw_r_l0, pw_r_l1,
+                 pw_r_csr, pw_r_fault, pw_r_raw, pw_r_waw);
+        $display("FETCH_SUPPLY starve=%0d backpress=%0d occ0=%0d occ1=%0d occ2p=%0d",
+                 pw_starve, pw_backpress, pw_occ0, pw_occ1, pw_occ2p);
+        $display("LANE1_MIX alu=%0d br=%0d jal=%0d other=%0d ctrl_solo=%0d jalr_solo=%0d",
+                 pw_l1_alu, pw_l1_br, pw_l1_jal, pw_l1_other, pw_ctrl_solo, pw_jalr_solo);
+        $display("ST_REFUSE total=%0d (data_ram=%0d other=%0d) wrreq=%0d wrresp=%0d drain_full=%0d drain_free=%0d post=%0d rd=%0d hit=%0d other_state=%0d",
+                 st_refuse, st_refuse_hit, st_refuse_miss, rq_st_wrreq, rq_st_wrresp,
+                 rq_st_drain_full, rq_st_drain_free, rq_st_post, rq_st_rd,
+                 rq_st_hit, rq_st_other);
+        sb_close_run;
+        $display("STORE_BURST stores=%0d runs=%0d max=%0d hist=%0d/%0d/%0d/%0d/%0d/%0d/%0d/%0d/%0d",
+                 sb_stores, sb_runs, sb_max,
+                 sb_hist[1],sb_hist[2],sb_hist[3],sb_hist[4],sb_hist[5],
+                 sb_hist[6],sb_hist[7],sb_hist[8],sb_hist[9]);
         $display("SCORE_WINDOW cycles=%0d retires=%0d no_retire=%0d load=%0d store=%0d other=%0d id_stall=%0d",
                  sw_cycles, sw_retires, sw_noretire, sw_load, sw_store, sw_other, sw_idstall);
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);

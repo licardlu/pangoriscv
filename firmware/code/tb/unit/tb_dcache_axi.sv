@@ -24,6 +24,14 @@
 //                             the cached line is invalidated (next read misses)
 // D9 MMIO bypass           -> non-cacheable reads/writes never allocate and
 //                             never disturb the cached copies
+// E1 posted store queue    -> three back-to-back data-RAM stores are all
+//                             accepted before the first B returns
+// E2 queue order           -> every queued store lands in memory, in order
+// E3 merge on accept       -> a load HIT already sees the merged word while the
+//                             write is still queued
+// E4 miss ordering         -> a read MISS is not accepted while writes are
+//                             queued or draining
+// E5 halt drain            -> dc_idle stays low until the queue is empty
 //
 // The slave is a plain INCR reader plus a single-beat writer with injectable
 // RRESP/BRESP errors, so the tests observe the real AXI framing.
@@ -60,6 +68,7 @@ module tb_dcache_axi;
     wire [1:0] b_resp;
     wire [3:0] b_id;
     wire protocol_fault, config_fault, miss_event;
+    wire dc_idle;
 
     // AXI master side
     wire m_arvalid;
@@ -112,6 +121,7 @@ module tb_dcache_axi;
         .b_valid(b_valid), .b_ready(b_ready), .b_resp(b_resp), .b_id(b_id),
         .protocol_fault(protocol_fault), .config_fault(config_fault),
         .miss_event(miss_event),
+        .dc_idle(dc_idle),
         .m_arvalid(m_arvalid), .m_arready(m_arready), .m_araddr(m_araddr),
         .m_arid(m_arid), .m_arlen(m_arlen), .m_arsize(m_arsize),
         .m_arburst(m_arburst), .m_arlock(m_arlock), .m_arcache(m_arcache),
@@ -290,25 +300,36 @@ module tb_dcache_axi;
         end
     endtask
 
+    // A store driven the way lsu_axi actually drives one (optimization P34 test
+    // bring-up).  The LSU presents the W beat ON THE ACCEPT EDGE -- wdata_on_iss
+    // in lsu_axi.v -- and never waits for w_ready on that path, because the cache
+    // latches w_data/w_strb into wdata_q itself.  The previous version of this
+    // task asserted w_valid one cycle AFTER the accept and then waited for
+    // w_ready, which no store can ever satisfy: the inner write engine takes its
+    // W beat from the cache, not from the testbench.  That is why D3 timed out
+    // (docs/plan-3.5-3.8.md 4.10).  b_ready is high from the accept edge so an
+    // early release (data-RAM window) is taken there; otherwise the cache parks
+    // in ST_WR_HOLD and hands the response over when it arrives.
     task wr(input [255:0] what, input [31:0] addr, input [31:0] data,
             input [3:0] strb, input [1:0] exp_bresp, input integer exp_writes);
         begin
             w0 = aw_writes;
             @(negedge clk);
             req_addr = addr; req_write = 1; req_size = 3'd2; req_len = 8'd0;
-            req_id = 4'h3; req_valid = 1; w_valid = 0; b_ready = 0;
-            while(!req_ready) @(negedge clk);   // see the note in rd()
-            @(posedge clk);
-            @(negedge clk);
-            req_valid = 0;
+            req_id = 4'h3; req_valid = 1;
             w_data = data; w_strb = strb; w_last = 1; w_valid = 1;
-            @(negedge clk);
-            while(!w_ready) @(negedge clk);
-            @(posedge clk);
-            @(negedge clk);
-            w_valid = 0;
             b_ready = 1;
-            while(!b_valid) @(negedge clk);
+            #1;
+            while(!req_ready) begin          // see the note in rd()
+                @(negedge clk); #1;
+            end
+            @(posedge clk);                  // accept edge
+            @(negedge clk);
+            req_valid = 0; w_valid = 0;
+            #1;
+            while(!b_valid) begin
+                @(negedge clk); #1;
+            end
             got_resp = b_resp;
             @(negedge clk);
             b_ready = 0;
@@ -320,6 +341,32 @@ module tb_dcache_axi;
                           what, addr, strb, got_resp, aw_writes - w0);
         end
     endtask
+
+    // One store, presented the way lsu_axi fast-issue does it: request AND W beat
+    // on the same edge, b_ready high.  Nothing is waited for, so a run of calls
+    // exercises "can the cache take another store while the previous one drains".
+    // `accepted` is the handshake on that edge; `bseen`/`bresp` are the early
+    // release the CPU would see in the same cycle.
+    task automatic store_beat(input [31:0] addr, input [31:0] data, input [3:0] strb,
+                              output accepted, output bseen, output [1:0] bresp);
+        begin
+            req_addr = addr; req_write = 1; req_size = 3'd2; req_len = 8'd0;
+            req_id = 4'h3; req_valid = 1;
+            w_data = data; w_strb = strb; w_last = 1; w_valid = 1;
+            b_ready = 1;
+            #1;                        // let the combinational req_ready settle
+            accepted = req_ready;
+            bseen    = b_valid;
+            bresp    = b_resp;
+            @(posedge clk);
+            @(negedge clk);
+            req_valid = 0; w_valid = 0; b_ready = 0;
+        end
+    endtask
+
+    reg st_acc0, st_acc1, st_acc2, st_b0, st_b1, st_b2, rd_acc;
+    reg [1:0] st_r0, st_r1, st_r2;
+    integer w_base = 0;
 
     initial begin
         repeat(4) @(negedge clk);
@@ -387,6 +434,76 @@ module tb_dcache_axi;
             $display("  FAIL D9 mmio memory not written: %08x", mem[0]);
         // the cached copy of 0x000 must be untouched by the MMIO window
         rd("D9 cache untouched", 32'h0000_0000, 32'hDEADBEEF, 2'b00, 0);
+
+        // ---------------- G5: posted store queue (P34) ----------------------
+        // Data-RAM stores (0x1000_0000..0x1000_3FFF) are answered before the AXI
+        // B returns.  With a one-entry post buffer only ONE extra store fits while
+        // the previous one drains; the queue must absorb a short run.
+        w_base = aw_writes;
+        // E1: three back-to-back stores, none of them waiting for a B.
+        store_beat(32'h1000_0000, 32'h1111_0000, 4'hF, st_acc0, st_b0, st_r0);
+        store_beat(32'h1000_0004, 32'h2222_0004, 4'hF, st_acc1, st_b1, st_r1);
+        store_beat(32'h1000_0008, 32'h3333_0008, 4'hF, st_acc2, st_b2, st_r2);
+        if(!st_acc0 || !st_acc1) begin
+            errors = errors + 1;
+            $display("  FAIL E1 first/second store refused (%b/%b)", st_acc0, st_acc1);
+        end else if(!st_acc2) begin
+            errors = errors + 1;
+            $display("  FAIL E1 third back-to-back store refused: queue depth is still 1");
+        end else if(!st_b0 || st_r0 !== 2'b00) begin
+            errors = errors + 1;
+            $display("  FAIL E1 store0 not answered early (bseen=%b bresp=%b)", st_b0, st_r0);
+        end else $display("  ok   E1 three back-to-back data-RAM stores accepted");
+
+        // E5a: idle must stay low while the writes are still outstanding.
+        if(dc_idle) begin
+            errors = errors + 1;
+            $display("  FAIL E5a dc_idle high with queued writes");
+        end
+
+        // E2: every queued write reaches memory, in program order.
+        while(!dc_idle) @(negedge clk);
+        if(st_acc2) begin
+            if(mem[0] !== 32'h1111_0000 || mem[1] !== 32'h2222_0004 ||
+               mem[2] !== 32'h3333_0008) begin
+                errors = errors + 1;
+                $display("  FAIL E2 queued writes landed as %08x/%08x/%08x",
+                         mem[0], mem[1], mem[2]);
+            end else if((aw_writes - w_base) !== 3) begin
+                errors = errors + 1;
+                $display("  FAIL E2 write count %0d expected 3", aw_writes - w_base);
+            end else $display("  ok   E2 all three queued writes landed in order");
+        end
+
+        // E5b: idle only after the queue drained.
+        if(!dc_idle) begin
+            errors = errors + 1;
+            $display("  FAIL E5b dc_idle low after the queue drained");
+        end
+
+        // E3: the write merge happens on the ACCEPT edge, so a load that HITS the
+        // same line must already see the new word while the write is queued.
+        rd("E3 prime line", 32'h1000_0100, mem[64], 2'b00, 1);
+        store_beat(32'h1000_0100, 32'hAABBCCDD, 4'hF, st_acc0, st_b0, st_r0);
+        rd("E3 merged while queued", 32'h1000_0100, 32'hAABBCCDD, 2'b00, 0);
+
+        // E4: a read MISS must not overtake queued / draining writes.
+        store_beat(32'h1000_0040, 32'h5555_0040, 4'hF, st_acc0, st_b0, st_r0);
+        store_beat(32'h1000_0044, 32'h6666_0044, 4'hF, st_acc1, st_b1, st_r1);
+        req_addr = 32'h1000_0800; req_write = 0; req_size = 3'd2; req_len = 8'd0;
+        req_id = 4'h5; req_valid = 1;
+        #1;
+        rd_acc = req_ready;
+        req_valid = 0;
+        if(rd_acc) begin
+            errors = errors + 1;
+            $display("  FAIL E4 read miss accepted while writes were queued");
+        end else $display("  ok   E4 read miss held off until the queue drains");
+        while(!dc_idle) @(negedge clk);
+        if(mem[16] !== 32'h5555_0040 || mem[17] !== 32'h6666_0044) begin
+            errors = errors + 1;
+            $display("  FAIL E4 queued writes lost: %08x/%08x", mem[16], mem[17]);
+        end
 
         if(protocol_fault) begin
             errors = errors + 1;

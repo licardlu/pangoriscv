@@ -60,8 +60,26 @@ module pangoriscv(
  wire ewe,ecwe,efault,eillegal,eu1,eu2;
  wire ewe_h,ecweh,efault_h,eillegal_h,eu1_h,eu2_h;
  wire [4:0] erd,ecause,erd_h,ecause_h;
- wire [31:0] alu_result,alu_target,alu_result_h,alu_target_h;
- wire alu_taken,alu_taken_h;
+ wire [31:0] xi,xp,xr1,xr2,xcaddr,xcr,xo1,xo2,xj1,xj2,xt,xpred;
+ wire [31:0] xi_h,xp_h,xr1_h,xr2_h,xcaddr_h,xcr_h,xo1_h,xo2_h,xj1_h,xj2_h,xt_h,xpred_h;
+ wire xwe,xcwe,xfault,xillegal,xu1,xu2;
+ wire xwe_h,xcweh,xfault_h,xillegal_h,xu1_h,xu2_h;
+ wire [4:0] xrd,xcause,xrd_h,xcause_h;
+ wire x_valid,x_valid_h,back0_ready,back1_ready;
+ wire x_advance=back0_ready && back1_ready && !redirect_valid;
+ wire [31:0] x_alu_result,x_alu_target;
+ wire x_alu_taken;
+ reg [31:0] alu_result,alu_target;
+ reg alu_taken;
+ wire [31:0] alu_result_h,alu_target_h;
+ wire alu_taken_h;
+ // X0 -> X1 result boundary: payload and result advance on the same handshake.
+ always @(posedge clk) begin
+   if(!rst_n) begin alu_result<=0; alu_target<=0; alu_taken<=0; end
+   else if(x_valid && x_advance) begin
+     alu_result<=x_alu_result; alu_target<=x_alu_target; alu_taken<=x_alu_taken;
+   end
+ end
  wire is_load=(ei[6:0]==7'h03);
  wire is_store0=(ei[6:0]==7'h23);
  wire is_memory=is_load || is_store0;
@@ -136,8 +154,8 @@ module pangoriscv(
 
  // id_ex drives in_ready (slot can take an instruction: empty or leaving).
  wire ex0_ready,ex1_ready;
- assign id_ready0=ex0_ready && ex1_ready && !block_entry;
- assign id_ready1=ex0_ready && ex1_ready && pair_ok && !block_entry;
+ assign id_ready0=ex0_ready && ex1_ready && !block_entry && !dep0;
+ assign id_ready1=id_ready0 && pair_ok && !dep1;
  // Keep the old hierarchical observability name used by the CoreMark testbench.
  wire id_ready=id_ready0;
 
@@ -296,21 +314,61 @@ module pangoriscv(
    .fault_tval_o(it),.predicted_next_pc_o(ipred),
    .pc_hi_o(iph),.inst_hi_o(iih),.fault_hi_o(ifaulth),.fault_cause_hi_o(icauseh),
    .fault_tval_hi_o(ith),.predicted_next_pc_hi_o(ipredh));
+ // Real architectural sources, distinct from ID operand-selector flags.
+ function reads_rs1;
+   input [31:0] ins;
+   begin
+     case(ins[6:0])
+       7'h33,7'h13,7'h03,7'h23,7'h63,7'h67: reads_rs1=1'b1;
+       7'h73: reads_rs1=(ins[14:12]!=0 && !ins[14]);
+       default: reads_rs1=1'b0;
+     endcase
+   end
+ endfunction
+ function reads_rs2;
+   input [31:0] ins;
+   begin reads_rs2=(ins[6:0]==7'h33 || ins[6:0]==7'h23 || ins[6:0]==7'h63); end
+ endfunction
+ function depends_on;
+   input [31:0] ins;
+   input [4:0] dest;
+   begin depends_on=(dest!=0) &&
+       ((reads_rs1(ins) && ins[19:15]==dest) ||
+        (reads_rs2(ins) && ins[24:20]==dest)); end
+ endfunction
+ wire x0_forwardable=x_valid && xwe && !xfault && !xillegal &&
+       ((xi[6:0]==7'h33 && xi[31:25]!=7'h01) || xi[6:0]==7'h13 ||
+        xi[6:0]==7'h37 || xi[6:0]==7'h17);
+ // X0 lane 1 is younger than lane 0 and has not executed. Its destination
+ // match stalls decode even if lane 0 offers a matching ready value.
+ // X1 writes remain unavailable while the packet is waiting for memory.
+ wire dep0=(x_valid_h && xwe_h && depends_on(dinst,xrd_h)) ||
+           (x_valid && xwe && !x0_forwardable && depends_on(dinst,xrd)) ||
+           (ex_valid_h && ewe_h && !retire1 && depends_on(dinst,erd_h)) ||
+           (ex_valid && ewe && !retire0 && depends_on(dinst,erd));
+ wire dep1=(x_valid_h && xwe_h && depends_on(dinsth,xrd_h)) ||
+           (x_valid && xwe && !x0_forwardable && depends_on(dinsth,xrd)) ||
+           (ex_valid_h && ewe_h && !retire1 && depends_on(dinsth,erd_h)) ||
+           (ex_valid && ewe && !retire0 && depends_on(dinsth,erd));
  // EX -> ID forwarding.  The register file's same-cycle write-through alone is
  // not enough: the ID/EX latch samples the combinational read on the same edge
  // the producer retires, so it can capture the pre-write value.  Select the EX
  // result explicitly (lane 1 is younger and wins on a same-register collision).
- wire [31:0] rv1f = (retire1 && ewe_h && erd_h!=0 && erd_h==rs1) ? wdata_h :
+ wire [31:0] rv1f = (x0_forwardable && xrd!=0 && xrd==rs1) ? x_alu_result :
+                    (retire1 && ewe_h && erd_h!=0 && erd_h==rs1) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs1)   ? wdata : rv1;
- wire [31:0] rv2f = (retire1 && ewe_h && erd_h!=0 && erd_h==rs2) ? wdata_h :
+ wire [31:0] rv2f = (x0_forwardable && xrd!=0 && xrd==rs2) ? x_alu_result :
+                    (retire1 && ewe_h && erd_h!=0 && erd_h==rs2) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2)   ? wdata : rv2;
- wire [31:0] rv1hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs1h) ? wdata_h :
+ wire [31:0] rv1hf= (x0_forwardable && xrd!=0 && xrd==rs1h) ? x_alu_result :
+                    (retire1 && ewe_h && erd_h!=0 && erd_h==rs1h) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs1h)   ? wdata : rv1h;
- wire [31:0] rv2hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs2h) ? wdata_h :
+ wire [31:0] rv2hf= (x0_forwardable && xrd!=0 && xrd==rs2h) ? x_alu_result :
+                    (retire1 && ewe_h && erd_h!=0 && erd_h==rs2h) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2h)   ? wdata : rv2h;
- // EX -> EX forwarding inside one issue pair (P37a).  Both lanes execute in the
- // same cycle, so lane 0's ALU output is already available when lane 1's ALU
- // needs it -- no extra stage, no change to the retire rule.  Only lane 0 ALU
+ // Registered X0 -> X1 forwarding inside one issue pair. The older result
+ // is held alongside the X1 packet, including throughout a memory wait.
+ // Only lane 0 ALU
  // class qualifies: `alu0` excludes loads/stores (whose result is not the ALU
  // output) and the M extension (multi-cycle, see the pair_ok term).
  // Every condition below is decoded from the EX-stage instructions (ei / ei_h).
@@ -370,37 +428,62 @@ module pangoriscv(
    .csr_we_o(dcweh),.csr_rdata_o(dcrh),.csr_waddr_o(dcwh),
    .op1_o(do1h),.op2_o(do2h),.op1_jump_o(dj1h),.op2_jump_o(dj2h),
    .illegal_o(dillegalh),.uses_rs1_o(du1h),.uses_rs2_o(du2h));
- id_ex u_id_ex(.clk(clk),.rst_n(rst_n),.in_valid(id_valid && ex1_ready && !block_entry),
-   .in_ready(ex0_ready),.out_valid(ex_valid),.out_ready(ex_leave0),
+ id_ex #(.FLUSH_ENABLE(1)) u_id_ex(.clk(clk),.rst_n(rst_n),.flush(redirect_valid),.in_valid(id_valid && id_ready0),
+   .in_ready(ex0_ready),.out_valid(x_valid),.out_ready(x_advance),
    .inst_i(dinst),.inst_addr_i(dpc),.reg_we_i(dwe),.reg_waddr_i(drd),
    .reg1_rdata_i(dr1),.reg2_rdata_i(dr2),.csr_we_i(dcwe),.csr_waddr_i(dcw),
    .csr_rdata_i(dcr),.op1_i(do1),.op2_i(do2),.op1_jump_i(dj1),.op2_jump_i(dj2),
    .fault_i(ifault),.fault_cause_i(icause),.fault_tval_i(it),.predicted_next_pc_i(ipred),
    .illegal_i(dillegal),.uses_rs1_i(du1),.uses_rs2_i(du2),
-   .inst_o(ei),.inst_addr_o(ep),.reg_we_o(ewe),.reg_waddr_o(erd),
-   .reg1_rdata_o(er1),.reg2_rdata_o(er2),.csr_we_o(ecwe),.csr_waddr_o(ecaddr),
-   .csr_rdata_o(ecr),.op1_o(eo1),.op2_o(eo2),.op1_jump_o(ej1),.op2_jump_o(ej2),
-   .fault_o(efault),.fault_cause_o(ecause),.fault_tval_o(et),.predicted_next_pc_o(epred),
-   .illegal_o(eillegal),.uses_rs1_o(eu1),.uses_rs2_o(eu2));
- id_ex u_id_ex_h(.clk(clk),.rst_n(rst_n),.in_valid(id_ready1),
-   .in_ready(ex1_ready),.out_valid(ex_valid_h),.out_ready(ex_leave_h),
+   .inst_o(xi),.inst_addr_o(xp),.reg_we_o(xwe),.reg_waddr_o(xrd),
+   .reg1_rdata_o(xr1),.reg2_rdata_o(xr2),.csr_we_o(xcwe),.csr_waddr_o(xcaddr),
+   .csr_rdata_o(xcr),.op1_o(xo1),.op2_o(xo2),.op1_jump_o(xj1),.op2_jump_o(xj2),
+   .fault_o(xfault),.fault_cause_o(xcause),.fault_tval_o(xt),.predicted_next_pc_o(xpred),
+   .illegal_o(xillegal),.uses_rs1_o(xu1),.uses_rs2_o(xu2));
+ id_ex #(.FLUSH_ENABLE(1)) u_id_ex_h(.clk(clk),.rst_n(rst_n),.flush(redirect_valid),.in_valid(id_ready1),
+   .in_ready(ex1_ready),.out_valid(x_valid_h),.out_ready(x_advance),
    .inst_i(dinsth),.inst_addr_i(dpch),.reg_we_i(dweh),.reg_waddr_i(drdh),
    .reg1_rdata_i(dr1h),.reg2_rdata_i(dr2h),.csr_we_i(dcweh),.csr_waddr_i(dcwh),
    .csr_rdata_i(dcrh),.op1_i(do1h),.op2_i(do2h),.op1_jump_i(dj1h),.op2_jump_i(dj2h),
    .fault_i(ifaulth),.fault_cause_i(icauseh),.fault_tval_i(ith),.predicted_next_pc_i(ipredh),
    .illegal_i(dillegalh),.uses_rs1_i(du1h),.uses_rs2_i(du2h),
+   .inst_o(xi_h),.inst_addr_o(xp_h),.reg_we_o(xwe_h),.reg_waddr_o(xrd_h),
+   .reg1_rdata_o(xr1_h),.reg2_rdata_o(xr2_h),.csr_we_o(xcweh),.csr_waddr_o(xcaddr_h),
+   .csr_rdata_o(xcr_h),.op1_o(xo1_h),.op2_o(xo2_h),.op1_jump_o(xj1_h),.op2_jump_o(xj2_h),
+   .fault_o(xfault_h),.fault_cause_o(xcause_h),.fault_tval_o(xt_h),.predicted_next_pc_o(xpred_h),
+   .illegal_o(xillegal_h),.uses_rs1_o(xu1_h),.uses_rs2_o(xu2_h));
+ // X1 holds the oldest packet; its own redirect must not erase its event.
+ id_ex u_x0_x1(.clk(clk),.rst_n(rst_n),.flush(1'b0),.in_valid(x_valid && back1_ready && !redirect_valid),
+   .in_ready(back0_ready),.out_valid(ex_valid),.out_ready(ex_leave0),
+   .inst_i(xi),.inst_addr_i(xp),.reg_we_i(xwe),.reg_waddr_i(xrd),
+   .reg1_rdata_i(xr1),.reg2_rdata_i(xr2),.csr_we_i(xcwe),.csr_waddr_i(xcaddr),
+   .csr_rdata_i(xcr),.op1_i(xo1),.op2_i(xo2),.op1_jump_i(xj1),.op2_jump_i(xj2),
+   .fault_i(xfault),.fault_cause_i(xcause),.fault_tval_i(xt),.predicted_next_pc_i(xpred),
+   .illegal_i(xillegal),.uses_rs1_i(xu1),.uses_rs2_i(xu2),
+   .inst_o(ei),.inst_addr_o(ep),.reg_we_o(ewe),.reg_waddr_o(erd),
+   .reg1_rdata_o(er1),.reg2_rdata_o(er2),.csr_we_o(ecwe),.csr_waddr_o(ecaddr),
+   .csr_rdata_o(ecr),.op1_o(eo1),.op2_o(eo2),.op1_jump_o(ej1),.op2_jump_o(ej2),
+   .fault_o(efault),.fault_cause_o(ecause),.fault_tval_o(et),.predicted_next_pc_o(epred),
+   .illegal_o(eillegal),.uses_rs1_o(eu1),.uses_rs2_o(eu2));
+ id_ex u_x0_x1_h(.clk(clk),.rst_n(rst_n),.flush(1'b0),.in_valid(x_valid_h && back0_ready && !redirect_valid),
+   .in_ready(back1_ready),.out_valid(ex_valid_h),.out_ready(ex_leave_h),
+   .inst_i(xi_h),.inst_addr_i(xp_h),.reg_we_i(xwe_h),.reg_waddr_i(xrd_h),
+   .reg1_rdata_i(xr1_h),.reg2_rdata_i(xr2_h),.csr_we_i(xcweh),.csr_waddr_i(xcaddr_h),
+   .csr_rdata_i(xcr_h),.op1_i(xo1_h),.op2_i(xo2_h),.op1_jump_i(xj1_h),.op2_jump_i(xj2_h),
+   .fault_i(xfault_h),.fault_cause_i(xcause_h),.fault_tval_i(xt_h),.predicted_next_pc_i(xpred_h),
+   .illegal_i(xillegal_h),.uses_rs1_i(xu1_h),.uses_rs2_i(xu2_h),
    .inst_o(ei_h),.inst_addr_o(ep_h),.reg_we_o(ewe_h),.reg_waddr_o(erd_h),
    .reg1_rdata_o(er1_h),.reg2_rdata_o(er2_h),.csr_we_o(ecweh),.csr_waddr_o(ecaddr_h),
    .csr_rdata_o(ecr_h),.op1_o(eo1_h),.op2_o(eo2_h),.op1_jump_o(ej1_h),.op2_jump_o(ej2_h),
    .fault_o(efault_h),.fault_cause_o(ecause_h),.fault_tval_o(et_h),.predicted_next_pc_o(epred_h),
    .illegal_o(eillegal_h),.uses_rs1_o(eu1_h),.uses_rs2_o(eu2_h));
- ex u_ex(.rst(rst_n),.inst_i(eillegal || efault ? 32'h13 : ei),.inst_addr_i(ep),
-   .reg_we_i(ewe),.reg_waddr_i(erd),.reg1_rdata_i(er1),.reg2_rdata_i(er2),
-   .csr_we_i(1'b0),.csr_waddr_i(ecaddr),.csr_rdata_i(ecr),
-   .int_assert_i(1'b0),.int_addr_i(32'd0),.op1_i(eo1),.op2_i(eo2),
-   .op1_jump_i(ej1),.op2_jump_i(ej2),.mem_rdata_i(32'd0),
+ ex u_ex(.rst(rst_n),.inst_i(xillegal || xfault ? 32'h13 : xi),.inst_addr_i(xp),
+   .reg_we_i(xwe),.reg_waddr_i(xrd),.reg1_rdata_i(xr1),.reg2_rdata_i(xr2),
+   .csr_we_i(1'b0),.csr_waddr_i(xcaddr),.csr_rdata_i(xcr),
+   .int_assert_i(1'b0),.int_addr_i(32'd0),.op1_i(xo1),.op2_i(xo2),
+   .op1_jump_i(xj1),.op2_jump_i(xj2),.mem_rdata_i(32'd0),
    .div_ready_i(1'b0),.div_result_i(32'd0),.div_busy_i(1'b0),.div_reg_waddr_i(5'd0),
-   .reg_wdata_o(alu_result),.jump_flag_o(alu_taken),.jump_addr_o(alu_target),
+   .reg_wdata_o(x_alu_result),.jump_flag_o(x_alu_taken),.jump_addr_o(x_alu_target),
    .mem_wdata_o(),.mem_raddr_o(),.mem_waddr_o(),.mem_we_o(),.mem_req_o(),
    .reg_we_o(),.reg_waddr_o(),.csr_wdata_o(),.csr_we_o(),.csr_waddr_o(),
    .div_start_o(),.div_dividend_o(),.div_divisor_o(),.div_op_o(),.div_reg_waddr_o(),
@@ -414,10 +497,13 @@ module pangoriscv(
    .req_ready(div_req_ready),.dividend(er1),.divisor(er2),.op(ei[14:12]),
    .rsp_valid(div_rsp_valid),.rsp_ready(div_rsp_ready),.rsp_data(div_result));
  wire retire_ctrl_fire;
+ // IRQ is sampled at the oldest X1 boundary. X0 is speculative and is killed
+ // by the resulting redirect; including its flush-masked valid here would
+ // create a combinational IRQ -> flush -> valid -> IRQ feedback loop.
  retire_ctrl u_retire_ctrl(.clk(clk),.rst_n(rst_n),.ex_valid(ex_valid_any),
    .ex_done(retire_any || trap_any),.ex_fault(ex_fault_any),.trap_ready(trap_ready),
    .irq_pending(irq_pending),.actual_next_pc(last_next),.trap_vector(csr_mtvec),
-   .halt_req(halt_req),.fetch_idle(fetch_idle),.data_idle(data_idle),
+   .halt_req(halt_req),.fetch_idle(fetch_idle && !x_valid && !x_valid_h),.data_idle(data_idle),
    .retire_fire(retire_ctrl_fire),.trap_fire(trap_fire),.ex_leave(ex_leave),
    .retire_order(retire_order),.arch_next_pc(arch_next_pc),
    .halt_pending(halt_pending),.halted(halted),.retire_count(retire_count));

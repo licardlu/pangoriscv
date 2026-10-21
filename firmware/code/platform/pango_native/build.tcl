@@ -33,7 +33,7 @@ foreach required {native_sources.tcl pango_native.fdc pango_native.pcf} {
         error "Missing $required in $board_dir"
     }
 }
-set fdc_file [file join $board_dir pango_native.fdc]
+set fdc_file [file join $board_dir pango_native_126mhz.fdc]
 # The delivered constraint is pango_native.fdc = the real 27 MHz board clock. Set
 # PANGO_NATIVE_FDC to the absolute path of pango_native_50mhz_overconstraint.fdc to run the
 # frequency-margin experiment instead; that run is an over-constraint, never the board clock.
@@ -61,7 +61,7 @@ foreach image {program.hex data.hex} {
 # The firmware's CoreMark seconds conversion and its UART baud write both derive from
 # CPU_FREQ_MHZ, so an image built for another frequency gives a wrong serial baud rate and a
 # wrong reported run time on hardware. Warn instead of failing so the flow stays usable.
-set board_clk_hz 27000000
+set board_clk_hz 126000000
 set manifest_file [file join $image_dir manifest.json]
 if {[file isfile $manifest_file]} {
     set fh [open $manifest_file r]
@@ -69,17 +69,21 @@ if {[file isfile $manifest_file]} {
     close $fh
     if {[regexp {"cpu_hz"[ \t]*:[ \t]*([0-9]+)} $manifest_text -> image_cpu_hz]} {
         if {$image_cpu_hz ne $board_clk_hz} {
-            puts "WARNING: image cpu_hz=$image_cpu_hz does not match the 27 MHz board clock."
-            puts "WARNING: rebuild with --cpu-mhz 27 or the UART baud rate and the CoreMark"
-            puts "WARNING: run time will be wrong on hardware."
+            error "Image cpu_hz=$image_cpu_hz differs from the 126 MHz PPLL core clock; rebuild with --cpu-mhz 126."
         } else {
-            puts "Board check: image cpu_hz=$image_cpu_hz matches the 27 MHz board clock."
+            puts "Board check: image cpu_hz=$image_cpu_hz matches the 126 MHz PPLL core clock."
         }
     }
 } else {
     puts "Board check: no manifest.json beside the images; cannot verify cpu_hz."
 }
-set run_dir [file join $repo build pango_native]
+if {![info exists ::env(PANGO_NATIVE_RUN_DIR)]} {
+    error "Set PANGO_NATIVE_RUN_DIR to a new implementation directory to preserve existing evidence."
+}
+set run_dir [file normalize $::env(PANGO_NATIVE_RUN_DIR)]
+if {[file exists $run_dir]} {
+    error "Refusing to reuse implementation directory $run_dir"
+}
 file mkdir $run_dir
 set source_dir [file join $run_dir sources]
 file mkdir $source_dir

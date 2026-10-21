@@ -1,0 +1,5 @@
+# Physical oscillator on D18 is 27 MHz; PPLL generates 126 MHz (14/3).
+# This constraint describes hardware, not an input-clock overconstraint.
+create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
+create_generated_clock -name core_clk -source [get_ports {clk}] -multiply_by 14 -divide_by 3 [get_pins {u_core_pll/CLKOUT0}]
+# No multicycle or false-path exceptions on CPU, cache or AXI paths.

@@ -38,5 +38,13 @@
 `endif
 `define CACHE_ENABLE
 `define PREDICT_ENABLE
+// PERF_ENABLE is OFF by default.  Two reasons, both measured:
+//   * module-area-plan section 9.7 requires the delivered bitstream to leave the
+//     counter bank out;
+//   * on `p7_path40b` (40 MHz satisfiable constraint) the worst path ended in
+//     `soc/perf_inst/cnt[*]/CE` -- a 16-stage carry-enable cascade worth 4.6 ns.
+// Analysis / ILA builds re-enable it with +define+PERF_ANALYSIS.
+`ifdef PERF_ANALYSIS
 `define PERF_ENABLE
+`endif
 `endif

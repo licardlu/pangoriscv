@@ -270,6 +270,24 @@ module dcache_axi #(
     wire hit0 = valid_mem[widx(0,req_set)] && (tag_mem  [req_set]==req_tag);
     wire hit1 = valid_mem[widx(1,req_set)] && (tag_mem_1[req_set]==req_tag);
     wire hit_any = hit0 | hit1;
+`ifdef DC_DBG
+    // Why does the hit rate stay low even with 4x the capacity?  Count hits,
+    // misses, and misses to the line that missed last time (a line that was just
+    // filled and immediately missed again means the fill does not stick).
+    integer n_hit=0, n_miss=0, n_reload=0, n_st=0;
+    reg [TAGW-1:0] last_tag_q; reg [IDXW-1:0] last_set_q; reg last_vld_q;
+    always @(posedge clk) if (rst_n && req_valid && req_ready) begin
+        if (req_write) n_st = n_st + 1;
+        else if (hit_any) n_hit = n_hit + 1;
+        else begin
+            n_miss = n_miss + 1;
+            if (last_vld_q && last_tag_q==req_tag && last_set_q==req_set)
+                n_reload = n_reload + 1;
+            last_tag_q = req_tag; last_set_q = req_set; last_vld_q = 1'b1;
+        end
+    end
+    final $display("DCDBG hit=%0d miss=%0d same_line_reload=%0d store=%0d", n_hit, n_miss, n_reload, n_st);
+`endif
     wire hit_way = hit1;                       // way 0 wins if both match
 
     wire        eng_w_valid = rst_n && (wsent_q || eng_w_now);

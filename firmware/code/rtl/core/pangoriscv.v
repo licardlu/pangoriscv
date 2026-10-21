@@ -272,7 +272,21 @@ module pangoriscv(
  wire [31:0] mem_offset=is_store ?
                 {{20{mem_inst[31]}},mem_inst[31:25],mem_inst[11:7]} :
                 {{20{mem_inst[31]}},mem_inst[31:20]};
- assign address=mem_base+mem_offset;
+ // The memory address is already registered whenever its sources were ready
+ // in X0; only an inter/intra-packet dependent younger memory uses X1 AGU.
+ reg [31:0] mem_address0_q,mem_address1_q;
+ reg mem_address1_early_q;
+ wire [31:0] x_imm0=xi[6:0]==7'h23 ? {{20{xi[31]}},xi[31:25],xi[11:7]} : {{20{xi[31]}},xi[31:20]};
+ wire [31:0] x_imm1=xi_h[6:0]==7'h23 ? {{20{xi_h[31]}},xi_h[31:25],xi_h[11:7]} : {{20{xi_h[31]}},xi_h[31:20]};
+ always @(posedge clk) begin
+   if(!rst_n) begin mem_address0_q<=0; mem_address1_q<=0; mem_address1_early_q<=0; end
+   else if(x_valid && x_advance) begin
+     mem_address0_q<=xr1+x_imm0;
+     mem_address1_q<=xr1_h+x_imm1;
+     mem_address1_early_q<=!xh_late && !(xwe && xrd!=0 && reads_rs1(xi_h) && xi_h[19:15]==xrd);
+   end
+ end
+ assign address=mem_sel_h ? (mem_address1_early_q ? mem_address1_q : mem_base+mem_offset) : mem_address0_q;
  assign access_size={1'b0,mem_inst[13:12]};
  assign load_unsigned=mem_inst[14];
  assign store_value=mem_sel_h ? ex1_r2 : er2;
@@ -281,8 +295,9 @@ module pangoriscv(
  // Check only local faults here. Gating a request on a bus-response fault
  // would feed a same-cycle cache response back into its own request-valid.
  assign op_valid=rst_n && !halted && !issued &&
-                 (mem_sel_h ? (!local_fault_h && (!ex_valid || !local_fault)) :
-                              (ex_valid && is_memory && !local_fault));
+                 (mem_sel_h ? (!efault_h && !eillegal_h && !misaligned_data &&
+                               (!ex_valid || (!efault && !eillegal))) :
+                              (ex_valid && is_memory && !efault && !eillegal && !misaligned_data));
  assign done_ready=mem_issued &&
                    (mem_sel_h ? ex_leave_h : (ex_leave0 && is_memory));
  assign div_req_valid=rst_n && ex_valid && is_div && !issued && !local_fault;
@@ -481,11 +496,18 @@ module pangoriscv(
  // 0x33/0x63/0x23 read both, 0x13/0x03 read rs1, 0x37/0x17/0x6f none.
  wire [4:0] ex1_rs1 = ei_h[19:15];
  wire [4:0] ex1_rs2 = ei_h[24:20];
- wire fwd0_r1 = fwd0_alu && (erd==ex1_rs1) &&
-                ((ex1_op==7'h33) || (ex1_op==7'h13) || (ex1_op==7'h63) ||
-                 (ex1_op==7'h03) || (ex1_op==7'h23));
- wire fwd0_r2 = fwd0_alu && (erd==ex1_rs2) &&
-                ((ex1_op==7'h33) || (ex1_op==7'h63) || (ex1_op==7'h23));
+ reg fwd0_r1_q,fwd0_r2_q;
+ always @(posedge clk) begin
+   if(!rst_n) begin fwd0_r1_q<=0; fwd0_r2_q<=0; end
+   else if(x_valid && x_advance) begin
+     fwd0_r1_q<=x_valid_h && xwe && xrd!=0 && reads_rs1(xi_h) && xrd==xi_h[19:15] &&
+                ((xi[6:0]==7'h33 && xi[31:25]!=7'h01) || xi[6:0]==7'h13 || xi[6:0]==7'h37 || xi[6:0]==7'h17);
+     fwd0_r2_q<=x_valid_h && xwe && xrd!=0 && reads_rs2(xi_h) && xrd==xi_h[24:20] &&
+                ((xi[6:0]==7'h33 && xi[31:25]!=7'h01) || xi[6:0]==7'h13 || xi[6:0]==7'h37 || xi[6:0]==7'h17);
+   end
+ end
+ wire fwd0_r1=fwd0_r1_q;
+ wire fwd0_r2=fwd0_r2_q;
  assign ex1_r1 = fwd0_r1 ? alu_result : er1_h;
  assign ex1_r2 = fwd0_r2 ? alu_result : er2_h;
  wire [31:0] ex1_o1 = fwd0_r1 ? alu_result : eo1_h;

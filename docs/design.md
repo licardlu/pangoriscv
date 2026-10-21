@@ -121,6 +121,20 @@ or trap consumes them. A prechecked misalignment raises the synchronous
 trap without issuing a memory request. Halfwords require address bit 0
 zero; words require address bits 1:0 zero.
 
+The request is presented from the execute stage itself (P9), so every field
+above is combinational in that cycle; the load response is captured into
+`ex_value` on the EX/M1 edge, which is what makes a load and an ALU result
+equivalent to the bypass network (`docs/lessons/mistakes-log.md` section 36).
+Because the issue point is one stage earlier than the commit point, the gate
+into `op_valid` must cover *every* signal that can still invalidate the
+operation in that same cycle: `kill_all` (trap/MRET at WB), a trap already
+visible in M2 or WB,
+and a lane-0 control transfer resolving onto a different PC than predicted
+(`ctrl_miss_now`) -- otherwise a wrong-path lane-1 access reaches memory
+(section 38). A gate that suppresses the issue without also removing the
+operation from `mem_wait` deadlocks the stage, because the freeze it creates
+is what keeps the invalidating signal from ever resolving.
+
 LSU alone shifts store_value by 8*address[1:0], generates WSTRB, selects
 the load lane and performs sign/zero extension. Cache and bypass return
 an unextended aligned 32-bit word; they do not extend it a second time.

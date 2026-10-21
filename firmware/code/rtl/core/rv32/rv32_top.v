@@ -203,20 +203,23 @@ module rv32_top(
     // Freeze is per stage.  A frozen stage emits a bubble instead of holding its
     // instruction, which is what keeps commit a one-cycle pulse: if WB were held
     // with valid high, a CSR write would be applied again on the next cycle.
-    // A frozen stage HOLDS its instruction; the stage after it receives a
-    // bubble.  (The earlier version emitted a bubble from the frozen stage,
-    // which silently dropped every load that had to wait for its data.)
-    wire freeze_wb  = trap_wait;
-    wire freeze_m2  = trap_wait;
-    wire freeze_m1  = mem_wait || trap_wait;
-    wire freeze_ex  = div_wait || trap_wait;
-    wire freeze_rr  = load_use || div_wait || trap_wait;
+    // Per-stage enables.  A load-use consumer holds EX, but the load itself must
+    // still be allowed to drain into M2 -- freezing the whole pipe there is a
+    // deadlock (the response is consumed by the LSU while M1 is held, and the
+    // consumer then waits forever).  Each stage therefore has exactly one reason
+    // to hold, and the stage that feeds a holding stage emits a bubble.
+    wire hold_ex = load_use || div_wait || mem_wait || trap_wait;  // EX + RR hold
+    wire hold_m1 = mem_wait || trap_wait;                          // M1 holds
+    wire hold_wb = trap_wait;                                      // M2 + WB hold
+
+    reg  w_done_q;
+    wire w_commit = w_valid && !w_trap && !w_done_q;
 
     // ========================================================= register file
     // The read is synchronous, so the address is presented while the
     // instruction is still in ID and the data lands when it is in RR.
     wire [31:0] rf_d0, rf_d1;
-    wire        wb_we = w_valid && w_we && !w_trap && (w_rd != 5'd0);
+    wire        wb_we = w_commit && w_we && (w_rd != 5'd0);
 
     rv32_regfile u_regs(
         .clk(clk), .rst_n(rst_n),
@@ -314,8 +317,8 @@ module rv32_top(
         .clk(clk), .rst_n(rst_n),
         .addr(w_valid && w_csr ? w_csr_addr : id_csr_addr),
         .write_intent(w_valid && w_csr ? 1'b1 : rf_write_intent),
-        .commit(w_valid && w_csr && !w_trap),
-        .retire(w_valid && !w_trap), .retire_count(2'd1),
+        .commit(w_commit && w_csr),
+        .retire(w_commit), .retire_count(2'd1),
         .mret_fire(mret_go),
         .trap_enter(trap_go),
         .write_data(csr_new),
@@ -360,7 +363,7 @@ module rv32_top(
         .fetch_pc(pc_q), .predict_taken(pred_take), .predict_target(pred_target),
         .fetch_pc2(chain_c), .predict_taken2(ct_take), .predict_target2(ct_target),
         .fetch_pc3(chain_c2), .predict_taken3(ct_take2), .predict_target3(ct_target2),
-        .train_valid(w_valid && !w_trap), .train_pc(w_pc), .train_control(w_ctrl),
+        .train_valid(w_commit), .train_pc(w_pc), .train_control(w_ctrl),
         .train_uncond(w_uncond), .train_taken(w_taken), .train_target(w_next)
     );
     assign predict_next_pc        = pred_take ? pred_target : (pc_q + 32'd4);
@@ -378,7 +381,7 @@ module rv32_top(
                 halt_pending_q <= 1'b0;
             end
             if (halted_q && !halt_req) halted_q <= 1'b0;
-            if (w_valid && !w_trap && !irq_trap) arch_next_q <= w_next;
+            if (w_commit && !irq_trap) arch_next_q <= w_next;
         end
     end
 
@@ -386,7 +389,7 @@ module rv32_top(
     assign halt_pending = halt_pending_q;
     assign arch_next_pc = arch_next_q;
 
-    assign retire_fire = w_valid && !w_trap;
+    assign retire_fire = w_commit;
     assign retire_pc   = w_pc;
     assign retire_inst = w_inst;
     assign rd_valid    = wb_we;
@@ -425,6 +428,7 @@ module rv32_top(
 
     // ========================================================= sequencing
     wire id_accept = fetch_valid && fetch_ready;
+    // fetch_ready is already !stall && !serial && !halt && !redirect.
 
     // ------------------------------------------------------------------ ID
     always @(posedge clk) begin
@@ -463,9 +467,38 @@ module rv32_top(
     end
 
     // ------------------------------------------------------------------ RR
-    // Holds when the EX stage cannot accept (load-use with a load still in M1,
-    // divider busy, trap back-pressure).  Otherwise it takes the ID instruction
-    // and EX receives it, so nothing is ever dropped.
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            id_valid <= 1'b0; id_pc <= 32'd0; id_inst <= 32'd0; id_imm <= 32'd0;
+            id_pred <= 32'd0; id_rd <= 5'd0; id_rs1 <= 5'd0; id_rs2 <= 5'd0;
+            id_fcause <= 5'd0; id_u1 <= 0; id_u2 <= 0; id_we <= 0; id_load <= 0;
+            id_store <= 0; id_br <= 0; id_jal <= 0; id_jalr <= 0; id_csr <= 0;
+            id_mret <= 0; id_ecall <= 0; id_ebrk <= 0; id_mul <= 0; id_div <= 0;
+            id_illegal <= 0; id_ffault <= 0; id_uns <= 0; id_serial <= 0;
+            id_alu <= 4'd0; id_asel <= 2'd0; id_bsel <= 2'd0; id_size <= 2'd2;
+            id_csr_op <= 2'd0; id_br_op <= 3'd0; id_md_op <= 3'd0; id_csr_addr <= 12'd0;
+        end else if (!hold_ex) begin
+            id_valid <= id_accept && !kill_all && !kill_young;
+            if (id_accept) begin
+                id_pc <= fetch_pc; id_inst <= fetch_inst; id_imm <= dec_imm;
+                id_pred <= fetch_predicted_next_pc;
+                id_rd <= dec_rd; id_rs1 <= dec_rs1; id_rs2 <= dec_rs2;
+                id_u1 <= dec_u1; id_u2 <= dec_u2; id_we <= dec_we;
+                id_load <= dec_load; id_store <= dec_store; id_br <= dec_br;
+                id_jal <= dec_jal; id_jalr <= dec_jalr; id_csr <= dec_csr;
+                id_mret <= dec_mret; id_ecall <= dec_ecall; id_ebrk <= dec_ebrk;
+                id_mul <= dec_mul; id_div <= dec_div; id_illegal <= dec_illegal;
+                id_uns <= dec_uns; id_serial <= dec_serial;
+                id_alu <= dec_alu; id_asel <= dec_asel; id_bsel <= dec_bsel;
+                id_size <= dec_size; id_csr_op <= dec_csr_op; id_br_op <= dec_br_op;
+                id_md_op <= dec_md_op; id_csr_addr <= dec_csr_addr;
+                id_ffault <= fetch_fault;
+                id_fcause <= fetch_fault ? fetch_fault_cause : 5'd0;
+            end
+        end
+    end
+
+    // ------------------------------------------------------------------ EX
     always @(posedge clk) begin
         if (!rst_n) begin
             rr_valid <= 1'b0; rr_pc <= 32'd0; rr_inst <= 32'd0; rr_imm <= 32'd0;
@@ -477,7 +510,7 @@ module rv32_top(
             rr_uns <= 0; rr_csr_illegal <= 0; rr_serial <= 0; rr_alu <= 4'd0;
             rr_asel <= 2'd0; rr_bsel <= 2'd0; rr_size <= 2'd2; rr_csr_op <= 2'd0;
             rr_br_op <= 3'd0; rr_md_op <= 3'd0; rr_csr_addr <= 12'd0;
-        end else if (!freeze_ex) begin
+        end else if (!hold_ex) begin
             rr_valid <= id_valid && !kill_all && !kill_young;
             if (id_valid) begin
                 rr_pc <= id_pc; rr_inst <= id_inst; rr_imm <= id_imm; rr_pred <= id_pred;
@@ -498,7 +531,7 @@ module rv32_top(
         end
     end
 
-    // ------------------------------------------------------------------ EX -> M1
+    // ------------------------------------------------------------------ M1
     always @(posedge clk) begin
         if (!rst_n) begin
             ex_valid <= 1'b0; ex_pc <= 32'd0; ex_inst <= 32'd0; ex_value <= 32'd0;
@@ -508,9 +541,9 @@ module rv32_top(
             ex_trap <= 0; ex_ctrl <= 0; ex_uncond <= 0; ex_taken <= 0; ex_uns <= 0;
             ex_csr <= 0; ex_mret <= 0; ex_serial <= 0; ex_size <= 2'd2;
             ex_csr_op <= 2'd0; ex_csr_addr <= 12'd0;
-        end else if (!freeze_m1) begin
-            ex_valid <= freeze_ex ? 1'b0 : (rr_valid && !kill_all);
-            if (rr_valid && !freeze_ex) begin
+        end else if (!hold_m1) begin
+            ex_valid <= hold_ex ? 1'b0 : (rr_valid && !kill_all);
+            if (rr_valid && !hold_ex) begin
                 ex_pc <= rr_pc; ex_inst <= rr_inst; ex_rd <= rr_rd; ex_we <= rr_we;
                 ex_value <= ex_value_w;
                 ex_addr <= mem_addr; ex_sdata <= fwd2;
@@ -527,8 +560,7 @@ module rv32_top(
         end
     end
 
-    // ------------------------------------------------------------------ M1 -> M2
-    // Holds while the LSU has not answered; M2 receives a bubble until it does.
+    // ------------------------------------------------------------------ M2
     always @(posedge clk) begin
         if (!rst_n) begin
             m_valid <= 1'b0; m_pc <= 32'd0; m_inst <= 32'd0; m_value <= 32'd0;
@@ -536,9 +568,9 @@ module rv32_top(
             m_csr_src <= 32'd0; m_rd <= 5'd0; m_cause <= 5'd0; m_we <= 0; m_trap <= 0;
             m_ctrl <= 0; m_uncond <= 0; m_taken <= 0; m_csr <= 0; m_mret <= 0;
             m_serial <= 0; m_csr_op <= 2'd0; m_csr_addr <= 12'd0;
-        end else if (!freeze_m2) begin
-            m_valid <= freeze_m1 ? 1'b0 : (ex_valid && !kill_all);
-            if (ex_valid && !freeze_m1) begin
+        end else if (!hold_wb) begin
+            m_valid <= hold_m1 ? 1'b0 : (ex_valid && !kill_all);
+            if (ex_valid && !hold_m1) begin
                 m_pc <= ex_pc; m_inst <= ex_inst; m_rd <= ex_rd; m_we <= ex_we;
                 m_value <= (ex_load && done_valid) ? load_value : ex_value;
                 m_trap <= ex_trap || mem_fault;
@@ -553,7 +585,7 @@ module rv32_top(
         end
     end
 
-    // ------------------------------------------------------------------ M2 -> WB
+    // ------------------------------------------------------------------ WB
     always @(posedge clk) begin
         if (!rst_n) begin
             w_valid <= 1'b0; w_pc <= 32'd0; w_inst <= 32'd0; w_value <= 32'd0;
@@ -561,8 +593,10 @@ module rv32_top(
             w_csr_src <= 32'd0; w_rd <= 5'd0; w_cause <= 5'd0; w_we <= 0; w_trap <= 0;
             w_ctrl <= 0; w_uncond <= 0; w_taken <= 0; w_csr <= 0; w_mret <= 0;
             w_serial <= 0; w_csr_op <= 2'd0; w_csr_addr <= 12'd0;
-        end else if (!freeze_wb) begin
+            w_done_q <= 1'b0;
+        end else if (!hold_wb) begin
             w_valid <= m_valid && !trap_go && !mret_go;
+            w_done_q <= 1'b0;
             if (m_valid) begin
                 w_pc <= m_pc; w_inst <= m_inst; w_rd <= m_rd; w_we <= m_we;
                 w_value <= m_value; w_trap <= m_trap; w_cause <= m_cause;
@@ -572,6 +606,8 @@ module rv32_top(
                 w_csr_op <= m_csr_op; w_csr_addr <= m_csr_addr;
                 w_csr_old <= m_csr_old; w_csr_src <= m_csr_src;
             end
+        end else if (w_commit) begin
+            w_done_q <= 1'b1;
         end
     end
 
@@ -583,18 +619,22 @@ module rv32_top(
     end
 
     always @(posedge clk) begin
+        // Clear takes priority: a memory op that completes in its issue cycle
+        // leaves M1 immediately, and a sticky "issued" flag would block the next
+        // load that enters M1 and deadlock the pipe (the ISA regression hit this
+        // on two back-to-back loads).
         if (!rst_n) mem_issued_q <= 1'b0;
+        else if (!hold_m1) mem_issued_q <= 1'b0;
         else if (issue_mem && op_ready) mem_issued_q <= 1'b1;
-        else if (!freeze_m1) mem_issued_q <= 1'b0;
     end
 
     always @(posedge clk) begin
         if (!rst_n) div_issued_q <= 1'b0;
+        else if (!hold_ex) div_issued_q <= 1'b0;
         else if (div_req && div_req_ready) div_issued_q <= 1'b1;
-        else if (!freeze_ex) div_issued_q <= 1'b0;
     end
 
-    assign fetch_ready  = !stall && !serial_q && !halt_pending_q && !halted_q &&
+    assign fetch_ready  = !hold_ex && !serial_q && !halt_pending_q && !halted_q &&
                           !redirect_any;
     assign fetch_ready2 = 1'b0;
 

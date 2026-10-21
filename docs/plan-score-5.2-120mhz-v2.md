@@ -232,3 +232,20 @@ LUT 侧因为"LUTRAM → BRAM"应当**净下降**；这是三项评分里 ③ �
    找出"某一拍 valid 掉 0 但没有 kill"的位置——那就是丢指令的地方。
 3. 丢掉的那条指令 pc 在 IFU 队列里还在（`fetch_ready` 被 stall 关掉时不会弹出），
    所以"丢"一定发生在 `id_*`/`rr_*` 之间，优先查 `id_valid <= id_accept` 的门控。
+
+### 11.1 分级使能已落地，剩余一个 load 死锁（下次从这里接）
+
+流水线使能已改成"每级只有一个停因"：
+`hold_ex = load_use||div_wait||mem_wait||trap_wait`（EX 与 RR 停）、
+`hold_m1 = mem_wait||trap_wait`（M1 停）、`hold_wb = trap_wait`（M2/WB 停）；
+被停级的下一级进气泡；提交用 `w_done_q` 保证只发生一次。
+
+**注意**：`load_use` 不能让 M1 也停——停 M1 会让 load 的响应在 `done_ready=1` 下被 LSU 吃掉，
+消费者随后永远等不到数据，形成死锁。这是本轮最大的一个结构性教训。
+
+**当前残留**：用例 2 在 0x210（连着的第二条 load）之后停住，退休 6 条后不再前进。
+下次第一件事：在同一拍打印
+`op_valid / op_ready / is_store / done_valid / done_ready / mem_issued_q / ex_load / hold_m1 / hold_ex`，
+判断是"请求没发出去"还是"响应回来了没被接住"。已知 `mem_issued_q` 的置位/清零优先级
+改过一次（清优先），若仍卡住，优先查 `lsu_axi` 的 `fast_issue` 在 `op_valid` 只持续一拍时
+是否漏掉了接受。

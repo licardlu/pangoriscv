@@ -109,13 +109,17 @@ module rv32_decode(
                 imm_r = imm_u;
             end
             OP_JAL: begin
+                // The link value (pc+4) and the jump displacement are two
+                // different constants: the ALU produces pc+4 (b_sel=2 is the
+                // literal 4) while the target adder uses imm_j.
                 we_r = 1; jal_r = 1; alu_op_r = 4'd0; a_sel_r = 2'd1;
-                b_sel_r = 2'd1; imm_r = 32'd4;
+                b_sel_r = 2'd2; imm_r = imm_j;
             end
             OP_JALR: begin
                 if (funct3 == 3'd0) begin
+                    // rd = pc+4, target = rs1+imm_i (computed by the target adder).
                     we_r = 1; jalr_r = 1; u1_r = 1;
-                    alu_op_r = 4'd0; a_sel_r = 2'd0; b_sel_r = 2'd1; imm_r = imm_i;
+                    alu_op_r = 4'd0; a_sel_r = 2'd1; b_sel_r = 2'd2; imm_r = imm_i;
                 end else illegal_r = 1;
             end
             OP_BR: begin

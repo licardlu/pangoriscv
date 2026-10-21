@@ -203,10 +203,14 @@ module rv32_top(
     // Freeze is per stage.  A frozen stage emits a bubble instead of holding its
     // instruction, which is what keeps commit a one-cycle pulse: if WB were held
     // with valid high, a CSR write would be applied again on the next cycle.
+    // A frozen stage HOLDS its instruction; the stage after it receives a
+    // bubble.  (The earlier version emitted a bubble from the frozen stage,
+    // which silently dropped every load that had to wait for its data.)
     wire freeze_wb  = trap_wait;
     wire freeze_m2  = trap_wait;
-    wire freeze_m1  = mem_wait;
-    wire freeze_ex  = load_use || mem_wait || div_wait || trap_wait;
+    wire freeze_m1  = mem_wait || trap_wait;
+    wire freeze_ex  = div_wait || trap_wait;
+    wire freeze_rr  = load_use || div_wait || trap_wait;
 
     // ========================================================= register file
     // The read is synchronous, so the address is presented while the
@@ -214,7 +218,7 @@ module rv32_top(
     wire [31:0] rf_d0, rf_d1;
     wire        wb_we = w_valid && w_we && !w_trap && (w_rd != 5'd0);
 
-    rv32_regfile u_regfile(
+    rv32_regfile u_regs(
         .clk(clk), .rst_n(rst_n),
         .ra0(dec_rs1), .ra1(dec_rs2), .ra2(5'd0), .ra3(5'd0),
         .rd0(rf_d0), .rd1(rf_d1), .rd2(), .rd3(),
@@ -233,7 +237,9 @@ module rv32_top(
 
     // ========================================================= EX datapath
     wire [31:0] alu_a = (rr_asel == 2'd1) ? rr_pc : (rr_asel == 2'd2) ? 32'd0 : fwd1;
-    wire [31:0] alu_b = (rr_bsel == 2'd0) ? fwd2 : rr_imm;
+    // b_sel 2 is the literal 4 (jal/jalr link value).
+    wire [31:0] alu_b = (rr_bsel == 2'd0) ? fwd2 :
+                       (rr_bsel == 2'd2) ? 32'd4 : rr_imm;
 
     wire [31:0] alu_y;
     wire        alu_eq, alu_lt, alu_ltu;
@@ -453,6 +459,9 @@ module rv32_top(
     end
 
     // ------------------------------------------------------------------ RR
+    // Holds when the EX stage cannot accept (load-use with a load still in M1,
+    // divider busy, trap back-pressure).  Otherwise it takes the ID instruction
+    // and EX receives it, so nothing is ever dropped.
     always @(posedge clk) begin
         if (!rst_n) begin
             rr_valid <= 1'b0; rr_pc <= 32'd0; rr_inst <= 32'd0; rr_imm <= 32'd0;
@@ -464,9 +473,9 @@ module rv32_top(
             rr_uns <= 0; rr_csr_illegal <= 0; rr_serial <= 0; rr_alu <= 4'd0;
             rr_asel <= 2'd0; rr_bsel <= 2'd0; rr_size <= 2'd2; rr_csr_op <= 2'd0;
             rr_br_op <= 3'd0; rr_md_op <= 3'd0; rr_csr_addr <= 12'd0;
-        end else begin
-            rr_valid <= id_valid && !stall && !kill_all && !kill_young;
-            if (id_valid && !stall) begin
+        end else if (!freeze_rr) begin
+            rr_valid <= id_valid && !kill_all && !kill_young;
+            if (id_valid) begin
                 rr_pc <= id_pc; rr_inst <= id_inst; rr_imm <= id_imm; rr_pred <= id_pred;
                 rr_rd <= id_rd; rr_rs1 <= id_rs1; rr_rs2 <= id_rs2; rr_fcause <= id_fcause;
                 rr_we <= id_we; rr_load <= id_load; rr_store <= id_store; rr_br <= id_br;
@@ -485,7 +494,7 @@ module rv32_top(
         end
     end
 
-    // ------------------------------------------------------------------ EX
+    // ------------------------------------------------------------------ EX -> M1
     always @(posedge clk) begin
         if (!rst_n) begin
             ex_valid <= 1'b0; ex_pc <= 32'd0; ex_inst <= 32'd0; ex_value <= 32'd0;
@@ -495,9 +504,9 @@ module rv32_top(
             ex_trap <= 0; ex_ctrl <= 0; ex_uncond <= 0; ex_taken <= 0; ex_uns <= 0;
             ex_csr <= 0; ex_mret <= 0; ex_serial <= 0; ex_size <= 2'd2;
             ex_csr_op <= 2'd0; ex_csr_addr <= 12'd0;
-        end else begin
-            ex_valid <= rr_valid && !freeze_ex && !kill_all;
-            if (rr_valid && !freeze_ex) begin
+        end else if (!freeze_m1) begin
+            ex_valid <= freeze_rr ? 1'b0 : (rr_valid && !kill_all);
+            if (rr_valid && !freeze_rr) begin
                 ex_pc <= rr_pc; ex_inst <= rr_inst; ex_rd <= rr_rd; ex_we <= rr_we;
                 ex_value <= ex_value_w;
                 ex_addr <= mem_addr; ex_sdata <= fwd2;
@@ -514,7 +523,8 @@ module rv32_top(
         end
     end
 
-    // ------------------------------------------------------------------ M1
+    // ------------------------------------------------------------------ M1 -> M2
+    // Holds while the LSU has not answered; M2 receives a bubble until it does.
     always @(posedge clk) begin
         if (!rst_n) begin
             m_valid <= 1'b0; m_pc <= 32'd0; m_inst <= 32'd0; m_value <= 32'd0;
@@ -523,7 +533,7 @@ module rv32_top(
             m_ctrl <= 0; m_uncond <= 0; m_taken <= 0; m_csr <= 0; m_mret <= 0;
             m_serial <= 0; m_csr_op <= 2'd0; m_csr_addr <= 12'd0;
         end else if (!freeze_m2) begin
-            m_valid <= ex_valid && !freeze_m1 && !kill_all;
+            m_valid <= freeze_m1 ? 1'b0 : (ex_valid && !kill_all);
             if (ex_valid && !freeze_m1) begin
                 m_pc <= ex_pc; m_inst <= ex_inst; m_rd <= ex_rd; m_we <= ex_we;
                 m_value <= (ex_load && done_valid) ? load_value : ex_value;
@@ -539,7 +549,7 @@ module rv32_top(
         end
     end
 
-    // ------------------------------------------------------------------ WB
+    // ------------------------------------------------------------------ M2 -> WB
     always @(posedge clk) begin
         if (!rst_n) begin
             w_valid <= 1'b0; w_pc <= 32'd0; w_inst <= 32'd0; w_value <= 32'd0;
@@ -577,10 +587,25 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) div_issued_q <= 1'b0;
         else if (div_req && div_req_ready) div_issued_q <= 1'b1;
-        else if (!freeze_ex) div_issued_q <= 1'b0;
+        else if (!freeze_rr) div_issued_q <= 1'b0;
     end
 
     assign fetch_ready  = !stall && !serial_q && !halt_pending_q && !halted_q &&
                           !redirect_any;
     assign fetch_ready2 = 1'b0;
+
+    // ========================================================= TB compatibility
+    // tb_isa_e2e reports dual-issue coverage statistics by name.  The P1 core is
+    // single issue, so every one of those probes reads false; keeping the names
+    // means one testbench covers both cores instead of forking it.
+    wire        ex_valid_h    = 1'b0;
+    wire        older_control = 1'b0;
+    wire        retire1       = 1'b0;
+    wire        retire0       = retire_fire;
+    wire [31:0] ep_h          = 32'd0;
+    wire [31:0] ep            = w_pc;
+    wire        young_path_ok = 1'b1;
+    wire        mem_sel_h     = 1'b0;
+    wire        trap1         = 1'b0;
+    wire        x_valid       = 1'b0;
 endmodule

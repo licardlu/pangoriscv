@@ -2,6 +2,14 @@
 
 ## 当前实验增补：X0/X1 执行分级
 
+- 程序容量实验：`pangoriscv_axi_soc` 的 program_ram 从 4096 字增为 8192 字，
+  总线 ROM aperture 同步 0x4000→0x8000；数据 RAM 保持 16 KiB。
+  `ifu_axi.EXEC_BYTES` 与 `branch_predictor.PGM_BYTES` 同步 32768，
+  预测表每项 tag/target 各增 1 位（64 FF 预留）。不扩大 Cache。
+  链接脚本及镜像提取工具分别使用 32 KiB 程序/16 KiB 数据边界。
+  资源新增 4 DRM 预留、100 LUT/80 FF，允许程序优化使用标准 `-O3`；
+  不修改 CoreMark 算法、种子、数据大小或 CRC。所有容量变化须随硬件交付。
+
 - 时钟实现合同增补：现有 `pangoriscv_top` 内实例化一个 `GTP_PPLL`，
   不增加 RTL 模块。27 MHz 输入，I=1/M=1/F=56/O0=12，VCO=1512 MHz、
   PFD=27 MHz，核心实际目标 **126 MHz**。范围依据 PDS `ipm2l_pll/ui.tcl`

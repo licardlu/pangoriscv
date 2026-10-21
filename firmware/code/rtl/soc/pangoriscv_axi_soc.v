@@ -42,7 +42,7 @@ module pangoriscv_axi_soc #(
  localparam [32*8-1:0] SLAVE_BASE={32'h60002000,32'h60003000,32'h50000000,
   32'h40000000,32'h30000000,32'h20000000,32'h10000000,32'h00000000};
  localparam [32*8-1:0] SLAVE_SIZE={32'h1000,32'h1000,32'h1000,32'h1000,
-  32'h1000,32'h1000,32'h4000,32'h4000};
+  32'h1000,32'h1000,32'h4000,32'h8000};
  wire perf_fault;
  wire perf_i_miss,perf_d_miss,perf_if_wait,perf_lsu_wait,perf_pred_miss;
 `else
@@ -50,7 +50,7 @@ module pangoriscv_axi_soc #(
  localparam [32*7-1:0] SLAVE_BASE={32'h60003000,32'h50000000,32'h40000000,
   32'h30000000,32'h20000000,32'h10000000,32'h00000000};
  localparam [32*7-1:0] SLAVE_SIZE={32'h1000,32'h1000,32'h1000,32'h1000,
-  32'h1000,32'h4000,32'h4000};
+  32'h1000,32'h4000,32'h8000};
 `endif
  wire cpu_fault,interconnect_fault;
  wire [1:0] ram_fault;
@@ -76,7 +76,7 @@ module pangoriscv_axi_soc #(
   .clk(clk),.rst_n(rst_n),.protocol_fault(interconnect_fault),
   `AXI_CONNECT_ALL(m,m),`AXI_CONNECT_ALL(s,s)
  );
- axi_ram #(.BASE_ADDR(32'h00000000),.WORDS(4096),
+ axi_ram #(.BASE_ADDR(32'h00000000),.WORDS(8192),
   .INIT_FILE(PROGRAM_INIT_FILE),.READ_DELAY(READ_DELAY),
   .WRITE_DELAY(WRITE_DELAY),.WRITE_ENABLE(0)) program_ram(
   .clk(clk),.rst_n(rst_n),.protocol_fault(ram_fault[0]),

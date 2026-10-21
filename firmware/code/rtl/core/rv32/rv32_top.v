@@ -183,11 +183,19 @@ module rv32_top(
                         dec_ebrk_h | dec_mul_h | dec_div_h | dec_illegal_h);
     wire lane1_ok   = lane1_alu || lane1_ctrl || lane1_mem;
     wire lane0_issue_alone = dec_serial || dec_br || dec_jal || dec_jalr;
-    // A load in lane 0 cannot feed lane 1 in the same cycle (its data only
-    // exists in M2), so such a pair is split rather than stalled in EX.
-    wire packet_load_use = dec_load && dec_we &&
+    // A lane-0 producer whose result is not ready combinationally -- a load
+    // (data exists in M2) or a multiply (the product is taken in M1 now) --
+    // cannot feed lane 1 of the same packet, so such a pair is split rather
+    // than stalled in EX.
+    wire packet_load_use = (dec_load || dec_mul) && dec_we &&
                            ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
                             (dec_u2_h && (dec_rd == dec_rs2_h)));
+    // Intra-pair RAW (lane 1 reading what lane 0 writes this cycle) must stay
+    // pair-able: everything between addi/branch and the store data path in the
+    // ISA suite is built on it (P37a, tests 17/18/19/20).  Trying to refuse it
+    // to shorten the two-adder chain cost seven pairs in a 12 kcycle run and
+    // made lane 1 stop carrying any memory operation at all -- see
+    // docs/lessons/mistakes-log.md.  The chain is shortened at the ALU instead.
     wire lane0_mem = dec_load || dec_store;
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
                    !packet_load_use && !(lane0_mem && lane1_mem) &&
@@ -214,6 +222,7 @@ module rv32_top(
     reg         id_we_h;
     reg  [6:0]  id_op_h;
     reg  [31:0] id_pred_h;
+    reg         id_u1_h, id_u2_h;
     reg         id_ctrl_h, id_jal_h;
     reg  [2:0]  id_br_op_h;
     reg         id_load_h, id_store_h, id_uns_h;
@@ -250,6 +259,7 @@ module rv32_top(
     reg  [31:0] ex_csr_old, ex_csr_src;
     reg  [4:0]  ex_rd, ex_cause;
     reg         ex_we, ex_load, ex_store, ex_trap, ex_ctrl, ex_uncond, ex_taken;
+    reg         ex_mul;
     reg         ex_uns, ex_csr, ex_mret, ex_serial;
     reg  [1:0]  ex_size, ex_csr_op;
     reg  [11:0] ex_csr_addr;
@@ -322,7 +332,12 @@ module rv32_top(
     // must wait when they read its destination.  Checking only lane 0 left lane 1
     // reading the stale entry, which is what corrupted CoreMark's printf
     // arguments (they are walked off the stack by load + ALU pairs).
-    wire ld_m1_0 = ex_valid && ex_load && ex_we;
+    // A multiply now finishes in M1 (operands registered, product in `m_value`),
+    // so a consumer in EX has exactly the load's problem: the producer is one
+    // stage short of having its value on a bypassable boundary.  One rule covers
+    // both, which is why the multiplier could be taken out of the ALU cycle for
+    // the cost of one stall on mul->use adjacency instead of a new hazard class.
+    wire ld_m1_0 = ex_valid && (ex_load || ex_mul) && ex_we;
     wire ld_m1_1 = ex_valid && ex_v1 && ex_load_h && ex_we_h;
     wire load_use   =
         (ld_m1_0 && ((ex_rd == rr_rs1) || (ex_rd == rr_rs2) ||
@@ -389,41 +404,49 @@ module rv32_top(
     // ========================================================= bypass
     // Bypass, in age order.  A packet retires two registers, so *every* stage
     // between EX and WB can hold two live producers, and lane 1 of a stage is
-    // younger than lane 0 of the same stage.  Distance 3 (the WB packet) needs
-    // no level: `regs` puts both write ports into its read path, so rf_d* is
-    // already the write-through result.  Missing the lane-1 sources here is what
-    // made `add x3,x2,x1` read x2 as X -- x2 had been written by lane 1 of the
-    // previous packet and was still in M1.
+    // younger than lane 0 of the same stage.
+    //
+    // NOTE: an earlier attempt sampled the operands one stage earlier (registers
+    // `rr_a/rr_b`) to take the 32:1 array read out of the execute cycle.  It
+    // cannot work: lane 1 of a packet reads lane 0's result *in the same cycle*,
+    // so lane 1's operand has to be a function of lane 0's ALU output, and it
+    // also has to be readable at the moment the packet enters EX.  Pre-sampling
+    // forces lane 1 onto the stale array entry.  The two-adder chain is real and
+    // is paid for in the ALU, not by refusing the pair (see `pair_ok`).
+    // Distance 3 (the WB packet) needs no level: `regs` puts both write ports
+    // into its read path, so rf_d* is already the write-through result.
     wire [31:0] fwd1 =
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs1) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_load && !ex_trap && !ex_mul && (ex_rd == rr_rs1) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1) && (m_rd_h != 5'd0)) ? m_value_h :
-        (m_valid && m_we && !m_trap && (m_rd == rr_rs1) && (m_rd != 5'd0)) ? m_value : rf_d0;
+        (m_valid && m_we && !m_trap && (m_rd == rr_rs1) && (m_rd != 5'd0)) ? m_value :
+        rf_d0;
     wire [31:0] fwd2 =
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs2) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_load && !ex_trap && !ex_mul && (ex_rd == rr_rs2) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2) && (m_rd_h != 5'd0)) ? m_value_h :
-        (m_valid && m_we && !m_trap && (m_rd == rr_rs2) && (m_rd != 5'd0)) ? m_value : rf_d1;
+        (m_valid && m_we && !m_trap && (m_rd == rr_rs2) && (m_rd != 5'd0)) ? m_value :
+        rf_d1;
     // Lane 1 sees one producer lane 0 does not have: lane 0 of its own packet.
-    // The condition is "lane 0 writes a register lane 1 reads" -- pairing already
-    // rejects the one case that cannot be covered (lane 0 is a load), so lane 0's
-    // result is always available combinationally here.
+    // Pairing rejects the one case that cannot be covered (lane 0 is a load or a
+    // multiply -- `packet_load_use`), so lane 0's result is always available
+    // combinationally here.
     wire lane0_raw1 = rr_v1 && rr_we && (rr_rd == rr_rs1_h) && (rr_rd != 5'd0);
     wire lane0_raw2 = rr_v1 && rr_we && (rr_rd == rr_rs2_h) && (rr_rd != 5'd0);
-    // The read base `rf_d*_h` already carries the write-through of both write
-    // ports, so the WB stage needs no level of its own.
     wire [31:0] fwd1_h =
         lane0_raw1 ? ex_value_w :
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs1_h) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_load && !ex_trap && !ex_mul && (ex_rd == rr_rs1_h) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1_h) && (m_rd_h != 5'd0)) ? m_value_h :
-        (m_valid && m_we && !m_trap && (m_rd == rr_rs1_h) && (m_rd != 5'd0)) ? m_value : rf_d0_h;
+        (m_valid && m_we && !m_trap && (m_rd == rr_rs1_h) && (m_rd != 5'd0)) ? m_value :
+        rf_d0_h;
     wire [31:0] fwd2_h =
         lane0_raw2 ? ex_value_w :
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs2_h) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_load && !ex_trap && !ex_mul && (ex_rd == rr_rs2_h) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2_h) && (m_rd_h != 5'd0)) ? m_value_h :
-        (m_valid && m_we && !m_trap && (m_rd == rr_rs2_h) && (m_rd != 5'd0)) ? m_value : rf_d1_h;
+        (m_valid && m_we && !m_trap && (m_rd == rr_rs2_h) && (m_rd != 5'd0)) ? m_value :
+        rf_d1_h;
 
     // ========================================================= EX datapath
     wire [31:0] alu_a = (rr_asel == 2'd1) ? rr_pc : (rr_asel == 2'd2) ? 32'd0 : fwd1;
@@ -438,8 +461,17 @@ module rv32_top(
         .y(alu_y), .eq(alu_eq), .lt(alu_lt), .ltu(alu_ltu)
     );
 
+    // The multiplier is not in the execute path.  A 33x33 signed product is four
+    // cascaded DSP blocks; letting it finish inside the ALU cycle puts ~6 ns of
+    // carry logic between the operand mux and the EX flop, which is more than
+    // half of an 8.33 ns budget on its own.  Instead the operands are registered
+    // at the EX/M1 edge and the product is taken in M1 -- exactly the latency a
+    // load has, so one stall rule (`mul_use`) covers both and the result lands in
+    // `m_value` where the bypass already reads it.
     wire [31:0] mul_y;
-    rv32_mul u_mul(.op(rr_md_op), .a(fwd1), .b(fwd2), .y(mul_y));
+    reg  [31:0] mul_a_q, mul_b_q;
+    reg  [2:0]  mul_op_q;
+    rv32_mul u_mul(.op(mul_op_q), .a(mul_a_q), .b(mul_b_q), .y(mul_y));
 
     // ---------------------------------------------------------- lane 1 ALU
     // Lane 1 is a plain integer ALU operation by construction (pairing rejects
@@ -515,7 +547,7 @@ module rv32_top(
                               ctrl_misaln ? ctrl_target :
                               mem_misaln ? mem_addr : 32'd0;
     wire        ex_trap_w   = ex_illegal || rr_ecall || rr_ebrk || ctrl_misaln || mem_misaln;
-    assign ex_value_w = rr_mul ? mul_y : rr_div ? div_result : alu_y;
+    assign ex_value_w = rr_div ? div_result : alu_y;
 
     // ========================================================= CSR block
     wire        csr_illegal, csr_irq_pending;
@@ -603,16 +635,36 @@ module rv32_top(
     // At most one lane is a control transfer (pairing forbids lane 0 when it is
     // a control), so the two mispredict sources are mutually exclusive.
     wire        br_miss_h = rr_v1 && rr_ctrl_h && !hold_ex && (ctrl_next_h != rr_pred_h);
-    wire        redirect_any = trap_go || mret_go || br_miss || br_miss_h || resume;
+    wire        kill_young = br_miss || br_miss_h;
+
+    // The PC update is a separate, registered step.  Feeding `redirect_pc` and
+    // `redirect_valid` straight from the ALU comparison put "compare -> align
+    // check -> flush -> IFU ready/pointer" on one 32-bit-wide high-fanout chain,
+    // which is the single longest thing in the design (plan v2 section 1.2).
+    // Registering it costs one bubble on a mispredict (~2,700 per iteration at
+    // the measured 53k/20) and removes the chain from the path.
+    //
+    // The kill stays in the same cycle: the only wrong-path instruction that can
+    // still exist is the one in ID, and it must not be latched at all.
+    reg         br_go_q;
+    reg  [31:0] br_pc_q;
+    wire        kill_all = trap_go || mret_go;
+
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            br_go_q <= 1'b0; br_pc_q <= 32'd0;
+        end else begin
+            br_go_q <= (br_miss || br_miss_h) && !kill_all;
+            br_pc_q <= br_miss ? ctrl_next : ctrl_next_h;
+        end
+    end
+
+    wire        redirect_any = trap_go || mret_go || br_go_q || resume;
     wire [31:0] redirect_target = trap_go ? csr_vector :
                                   mret_go ? csr_mepc :
-                                  br_miss ? ctrl_next :
-                                  br_miss_h ? ctrl_next_h : arch_next_q;
+                                  br_go_q ? br_pc_q : arch_next_q;
 
     // Kill masks: a trap/MRET in WB is older than every other stage.
-    wire kill_all   = trap_go || mret_go;
-    wire kill_young = br_miss || br_miss_h;
-
     assign redirect_valid = redirect_any;
     assign redirect_pc    = redirect_target;
     assign pred_miss      = br_miss;
@@ -726,7 +778,7 @@ module rv32_top(
             id_v1 <= 1'b0; id_pc_h <= 32'd0; id_imm_h <= 32'd0;
             id_rd_h <= 5'd0; id_rs1_h <= 5'd0; id_rs2_h <= 5'd0;
             id_alu_h <= 4'd0; id_asel_h <= 2'd0; id_bsel_h <= 2'd0;
-            id_we_h <= 1'b0; id_op_h <= 7'd0;
+            id_we_h <= 1'b0; id_op_h <= 7'd0; id_u1_h <= 1'b0; id_u2_h <= 1'b0;
             id_pred_h <= 32'd0; id_ctrl_h <= 1'b0; id_jal_h <= 1'b0; id_br_op_h <= 3'd0;
         end else if (!hold_ex) begin
             id_valid <= id_accept && !kill_all && !kill_young;
@@ -750,6 +802,7 @@ module rv32_top(
                 id_rd_h <= dec_rd_h; id_rs1_h <= dec_rs1_h; id_rs2_h <= dec_rs2_h;
                 id_alu_h <= dec_alu_h; id_asel_h <= dec_asel_h; id_bsel_h <= dec_bsel_h;
                 id_we_h <= dec_we_h;
+                id_u1_h <= dec_u1_h; id_u2_h <= dec_u2_h;
                 id_pred_h <= fetch_predicted_next_pc_hi;
                 id_ctrl_h <= dec_br_h || dec_jal_h; id_jal_h <= dec_jal_h;
                 id_br_op_h <= dec_br_op_h;
@@ -776,6 +829,7 @@ module rv32_top(
             rr_alu_h <= 4'd0; rr_asel_h <= 2'd0; rr_bsel_h <= 2'd0;
             rr_we_h <= 1'b0; rr_op_h <= 7'd0;
             rr_pred_h <= 32'd0; rr_ctrl_h <= 1'b0; rr_jal_h <= 1'b0; rr_br_op_h <= 3'd0;
+            rr_load_h <= 1'b0; rr_store_h <= 1'b0; rr_uns_h <= 1'b0; rr_size_h <= 2'd2;
         end else if (!hold_ex) begin
             rr_valid <= id_valid && !kill_all && !kill_young;
             rr_v1    <= id_v1 && !kill_all && !kill_young;
@@ -813,11 +867,21 @@ module rv32_top(
             ex_rd <= 5'd0; ex_cause <= 5'd0; ex_we <= 0; ex_load <= 0; ex_store <= 0;
             ex_trap <= 0; ex_ctrl <= 0; ex_uncond <= 0; ex_taken <= 0; ex_uns <= 0;
             ex_csr <= 0; ex_mret <= 0; ex_serial <= 0; ex_size <= 2'd2;
-            ex_csr_op <= 2'd0; ex_csr_addr <= 12'd0;
+            ex_csr_op <= 2'd0; ex_csr_addr <= 12'd0; ex_mul <= 1'b0;
+            mul_a_q <= 32'd0; mul_b_q <= 32'd0; mul_op_q <= 3'd0;
             ex_v1 <= 1'b0; ex_pc_h <= 32'd0; ex_value_h <= 32'd0;
             ex_rd_h <= 5'd0; ex_we_h <= 1'b0;
             ex_ctrl_h <= 1'b0; ex_taken_h <= 1'b0; ex_uncond_h <= 1'b0;
             ex_next_h <= 32'd0;
+            // These five were left out of the reset and start as X; any one of
+            // them reaching `issue_mem` (via `w_trap_h`) turns that into X and
+            // the memory handshake then never completes.
+            ex_trap_h <= 1'b0; ex_cause_h <= 3'd0; ex_tval_h <= 32'd0;
+            ex_addr_h <= 32'd0; ex_sdata_h <= 32'd0;
+            // The lane-1 memory attributes drive the LSU ports directly; left
+            // unreset they hand the data cache an X `is_store`/`access_size`,
+            // which comes back as an X `done_valid` and locks the handshake.
+            ex_load_h <= 1'b0; ex_store_h <= 1'b0; ex_uns_h <= 1'b0; ex_size_h <= 2'd2;
         end else if (!hold_m1) begin
             ex_valid <= hold_ex ? 1'b0 : (rr_valid && !kill_all);
             ex_v1    <= hold_ex ? 1'b0 : (rr_v1 && !kill_all);
@@ -834,6 +898,8 @@ module rv32_top(
                 ex_serial <= rr_serial; ex_csr_op <= rr_csr_op;
                 ex_csr_addr <= rr_csr_addr; ex_csr_old <= rr_csr_old;
                 ex_csr_src <= csr_src_w;
+                ex_mul <= rr_mul;
+                mul_a_q <= fwd1; mul_b_q <= fwd2; mul_op_q <= rr_md_op;
                 ex_pc_h <= rr_pc_h; ex_value_h <= ex_value_h_w;
                 ex_rd_h <= rr_rd_h; ex_we_h <= rr_v1 && rr_we_h;
                 ex_ctrl_h <= rr_ctrl_h; ex_taken_h <= ctrl_taken_h;
@@ -859,12 +925,14 @@ module rv32_top(
             m_rd_h <= 5'd0; m_we_h <= 1'b0;
             m_ctrl_h <= 1'b0; m_taken_h <= 1'b0; m_uncond_h <= 1'b0;
             m_next_h <= 32'd0;
+            m_trap_h <= 1'b0; m_cause_h <= 3'd0; m_tval_h <= 32'd0;
         end else if (!hold_wb) begin
             m_valid <= hold_m1 ? 1'b0 : (ex_valid && !kill_all);
             m_v1    <= hold_m1 ? 1'b0 : (ex_v1 && !kill_all);
             if (ex_valid && !hold_m1) begin
                 m_pc <= ex_pc; m_inst <= ex_inst; m_rd <= ex_rd; m_we <= ex_we;
-                m_value <= (ex_load && mem_rsp) ? load_value : ex_value;
+                m_value <= (ex_load && mem_rsp) ? load_value :
+                           ex_mul ? mul_y : ex_value;
                 m_trap <= ex_trap || mem_fault;
                 m_cause <= mem_fault ? mem_cause : ex_cause;
                 m_tval <= mem_fault ? fault_addr : ex_tval;
@@ -898,6 +966,7 @@ module rv32_top(
             w_rd_h <= 5'd0; w_we_h <= 1'b0;
             w_ctrl_h <= 1'b0; w_taken_h <= 1'b0; w_uncond_h <= 1'b0;
             w_next_h <= 32'd0;
+            w_trap_h <= 1'b0; w_cause_h <= 3'd0; w_tval_h <= 32'd0;
         end else if (!hold_wb) begin
             w_valid <= m_valid && !trap_go && !mret_go;
             // "Commit only the older prefix": when lane 0 traps, lane 1 of the
@@ -946,8 +1015,16 @@ module rv32_top(
         // Both lanes can own the port now, so the flag has to follow the owner --
         // keying it on `m_is_mem` alone left a lane-1 load permanently
         // un-issued, and its later response was then discarded as a stranger's.
-        mem_issued_q <= ((m_is_mem || m_is_mem_h) && !mem_rsp)
-                        ? (mem_issued_q || mem_accept) : 1'b0;
+        //
+        // It must also be reset.  Without the reset the flag starts as X, and the
+        // first memory op that reaches M1 before the LSU has ever answered reads
+        // `done_valid` = X, which turns the ternary condition into X and latches
+        // X permanently: `issue_mem` then never asserts, `done_valid` never
+        // becomes defined, and the core spins on the same PC forever.  That is
+        // exactly what a lane-1 load arriving before any lane-0 load could do.
+        if (!rst_n) mem_issued_q <= 1'b0;
+        else mem_issued_q <= ((m_is_mem || m_is_mem_h) && !mem_rsp)
+                             ? (mem_issued_q || mem_accept) : 1'b0;
     end
 
     always @(posedge clk) begin
@@ -1015,6 +1092,22 @@ module rv32_top(
     wire        ifault             = id_ffault;
     wire        ifaulth            = 1'b0;
 `ifdef RV32_DEBUG
+    // Stuck detector: print the full freeze state the first time the head of the
+    // pipe stops for 40 cycles.  Reading `hold_*` after the fact tells nothing.
+    integer stuck_q = 0;
+    integer beat2_q = 0;
+    reg     x_seen_q = 1'b0;
+    always @(posedge clk) if (rst_n) begin
+        if (rr_valid && hold_ex) stuck_q <= stuck_q + 1; else stuck_q <= 0;
+        beat2_q <= beat2_q + 1;
+        if (!x_seen_q && ($isunknown(done_valid) || $isunknown(op_valid))) begin
+            x_seen_q <= 1'b1;
+            $display("TR_XFIRST cyc=%0d pc=%08x opv=%b iss=%b isst=%b size=%b addr=%08x sdata=%08x dv=%b miq=%b mact=%b extrh=%b exldh=%b",
+                     beat2_q, rr_pc, op_valid, issue_mem, is_store, access_size,
+                     address, store_value, done_valid, mem_issued_q, mem_accept,
+                     ex_trap_h, ex_load_h);
+        end
+    end
     // Where the cycles go.  These two counters are what turned "the cache must be
     // too small" into "23% of the run is spent with an instruction parked in EX
     // behind a load", so they earn their place in the bring-up toolbox:

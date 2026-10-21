@@ -31,6 +31,7 @@
 // a build wrapper that passes -Defines CACHE,PERF,PREDICT and the performance
 // image directory to the synthesis tool
 // ---------------------------------------------------------------------------
+`define CORE_RV32
 `define CACHE_ENABLE
 `define PREDICT_ENABLE
 `define PERF_ENABLE

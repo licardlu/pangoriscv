@@ -13,6 +13,11 @@ rtl/core/regs.v
 rtl/core/retire_ctrl.v
 rtl/core/csr_native.v
 rtl/core/branch_predictor.v
+rtl/core/rv32/rv32_alu.v
+rtl/core/rv32/rv32_decode.v
+rtl/core/rv32/rv32_mul.v
+rtl/core/rv32/rv32_regfile.v
+rtl/core/rv32/rv32_top.v
 rtl/core/pangoriscv.v
 rtl/core/ifu_axi.v
 rtl/core/lsu_axi.v

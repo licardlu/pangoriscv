@@ -44,6 +44,9 @@ NAME = {
     15: "machine timer interrupt and MRET",
     16: "WAW in one issue pair: the younger lane wins the register",
     17: "RAW in one issue pair: lane 1 consumes lane 0's result",
+    18: "lane1 memory: address/store-data forwarding and load consumers",
+    19: "lane1 bus faults commit only the older prefix, including load x0",
+    20: "lane1 misalignment traps preserve the older prefix",
 }
 
 
@@ -307,7 +310,7 @@ class Ref:
 CASE_PC = {1: 0x000, 2: 0x200, 3: 0x300, 4: 0x400, 5: 0x500, 6: 0x600,
            7: 0x700, 8: 0x900, 9: 0xA00, 10: 0xB00, 11: 0xC00,
            12: 0xD00, 13: 0xE00, 14: 0xF00, 15: 0x1000, 16: 0x1100,
-           17: 0x1200}
+           17: 0x1200, 18: 0x1300, 19: 0x1400, 20: 0x1500}
 # The shared trap handler lives in its own 0x1000-aligned section.
 TRAP_HANDLER = 0x1000
 # mtvec value the test cases program: the trap section is linked at 0x1000
@@ -461,6 +464,15 @@ def main() -> int:
         return 1
     print("image check: no compressed instructions")
 
+    # Linker alignment relaxation can move labels after a .align even with
+    # --no-relax. Use linked symbols, never guessed .org offsets, for entries.
+    for case in cases:
+        symbol = "_start" if case == 1 else f"test{case}"
+        match = re.search(rf"^([0-9a-fA-F]+) <{symbol}>:", text, re.M)
+        if not match:
+            raise RuntimeError(f"Missing linked case symbol: {symbol}")
+        CASE_PC[case] = int(match.group(1), 16)
+
     rc = run([objcopy, "-O", "binary", str(elf), str(raw)],
              work_dir / "objcopy.log")
     if rc != 0:
@@ -542,6 +554,14 @@ def main() -> int:
                  log, timeout=600)
         text = log.read_text(errors="replace")
         problems = []
+        if case in (18, 19, 20):
+            coverage = re.search(r"E2E_PIPELINE lane1_mem=(\d+) lane1_fault=(\d+) overlap=(\d+)", text)
+            if not coverage:
+                problems.append("missing lane1 coverage")
+            elif case == 18 and (int(coverage[1]) < 3 or int(coverage[3]) == 0):
+                problems.append("lane1 memory/overlap path not exercised")
+            elif case in (19, 20) and int(coverage[2]) == 0:
+                problems.append("fault did not occur in lane1")
         if not re.search(rf"TEST_PASS case={case}", text):
             problems.append("no pass marker")
         want_ref = reference(case)

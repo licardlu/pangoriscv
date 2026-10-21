@@ -383,6 +383,54 @@ test17:
   addi  x10, x27, 0             /* observe x27 after the pair */
   HALT
 
+/* New packet tests deliberately avoid .align relocations. The runner reads
+ * linked test labels; .org values alone are not reliable after test17. */
+  .org 0x1304
+test18:
+  lui   x10, 0x10000
+  addi  x11, x0, 0x123
+  addi  x12, x10, 64
+  sw    x11, 0(x12)             /* lane1 RAW address */
+  addi  x13, x0, -7
+  sw    x13, 4(x12)             /* lane1 RAW store data */
+  addi  x14, x0, 9
+  lw    x15, 0(x12)             /* lane1 load */
+  add   x16, x15, x14           /* next-packet load consumer */
+  lw    x17, 4(x12)
+  add   x18, x17, x16
+  lbu   x19, 5(x12)
+  add   x20, x19, x18
+  lw    x0, 0(x12)              /* x0 discards data, not the memory access */
+  HALT
+
+  .org 0x1404
+test19:
+  li    x2, 0x3f00
+  csrw  0x305, x2
+  lui   x10, 0x70000
+  addi  x20, x0, 77
+  lw    x0, 0(x10)              /* lane1 access fault: older x20 survives */
+  addi  x21, x20, 1
+  addi  x22, x6, 0              /* preserve load fault cause */
+  addi  x23, x0, 33
+  sw    x23, 0(x10)             /* lane1 store fault */
+  addi  x24, x23, 1
+  HALT
+
+  .org 0x1504
+test20:
+  li    x2, 0x3f00
+  csrw  0x305, x2
+  lui   x10, 0x10000
+  addi  x20, x0, 91
+  lw    x21, 1(x10)             /* lane1 misalignment must not issue LSU */
+  addi  x22, x6, 0
+  addi  x23, x20, 1
+  addi  x24, x0, 35
+  sh    x24, 1(x10)
+  addi  x25, x24, 1
+  HALT
+
 /* ------------------------------------------------------------------ trap
  * Shared trap handler, linked into the .trap section at address 0x3f00 by
  * link.ld. It reads mepc/mcause/mtval into x5/x6/x7. Synchronous exceptions

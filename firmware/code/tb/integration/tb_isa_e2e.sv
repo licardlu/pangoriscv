@@ -126,6 +126,15 @@ module tb_isa_e2e;
     // this, a "the pair formed" claim is unfalsifiable from the register dump --
     // a test that silently de-pairs would still pass (P37a).
     integer pair_n = 0;
+    integer lane1_mem_n = 0, lane1_fault_n = 0, overlap_n = 0;
+    always @(posedge clk) if(rst_n) begin
+        if(soc.core.cpu.op_valid && soc.core.cpu.op_ready && soc.core.cpu.mem_sel_h)
+            lane1_mem_n = lane1_mem_n + 1;
+        if(soc.core.cpu.trap_fire && soc.core.cpu.trap1)
+            lane1_fault_n = lane1_fault_n + 1;
+        if(soc.core.cpu.x_valid && soc.core.cpu.ex_valid)
+            overlap_n = overlap_n + 1;
+    end
     reg fire_d = 0;
     reg [63:0] ord_d = 0;
     always @(posedge clk) if(rst_n) begin
@@ -198,6 +207,8 @@ module tb_isa_e2e;
             $display("E2E_GPIO ctrl=%08x data=%08x", gpio_ctrl, gpio_data);
         if(test_case == 12)
             $display("E2E_UART chars=%0d", uart_chars);
+        $display("E2E_PIPELINE lane1_mem=%0d lane1_fault=%0d overlap=%0d",
+                 lane1_mem_n, lane1_fault_n, overlap_n);
         $display("TEST_PASS case=%0d traps=%0d pairs=%0d", test_case, trap_seen, pair_n);
         sim_done = 1;
         $finish;

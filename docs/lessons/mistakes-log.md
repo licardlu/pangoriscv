@@ -1673,3 +1673,84 @@ EX（执行）: a/b + 上一拍生产者的旁路 + ALU + cache 访问（用锁�
    必须让 `Design Summary` 是 `All Constraints Met` **并且** WNS 接近 0。
 3. 126 MHz 约束对 20+ ns 的路径跑不完布线（30 分钟后仍有 10,638 条未布线），
    所以中间档位（100 MHz）才是可用的测量点。
+
+## 38. 把发射点前移一拍，就把"杀掉错路指令"的时窗压成了 0（2026-10-22，P9/R5）
+
+**现象**：R5（访存请求从 M1 挪到 EX）之后 `load_use` 从 1,714,576 直接归零，
+`Total ticks` 5,073,264 → 4,529,953（看起来 3.94 → 4.41，涨了），
+但五项 CRC 里 `crclist` / `crcstate` / `crcfinal` 全错，另加十条
+
+```
+LSU_FAULT cycle=4760224 addr=00000031 store=1 size=0 pc=00002b10 rd=0
+```
+
+`pc=0x2b10` 是 xprintf `number()` 里的 `sb s1,0(a5)`，`addr` 是 `0x31/0x32/0x34/0x36/0x61/0x62`
+——都在 0x1000_0000 数据窗口之外，落进 0x0..0x1000_0000 的空洞（DECERR）。
+
+**查什么**：不要查地址是怎么算出来的，查**这条 `sb` 该不该存在**。
+在 `rv32_top` 里加一个只在地址越界时触发的探针（`ifdef RV32_MEMDBG`），
+把 accept 那一拍的 `op_pc / rr_inst / rs1 / fwd1 的胜出来源` 全打出来：
+
+```
+MEMBAD cyc=4654464 pc=00002b10 inst=e65ff06f st=1 sz=0 addr=00000061 l1=1 rs1=31 s1=4
+```
+
+一行就够了：`inst=e65ff06f` 是**车道 0 的 `j 2970`**，`l1=1` 说明这条 `sb` 是车道 1，
+`pc` 却是 0x2b10 —— 也就是说这个包里车道 0 是**跳转**，车道 1 是它的**顺序后继**。
+预测器把这个 `jal` 的目标猜成了 0x2b10，所以 `lane1_is_pred=1` 让它们配了对；
+真值 `j 2970` 一算出来 `br_miss=1`，车道 1 是错路，必须在 RR/EX 边沿被杀。
+
+**原因**：老结构里请求从 M1 发出，比 `br_miss` 晚**整整一拍**，所以"杀"总在"发"之前；
+R5 把发挪到 EX 之后，`br_miss` 与 `issue_mem` 落在**同一拍**，
+边沿上的 `ex_v1 <= ... && !br_miss` 只能拦住它进入 M1，拦不住它已经被 LSU 收下。
+错路的 `a5` 是无意义寄存器值（探针里 `rs1=31` 的 `fwd1` 落到 `rf_d0=3`），
+于是 `sb` 拿着这个垃圾地址真的写了内存。
+
+**怎么办**（两条都做了）：
+1. `ex_is_mem_h` 增加 `&& !ctrl_miss_now`（`ctrl_miss_now = rr_valid && is_ctrl && ctrl_next != rr_pred`），
+   让"车道 0 要把 PC 改掉"这种包里的车道 1 访存**整条从 EX 里消失**——
+   不是"等一拍再杀"，而是"根本不进 `mem_wait`"。
+2. 只在 `issue_mem` 上加 `!br_miss` 是不够的，而且会**死锁**：`br_miss` 自己带 `!hold_ex`，
+   而 `hold_ex` 来自 `mem_wait`；错路访存一旦开始"等"，`hold_ex` 就一直高，
+   `br_miss` 永远不成立，重定向永远不发（实测 `STALL_DETECT`，20 万拍不退休，
+   `MEMWAITDBG blocked` 全是 store）。**判据：任何"因为 X 所以不发"的守卫，
+   必须同时让 X 不进入 `mem_wait`，否则在"停拍本身依赖验证结果"的核里就是死锁。**
+
+**可复用判据**：只要把一个"会写外部状态"的动作（store、DMA、UART 写）前移一级，
+就必须把**所有**能杀掉它的信号（`br_miss` / `kill_all` / `trap`）都提到同一拍去比，
+并逐条检查这些信号里有没有"依赖停拍"的分量。
+
+## 39. freeze 是"跳过整块"写的，于是它顺手吞掉了 kill（2026-10-22，P9/R5）
+
+**现象**：R5 第一版 ISA 用例从 20/21 掉到 19/21，新红的是 case 19
+（"车道 1 总线故障只提交更老的前缀，含 load x0"）。逐拍打印 `TR_RDR/TR_FET` 看到：
+第一次 trap 之后 `pcq` 卡在 `0x3f00` 长达 24 拍，然后**第二次** trap
+（`store fault pc=0x1424`）才发生——比 faulting load **更年轻**的那条 `sw` 没有被冲掉。
+
+**查什么**：看冻结条件是怎么写的，别看被冻结的那几个寄存器：
+
+```verilog
+end else if (!hold_ex) begin          // ← 整块跳过
+    rr_valid <= id_valid && !kill_all && !kill_young;
+```
+
+`hold_ex` 为 1 时整块不执行，**包括** `rr_valid <= 0` 这一句。
+而 `kill_all`（`trap_go || mret_go`，在 WB 结清）可能恰好与 `hold_ex` 同拍。
+
+**原因**：老结构下 trap 那一拍 `hold_ex` 很少恰好为 1；R5 之后，
+比 trap 更年轻的指令经常是一条**还在等 AXI 写响应**的 store，
+`mem_wait` 和 `trap_wait` 同拍为真，kill 被冻住。
+
+**怎么办**：
+
+```verilog
+end else if (!hold_ex || kill_all) begin
+    id_valid <= !hold_ex && id_accept && !kill_all && !kill_young;
+```
+
+即"冻结跳过整块"与"kill 必须生效"这两件事要分开写：进入块的条件加 `|| kill_all`，
+块内每条 valid 赋值再自己 `&& !hold_ex`。RD 与 RR 两级都要改。
+
+**可复用判据**：**valid 位永远不许被 freeze 挡住清零**。
+自检方法：任何 `else if (条件) begin` 形式的冻结块，逐句问"这条在冻结期间不执行，
+语义还成立吗"——只要块里有一句是"清零/杀死"，这个写法就是错的。

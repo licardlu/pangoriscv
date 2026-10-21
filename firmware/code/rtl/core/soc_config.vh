@@ -33,5 +33,5 @@
 // ---------------------------------------------------------------------------
 `define CACHE_ENABLE
 `define PREDICT_ENABLE
-// `define PERF_ENABLE
+`define PERF_ENABLE
 `endif

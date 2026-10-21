@@ -262,12 +262,29 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 2. **职责**：2 路组相联 I-Cache，**64 组 × 2 路 × 8 字 = 4 KB**；命中当拍返回，缺失走 AXI 8 拍补行；不做 MMU/权限。
 4. **接口**：请求侧 `req_*`（32b 地址、8b len、4b id）；响应侧 `rsp_data/rsp_data_hi`（32b×2）、`rsp_pair`；AXI 读侧 `m_ar*/m_r*`。
 5. **内部状态**：`state`、`addr_q`、`id_q`、`set_q`、`word_q`、`tag_q[20:0]`、`way_q`、`rd_index_q[9:0]`、`rsp_data_q/rsp_data_hi_q`、`beat_q`、`fill_bad_q/fill_kill`。
-6. **存储**：`even_mem/odd_mem`（512×32，LUTRAM）+ 疑似副本 `even_mem_1/odd_mem_1`；标签 LUTRAM。
+6. **存储**：`even_mem/odd_mem`（512×32，LUTRAM）+ 按读口复制的 `even_mem_1/odd_mem_1`（**不是冗余**：
+   命中查找与 miss 回放两条路径同拍各读一次，一份 RAM 只有一个读口）；
+   标签 `tag_mem[0:127]`（21 bit）**在源码里是触发器**：E1 实验证明它可以变成 LUTRAM，但那一版
+   没能通过交付门禁（见下 11 条），**RTL 已回退**。
 7. **面积**：2,089/3,071/1,024/0/0 → **2,089/待定/512**（M5 条件）。
 8. **物理区域**：`R_ICACHE`（与 `R_FETCH` 相邻；同区总线最宽，禁止跨区）。
 9. **关键路径**：**hold 前 5 之一**：`way_q → odd_mem_1_3_11/ram64x1d/WADDR[2]`。
 10. **测试**：`tb/unit/tb_icache_axi.sv`、`run_icache_tests.py`。
 11. **变更**：2026-10-21 立卡；M5 先做归属分析（3,071 FF 与源码 ~200 位不符），证据成立才删副本。**头注释 "32 sets" 已过时（实际 64 组），随 M5 一并修正。**
+    **E1（2026-10-21，效率专项）**：M5 留下的"3,071 FF 与源码不符"查清了 ——
+    复位段 `for(i...) tag_mem[i]<=0` 逐项清零 128×21 位，而分布式 RAM **没有按项复位**的能力，
+    工具只能把整块 tag 做成触发器（连带 128:1 的读 mux 变成 LUT）。
+    **改法**：只删 `tag_mem` 的复位循环，`valid_mem`/`lru_mem` 照旧复位。
+    安全性：命中要求 `valid_mem` 置位，而 valid 只在写 tag 的**同一拍**置位，未初始化 tag 永不被比较。
+    实测：本模块 LUT **2,547 → 1,330**、FF **3,070 → 383**、`ram64x1d` 1,024 → 1,066。
+    功能等价证据：A/B 20 迭代**逐位相同**（窗口 5,212,477 / 全部计数 / `crcfinal 0x4983`）、
+    icache 单测、ISA 17/17。详见 `docs/lessons/mistakes-log.md` §16。
+    **交付门禁未通过 → 已回退**：净表少掉 2,688 个 FF 后时钟树与放置整体变化，`led[*]` 这几条
+    **IO 端口 hold 路径**（`reset_sync→led`、`gpio_inst/reg_data→led`，FDC 只有 `create_clock`，
+    没有 IO 约束）稳定落在 −0.021～−0.038 ns。四次尝试（默认种子 / 加 hold 修复预算 / 种子 9 /
+    `set_di_q` 写地址重定时）最多只把端点压到 1 个，仍为 `Convergence=Fail`。
+    交付位流仍是 P37 的 3.8557。复活条件：先把 LED 输出做成 IO 单元内寄存器或给出合法的 IO 约束，
+    再重放这个改动。
 
 ### 5.2 译码与流水寄存器
 

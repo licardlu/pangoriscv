@@ -153,15 +153,6 @@ module dcache_axi #(
     // RAMs a write-data flop that only feeds them.  The tag is stable from the
     // lookup until the last fill beat, so the extra cycle is free.
     reg [TAGW-1:0] tag_di_q;
-    // Write-address retiming for the tag RAM (hold closure).  The tag array's
-    // write address came straight from set_q/set_wr_q, and `set_q[3] ->
-    // tag_mem_*/ram64x1d/WADDR` is the hold-critical path in the E1 build
-    // (-0.038 ns, three endpoints).  The set index cannot change between the
-    // accept edge and the fill edge (the cache is in a fill state throughout),
-    // so a one-cycle delayed copy is identical when the write actually happens
-    // and gives the RAM a write-address flop that feeds nothing else -- the same
-    // trick, for the same reason, as tag_di_q above.
-    reg [IDXW-1:0] set_di_q;
     reg [IDXW-1:0] set_q;
     // Physical duplicate of set_q, used only as the write address of the line
     // RAMs (tag/data/valid/lru).  Both registers load the same value on the
@@ -462,7 +453,6 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             state_q     <= ST_IDLE;
             tag_q       <= {TAGW{1'b0}};
             tag_di_q    <= {TAGW{1'b0}};
-            set_di_q    <= {IDXW{1'b0}};
             set_q       <= {IDXW{1'b0}};
             set_wr_q    <= {IDXW{1'b0}};
             word_q      <= 3'd0;
@@ -593,7 +583,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         if (m_rlast || beat_q==LINE_WORDS-1) begin
                             if (!rd_err_q && m_rresp==2'b00) begin
                                 valid_mem[widx(fill_way_q,set_wr_q)] <= 1'b1;
-                                tag_mem[widx(fill_way_q,set_di_q)]   <= tag_di_q;
+                                tag_mem[widx(fill_way_q,set_wr_q)]   <= tag_di_q;
                                 lru_mem[set_wr_q] <= ~fill_way_q;
                                 resp_q <= 2'b00;
                             end else begin
@@ -741,9 +731,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 ST_FAULT: ;
                 default: state_q <= ST_FAULT;
             endcase
-            // tag write data/address retiming stages (see the declarations)
+            // tag write-data retiming stage (see the declaration comment)
             tag_di_q <= tag_q;
-            set_di_q <= set_wr_q;
 
             // ---- posted store queue bookkeeping (P34) ---------------------------
             // NOTE: the cache-line merge of an accepted posted store deliberately

@@ -174,6 +174,7 @@ module pangoriscv(
  // The second slot may also be a branch or JAL. JALR remains excluded by
  // id_alu's decode contract even though lane-1 target faults are now precise.
  wire ctrl1=(op1==7'h63) || (op1==7'h6f);
+ wire ctrl0=(op0==7'h63) || (op0==7'h6f) || (op0==7'h67);
  // Either slot may own the single LSU. Lane-1 memory requires an older ALU,
  // so there is no unresolved older branch, CSR or divide before its request.
  wire mem0=(op0==7'h03) || (op0==7'h23);
@@ -182,8 +183,9 @@ module pangoriscv(
  // Load RAW cannot pair. WAR is safe because both sources latch together;
  // WAW is safe because the younger write and bypass have priority.
  wire pair_ok=id_valid && id_valid_h &&
-              (dpch==dpc+32'd4) &&
-              (((alu0 || mem0) && (alu1 || ctrl1)) || (alu0 && mem1)) &&
+              (ctrl0 ? (dpch==ipred) : (dpch==dpc+32'd4)) &&
+              (((alu0 || mem0) && (alu1 || ctrl1)) || (alu0 && mem1) || (ctrl0 && alu1)) &&
+              (!ctrl0 || !dwe || !depends_on(dinsth,drd)) &&
               !dillegal && !dillegalh &&
               !dcwe && !dcweh &&
               !ifault && !ifaulth &&
@@ -201,16 +203,20 @@ module pangoriscv(
  // available for lane-1 address/store-data forwarding throughout an LSU wait,
  // and prevents an interrupt from splitting a packet with a visible store.
  // On a younger fault only the normal older prefix retires, on the trap edge.
+ // A predicted target can share a packet with its older control transfer.
+ // Wrong-path ALU work has no side effects and must never retire or trap.
+ wire older_control=ei[6:0]==7'h63 || ei[6:0]==7'h6f || ei[6:0]==7'h67;
+ wire young_path_ok=!ex_valid || !older_control || actual_next_pc==ep_h;
  wire retire0=ex_valid && ex_done && !ex_fault && !halted &&
-              (!ex_valid_h || (ex_done_h && (!ex_fault_h || trap_ready)));
- wire retire1=ex_valid_h && ex_done_h && !ex_fault_h && !halted &&
+              (!ex_valid_h || !young_path_ok || (ex_done_h && (!ex_fault_h || trap_ready)));
+ wire retire1=ex_valid_h && young_path_ok && ex_done_h && !ex_fault_h && !halted &&
               (!ex_valid || retire0);
  wire trap0=ex_valid && ex_done && ex_fault;
- wire trap1=ex_valid_h && ex_done_h && ex_fault_h &&
+ wire trap1=ex_valid_h && young_path_ok && ex_done_h && ex_fault_h &&
             (!ex_valid || (ex_done && !ex_fault));
  assign ex_leave0=retire0 || (trap_fire && trap0);
  // An older trap kills the younger slot even when it is not itself faulty.
- assign ex_leave_h=retire1 || (trap_fire && (trap0 || trap1));
+ assign ex_leave_h=retire1 || (retire0 && !young_path_ok) || (trap_fire && (trap0 || trap1));
  wire ex_leave_any=ex_leave0 || ex_leave_h;
  wire ex_valid_any=ex_valid || ex_valid_h;
  wire ex_fault_any=trap0 || trap1;

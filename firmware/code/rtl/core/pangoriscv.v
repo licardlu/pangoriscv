@@ -4,7 +4,7 @@
 // Rev    : 1.1                    Date : 2026-10-19
 // Author : pango_lpenghan
 // Brief  : Processor core top: fetch/decode/execute/retire with predict and
-//          redirect interfaces; two ALU-class issue slots (D1 superscalar)
+//          redirect interfaces; dual issue with one LSU shared by either slot
 //=============================================================================
 
 `include "defines.v"
@@ -63,8 +63,15 @@ module pangoriscv(
  wire [31:0] alu_result,alu_target,alu_result_h,alu_target_h;
  wire alu_taken,alu_taken_h;
  wire is_load=(ei[6:0]==7'h03);
- assign is_store=(ei[6:0]==7'h23);
- wire is_memory=is_load || is_store;
+ wire is_store0=(ei[6:0]==7'h23);
+ wire is_memory=is_load || is_store0;
+ wire is_load_h=(ei_h[6:0]==7'h03);
+ wire is_store_h=(ei_h[6:0]==7'h23);
+ wire is_memory_h=is_load_h || is_store_h;
+ // The two slots keep program order. Only the LSU owner is multiplexed;
+ // instructions are never swapped between physical lanes.
+ wire mem_sel_h=ex_valid_h && is_memory_h;
+ assign is_store=mem_sel_h ? is_store_h : is_store0;
  wire is_csr=ei[6:0]==7'h73 && ei[14:12]!=0 && ei[14:12]!=4;
  wire is_mret=ei==32'h30200073;
  wire is_ecall=ei==32'h00000073;
@@ -92,21 +99,26 @@ module pangoriscv(
  wire ex_done=local_fault || (is_memory ? (mem_issued && done_valid) :
                       is_div ? (issued && div_rsp_valid) : 1'b1);
  wire [31:0] actual_next_pc=is_mret ? csr_epc : alu_taken ? alu_target : ep+32'd4;
- // Lane 1 can only be an ALU op or a branch/JAL in D2, so its architectural
- // next PC is its branch target or PC+4.
+ wire misaligned_target_h=alu_taken_h && |alu_target_h[1:0];
+ wire local_fault_h=efault_h || eillegal_h || misaligned_target_h ||
+                    (is_memory_h && misaligned_data);
+ wire memory_fault_h=is_memory_h && mem_issued && done_valid && fault;
+ wire ex_fault_h=local_fault_h || memory_fault_h;
+ wire ex_done_h=local_fault_h || !is_memory_h || (mem_issued && done_valid);
+ // Memory/ALU fall through; branch/JAL use their resolved successor.
  wire [31:0] actual_next_pc_h=alu_taken_h ? alu_target_h : ep_h+32'd4;
 
- // ---- D1 pairing: both slots are pure ALU-class, adjacent, no RAW/WAW -----
+ // ---- Dual issue: adjacent instructions, at most one memory operation ----
  wire [6:0] op0=dinst[6:0], op1=dinsth[6:0];
  wire alu0=(op0==7'h33 && dinst[31:25]!=7'h01) || op0==7'h13 || op0==7'h37 || op0==7'h17;
  wire alu1=(op1==7'h33 && dinsth[31:25]!=7'h01) || op1==7'h13 || op1==7'h37 || op1==7'h17;
- // D2: the second slot may be a taken-control instruction (conditional branch
- // or JAL).  JALR is excluded on purpose: its target can be misaligned and the
- // slot-1 trap path is not implemented yet.
+ // The second slot may also be a branch or JAL. JALR remains excluded by
+ // id_alu's decode contract even though lane-1 target faults are now precise.
  wire ctrl1=(op1==7'h63) || (op1==7'h6f);
- // D3: slot 0 may also be the pair's single memory operation.  Slot 1 remains
- // ALU/branch only, so the LSU still sees at most one request per cycle.
+ // Either slot may own the single LSU. Lane-1 memory requires an older ALU,
+ // so there is no unresolved older branch, CSR or divide before its request.
  wire mem0=(op0==7'h03) || (op0==7'h23);
+ wire mem1=(op1==7'h03) || (op1==7'h23);
  // P37a: RAW inside a pair is no longer a reason to refuse it.  Lane 0 is ALU
  // class here (see the term below), so its result is combinational in the very
  // cycle lane 1 executes: ex1_r1/ex1_r2 below forward it into lane 1's operands.
@@ -114,7 +126,7 @@ module pangoriscv(
  // alu_result is only the address), so the check is kept for mem0 only.
  wire pair_ok=id_valid && id_valid_h &&
               (dpch==dpc+32'd4) &&
-              (alu0 || mem0) && (alu1 || ctrl1) &&
+              (((alu0 || mem0) && (alu1 || ctrl1)) || (alu0 && mem1)) &&
               !dillegal && !dillegalh &&
               !dcwe && !dcweh &&
               !ifault && !ifaulth &&
@@ -124,30 +136,34 @@ module pangoriscv(
 
  // id_ex drives in_ready (slot can take an instruction: empty or leaving).
  wire ex0_ready,ex1_ready;
- assign id_ready0=ex0_ready && !block_entry;
+ assign id_ready0=ex0_ready && ex1_ready && !block_entry;
  assign id_ready1=ex0_ready && ex1_ready && pair_ok && !block_entry;
  // Keep the old hierarchical observability name used by the CoreMark testbench.
  wire id_ready=id_ready0;
 
- wire ex_fault_h=efault_h || eillegal_h;
- wire retire0=ex_valid && ex_done && !ex_fault;
- // In-order commit: lane 1 may retire only on the cycle lane 0 retires (or
- // when lane 0 is empty).  D3's lane 0 can be a multi-cycle load/store, so a
- // free-running lane-1 retire would commit the younger instruction first.
- wire retire1=ex_valid_h && !ex_fault_h && !ex_fault && (!ex_valid || retire0);
+ // Hold the packet until both slots finish. This keeps the older result
+ // available for lane-1 address/store-data forwarding throughout an LSU wait,
+ // and prevents an interrupt from splitting a packet with a visible store.
+ // On a younger fault only the normal older prefix retires, on the trap edge.
+ wire retire0=ex_valid && ex_done && !ex_fault && !halted &&
+              (!ex_valid_h || (ex_done_h && (!ex_fault_h || trap_ready)));
+ wire retire1=ex_valid_h && ex_done_h && !ex_fault_h && !halted &&
+              (!ex_valid || retire0);
  wire trap0=ex_valid && ex_done && ex_fault;
- wire trap1=ex_valid_h && ex_fault_h && !ex_fault && (!ex_valid || retire0);
- assign ex_leave0=retire0 || trap0;
- assign ex_leave_h=retire1 || trap1;
+ wire trap1=ex_valid_h && ex_done_h && ex_fault_h &&
+            (!ex_valid || (ex_done && !ex_fault));
+ assign ex_leave0=retire0 || (trap_fire && trap0);
+ // An older trap kills the younger slot even when it is not itself faulty.
+ assign ex_leave_h=retire1 || (trap_fire && (trap0 || trap1));
  wire ex_leave_any=ex_leave0 || ex_leave_h;
  wire ex_valid_any=ex_valid || ex_valid_h;
  wire ex_fault_any=trap0 || trap1;
  wire retire_any=retire0 || retire1;
  wire trap_any=trap0 || trap1;
  assign retire_fire=retire_any;
- wire [31:0] last_next=ex_valid_h ? actual_next_pc_h : actual_next_pc;
- wire [31:0] last_pred=ex_valid_h ? epred_h : epred;
- wire [1:0] retire_count=retire_fire ? (retire1?2'd2:2'd1) : 2'd0;
+ wire [31:0] last_next=retire1 ? actual_next_pc_h : actual_next_pc;
+ wire [31:0] last_pred=retire1 ? epred_h : epred;
+ wire [1:0] retire_count={1'b0,retire0}+{1'b0,retire1};
 
  // ---- the predictor dynamic branch prediction ----------------------------
  wire pred_is_branch=(ei[6:0]==7'h63);
@@ -161,7 +177,7 @@ module pangoriscv(
  // it is control, otherwise lane 0.
  wire pred_is_ctrl_h=(ei_h[6:0]==7'h63) || (ei_h[6:0]==7'h6f) ||
                      ((ei_h[6:0]==7'h67) && (ei_h[14:12]==3'b000));
- wire train_sel_h=ex_valid_h && pred_is_ctrl_h;
+ wire train_sel_h=retire1 && pred_is_ctrl_h;
  wire [31:0] train_pc=train_sel_h ? ep_h : ep;
  wire train_control=train_sel_h ? 1'b1 : pred_train_control;
  wire train_uncond=train_sel_h ? ((ei_h[6:0]==7'h6f) ||
@@ -195,37 +211,55 @@ module pangoriscv(
  assign chain_predict_next_pc2=chain_c2+32'd4;
 `endif
  assign pred_miss=retire_fire && (last_next!=last_pred);
- assign address=er1+(is_store ? {{20{ei[31]}},ei[31:25],ei[11:7]} :
-                                {{20{ei[31]}},ei[31:20]});
- assign access_size={1'b0,ei[13:12]};
- assign load_unsigned=ei[14];
- assign store_value=er2;
- assign op_pc=ep; assign op_rd=erd;
- assign op_valid=rst_n && ex_valid && is_memory && !issued && !local_fault;
- assign done_ready=ex_leave0 && is_memory && mem_issued;
+ wire [31:0] mem_inst=mem_sel_h ? ei_h : ei;
+ wire [31:0] mem_base=mem_sel_h ? ex1_r1 : er1;
+ wire [31:0] mem_offset=is_store ?
+                {{20{mem_inst[31]}},mem_inst[31:25],mem_inst[11:7]} :
+                {{20{mem_inst[31]}},mem_inst[31:20]};
+ assign address=mem_base+mem_offset;
+ assign access_size={1'b0,mem_inst[13:12]};
+ assign load_unsigned=mem_inst[14];
+ assign store_value=mem_sel_h ? ex1_r2 : er2;
+ assign op_pc=mem_sel_h ? ep_h : ep;
+ assign op_rd=mem_sel_h ? erd_h : erd;
+ // Check only local faults here. Gating a request on a bus-response fault
+ // would feed a same-cycle cache response back into its own request-valid.
+ assign op_valid=rst_n && !halted && !issued &&
+                 (mem_sel_h ? (!local_fault_h && (!ex_valid || !local_fault)) :
+                              (ex_valid && is_memory && !local_fault));
+ assign done_ready=mem_issued &&
+                   (mem_sel_h ? ex_leave_h : (ex_leave0 && is_memory));
  assign div_req_valid=rst_n && ex_valid && is_div && !issued && !local_fault;
  assign div_rsp_ready=ex_leave0 && is_div && issued;
  assign wdata=is_csr ? csr_old : is_load ? load_value : is_div ? div_result : alu_result;
  assign rd=erd; assign rd_valid=retire0 && ewe && erd!=0;
  assign rd_h=erd_h; assign rd_valid_h=retire1 && ewe_h && erd_h!=0;
- assign wdata_h=alu_result_h;
+ assign wdata_h=is_load_h ? load_value : alu_result_h;
  assign retire_pc=ep; assign retire_inst=ei;
- wire synchronous_trap=ex_valid && ex_done && ex_fault;
- assign trap_pc=synchronous_trap ? ep : retire_fire ? last_next : arch_next_pc;
- assign trap_cause=!synchronous_trap ? irq_cause :
+ wire synchronous_trap=trap0 || trap1;
+ assign trap_pc=trap0 ? ep : trap1 ? ep_h : retire_fire ? last_next : arch_next_pc;
+ wire [31:0] trap_cause0=
                     efault ? {27'd0,ecause} : effective_illegal ? 32'd2 :
                     is_ebreak ? 32'd3 : is_ecall ? 32'd11 : misaligned_target ? 32'd0 :
-                    misaligned_data ? (is_store?32'd6:32'd4) : (is_store?32'd7:32'd5);
- assign trap_tval=!synchronous_trap ? 32'd0 : efault ? et :
+                    misaligned_data ? (is_store0?32'd6:32'd4) : (is_store0?32'd7:32'd5);
+ wire [31:0] trap_cause1=
+                    efault_h ? {27'd0,ecause_h} : eillegal_h ? 32'd2 :
+                    misaligned_target_h ? 32'd0 :
+                    misaligned_data ? (is_store_h?32'd6:32'd4) : (is_store_h?32'd7:32'd5);
+ assign trap_cause=trap0 ? trap_cause0 : trap1 ? trap_cause1 : irq_cause;
+ wire [31:0] trap_tval0=efault ? et :
                    effective_illegal ? ei : (is_ecall || is_ebreak) ? 32'd0 : misaligned_target ? alu_target :
                    misaligned_data ? address : fault_addr;
+ wire [31:0] trap_tval1=efault_h ? et_h : eillegal_h ? ei_h :
+                    misaligned_target_h ? alu_target_h : misaligned_data ? address : fault_addr;
+ assign trap_tval=trap0 ? trap_tval0 : trap1 ? trap_tval1 : 32'd0;
  // Halt discards young work. Resume fetches from the saved architectural boundary.
  wire resume=halted && !halt_req;
  assign redirect_valid=trap_fire || (retire_fire && last_next!=last_pred) || resume;
  assign redirect_pc=trap_fire ? csr_mtvec : resume ? arch_next_pc : last_next;
  csr_native u_csr(.clk(clk),.rst_n(rst_n),.addr(ei[31:20]),
    .write_intent(csr_intent),.commit(retire0 && csr_intent),
-   .retire(retire0),.retire_count(retire_count),
+   .retire(retire_any),.retire_count(retire_count),
    .mret_fire(retire0 && is_mret),
    .trap_enter(trap_fire),.write_data(csr_write),.trap_pc(trap_pc),
    .trap_cause(trap_cause),.trap_tval(trap_tval),
@@ -233,7 +267,7 @@ module pangoriscv(
    .read_data(csr_old),.illegal(csr_illegal),.vector(csr_mtvec),
    .mepc_value(csr_epc),.irq_pending(irq_pending),.irq_cause(irq_cause));
  always @(posedge clk) begin
-   if(!rst_n || ex_leave0) issued<=0;
+   if(!rst_n || ex_leave_any) issued<=0;
    else if((op_valid && op_ready) || (div_req_valid && div_req_ready)) issued<=1;
  end
  ctrl u_ctrl(.rst_n(rst_n),.redirect_valid(redirect_valid),.halt_pending(halt_pending),
@@ -266,13 +300,13 @@ module pangoriscv(
  // not enough: the ID/EX latch samples the combinational read on the same edge
  // the producer retires, so it can capture the pre-write value.  Select the EX
  // result explicitly (lane 1 is younger and wins on a same-register collision).
- wire [31:0] rv1f = (retire1 && ewe_h && erd_h!=0 && erd_h==rs1) ? alu_result_h :
+ wire [31:0] rv1f = (retire1 && ewe_h && erd_h!=0 && erd_h==rs1) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs1)   ? wdata : rv1;
- wire [31:0] rv2f = (retire1 && ewe_h && erd_h!=0 && erd_h==rs2) ? alu_result_h :
+ wire [31:0] rv2f = (retire1 && ewe_h && erd_h!=0 && erd_h==rs2) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2)   ? wdata : rv2;
- wire [31:0] rv1hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs1h) ? alu_result_h :
+ wire [31:0] rv1hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs1h) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs1h)   ? wdata : rv1h;
- wire [31:0] rv2hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs2h) ? alu_result_h :
+ wire [31:0] rv2hf= (retire1 && ewe_h && erd_h!=0 && erd_h==rs2h) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2h)   ? wdata : rv2h;
  // EX -> EX forwarding inside one issue pair (P37a).  Both lanes execute in the
  // same cycle, so lane 0's ALU output is already available when lane 1's ALU
@@ -287,8 +321,10 @@ module pangoriscv(
  wire [6:0] ex1_op = ei_h[6:0];
  wire ex0_alu_cls = (ex0_op==7'h33 && ei[31:25]!=7'h01) || ex0_op==7'h13 ||
                     ex0_op==7'h37 || ex0_op==7'h17;
- wire fwd0_alu = ex_valid && ex_valid_h && ex0_alu_cls && ewe &&
-                 !ex_fault && erd!=5'd0;
+ // Forwarding is data-only. Qualifying it with ex_fault would create a loop
+ // through the forwarded memory address and local misalignment detection.
+ // Faults instead suppress the LSU request and architectural write enables.
+ wire fwd0_alu = ex_valid && ex_valid_h && ex0_alu_cls && ewe && erd!=5'd0;
  // The register operand reaches the ALU through TWO ports: `op1_i/op2_i` (already
  // selected between register and immediate by ID) and `reg1_rdata_i/reg2_rdata_i`
  // (used directly by the shift results).  Both have to be patched, and the
@@ -296,23 +332,25 @@ module pangoriscv(
  //   * op1/reg1 only when the instruction consumes rs1 (`du1h`) -- otherwise
  //     lui/auipc would have their immediate replaced by lane 0's result;
  //   * op2/reg2 only for R-type and branch, the two forms whose second operand is
- //     rs2 -- an I-type's second operand is an immediate (`uses_rs2` is still
- //     high for addi, so the opcode is the safe discriminator).
+ //     rs2 -- an I-type's second operand is an immediate (use the opcode).
+ //     A store forwards rs2 into data only; op2 keeps the address immediate.
  // NOTE: the register NUMBERS must come from the EX-stage instruction (`ei_h`),
  // not from rs1h/rs2h -- those belong to the ID stage, which by then already holds
  // the NEXT packet (first attempt forwarded against the wrong numbers and left the
  // operand at X).  Whether a slot reads rs1/rs2 is decoded from its opcode:
- // 0x33 (R) and 0x63 (branch) read both, 0x13 reads rs1 only, 0x37/0x17/0x6f none.
+ // 0x33/0x63/0x23 read both, 0x13/0x03 read rs1, 0x37/0x17/0x6f none.
  wire [4:0] ex1_rs1 = ei_h[19:15];
  wire [4:0] ex1_rs2 = ei_h[24:20];
  wire fwd0_r1 = fwd0_alu && (erd==ex1_rs1) &&
-                ((ex1_op==7'h33) || (ex1_op==7'h13) || (ex1_op==7'h63));
+                ((ex1_op==7'h33) || (ex1_op==7'h13) || (ex1_op==7'h63) ||
+                 (ex1_op==7'h03) || (ex1_op==7'h23));
  wire fwd0_r2 = fwd0_alu && (erd==ex1_rs2) &&
-                ((ex1_op==7'h33) || (ex1_op==7'h63));
+                ((ex1_op==7'h33) || (ex1_op==7'h63) || (ex1_op==7'h23));
  wire [31:0] ex1_r1 = fwd0_r1 ? alu_result : er1_h;
  wire [31:0] ex1_r2 = fwd0_r2 ? alu_result : er2_h;
  wire [31:0] ex1_o1 = fwd0_r1 ? alu_result : eo1_h;
- wire [31:0] ex1_o2 = fwd0_r2 ? alu_result : eo2_h;
+ // A store's rs2 is data, while its ALU operand 2 remains an immediate.
+ wire [31:0] ex1_o2 = (fwd0_r2 && ex1_op!=7'h23) ? alu_result : eo2_h;
  regs u_regs(.clk(clk),.rst(rst_n),.we_i(rd_valid),.waddr_i(rd),.wdata_i(wdata),
    .we2_i(rd_valid_h),.waddr2_i(rd_h),.wdata2_i(wdata_h),
    .raddr1_i(rs1),.raddr2_i(rs2),.rdata1_o(rv1),.rdata2_o(rv2),
@@ -332,7 +370,7 @@ module pangoriscv(
    .csr_we_o(dcweh),.csr_rdata_o(dcrh),.csr_waddr_o(dcwh),
    .op1_o(do1h),.op2_o(do2h),.op1_jump_o(dj1h),.op2_jump_o(dj2h),
    .illegal_o(dillegalh),.uses_rs1_o(du1h),.uses_rs2_o(du2h));
- id_ex u_id_ex(.clk(clk),.rst_n(rst_n),.in_valid(id_valid && !block_entry),
+ id_ex u_id_ex(.clk(clk),.rst_n(rst_n),.in_valid(id_valid && ex1_ready && !block_entry),
    .in_ready(ex0_ready),.out_valid(ex_valid),.out_ready(ex_leave0),
    .inst_i(dinst),.inst_addr_i(dpc),.reg_we_i(dwe),.reg_waddr_i(drd),
    .reg1_rdata_i(dr1),.reg2_rdata_i(dr2),.csr_we_i(dcwe),.csr_waddr_i(dcw),

@@ -514,7 +514,7 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 2. **职责**：双发射流水线的**配对决策**（`pair_ok`）、EX→ID 前递、退休/重定向汇聚，
    并把各子模块装成核心顶层。**不做**：译码本身（M06/M07）、ALU（M12）、访存（M18）。
    自 P37a 起额外承担 **EX→EX 同拍前递**（`fwd0_r1/fwd0_r2 → ex1_r1/ex1_r2/ex1_o1/ex1_o2`）。
-5. **内部状态**：无自有寄存器（全部在子模块）；只新增组合逻辑（2 个 32 位二选一 mux ×2 组）。
+5. **内部状态**：`issued`（1 bit）记录当前包的 LSU/除法请求已握手；其余流水状态在子模块。
 6. **存储**：无。
 7. **面积**：`pangoriscv` 自身多被内联（M17 同样情况）；P37a 的增量计入 `area-budget.csv` 的
    `delta,pangoriscv` 行（LUT +约 130，FF 0）。
@@ -528,6 +528,12 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
     `drdh==rs1/rs2`（lane1 写、lane0 读）与 WAW 两项**保持原样**（前者涉 ID 写透优先级，后者实测收益≈0）。
     **前递判据必须用 EX 级 `ei/ei_h`**，且 `op1_i/op2_i` 与 `reg1_rdata_i/reg2_rdata_i` 两个口都要改
     （详见 `docs/lessons/mistakes-log.md` §14）。
+    **5.2 实验覆盖**：增加 lane0 ALU + lane1 load/store；访存所有者取 EX 指令，
+    两槽保持到整包完成。lane1 load 结果进入写回及所有 EX→ID 旁路；lane1 store 的
+    rs1/rs2 分别接收地址基址/存数旁路。年轻 fault 时正常老槽与 trap 同拍提交，
+    `trap_ready=0` 保持两槽，老槽 fault 清除整个包。`minstret/retire_order` 按正常前缀计数。
+    保持 WAW/WAR、相邻 PC、每包至多一个访存的限制。不新增 LSU 或 Cache 端口。
+    本轮未运行测试/综合；面积预留见文件顶部与 CSV 的 forecast 行。
 
 #### M22 `axi_ram`（program）— `rtl/perips/axi_ram.v` — 存储
 2. **职责**：0x0000_0000 的 16 KB 程序存储器（`WRITE_ENABLE=0`，只读），带 `$readmemh` 初始化。

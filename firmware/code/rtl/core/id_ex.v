@@ -7,8 +7,9 @@
 //=============================================================================
 
 // Operands are sampled only at the actual ID-to-EX handshake.
-module id_ex(
+module id_ex #(parameter FLUSH_ENABLE = 0)(
     input wire clk, rst_n,
+    input wire flush,
     input wire in_valid, output wire in_ready,
     output wire out_valid, input wire out_ready,
     input wire [31:0] inst_i, inst_addr_i,
@@ -30,9 +31,10 @@ module id_ex(
 );
     localparam WIDTH=32+32+1+5+32+32+1+32+32+32+32+32+32+1+5+32+32+1+1+1;
     wire [WIDTH-1:0] payload;
-    // EX is oldest: a redirect removes its successors, never this slot's event.
+    // Legacy/oldest slots ignore flush. Younger execution slots opt in so a
+    // redirect from the completion stage can discard their speculative work.
     pipe_slot #(.WIDTH(WIDTH)) slot(
-        .clk(clk),.rst_n(rst_n),.flush(1'b0),
+        .clk(clk),.rst_n(rst_n),.flush(FLUSH_ENABLE ? flush : 1'b0),
         .in_valid(in_valid),.in_ready(in_ready),
         .in_data({inst_i,inst_addr_i,reg_we_i,reg_waddr_i,reg1_rdata_i,reg2_rdata_i,
             csr_we_i,csr_waddr_i,csr_rdata_i,op1_i,op2_i,op1_jump_i,op2_jump_i,

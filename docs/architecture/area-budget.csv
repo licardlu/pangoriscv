@@ -5,7 +5,7 @@ forecast,branch_predictor,core/branch_predictor.v,fetch,0,64,0,0,0,R_FETCH,plann
 forecast,pangoriscv_top,soc/pangoriscv_top.v,clock,8,0,0,0,0,R_CORE,planned,"1 PPLL additional; 27*56/12=126MHz VCO1512 PFD27; reset synchronized on core clock; not measured"
 forecast,retire_ctrl,core/retire_ctrl.v,retire,32,0,0,0,0,R_CORE,implemented_unverified,"5.2/120 experimental allowance not measurement; commit older prefix on younger synchronous fault; tests deferred by user"
 forecast,id_alu,core/id_alu.v,decode,64,0,0,0,0,R_CORE,implemented_unverified,"5.2/120 experimental allowance not measurement; decode RV32I lane1 memory; no new storage"
-forecast,pangoriscv,core/pangoriscv.v,pipe,1900,1100,0,0,0,R_CORE,implemented_unverified,"5.2/120 allowance vs E2 not measured; parallel independent young ALU plus staggered RAW path and shared LSU"
+forecast,pangoriscv,core/pangoriscv.v,pipe,2600,1102,0,0,0,R_CORE,implemented_unverified,"5.2/120 allowance vs E2 not measured; adaptive late older ALU for inter-packet RAW plus early young ALU"
 baseline,__totals__,,,21949,14104,3628,4,6,,frozen,device_map Used @ tag score-3.4194-1024 (build code_ic4k)
 budget,__max__,,,20400,9900,3628,4,6,,active,"M1+M3+M4a must-do set (M2 blocked, M4b deferred); FF cap raised from 9455 to 9900 because M4b was dropped"
 measured,__totals_m1__,,,20422,12335,3628,4,6,,measured,"M1 delivery profile (PERF off) 2026-10-21: LUT -1527, FF -1769, S 39681->36385"

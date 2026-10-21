@@ -46,7 +46,9 @@ module pangoriscv(
  output wire [31:0] chain_predict_next_pc2
 );
  wire young_flush,block_entry;
- wire dep0,dep1;
+ wire dep0,dep1,dep0_raw;
+ wire d0_late;
+ reg x0_late,e0_late;
  wire [31:0] ex1_r1,ex1_r2;
  wire id_valid,id_valid_h,id_ready0,id_ready1;
  wire ex_valid,ex_valid_h,ex_leave,ex_leave0,ex_leave_h;
@@ -82,7 +84,9 @@ module pangoriscv(
    if(!rst_n) mul_product<=64'd0;
    else if(x_valid && x_advance && x_is_mul) mul_product<=x_mul_product[63:0];
  end
- reg [31:0] alu_result,alu_target;
+ reg [31:0] early_result,alu_target;
+ wire [31:0] late_result,alu_result;
+ assign alu_result=e0_late ? late_result : early_result;
  reg alu_taken;
  wire [31:0] alu_result_h,alu_target_h;
  wire alu_taken_h;
@@ -110,9 +114,9 @@ module pangoriscv(
  end
  // X0 -> X1 result boundary: payload and result advance on the same handshake.
  always @(posedge clk) begin
-   if(!rst_n) begin alu_result<=0; alu_target<=0; alu_taken<=0; end
+   if(!rst_n) begin early_result<=0; alu_target<=0; alu_taken<=0; e0_late<=0; end
    else if(x_valid && x_advance) begin
-     alu_result<=x_alu_result; alu_target<=x_alu_target; alu_taken<=x_alu_taken;
+     early_result<=x_alu_result; alu_target<=x_alu_target; alu_taken<=x_alu_taken; e0_late<=x0_late;
    end
  end
  wire is_load=(ei[6:0]==7'h03);
@@ -183,7 +187,8 @@ module pangoriscv(
               !dillegal && !dillegalh &&
               !dcwe && !dcweh &&
               !ifault && !ifaulth &&
-              (!mem0 || !dwe || !depends_on(dinsth,drd));
+              (!mem0 || !dwe || !depends_on(dinsth,drd)) &&
+              (!d0_late || !dwe || !depends_on(dinsth,drd));
 
  // id_ex drives in_ready (slot can take an instruction: empty or leaving).
  wire ex0_ready,ex1_ready;
@@ -370,7 +375,7 @@ module pangoriscv(
        ((reads_rs1(ins) && ins[19:15]==dest) ||
         (reads_rs2(ins) && ins[24:20]==dest)); end
  endfunction
- wire x0_forwardable=x_valid && xwe && !xfault && !xillegal &&
+ wire x0_forwardable=x_valid && !x0_late && xwe && !xfault && !xillegal &&
        ((xi[6:0]==7'h33 && xi[31:25]!=7'h01) || xi[6:0]==7'h13 ||
         xi[6:0]==7'h37 || xi[6:0]==7'h17);
  wire x0_forwardable_h=x_h_early && xwe_h && !xfault_h && !xillegal_h;
@@ -392,8 +397,24 @@ module pangoriscv(
      else source_blocked=0;
    end
  endfunction
- assign dep0=(reads_rs1(dinst) && source_blocked(dinst[19:15],hazard_producers)) ||
+ assign dep0_raw=(reads_rs1(dinst) && source_blocked(dinst[19:15],hazard_producers)) ||
              (reads_rs2(dinst) && source_blocked(dinst[24:20],hazard_producers));
+ assign d0_late=alu0 && dep0_raw;
+ assign dep0=dep0_raw && !alu0;
+ always @(posedge clk) begin
+   if(!rst_n || redirect_valid) x0_late<=0;
+   else if(id_valid && id_ready0) x0_late<=d0_late;
+ end
+ // Only late ALU operands are refreshed here. This is a producer ALU ->
+ // operand register path, never producer ALU -> consumer ALU in one cycle.
+ wire [31:0] late_r1=(retire1 && ewe_h && erd_h!=0 && erd_h==xi[19:15]) ? wdata_h :
+                     (retire0 && ewe && erd!=0 && erd==xi[19:15]) ? wdata : xr1;
+ wire [31:0] late_r2=(retire1 && ewe_h && erd_h!=0 && erd_h==xi[24:20]) ? wdata_h :
+                     (retire0 && ewe && erd!=0 && erd==xi[24:20]) ? wdata : xr2;
+ wire [31:0] x0_r1=x0_late ? late_r1 : xr1;
+ wire [31:0] x0_r2=x0_late ? late_r2 : xr2;
+ wire [31:0] x0_o1=(x0_late && reads_rs1(xi)) ? late_r1 : xo1;
+ wire [31:0] x0_o2=(x0_late && reads_rs2(xi)) ? late_r2 : xo2;
  assign dep1=(reads_rs1(dinsth) && source_blocked(dinsth[19:15],hazard_producers)) ||
              (reads_rs2(dinsth) && source_blocked(dinsth[24:20],hazard_producers));
  // EX -> ID forwarding.  The register file's same-cycle write-through alone is
@@ -506,8 +527,8 @@ module pangoriscv(
  id_ex u_x0_x1(.clk(clk),.rst_n(rst_n),.flush(1'b0),.in_valid(x_valid && back1_ready && !redirect_valid),
    .in_ready(back0_ready),.out_valid(ex_valid),.out_ready(ex_leave0),
    .inst_i(xi),.inst_addr_i(xp),.reg_we_i(xwe),.reg_waddr_i(xrd),
-   .reg1_rdata_i(xr1),.reg2_rdata_i(xr2),.csr_we_i(xcwe),.csr_waddr_i(xcaddr),
-   .csr_rdata_i(xcr),.op1_i(xo1),.op2_i(xo2),.op1_jump_i(xj1),.op2_jump_i(xj2),
+   .reg1_rdata_i(x0_r1),.reg2_rdata_i(x0_r2),.csr_we_i(xcwe),.csr_waddr_i(xcaddr),
+   .csr_rdata_i(xcr),.op1_i(x0_o1),.op2_i(x0_o2),.op1_jump_i(xj1),.op2_jump_i(xj2),
    .fault_i(xfault),.fault_cause_i(xcause),.fault_tval_i(xt),.predicted_next_pc_i(xpred),
    .illegal_i(xillegal),.uses_rs1_i(xu1),.uses_rs2_i(xu2),
    .inst_o(ei),.inst_addr_o(ep),.reg_we_o(ewe),.reg_waddr_o(erd),
@@ -540,6 +561,10 @@ module pangoriscv(
    .hold_flag_o());
  // Independent young work executes in parallel in X0. Dependent work keeps
  // the late X1 path; there is no same-cycle lane0 -> lane1 ALU chain.
+ ex_alu u_ex_late(.rst(rst_n),.inst_i(ei),.inst_addr_i(ep),
+   .reg1_rdata_i(er1),.reg2_rdata_i(er2),.op1_i(eo1),.op2_i(eo2),
+   .op1_jump_i(ej1),.op2_jump_i(ej2),
+   .reg_wdata_o(late_result),.jump_flag_o(),.jump_addr_o());
  ex_alu u_ex_h_early(.rst(rst_n),.inst_i(xi_h),.inst_addr_i(xp_h),
    .reg1_rdata_i(xr1_h),.reg2_rdata_i(xr2_h),
    .op1_i(xo1_h),.op2_i(xo2_h),.op1_jump_i(xj1_h),.op2_jump_i(xj2_h),

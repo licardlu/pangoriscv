@@ -10,7 +10,7 @@
 
 // Pure combinational execute stage. There is no clock and no state here: every
 // output is a function of the current inputs only.
-module ex(
+module ex #(parameter MUL_ENABLE = 1)(
 
     input  wire               rst,              // active-low reset; unused, this stage has no state
 
@@ -138,7 +138,9 @@ module ex(
         end
     end
 
-    wire [`DoubleRegBus] mul_full = mul_a * mul_b;
+    // A pipelined caller supplies M-extension results from its own registered
+    // multiplier. Constant-disable removes this legacy combinational array.
+    wire [`DoubleRegBus] mul_full = MUL_ENABLE ? mul_a * mul_b : 64'd0;
     wire [`DoubleRegBus] mul_full_negated = ~mul_full + 64'd1;
 
     //---------------------------------------------------------------- ALU selects

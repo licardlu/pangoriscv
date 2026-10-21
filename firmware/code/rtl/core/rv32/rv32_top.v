@@ -11,11 +11,22 @@
 //                dec    read   alu    mem    pass   commit
 //
 // Bypass sources in age order are M1 (ex_value), M2 (m_value) and WB (w_value).
-// A load cannot be bypassed from M1 because that register still holds its
-// address, so its consumer waits exactly one cycle (`load_use`) and picks the
-// value up from M2.  Every ALU/multiply result is bypassable from M1, so an
-// ordinary dependency chain needs no stall at all -- that is what makes the
-// deeper pipeline affordable.
+//
+// P9 (plan v5 R5): the memory request is issued from EX, not from M1, and the
+// response is captured into `ex_value` at the EX/M1 edge.  A load therefore
+// looks exactly like an ALU result to the bypass network -- both land on the
+// same clock edge -- so there is no `load_use` interlock at all any more.
+//
+// That is not a local tweak but the whole point of the restructure: while the
+// request was issued from M1, the response landed one cycle after the load's
+// execute stage, so a consumer one packet behind could never see it and the
+// core had to stall (1.71 M cycles, 24.6% of a CoreMark run, documented in
+// docs/lessons/mistakes-log.md section 36 -- three different interlock
+// spellings were all variants of the same wrong answer).
+//
+// Consequence: `ex_addr` / `ex_sdata` and their lane-1 twins are gone (the LSU
+// ports are driven by the EX stage directly), which is why this change is
+// area-negative.
 //
 // Precise exceptions: only WB commits.  A store is issued from M1 only while no
 // older instruction can still trap (`!(w_valid && w_trap)`), which is what keeps
@@ -103,6 +114,14 @@ module rv32_top(
     wire [31:0] csr_rdata, csr_vector, csr_mepc;
     wire        div_req_ready, div_rsp_valid;
     wire [31:0] div_result;
+    // Same reason: the hazard block asks the execute stage whether it is issuing
+    // a memory operation, which is exactly the execute-stage trap/misalign
+    // decision further down.
+    wire        ex_trap_w, mem_misaln_h;
+    // A lane-0 control transfer that is going to redirect; assigned next to
+    // `ctrl_next` (ModelSim wants the declaration first) because the hazard
+    // block uses it before that point.
+    wire        ctrl_miss_now;
 
     // ========================================================= ID decode
     wire [4:0]  dec_rs1, dec_rs2, dec_rd;
@@ -279,12 +298,12 @@ module rv32_top(
 
     // EX -> M1
     reg         ex_valid;
-    reg  [31:0] ex_pc, ex_inst, ex_value, ex_addr, ex_sdata, ex_tval, ex_next;
+    reg  [31:0] ex_pc, ex_inst, ex_value, ex_tval, ex_next;
     reg  [31:0] ex_csr_old, ex_csr_src;
     reg  [4:0]  ex_rd, ex_cause;
-    reg         ex_we, ex_load, ex_store, ex_trap, ex_ctrl, ex_uncond, ex_taken;
-    reg         ex_uns, ex_csr, ex_mret, ex_serial;
-    reg  [1:0]  ex_size, ex_csr_op;
+    reg         ex_we, ex_trap, ex_ctrl, ex_uncond, ex_taken;
+    reg         ex_csr, ex_mret, ex_serial;
+    reg  [1:0]  ex_csr_op;
     reg  [11:0] ex_csr_addr;
     reg         ex_v1;
     reg  [31:0] ex_pc_h, ex_value_h;
@@ -292,10 +311,9 @@ module rv32_top(
     reg         ex_we_h;
     reg         ex_ctrl_h, ex_taken_h, ex_uncond_h;
     reg  [31:0] ex_next_h;
-    reg         ex_load_h, ex_store_h, ex_uns_h, ex_trap_h;
-    reg  [1:0]  ex_size_h;
+    reg         ex_trap_h;
     reg  [2:0]  ex_cause_h;
-    reg  [31:0] ex_addr_h, ex_sdata_h, ex_tval_h;
+    reg  [31:0] ex_tval_h;
 
     // M1 -> M2
     reg         m_valid;
@@ -347,40 +365,40 @@ module rv32_top(
     wire mem_accept = issue_mem && op_ready;
 
     // ========================================================= hazards
-    wire m_is_mem   = ex_valid && (ex_load || ex_store) && !ex_trap;
+    // The memory op of the packet is issued from EX (see the header note), so
+    // these three describe the *execute* stage, not M1.  `ex_trap_w` is the
+    // execute-stage trap decision: a misaligned access must never reach the LSU
+    // (ISA case 20 checks exactly that no request is issued).
+    wire ex_is_mem   = rr_valid && (rr_load || rr_store) && !ex_trap_w;
     // The memory op of a packet can come from either lane; lane 0 wins when both
     // are set (pairing forbids that, this is defensive).
-    wire m_is_mem_h = ex_valid && ex_v1 && (ex_load_h || ex_store_h) &&
-                      !ex_trap_h && !m_is_mem;
-    wire mem_from_h = m_is_mem_h;
-    // A load in M1 hands its data over in M2, so both lanes of the packet in EX
-    // must wait when they read its destination.  Checking only lane 0 left lane 1
-    // reading the stale entry, which is what corrupted CoreMark's printf
-    // arguments (they are walked off the stack by load + ALU pairs).
-    wire ld_m1_0 = ex_valid && ex_load && ex_we;
-    wire ld_m1_1 = ex_valid && ex_v1 && ex_load_h && ex_we_h;
-    wire load_use   =
-        (ld_m1_0 && ((ex_rd == rr_rs1) || (ex_rd == rr_rs2) ||
-                     (rr_v1 && ((ex_rd == rr_rs1_h) || (ex_rd == rr_rs2_h))))) ||
-        (ld_m1_1 && ((ex_rd_h == rr_rs1) || (ex_rd_h == rr_rs2) ||
-                     (rr_v1 && ((ex_rd_h == rr_rs1_h) || (ex_rd_h == rr_rs2_h)))));
-    wire mem_wait   = (m_is_mem || m_is_mem_h) &&
+    // A control transfer in lane 0 that is going to redirect makes lane 1
+    // wrong-path.  It has to be removed here rather than only in `issue_mem`,
+    // because a wrong-path access that merely *waits* still asserts `mem_wait`,
+    // and `mem_wait` freezes the stage -- while `br_miss` (the thing that would
+    // redirect) is gated with `!hold_ex`.  Gating only the issue therefore
+    // deadlocked the core on the first such packet (STALL_DETECT, 200 kcycles of
+    // no retirement, every one of them a store in `blocked`).
+    wire ex_is_mem_h = rr_valid && rr_v1 && (rr_load_h || rr_store_h) &&
+                       !mem_misaln_h && !ex_is_mem && !ctrl_miss_now;
+    wire mem_from_h = ex_is_mem_h;
+    // A load hands its data over in the same cycle it executes (a hit) or holds
+    // EX until the response arrives (a miss).  Either way the consumer needs no
+    // interlock: `ex_value` is a normal bypass source.
+    wire mem_wait   = (ex_is_mem || ex_is_mem_h) &&
                       !(done_valid && (mem_issued_q || (issue_mem && op_ready)));
     wire div_wait   = rr_valid && rr_div && !rr_illegal && !div_rsp_valid;
     wire trap_wait  = w_valid && w_trap && !trap_ready;
-    wire stall      = load_use || mem_wait || div_wait || trap_wait;
+    wire stall      = mem_wait || div_wait || trap_wait;
 
     // Freeze is per stage.  A frozen stage emits a bubble instead of holding its
     // instruction, which is what keeps commit a one-cycle pulse: if WB were held
     // with valid high, a CSR write would be applied again on the next cycle.
-    // Per-stage enables.  A load-use consumer holds EX, but the load itself must
-    // still be allowed to drain into M2 -- freezing the whole pipe there is a
-    // deadlock (the response is consumed by the LSU while M1 is held, and the
-    // consumer then waits forever).  Each stage therefore has exactly one reason
-    // to hold, and the stage that feeds a holding stage emits a bubble.
-    wire hold_ex = load_use || div_wait || mem_wait || trap_wait;  // EX + RR hold
-    wire hold_m1 = mem_wait || trap_wait;                          // M1 holds
-    wire hold_wb = trap_wait;                                      // M2 + WB hold
+    // `hold_ex` freezes RD and EX together: EX is the stage that owns the
+    // outstanding request, so its address and store data must stay put.
+    wire hold_ex = mem_wait || div_wait || trap_wait;  // RD + EX hold
+    wire hold_m1 = trap_wait;                          // M1 holds
+    wire hold_wb = trap_wait;                          // M2 + WB hold
 
     reg  w_done_q;
     wire w_commit = w_valid && !w_trap && !w_done_q;
@@ -435,15 +453,19 @@ module rv32_top(
     // is paid for in the ALU, not by refusing the pair (see `pair_ok`).
     // Distance 3 (the WB packet) needs no level: `regs` puts both write ports
     // into its read path, so rf_d* is already the write-through result.
+    //
+    // P9: the `!ex_load` exclusion is gone.  It existed because `ex_value` held
+    // a load's *address* in the old shape; now the response is captured into
+    // `ex_value` on the same edge, so a load is an ordinary bypass source.
     wire [31:0] fwd1 =
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs1) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs1) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1) && (m_rd_h != 5'd0)) ? m_value_h :
         (m_valid && m_we && !m_trap && (m_rd == rr_rs1) && (m_rd != 5'd0)) ? m_value :
         rf_d0;
     wire [31:0] fwd2 =
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs2) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs2) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2) && (m_rd_h != 5'd0)) ? m_value_h :
         (m_valid && m_we && !m_trap && (m_rd == rr_rs2) && (m_rd != 5'd0)) ? m_value :
         rf_d1;
@@ -461,14 +483,14 @@ module rv32_top(
     wire [31:0] fwd1_h =
         lane0_raw1 ? alu_y :
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs1_h) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs1_h) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1_h) && (m_rd_h != 5'd0)) ? m_value_h :
         (m_valid && m_we && !m_trap && (m_rd == rr_rs1_h) && (m_rd != 5'd0)) ? m_value :
         rf_d0_h;
     wire [31:0] fwd2_h =
         lane0_raw2 ? alu_y :
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs2_h) && (ex_rd != 5'd0)) ? ex_value :
+        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs2_h) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2_h) && (m_rd_h != 5'd0)) ? m_value_h :
         (m_valid && m_we && !m_trap && (m_rd == rr_rs2_h) && (m_rd != 5'd0)) ? m_value :
         rf_d1_h;
@@ -522,7 +544,7 @@ module rv32_top(
     // Misalignment is decided in EX so a lane-1 misaligned access never reaches
     // the LSU at all (ISA case 20 checks exactly that no request is issued).
     // Cause encoding matches lane 0: 4 load address misaligned, 6 store.
-    wire mem_misaln_h = (rr_load_h || rr_store_h) &&
+    assign mem_misaln_h = (rr_load_h || rr_store_h) &&
                         ((rr_size_h == 2'd1 && mem_addr_h[0]) ||
                          (rr_size_h == 2'd2 && (|mem_addr_h[1:0])));
     wire [4:0]  ex_cause_h_w = rr_store_h ? 5'd6 : 5'd4;
@@ -548,6 +570,11 @@ module rv32_top(
     wire [31:0] ctrl_target = (rr_jal || rr_jalr) ? ((rr_jalr ? fwd1 : rr_pc) + rr_imm)
                                                   : (rr_pc + rr_imm);
     wire [31:0] ctrl_next   = ctrl_taken ? ctrl_target : (rr_pc + 32'd4);
+    // "lane 0 is a control transfer and its destination is not what the front end
+    // predicted".  Used by the hazard block (declared up there) to make lane 1 of
+    // such a packet invisible: it is wrong-path, and unlike the branch itself it
+    // has no business touching memory.
+    assign      ctrl_miss_now = rr_valid && is_ctrl && (ctrl_next != rr_pred);
     wire [31:0] mem_addr    = fwd1 + rr_imm;
 
     wire        ctrl_misaln = is_ctrl && ctrl_taken && (ctrl_target[1:0] != 2'b00);
@@ -566,7 +593,7 @@ module rv32_top(
                               (rr_illegal || rr_csr_illegal) ? rr_inst :
                               ctrl_misaln ? ctrl_target :
                               mem_misaln ? mem_addr : 32'd0;
-    wire        ex_trap_w   = ex_illegal || rr_ecall || rr_ebrk || ctrl_misaln || mem_misaln;
+    assign ex_trap_w   = ex_illegal || rr_ecall || rr_ebrk || ctrl_misaln || mem_misaln;
     assign ex_value_w = rr_mul ? mul_y : rr_div ? div_result : alu_y;
 
     // ========================================================= CSR block
@@ -676,6 +703,15 @@ module rv32_top(
     assign redirect_valid = redirect_any;
     assign redirect_pc    = redirect_target;
     assign pred_miss      = br_miss;
+`ifdef RV32_RDRDBG
+    always @(posedge clk) if (rst_n && redirect_any)
+        $display("TR_RDR tgt=%08x trap=%b mret=%b brm=%b brmh=%b res=%b wpc=%08x wv1=%b wctrl=%b mtvec=%08x rrpc=%08x rrpred=%08x rrvalid=%b idv=%b",
+                 redirect_target, trap_go, mret_go, br_miss, br_miss_h, resume,
+                 w_pc, w_v1, w_ctrl, csr_vector, rr_pc, rr_pred, rr_valid, id_valid);
+    always @(posedge clk) if (rst_n)
+        $display("TR_FET pcq=%08x req=%08x fv=%b fr=%b fpc=%08x hp=%08x he=%b ho=%b",
+                 pc_q, request_pc, fetch_valid, fetch_ready, fetch_pc, fetch_pc, 1'b0, hold_ex);
+`endif
 
     always @(posedge clk) begin
         if (!rst_n) pc_q <= RESET_PC;
@@ -750,29 +786,51 @@ module rv32_top(
     end
     assign retire_order = {32'd0, retire_cnt_q};
 
-    // ========================================================= M1 memory port
-    assign issue_mem = (m_is_mem || m_is_mem_h) && !mem_issued_q &&
-                       !(w_valid && (w_trap || (w_v1 && w_trap_h))) && !kill_all;
+    // ========================================================= EX memory port
+    // P9: issued from EX, using the address the ALU cycle just produced.  The
+    // older-instruction guards now have to look at M2 as well as WB: the request
+    // leaves one cycle earlier than it used to, so an older instruction in M2
+    // has not reached the only stage that can trap yet.
+    //
+    // `!ctrl_miss_now` is the third face of the same coin, and it is the one P9
+    // broke: pairing lets lane 1 be a memory op behind a lane-0 control transfer,
+    // and the operand of that lane-1 access is whatever the wrong-path register
+    // set holds.  When the branch turns out to be mispredicted, `br_miss` kills
+    // lane 1 at the RR/EX edge -- which was enough while the request was issued
+    // from M1 one cycle later, and is not enough any more: the request is
+    // accepted in the very cycle the mispredict is detected, so a wrong-path `sb`
+    // reached memory and landed on a stray address (CoreMark: `sb s1,0(a5)`
+    // behind `j 2970`, writing to 0x31..0x62, because lane 1's `a5` came from a
+    // register the wrong path had just scribbled on).
+    //
+    // It is deliberately NOT `br_miss`: that signal is AND-ed with `!hold_ex`,
+    // and `hold_ex` depends on `mem_wait`, which depends on `mem_accept`, which
+    // depends on this term -- closing the loop made vsim hit its iteration limit
+    // on the first cycle.  Only a control transfer in lane 0 can be mispredicted
+    // here, so this term never blocks a legitimate lane-0 access.
+    assign issue_mem = (ex_is_mem || ex_is_mem_h) && !mem_issued_q &&
+                       !(w_valid && (w_trap || (w_v1 && w_trap_h))) &&
+                       !(m_valid && (m_trap || (m_v1 && m_trap_h))) && !kill_all;
 
     // One port, two possible owners: every field follows the owner.
     assign op_valid      = issue_mem;
-    assign is_store      = mem_from_h ? ex_store_h : ex_store;
-    assign address       = mem_from_h ? ex_addr_h  : ex_addr;
-    assign store_value   = mem_from_h ? ex_sdata_h : ex_sdata;
-    assign op_pc         = mem_from_h ? ex_pc_h    : ex_pc;
-    assign access_size   = {1'b0, mem_from_h ? ex_size_h : ex_size};
-    assign load_unsigned = mem_from_h ? ex_uns_h   : ex_uns;
-    assign op_rd         = mem_from_h ? ex_rd_h    : ex_rd;
+    assign is_store      = mem_from_h ? rr_store_h : rr_store;
+    assign address       = mem_from_h ? mem_addr_h  : mem_addr;
+    assign store_value   = mem_from_h ? mem_sdata_h : fwd2;
+    assign op_pc         = mem_from_h ? rr_pc_h    : rr_pc;
+    assign access_size   = {1'b0, mem_from_h ? rr_size_h : rr_size};
+    assign load_unsigned = mem_from_h ? rr_uns_h   : rr_uns;
+    assign op_rd         = mem_from_h ? rr_rd_h    : rr_rd;
     assign done_ready    = 1'b1;
 
     // A cache hit can accept the request and answer it in the SAME cycle, so the
     // response belongs to this instruction either way: it was either issued in an
     // earlier cycle (mem_issued_q) or accepted in this one (mem_accept).
     wire        mem_rsp    = done_valid && (mem_issued_q || mem_accept);
-    wire        mem_fault  = m_is_mem && mem_rsp && fault;
-    wire        mem_fault_h = m_is_mem_h && mem_rsp && fault;
-    wire [4:0]  mem_cause = ex_store ? 5'd7 : 5'd5;
-    wire [4:0]  mem_cause_h = ex_store_h ? 5'd7 : 5'd5;
+    wire        mem_fault  = ex_is_mem && mem_rsp && fault;
+    wire        mem_fault_h = ex_is_mem_h && mem_rsp && fault;
+    wire [4:0]  mem_cause = rr_store ? 5'd7 : 5'd5;
+    wire [4:0]  mem_cause_h = rr_store_h ? 5'd7 : 5'd5;
 
     // ========================================================= sequencing
     // id_accept / id_accept2 are declared next to the PC pointer.
@@ -794,9 +852,16 @@ module rv32_top(
             id_alu_h <= 4'd0; id_asel_h <= 2'd0; id_bsel_h <= 2'd0;
             id_we_h <= 1'b0; id_op_h <= 7'd0;
             id_pred_h <= 32'd0; id_ctrl_h <= 1'b0; id_jal_h <= 1'b0; id_br_op_h <= 3'd0;
-        end else if (!hold_ex) begin
-            id_valid <= id_accept && !kill_all && !kill_young;
-            id_v1    <= id_accept2 && !kill_all && !kill_young;
+        end else if (!hold_ex || kill_all) begin
+            // A kill must never be blocked by a freeze.  `hold_ex` is written as
+            // "skip this whole block", which also skipped the valid-bit clear --
+            // so an instruction younger than a trapping one survived the trap
+            // whenever the freeze happened to be asserted on the trap cycle.
+            // P9 made that easy to hit: the younger instruction can be a store
+            // that is still waiting for a 20-cycle AXI write response, and it
+            // then re-traps on the way out (ISA case 19).
+            id_valid <= !hold_ex && id_accept && !kill_all && !kill_young;
+            id_v1    <= !hold_ex && id_accept2 && !kill_all && !kill_young;
             if (id_accept) begin
                 id_pc <= fetch_pc; id_inst <= fetch_inst; id_imm <= dec_imm;
                 id_pred <= fetch_predicted_next_pc;
@@ -843,9 +908,10 @@ module rv32_top(
             rr_we_h <= 1'b0; rr_op_h <= 7'd0;
             rr_pred_h <= 32'd0; rr_ctrl_h <= 1'b0; rr_jal_h <= 1'b0; rr_br_op_h <= 3'd0;
             rr_load_h <= 1'b0; rr_store_h <= 1'b0; rr_uns_h <= 1'b0; rr_size_h <= 2'd2;
-        end else if (!hold_ex) begin
-            rr_valid <= id_valid && !kill_all && !kill_young;
-            rr_v1    <= id_v1 && !kill_all && !kill_young;
+        end else if (!hold_ex || kill_all) begin
+            // Same escape as the RD stage: freeze must not absorb a kill.
+            rr_valid <= !hold_ex && id_valid && !kill_all && !kill_young;
+            rr_v1    <= !hold_ex && id_v1 && !kill_all && !kill_young;
             if (id_valid) begin
                 rr_pc <= id_pc; rr_inst <= id_inst; rr_imm <= id_imm; rr_pred <= id_pred;
                 rr_rd <= id_rd; rr_rs1 <= id_rs1; rr_rs2 <= id_rs2; rr_fcause <= id_fcause;
@@ -875,25 +941,20 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) begin
             ex_valid <= 1'b0; ex_pc <= 32'd0; ex_inst <= 32'd0; ex_value <= 32'd0;
-            ex_addr <= 32'd0; ex_sdata <= 32'd0; ex_tval <= 32'd0;
+            ex_tval <= 32'd0;
             ex_next <= 32'd0; ex_csr_old <= 32'd0; ex_csr_src <= 32'd0;
-            ex_rd <= 5'd0; ex_cause <= 5'd0; ex_we <= 0; ex_load <= 0; ex_store <= 0;
-            ex_trap <= 0; ex_ctrl <= 0; ex_uncond <= 0; ex_taken <= 0; ex_uns <= 0;
-            ex_csr <= 0; ex_mret <= 0; ex_serial <= 0; ex_size <= 2'd2;
+            ex_rd <= 5'd0; ex_cause <= 5'd0; ex_we <= 0;
+            ex_trap <= 0; ex_ctrl <= 0; ex_uncond <= 0; ex_taken <= 0;
+            ex_csr <= 0; ex_mret <= 0; ex_serial <= 0;
             ex_csr_op <= 2'd0; ex_csr_addr <= 12'd0;
             ex_v1 <= 1'b0; ex_pc_h <= 32'd0; ex_value_h <= 32'd0;
             ex_rd_h <= 5'd0; ex_we_h <= 1'b0;
             ex_ctrl_h <= 1'b0; ex_taken_h <= 1'b0; ex_uncond_h <= 1'b0;
             ex_next_h <= 32'd0;
-            // These five were left out of the reset and start as X; any one of
-            // them reaching `issue_mem` (via `w_trap_h`) turns that into X and
-            // the memory handshake then never completes.
+            // These three were left out of the reset once and started as X; any
+            // one of them reaching `issue_mem` (via a trap flag) turns that into
+            // X and the memory handshake then never completes.
             ex_trap_h <= 1'b0; ex_cause_h <= 3'd0; ex_tval_h <= 32'd0;
-            ex_addr_h <= 32'd0; ex_sdata_h <= 32'd0;
-            // The lane-1 memory attributes drive the LSU ports directly; left
-            // unreset they hand the data cache an X `is_store`/`access_size`,
-            // which comes back as an X `done_valid` and locks the handshake.
-            ex_load_h <= 1'b0; ex_store_h <= 1'b0; ex_uns_h <= 1'b0; ex_size_h <= 2'd2;
         end else if (!hold_m1) begin
             ex_valid <= hold_ex ? 1'b0 : (rr_valid && !kill_all);
             // Lane 1 is killed at this edge when lane 0 is a control transfer
@@ -905,26 +966,27 @@ module rv32_top(
             ex_v1    <= hold_ex ? 1'b0 : (rr_v1 && !kill_all && !br_miss);
             if (rr_valid && !hold_ex) begin
                 ex_pc <= rr_pc; ex_inst <= rr_inst; ex_rd <= rr_rd; ex_we <= rr_we;
-                ex_value <= ex_value_w;
-                ex_addr <= mem_addr; ex_sdata <= fwd2;
-                ex_tval <= ex_tval_w; ex_cause <= ex_cause_w;
-                ex_trap <= ex_trap_w;
+                // The load response and the ALU result land on this edge, which
+                // is the whole point of P9: from M1 onward a load is
+                // indistinguishable from an ALU op.
+                ex_value <= (rr_load && mem_rsp) ? load_value : ex_value_w;
+                ex_tval <= mem_fault ? fault_addr : ex_tval_w;
+                ex_cause <= mem_fault ? mem_cause : ex_cause_w;
+                ex_trap <= ex_trap_w || mem_fault;
                 ex_ctrl <= is_ctrl; ex_uncond <= (rr_jal || rr_jalr);
                 ex_taken <= ctrl_taken; ex_next <= ctrl_next;
-                ex_load <= rr_load; ex_store <= rr_store; ex_size <= rr_size;
-                ex_uns <= rr_uns; ex_csr <= rr_csr; ex_mret <= rr_mret;
+                ex_csr <= rr_csr; ex_mret <= rr_mret;
                 ex_serial <= rr_serial; ex_csr_op <= rr_csr_op;
                 ex_csr_addr <= rr_csr_addr; ex_csr_old <= rr_csr_old;
                 ex_csr_src <= csr_src_w;
-                ex_pc_h <= rr_pc_h; ex_value_h <= ex_value_h_w;
+                ex_pc_h <= rr_pc_h;
+                ex_value_h <= (rr_load_h && mem_rsp) ? load_value : ex_value_h_w;
                 ex_rd_h <= rr_rd_h; ex_we_h <= rr_v1 && rr_we_h;
                 ex_ctrl_h <= rr_ctrl_h; ex_taken_h <= ctrl_taken_h;
                 ex_uncond_h <= rr_jal_h; ex_next_h <= ctrl_next_h;
-                ex_load_h <= rr_load_h; ex_store_h <= rr_store_h;
-                ex_uns_h <= rr_uns_h; ex_size_h <= rr_size_h;
-                ex_addr_h <= mem_addr_h; ex_sdata_h <= mem_sdata_h;
-                ex_trap_h <= mem_misaln_h; ex_cause_h <= ex_cause_h_w;
-                ex_tval_h <= mem_addr_h;
+                ex_trap_h <= mem_misaln_h || mem_fault_h;
+                ex_cause_h <= mem_fault_h ? mem_cause_h[2:0] : ex_cause_h_w;
+                ex_tval_h <= mem_fault_h ? fault_addr : mem_addr_h;
             end
         end
     end
@@ -947,11 +1009,13 @@ module rv32_top(
             m_v1    <= hold_m1 ? 1'b0 : (ex_v1 && !kill_all);
             if (ex_valid && !hold_m1) begin
                 m_pc <= ex_pc; m_inst <= ex_inst; m_rd <= ex_rd; m_we <= ex_we;
-                m_value <= (ex_load && mem_rsp) ? load_value :
-                           ex_value;
-                m_trap <= ex_trap || mem_fault;
-                m_cause <= mem_fault ? mem_cause : ex_cause;
-                m_tval <= mem_fault ? fault_addr : ex_tval;
+                // The load response was captured at the EX/M1 edge, so M1 carries
+                // the final value for every instruction -- no per-stage
+                // substitution and no `mem_rsp` term here any more.
+                m_value <= ex_value;
+                m_trap <= ex_trap;
+                m_cause <= ex_cause;
+                m_tval <= ex_tval;
                 m_ctrl <= ex_ctrl; m_uncond <= ex_uncond; m_taken <= ex_taken;
                 m_next <= ex_next;
                 m_csr <= ex_csr; m_mret <= ex_mret; m_serial <= ex_serial;
@@ -961,10 +1025,9 @@ module rv32_top(
                 m_rd_h <= ex_rd_h; m_we_h <= ex_we_h;
                 m_ctrl_h <= ex_ctrl_h; m_taken_h <= ex_taken_h;
                 m_uncond_h <= ex_uncond_h; m_next_h <= ex_next_h;
-                m_value_h <= (ex_load_h && mem_rsp) ? load_value : ex_value_h;
-                m_trap_h <= ex_trap_h || mem_fault_h;
-                m_cause_h <= mem_fault_h ? mem_cause_h[2:0] : ex_cause_h;
-                m_tval_h <= mem_fault_h ? fault_addr : ex_tval_h;
+                m_trap_h <= ex_trap_h;
+                m_cause_h <= ex_cause_h;
+                m_tval_h <= ex_tval_h;
             end
         end
     end
@@ -1039,7 +1102,7 @@ module rv32_top(
         // becomes defined, and the core spins on the same PC forever.  That is
         // exactly what a lane-1 load arriving before any lane-0 load could do.
         if (!rst_n) mem_issued_q <= 1'b0;
-        else mem_issued_q <= ((m_is_mem || m_is_mem_h) && !mem_rsp)
+        else mem_issued_q <= ((ex_is_mem || ex_is_mem_h) && !mem_rsp)
                              ? (mem_issued_q || mem_accept) : 1'b0;
     end
 
@@ -1118,10 +1181,10 @@ module rv32_top(
         beat2_q <= beat2_q + 1;
         if (!x_seen_q && ($isunknown(done_valid) || $isunknown(op_valid))) begin
             x_seen_q <= 1'b1;
-            $display("TR_XFIRST cyc=%0d pc=%08x opv=%b iss=%b isst=%b size=%b addr=%08x sdata=%08x dv=%b miq=%b mact=%b extrh=%b exldh=%b",
+            $display("TR_XFIRST cyc=%0d pc=%08x opv=%b iss=%b isst=%b size=%b addr=%08x sdata=%08x dv=%b miq=%b mact=%b misalnh=%b ldch=%b",
                      beat2_q, rr_pc, op_valid, issue_mem, is_store, access_size,
                      address, store_value, done_valid, mem_issued_q, mem_accept,
-                     ex_trap_h, ex_load_h);
+                     mem_misaln_h, rr_load_h);
         end
     end
     // Where the cycles go.  These two counters are what turned "the cache must be
@@ -1140,7 +1203,12 @@ module rv32_top(
             n_retmem = n_retmem + 1;
         if (!fetch_valid) c_starve = c_starve + 1;
         else if (fetch_ready) c_ok = c_ok + 1;
-        else if (load_use) c_lu = c_lu + 1;
+        // `load_use` no longer exists as a stall reason (P9): the load response
+        // lands on the same edge as an ALU result, so there is nothing to wait
+        // for.  The bucket is kept in the report and pinned to zero so that a
+        // future regression shows up as a non-zero number instead of silently
+        // disappearing from the line.
+        else if (1'b0) c_lu = c_lu + 1;
         else if (mem_wait) c_mw = c_mw + 1;
         else if (div_wait) c_div = c_div + 1;
         else if (redirect_any) c_rd = c_rd + 1;
@@ -1148,6 +1216,50 @@ module rv32_top(
     final $display("MEMDBG presented=%0d accepted=%0d retired_mem=%0d", n_pres, n_acc, n_retmem);
     final $display("STALLDBG accept=%0d starve=%0d load_use=%0d mem_wait=%0d div=%0d redirect=%0d",
                    c_ok, c_starve, c_lu, c_mw, c_div, c_rd);
+    // Why a memory operation could not complete: one bucket per reason.
+    integer mw_block=0, mw_nordy=0, mw_gear=0, mw_ld=0, mw_st=0;
+    always @(posedge clk) if (rst_n && (ex_is_mem || ex_is_mem_h) && !mem_rsp) begin
+        if (!issue_mem)          mw_block = mw_block + 1;   // stopped by a guard
+        else if (!op_ready)      mw_nordy = mw_nordy + 1;   // LSU not idle
+        else                     mw_gear  = mw_gear  + 1;   // accepted, no reply yet
+        if (mem_from_h ? rr_store_h : rr_store) mw_st = mw_st + 1;
+        else                                    mw_ld = mw_ld + 1;
+    end
+    final $display("MEMWAITDBG blocked=%0d notready=%0d noresp=%0d load=%0d store=%0d",
+                   mw_block, mw_nordy, mw_gear, mw_ld, mw_st);
+`ifdef RV32_MEMDBG
+    // ---- P9 bring-up: who produced the operand a memory op is using? --------
+    // A memory op is presented to the LSU from EX with a *combinational* address
+    // and store data, so its operands come from the bypass network live.  When
+    // the LSU is busy the stage freezes, and every bypass source ages one stage
+    // per cycle; if any of those hand-overs is wrong the address silently drifts
+    // and the store lands somewhere harmless-looking (a DECERR in the hole
+    // between 0x0 and 0x1000_0000).  Printing the winning source and the whole
+    // candidate set at the accept edge is what tells the two apart.
+    wire [2:0] fwd1_sel =
+        (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1) && (ex_rd_h != 5'd0)) ? 3'd0 :
+        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs1) && (ex_rd != 5'd0)) ? 3'd1 :
+        (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1) && (m_rd_h != 5'd0)) ? 3'd2 :
+        (m_valid && m_we && !m_trap && (m_rd == rr_rs1) && (m_rd != 5'd0)) ? 3'd3 : 3'd4;
+    wire [2:0] fwd2_sel =
+        (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2) && (ex_rd_h != 5'd0)) ? 3'd0 :
+        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs2) && (ex_rd != 5'd0)) ? 3'd1 :
+        (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2) && (m_rd_h != 5'd0)) ? 3'd2 :
+        (m_valid && m_we && !m_trap && (m_rd == rr_rs2) && (m_rd != 5'd0)) ? 3'd3 : 3'd4;
+    integer nbad=0;
+    always @(posedge clk) if (rst_n && mem_accept && is_store &&
+                              (address < 32'h1000_0000) && nbad < 24) begin
+        nbad = nbad + 1;
+        $display("MEMBAD cyc=%0d pc=%08x inst=%08x st=%b sz=%0d addr=%08x sd=%08x l1=%b rs1=%0d s1=%0d rs2=%0d s2=%0d",
+                 beat2_q, op_pc, rr_inst, is_store, access_size, address,
+                 store_value, mem_from_h, rr_rs1, fwd1_sel, rr_rs2, fwd2_sel);
+        $display("       ex[v=%b v1=%b rd=%0d rd_h=%0d we=%b we_h=%b val=%08x val_h=%08x] m[v=%b v1=%b rd=%0d rd_h=%0d we=%b we_h=%b val=%08x val_h=%08x] w[rd=%0d we=%b val=%08x rd_h=%0d we_h=%b val_h=%08x] rfd0=%08x rfd1=%08x",
+                 ex_valid, ex_v1, ex_rd, ex_rd_h, ex_we, ex_we_h, ex_value, ex_value_h,
+                 m_valid, m_v1, m_rd, m_rd_h, m_we, m_we_h, m_value, m_value_h,
+                 w_rd, w_we, w_value, w_rd_h, w_we_h, w_value_h, rf_d0, rf_d1);
+    end
+    final $display("MEMBADDBG bad_accepts=%0d", nbad);
+`endif
     // Pairing diagnostics: why a fetch opportunity did or did not become a pair.
     // One bucket per reason, mutually exclusive, so the numbers add up to the
     // number of cycles the front end presented something to consume.

@@ -81,9 +81,13 @@ if {![info exists ::env(PANGO_NATIVE_RUN_DIR)]} {
     error "Set PANGO_NATIVE_RUN_DIR to a new implementation directory to preserve existing evidence."
 }
 set run_dir [file normalize $::env(PANGO_NATIVE_RUN_DIR)]
-if {[file exists $run_dir]} {
-    error "Refusing to reuse implementation directory $run_dir"
+foreach stage {compile synthesize device_map place_route} {
+    if {[file exists [file join $run_dir $stage]]} {
+        error "Refusing to overwrite existing implementation stage $run_dir/$stage"
+    }
 }
+# PDS evaluates setup once while creating its project and again to execute it.
+# Re-staging sources before compile is harmless; completed stages are protected.
 file mkdir $run_dir
 set source_dir [file join $run_dir sources]
 file mkdir $source_dir

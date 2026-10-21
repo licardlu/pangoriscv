@@ -16,7 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "tests" / "example"
 DEFAULT_TOOLS = (ROOT.parent / "toolchains" / "openisa-1.0.0" / "gcc" /
                  "riscv32-unknown-elf-gcc" / "bin")
-FLASH_BASE, RAM_BASE, MEMORY_SIZE = 0, 0x10000000, 16384
+FLASH_BASE, RAM_BASE = 0, 0x10000000
+FLASH_SIZE, RAM_SIZE = 32768, 16384
 
 
 def command(args):
@@ -32,7 +33,7 @@ def command(args):
 def put_image(image, occupied, base, address, payload):
     offset = address - base
     if offset < 0 or offset + len(payload) > len(image):
-        raise ValueError("Load segment outside 16 KiB memory: %#x" % address)
+        raise ValueError("Load segment outside configured memory: %#x" % address)
     if any(occupied[offset:offset + len(payload)]):
         raise ValueError("Overlapping ELF load segments at %#x" % address)
     image[offset:offset + len(payload)] = payload
@@ -50,8 +51,8 @@ def extract_images(elf):
         raise ValueError("Expected RISC-V ELF with the RVC flag clear")
     if entry != FLASH_BASE or phentsize != 32:
         raise ValueError("Unexpected entry point or program-header size")
-    flash, ram = bytearray(MEMORY_SIZE), bytearray(MEMORY_SIZE)
-    flash_used, ram_used = bytearray(MEMORY_SIZE), bytearray(MEMORY_SIZE)
+    flash, ram = bytearray(FLASH_SIZE), bytearray(RAM_SIZE)
+    flash_used, ram_used = bytearray(FLASH_SIZE), bytearray(RAM_SIZE)
     segments = []
     for index in range(phnum):
         kind, offset, vma, lma, size, memsize, access, align = \
@@ -62,17 +63,17 @@ def extract_images(elf):
             raise ValueError("Malformed load segment")
         if memsize:
             base = FLASH_BASE if vma < RAM_BASE else RAM_BASE
-            if vma < base or vma + memsize > base + MEMORY_SIZE:
+            if vma < base or vma + memsize > base + (FLASH_SIZE if base == FLASH_BASE else RAM_SIZE):
                 raise ValueError("Segment VMA exceeds memory region")
         payload = data[offset:offset + size]
         if size:
-            if FLASH_BASE <= lma < FLASH_BASE + MEMORY_SIZE:
+            if FLASH_BASE <= lma < FLASH_BASE + FLASH_SIZE:
                 put_image(flash, flash_used, FLASH_BASE, lma, payload)
-            elif not (RAM_BASE <= lma < RAM_BASE + MEMORY_SIZE):
+            elif not (RAM_BASE <= lma < RAM_BASE + RAM_SIZE):
                 raise ValueError("Unsupported segment LMA")
-            if RAM_BASE <= vma < RAM_BASE + MEMORY_SIZE:
+            if RAM_BASE <= vma < RAM_BASE + RAM_SIZE:
                 put_image(ram, ram_used, RAM_BASE, vma, payload)
-            elif not (FLASH_BASE <= lma < FLASH_BASE + MEMORY_SIZE):
+            elif not (FLASH_BASE <= lma < FLASH_BASE + FLASH_SIZE):
                 raise ValueError("Executable image has no flash load address")
         # A zero-file-size PT_LOAD (for example the linker script's NOLOAD
         # .stack segment) occupies no memory and must not be validated as a
@@ -212,7 +213,7 @@ def main():
                     iterations=args.iterations, cpu_hz=args.cpu_mhz * 1000000,
                     runtime="local freestanding C; no libgcc or libc",
                     segments=segments, source_sha256=source_hashes,
-                    image_format="4096 little-endian 32-bit hex words per memory",
+                    image_format="8192 program / 4096 data little-endian 32-bit hex words",
                     startup="program.hex includes data LMA; startup copies to RAM",
                     evidence="compile/link/static image checks only; not executed",
                     artifact_sha256={name: hashlib.sha256((out / name).read_bytes()).hexdigest()

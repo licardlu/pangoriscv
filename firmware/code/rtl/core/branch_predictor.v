@@ -76,7 +76,7 @@ module branch_predictor #(
     // program memory ever grows, and drops the storage from 25+32 bits to 7+14
     // bits per entry (area workstream M3: 32 entries, ~1,150 FF).
     // See docs/architecture/module-area-plan.md M3.
-    parameter  integer PGM_BYTES = 16384;                    // 0x4000 = EXEC_BYTES
+    parameter  integer PGM_BYTES = 32768;                    // 0x8000 = EXEC_BYTES
     localparam integer ADDR_BITS = $clog2(PGM_BYTES);        // 14
     localparam integer TAG_BITS = ADDR_BITS - IDX_BITS - 2;  // 7
 

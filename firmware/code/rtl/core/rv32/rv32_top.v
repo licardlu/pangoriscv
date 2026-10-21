@@ -263,7 +263,7 @@ module rv32_top(
 
     // EX -> M1
     reg         ex_valid;
-    reg  [31:0] ex_pc, ex_inst, ex_value, ex_addr, ex_sdata, ex_tval, ex_pred, ex_next;
+    reg  [31:0] ex_pc, ex_inst, ex_value, ex_addr, ex_sdata, ex_tval, ex_next;
     reg  [31:0] ex_csr_old, ex_csr_src;
     reg  [4:0]  ex_rd, ex_cause;
     reg         ex_we, ex_load, ex_store, ex_trap, ex_ctrl, ex_uncond, ex_taken;
@@ -283,7 +283,7 @@ module rv32_top(
 
     // M1 -> M2
     reg         m_valid;
-    reg  [31:0] m_pc, m_inst, m_value, m_tval, m_pred, m_next;
+    reg  [31:0] m_pc, m_inst, m_value, m_tval, m_next;
     reg  [31:0] m_csr_old, m_csr_src;
     reg  [4:0]  m_rd, m_cause;
     reg         m_we, m_trap, m_ctrl, m_uncond, m_taken, m_csr, m_mret, m_serial;
@@ -297,9 +297,11 @@ module rv32_top(
     reg  [31:0] m_next_h, m_tval_h;
     reg  [2:0]  m_cause_h;
 
-    // M2 -> WB
+    // M2 -> WB.  The predicted-PC payload stops at RR: `rr_pred` is the only
+    // copy anybody reads (the mispredict compare), so ex_pred/m_pred/w_pred were
+    // a written-never-read 96-flop chain.  Deleted under the area gate.
     reg         w_valid;
-    reg  [31:0] w_pc, w_inst, w_value, w_tval, w_pred, w_next;
+    reg  [31:0] w_pc, w_inst, w_value, w_tval, w_next;
     reg  [31:0] w_csr_old, w_csr_src;
     reg  [4:0]  w_rd, w_cause;
     reg         w_we, w_trap, w_ctrl, w_uncond, w_taken, w_csr, w_mret, w_serial;
@@ -322,7 +324,7 @@ module rv32_top(
 
     reg         halted_q, halt_pending_q, serial_q, mem_issued_q, div_issued_q;
     reg  [31:0] arch_next_q;
-    reg  [63:0] retire_cnt_q;
+    reg  [31:0] retire_cnt_q;
 
     // Declared early: the hazard block needs the memory handshake.
     wire issue_mem;
@@ -635,33 +637,21 @@ module rv32_top(
     // a control), so the two mispredict sources are mutually exclusive.
     wire        br_miss_h = rr_v1 && rr_ctrl_h && !hold_ex && (ctrl_next_h != rr_pred_h);
     wire        kill_young = br_miss || br_miss_h;
+    wire        kill_all   = trap_go || mret_go;
 
-    // The PC update is a separate, registered step.  Feeding `redirect_pc` and
-    // `redirect_valid` straight from the ALU comparison put "compare -> align
-    // check -> flush -> IFU ready/pointer" on one 32-bit-wide high-fanout chain,
-    // which is the single longest thing in the design (plan v2 section 1.2).
-    // Registering it costs one bubble on a mispredict (~2,700 per iteration at
-    // the measured 53k/20) and removes the chain from the path.
-    //
-    // The kill stays in the same cycle: the only wrong-path instruction that can
-    // still exist is the one in ID, and it must not be latched at all.
-    reg         br_go_q;
-    reg  [31:0] br_pc_q;
-    wire        kill_all = trap_go || mret_go;
-
-    always @(posedge clk) begin
-        if (!rst_n) begin
-            br_go_q <= 1'b0; br_pc_q <= 32'd0;
-        end else begin
-            br_go_q <= (br_miss || br_miss_h) && !kill_all;
-            br_pc_q <= br_miss ? ctrl_next : ctrl_next_h;
-        end
-    end
-
-    wire        redirect_any = trap_go || mret_go || br_go_q || resume;
+    // The redirect is NOT registered.  Registering it (br_go_q/br_pc_q) is the
+    // textbook fix for "compare -> flush -> IFU pointer" and it does take
+    // 0.74 ns off the synthesis WNS at 126 MHz -- but it also adds a full
+    // cycle to every mispredict, and at the measured 54,455 mispredicts per 20
+    // iterations that is 0.76% of the score against 3.8% of a path that needs
+    // to shrink by 48%.  33 flip-flops and an unreachable target is not a
+    // trade, so the combinational redirect stays.  See
+    // docs/lessons/mistakes-log.md section 27.
+    wire        redirect_any = trap_go || mret_go || br_miss || br_miss_h || resume;
     wire [31:0] redirect_target = trap_go ? csr_vector :
                                   mret_go ? csr_mepc :
-                                  br_go_q ? br_pc_q : arch_next_q;
+                                  br_miss ? ctrl_next :
+                                  br_miss_h ? ctrl_next_h : arch_next_q;
 
     // Kill masks: a trap/MRET in WB is older than every other stage.
     assign redirect_valid = redirect_any;
@@ -728,12 +718,18 @@ module rv32_top(
     assign trap_tval   = trap_tval_i;
     assign debug_data  = 32'd0;
 
+    // The retirement order is an observation counter: only the testbenches read
+    // it (tb_isa_e2e derives the issued-pair count from its delta, the traces
+    // print it).  32 bits is 4.29 G retires, three orders of magnitude more than
+    // any run this board can finish, so the top half was 32 flops of nothing --
+    // it is a 64-bit port that is zero-extended here.  Deleted under the area
+    // gate (module-area-plan.md section 3).
     always @(posedge clk) begin
-        if (!rst_n) retire_cnt_q <= 64'd0;
+        if (!rst_n) retire_cnt_q <= 32'd0;
         else if (retire_fire) retire_cnt_q <= retire_cnt_q +
-                                              ((w_v1 && !w_trap_h) ? 64'd2 : 64'd1);
+                                              ((w_v1 && !w_trap_h) ? 32'd2 : 32'd1);
     end
-    assign retire_order = retire_cnt_q;
+    assign retire_order = {32'd0, retire_cnt_q};
 
     // ========================================================= M1 memory port
     assign issue_mem = (m_is_mem || m_is_mem_h) && !mem_issued_q &&
@@ -860,7 +856,7 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) begin
             ex_valid <= 1'b0; ex_pc <= 32'd0; ex_inst <= 32'd0; ex_value <= 32'd0;
-            ex_addr <= 32'd0; ex_sdata <= 32'd0; ex_tval <= 32'd0; ex_pred <= 32'd0;
+            ex_addr <= 32'd0; ex_sdata <= 32'd0; ex_tval <= 32'd0;
             ex_next <= 32'd0; ex_csr_old <= 32'd0; ex_csr_src <= 32'd0;
             ex_rd <= 5'd0; ex_cause <= 5'd0; ex_we <= 0; ex_load <= 0; ex_store <= 0;
             ex_trap <= 0; ex_ctrl <= 0; ex_uncond <= 0; ex_taken <= 0; ex_uns <= 0;
@@ -895,7 +891,7 @@ module rv32_top(
                 ex_tval <= ex_tval_w; ex_cause <= ex_cause_w;
                 ex_trap <= ex_trap_w;
                 ex_ctrl <= is_ctrl; ex_uncond <= (rr_jal || rr_jalr);
-                ex_taken <= ctrl_taken; ex_pred <= rr_pred; ex_next <= ctrl_next;
+                ex_taken <= ctrl_taken; ex_next <= ctrl_next;
                 ex_load <= rr_load; ex_store <= rr_store; ex_size <= rr_size;
                 ex_uns <= rr_uns; ex_csr <= rr_csr; ex_mret <= rr_mret;
                 ex_serial <= rr_serial; ex_csr_op <= rr_csr_op;
@@ -918,7 +914,7 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) begin
             m_valid <= 1'b0; m_pc <= 32'd0; m_inst <= 32'd0; m_value <= 32'd0;
-            m_tval <= 32'd0; m_pred <= 32'd0; m_next <= 32'd0; m_csr_old <= 32'd0;
+            m_tval <= 32'd0; m_next <= 32'd0; m_csr_old <= 32'd0;
             m_csr_src <= 32'd0; m_rd <= 5'd0; m_cause <= 5'd0; m_we <= 0; m_trap <= 0;
             m_ctrl <= 0; m_uncond <= 0; m_taken <= 0; m_csr <= 0; m_mret <= 0;
             m_serial <= 0; m_csr_op <= 2'd0; m_csr_addr <= 12'd0;
@@ -938,7 +934,7 @@ module rv32_top(
                 m_cause <= mem_fault ? mem_cause : ex_cause;
                 m_tval <= mem_fault ? fault_addr : ex_tval;
                 m_ctrl <= ex_ctrl; m_uncond <= ex_uncond; m_taken <= ex_taken;
-                m_pred <= ex_pred; m_next <= ex_next;
+                m_next <= ex_next;
                 m_csr <= ex_csr; m_mret <= ex_mret; m_serial <= ex_serial;
                 m_csr_op <= ex_csr_op; m_csr_addr <= ex_csr_addr;
                 m_csr_old <= ex_csr_old; m_csr_src <= ex_csr_src;
@@ -958,7 +954,7 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) begin
             w_valid <= 1'b0; w_pc <= 32'd0; w_inst <= 32'd0; w_value <= 32'd0;
-            w_tval <= 32'd0; w_pred <= 32'd0; w_next <= 32'd0; w_csr_old <= 32'd0;
+            w_tval <= 32'd0; w_next <= 32'd0; w_csr_old <= 32'd0;
             w_csr_src <= 32'd0; w_rd <= 5'd0; w_cause <= 5'd0; w_we <= 0; w_trap <= 0;
             w_ctrl <= 0; w_uncond <= 0; w_taken <= 0; w_csr <= 0; w_mret <= 0;
             w_serial <= 0; w_csr_op <= 2'd0; w_csr_addr <= 12'd0;
@@ -978,7 +974,7 @@ module rv32_top(
                 w_pc <= m_pc; w_inst <= m_inst; w_rd <= m_rd; w_we <= m_we;
                 w_value <= m_value; w_trap <= m_trap; w_cause <= m_cause;
                 w_tval <= m_tval; w_ctrl <= m_ctrl; w_uncond <= m_uncond;
-                w_taken <= m_taken; w_pred <= m_pred; w_next <= m_next;
+                w_taken <= m_taken; w_next <= m_next;
                 w_csr <= m_csr; w_mret <= m_mret; w_serial <= m_serial;
                 w_csr_op <= m_csr_op; w_csr_addr <= m_csr_addr;
                 w_csr_old <= m_csr_old; w_csr_src <= m_csr_src;

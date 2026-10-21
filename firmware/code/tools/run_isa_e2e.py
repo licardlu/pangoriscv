@@ -47,6 +47,7 @@ NAME = {
     18: "lane1 memory: address/store-data forwarding and load consumers",
     19: "lane1 bus faults commit only the older prefix, including load x0",
     20: "lane1 misalignment traps preserve the older prefix",
+    21: "predicted branch target pairing and wrong-path suppression on loop exit",
 }
 
 
@@ -113,7 +114,7 @@ class Ref:
         while not self.halt and steps < limit:
             steps += 1
             seen[pc] = seen.get(pc, 0) + 1
-            if seen[pc] > 4 and steps > 12:
+            if seen[pc] > 4 and self.m[(pc >> 2) & 0xFFF] == 0x0000006f:
                 break   # the case's trailing `j 1b` self-loop
             i = self.m[(pc >> 2) & 0xFFF]
             if trace:
@@ -310,7 +311,7 @@ class Ref:
 CASE_PC = {1: 0x000, 2: 0x200, 3: 0x300, 4: 0x400, 5: 0x500, 6: 0x600,
            7: 0x700, 8: 0x900, 9: 0xA00, 10: 0xB00, 11: 0xC00,
            12: 0xD00, 13: 0xE00, 14: 0xF00, 15: 0x1000, 16: 0x1100,
-           17: 0x1200, 18: 0x1300, 19: 0x1400, 20: 0x1500}
+           17: 0x1200, 18: 0x1300, 19: 0x1400, 20: 0x1500, 21: 0x1600}
 # The shared trap handler lives in its own 0x1000-aligned section.
 TRAP_HANDLER = 0x1000
 # mtvec value the test cases program: the trap section is linked at 0x1000
@@ -554,6 +555,10 @@ def main() -> int:
                  log, timeout=600)
         text = log.read_text(errors="replace")
         problems = []
+        if case == 21:
+            coverage = re.search(r"E2E_TARGET_PAIR target=(\d+) wrong=(\d+)", text)
+            if not coverage or int(coverage[1]) == 0 or int(coverage[2]) == 0:
+                problems.append("predicted target retirement and wrong-path kill must both execute")
         if case in (18, 19, 20):
             coverage = re.search(r"E2E_PIPELINE lane1_mem=(\d+) lane1_fault=(\d+) overlap=(\d+)", text)
             if not coverage:

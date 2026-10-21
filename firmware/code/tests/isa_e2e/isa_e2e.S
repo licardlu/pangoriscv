@@ -431,6 +431,21 @@ test20:
   addi  x25, x24, 1
   HALT
 
+  .org 0x1604
+test21:
+  li x10, 0
+  li x11, 20
+  li x12, 0
+  li x13, 0
+target_loop21:
+  addi x12, x12, 3
+  addi x10, x10, 1
+  mul x13, x12, x10
+  blt x10, x11, target_loop21
+  /* On loop exit, the trained predicted target must not write x12 again. */
+  addi x14, x12, 0
+  HALT
+
 /* ------------------------------------------------------------------ trap
  * Shared trap handler, linked into the .trap section at address 0x3f00 by
  * link.ld. It reads mepc/mcause/mtval into x5/x6/x7. Synchronous exceptions

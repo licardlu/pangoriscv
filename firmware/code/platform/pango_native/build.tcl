@@ -110,6 +110,20 @@ foreach header [glob [file join $repo rtl core *.vh] [file join $repo rtl core *
         file copy -force $header [file join $source_dir rtl core [file tail $header]]
     }
 }
+set perf_profile delivery
+if {[info exists ::env(PANGO_NATIVE_PROFILE)]} { set perf_profile $::env(PANGO_NATIVE_PROFILE) }
+if {$perf_profile ni {delivery analysis}} { error "PANGO_NATIVE_PROFILE must be delivery or analysis" }
+if {$perf_profile eq "delivery"} {
+    set config_file [file join $source_dir rtl core soc_config.vh]
+    set fh [open $config_file r]
+    set config_text [read $fh]
+    close $fh
+    set config_text [string map [list "`define PERF_ENABLE" "// PERF_ENABLE disabled for delivery"] $config_text]
+    set fh [open $config_file w]
+    puts -nonewline $fh $config_text
+    close $fh
+}
+puts "Build profile: $perf_profile (staged headers; tracked source unchanged)"
 # RAM $readmemh paths resolve from this explicit working directory.
 cd $run_dir
 set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG676
@@ -137,6 +151,9 @@ if {[file isfile $compile_log]} {
 }
 synthesize -ads -selected_syn_tool_opt 2
 dev_map
+if {[info exists ::env(PANGO_NATIVE_RESOURCE_ONLY)] && $::env(PANGO_NATIVE_RESOURCE_ONLY) eq "1"} {
+    puts "RESOURCE_ONLY_DONE: no place-and-route or bitstream requested"
+} else {
 add_constraint $pcf_file
 # Hold closure (board-material audit round, 2026-10-11): the plain `pnr` run at the real
 # 27 MHz board clock finished with ONE failing hold endpoint at -0.007 ns, even though the
@@ -177,3 +194,4 @@ if {[info exists ::env(PANGO_NATIVE_PNR_EXTRA)]} {
 eval pnr $pnr_args
 report_timing
 gen_bit_stream
+}

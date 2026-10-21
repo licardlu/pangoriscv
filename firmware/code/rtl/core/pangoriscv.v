@@ -46,6 +46,8 @@ module pangoriscv(
  output wire [31:0] chain_predict_next_pc2
 );
  wire young_flush,block_entry;
+ wire dep0,dep1;
+ wire [31:0] ex1_r1,ex1_r2;
  wire id_valid,id_valid_h,id_ready0,id_ready1;
  wire ex_valid,ex_valid_h,ex_leave,ex_leave0,ex_leave_h;
  wire [31:0] ip,ii,it,ipred,iph,iih,ith,ipredh;
@@ -356,11 +358,11 @@ module pangoriscv(
  // X0 lane 1 is younger than lane 0 and has not executed. Its destination
  // match stalls decode even if lane 0 offers a matching ready value.
  // X1 writes remain unavailable while the packet is waiting for memory.
- wire dep0=(x_valid_h && xwe_h && depends_on(dinst,xrd_h)) ||
+ assign dep0=(x_valid_h && xwe_h && depends_on(dinst,xrd_h)) ||
            (x_valid && xwe && !x0_forwardable && depends_on(dinst,xrd)) ||
            (ex_valid_h && ewe_h && !retire1 && depends_on(dinst,erd_h)) ||
            (ex_valid && ewe && !retire0 && depends_on(dinst,erd));
- wire dep1=(x_valid_h && xwe_h && depends_on(dinsth,xrd_h)) ||
+ assign dep1=(x_valid_h && xwe_h && depends_on(dinsth,xrd_h)) ||
            (x_valid && xwe && !x0_forwardable && depends_on(dinsth,xrd)) ||
            (ex_valid_h && ewe_h && !retire1 && depends_on(dinsth,erd_h)) ||
            (ex_valid && ewe && !retire0 && depends_on(dinsth,erd));
@@ -418,8 +420,8 @@ module pangoriscv(
                  (ex1_op==7'h03) || (ex1_op==7'h23));
  wire fwd0_r2 = fwd0_alu && (erd==ex1_rs2) &&
                 ((ex1_op==7'h33) || (ex1_op==7'h63) || (ex1_op==7'h23));
- wire [31:0] ex1_r1 = fwd0_r1 ? alu_result : er1_h;
- wire [31:0] ex1_r2 = fwd0_r2 ? alu_result : er2_h;
+ assign ex1_r1 = fwd0_r1 ? alu_result : er1_h;
+ assign ex1_r2 = fwd0_r2 ? alu_result : er2_h;
  wire [31:0] ex1_o1 = fwd0_r1 ? alu_result : eo1_h;
  // A store's rs2 is data, while its ALU operand 2 remains an immediate.
  wire [31:0] ex1_o2 = (fwd0_r2 && ex1_op!=7'h23) ? alu_result : eo2_h;

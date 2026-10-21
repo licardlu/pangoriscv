@@ -47,7 +47,7 @@ module dcache_axi #(
     // demand: 97.2% of stores are isolated, the rest run 2 (4,478) / 3 (5,114) /
     // 4+ (453) deep, max 12.  One entry is always in flight, so depth 4 lets a
     // run of five back-to-back stores retire without touching the AXI B.
-    parameter integer STQ_DEPTH = 4
+    parameter integer STQ_DEPTH = 8
 )(
     input wire clk, rst_n,
     // LSU-facing request interface (identical to axi_data_engine)
@@ -195,6 +195,16 @@ module dcache_axi #(
     //   * a read that has to reach memory is NOT accepted while the queue is
     //     non-empty, so a queued write can never be overtaken by a refill;
     //   * dc_idle stays low until the queue AND the in-flight write are empty.
+    //
+    // Depth 8 (was 4).  The in-window probe (WIN_REQREF, see
+    // evidence/records/optimization/p10-d1-window) put 183,323 of the score
+    // window's 194,163 LSU REQUEST cycles on *stores* refused by this queue
+    // while a write drains -- and 99.999% of them in ST_WR_DRAIN, none anywhere
+    // else.  Depth 4 covers a run of five back-to-back stores; the measured
+    // CoreMark bursts are 2/3/4 deep but 4,905 runs are 9 or longer, and every
+    // one of those pins the CPU at the queue tail.  Doubling the depth costs
+    // 4 x 75 = 300 FF and removes the "short burst hits the tail" half of the
+    // stall; the steady-state half is the write engine's 5.06 cycles per store.
     localparam integer STQ_AW = (STQ_DEPTH > 1) ? $clog2(STQ_DEPTH) : 1;
     reg [31:0]      q_addr [0:STQ_DEPTH-1];
     reg [31:0]      q_data [0:STQ_DEPTH-1];

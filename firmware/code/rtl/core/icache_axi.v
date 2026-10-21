@@ -13,8 +13,8 @@
 // the caches/H1: two-way set-associative instruction cache.
 //
 // Geometry: 64 sets x 2 ways x 32 B lines = 4096 B.
-//   tag       = addr[31:SETW+5]  (TAGW bits, 20 for the 8 KB geometry)
-//   set index = addr[SETW+4:5]   (SETW bits, 7 for the 8 KB geometry)
+//   tag       = addr[31:11]   (21 bits)
+//   set index = addr[10:5]    (6 bits)
 //   word      = addr[4:2]     (3 bits inside the 32 B line)
 // Replacement: first invalid way, otherwise the 1-bit LRU victim.
 //
@@ -82,14 +82,11 @@ module icache_axi (
     input wire [1:0] m_rresp,
     input wire m_rlast
 );
-    // 8 KB: 128 sets x 2 ways x 32 B.  The 4 KB shrink was forced by the 25k-LUT
-    // netlist that could not be routed; after E2 (17.5k LUT, 19% distributed RAM)
-    // the 128-set geometry fits again, and P20/P21 measured 4 KB -> 8 KB at
-    // +2.55% (2.8115 -> 2.8833 on the same 832-iteration image).
-    // Widths are DERIVED from SETS so the two geometries cannot drift again.
-    localparam SETS=128, WORDS=8, LINE_BEATS=8;  // 128 x 2 x 32 B = 8192 B
-    localparam SETW = $clog2(SETS);              // set index bits
-    localparam TAGW = 32 - SETW - 5;             // tag bits
+    // 4 KB variant: 64 sets x 2 ways x 32 B.  The 8 KB/128-set geometry is what
+    // the dual-issue build used first, but the 25k-LUT design could not be
+    // routed on this PDS flow; 4 KB recovers ~2.2k LUT / 2.6k FF.  Score trade-
+    // off must be measured, not assumed (see evidence: P20 4 KB vs P21 8 KB).
+    localparam SETS=64, WORDS=8, LINE_BEATS=8;  // 64 x 2 x 32 B = 4096 B
     localparam IC_IDLE=3'd0, IC_RESP=3'd1, IC_AR=3'd2,
                IC_FILL=3'd3, IC_MISS_RD=3'd4, IC_FAULT=3'd5;
 
@@ -104,18 +101,18 @@ module icache_axi (
     // The total bit count is unchanged (SETS*2*WORDS*32).
     reg [31:0] even_mem[0:SETS*2*(WORDS/2)-1];
     reg [31:0] odd_mem [0:SETS*2*(WORDS/2)-1];
-    reg [TAGW-1:0] tag_mem [0:SETS*2-1];      // {way,set}
+    reg [20:0] tag_mem  [0:SETS*2-1];         // {way,set}
     reg        valid_mem[0:SETS*2-1];         // {way,set}
     reg        lru_mem  [0:SETS-1];           // 1 = way1 is the LRU victim
 
     reg [2:0] state;
     reg [31:0] addr_q;
     reg [3:0] id_q;
-    reg [SETW-1:0] set_q;
+    reg [5:0] set_q;
     reg [2:0] word_q;
-    reg [TAGW-1:0] tag_q;
+    reg [20:0] tag_q;
     reg way_q;
-    reg [SETW+3:0] rd_index_q;
+    reg [9:0] rd_index_q;
     reg [31:0] rsp_data_q;
     reg [31:0] rsp_data_hi_q;
     reg        rsp_pair_q;
@@ -125,8 +122,8 @@ module icache_axi (
     reg [1:0] fill_resp_q;
     integer i;
 
-    wire [SETW-1:0] req_set = req_addr[SETW+4:5];
-    wire [TAGW-1:0] req_tag = req_addr[31:SETW+5];
+    wire [5:0] req_set = req_addr[10:5];
+    wire [20:0] req_tag = req_addr[31:11];
     wire hit0 = valid_mem[{1'b0,req_set}] && (tag_mem[{1'b0,req_set}]==req_tag);
     wire hit1 = valid_mem[{1'b1,req_set}] && (tag_mem[{1'b1,req_set}]==req_tag);
     wire miss_way = !valid_mem[{1'b0,req_set}] ? 1'b0 :
@@ -140,8 +137,8 @@ module icache_axi (
     wire [2:0] hit_e_off = (hit_word_off + 3'd1) >> 1;   // ceil(w/2)
     wire [2:0] hit_o_off = hit_word_off >> 1;            // floor(w/2)
     wire       hit_pair  = (hit_word_off != 3'd7);
-    wire [SETW+2:0] hit_e_index = {req_addr[SETW+4:5], hit_way, hit_e_off[1:0]};
-    wire [SETW+2:0] hit_o_index = {req_addr[SETW+4:5], hit_way, hit_o_off[1:0]};
+    wire [8:0] hit_e_index = {req_addr[10:5], hit_way, hit_e_off[1:0]};
+    wire [8:0] hit_o_index = {req_addr[10:5], hit_way, hit_o_off[1:0]};
     wire [31:0] hit_even = even_mem[hit_e_index];
     wire [31:0] hit_odd  = odd_mem [hit_o_index];
     wire [31:0] hit_word    = hit_word_off[0] ? hit_odd  : hit_even;
@@ -150,16 +147,17 @@ module icache_axi (
     // The line address is {tag,set,5'b0}: the 32 B line the requested word is in.
     wire [31:0] line_addr = {tag_q, set_q, 5'b0};
 
-    // Miss-path pair reconstruction.  rd_index_q is {set,way,word[2:0]}; the two
-    // bank indices are derived from it so a missed lookup also returns both words.
+    // Miss-path pair reconstruction.  rd_index_q is {set[6:0],way,word[2:0]}
+    // for the delivered 8 KB geometry (SETS=128); keep the two bank indices
+    // derived from it so a missed lookup also returns both words.
     wire [2:0]  rd_word   = rd_index_q[2:0];
-    wire [SETW-1:0] rd_set = rd_index_q[SETW+3:4];
+    wire [5:0]  rd_set    = rd_index_q[9:4];
     wire        rd_way    = rd_index_q[3];
     wire [2:0]  rd_e_off  = (rd_word + 3'd1) >> 1;
     wire [2:0]  rd_o_off  = rd_word >> 1;
     wire        rd_pair   = (rd_word != 3'd7);
-    wire [SETW+2:0] rd_e_index = {rd_set, rd_way, rd_e_off[1:0]};
-    wire [SETW+2:0] rd_o_index = {rd_set, rd_way, rd_o_off[1:0]};
+    wire [8:0]  rd_e_index = {rd_set, rd_way, rd_e_off[1:0]};
+    wire [8:0]  rd_o_index = {rd_set, rd_way, rd_o_off[1:0]};
     wire [31:0] rd_even = even_mem[rd_e_index];
     wire [31:0] rd_odd  = odd_mem [rd_o_index];
     wire [31:0] rd_word0 = rd_word[0] ? rd_odd : rd_even;
@@ -231,13 +229,13 @@ module icache_axi (
                     if(req_valid && req_ready) begin
                         addr_q<=req_addr;
                         id_q<=req_id;
-                        set_q<=req_addr[SETW+4:5];
+                        set_q<=req_addr[10:5];
                         word_q<=req_addr[4:2];
-                        tag_q<=req_addr[31:SETW+5];
+                        tag_q<=req_addr[31:11];
                         if(hit0 || hit1) begin
                             access_pulse<=1;
                             way_q<=hit0 ? 1'b0 : 1'b1;
-                            lru_mem[req_addr[SETW+4:5]]<=hit0 ? 1'b1 : 1'b0;
+                            lru_mem[req_addr[10:5]]<=hit0 ? 1'b1 : 1'b0;
                             // Fast hit: answer on the accept edge (engine sees the
                             // response one cycle after req_valid/req_ready). Both the
                             // holding register and the output register are loaded so

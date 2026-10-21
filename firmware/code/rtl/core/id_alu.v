@@ -3,12 +3,13 @@
 // Module : id_alu                 File : rtl/core/id_alu.v
 // Rev    : 1.0                    Date : 2026-10-20
 // Author : pango_lpenghan
-// Brief  : Minimal lane-1 decoder: ALU-class / branch / JAL only
+// Brief  : Lane-1 decoder: ALU / branch / JAL / single shared-LSU memory
 //=============================================================================
 
-// The second issue slot only ever executes an ALU-class instruction, a
-// conditional branch or JAL (the pair rules exclude loads/stores, CSR, FENCE,
-// JALR and MUL/DIV).  Reusing the full `id` decoder for this slot inferred the
+// The second issue slot executes ALU, branch, JAL or load/store instructions
+// (the pair rules exclude CSR, FENCE, JALR and MUL/DIV). Memory is steered to
+// the one shared LSU by the core; this decoder adds no second memory port.
+// Reusing the full `id` decoder for this slot inferred the
 // CSR and memory control logic for a unit that can never use it; this module
 // keeps the register-write, operand and jump fields and drives everything else
 // constant.  Architecturally it must match `id` exactly for these encodings.
@@ -45,6 +46,7 @@ module id_alu(
     wire [4:0] rd     = inst_i[11:7];
 
     wire [`RegBus] imm_i = {{20{inst_i[31]}}, inst_i[31:20]};
+    wire [`RegBus] imm_s = {{20{inst_i[31]}}, inst_i[31:25], inst_i[11:7]};
     wire [`RegBus] imm_b = {{20{inst_i[31]}}, inst_i[7], inst_i[30:25],
                             inst_i[11:8], 1'b0};
     wire [`RegBus] imm_j = {{12{inst_i[31]}}, inst_i[19:12], inst_i[20],
@@ -74,6 +76,25 @@ module id_alu(
         illegal_o    = 1'b0;
 
         case(opcode)
+            `INST_TYPE_L: begin
+                op1_o = reg1_rdata_i;
+                op2_o = imm_i;
+                case(funct3)
+                    `INST_LB, `INST_LH, `INST_LW, `INST_LBU, `INST_LHU: begin
+                        reg_we_o = `WriteEnable;
+                        reg_waddr_o = rd;
+                    end
+                    default: illegal_o = 1'b1;
+                endcase
+            end
+            `INST_TYPE_S: begin
+                op1_o = reg1_rdata_i;
+                op2_o = imm_s;
+                case(funct3)
+                    `INST_SB, `INST_SH, `INST_SW: begin end
+                    default: illegal_o = 1'b1;
+                endcase
+            end
             `INST_TYPE_I: begin
                 reg_we_o    = `WriteEnable;
                 reg_waddr_o = rd;
@@ -118,7 +139,7 @@ module id_alu(
                 op2_o       = imm_u;
             end
             default: begin
-                // load/store, CSR, FENCE, JALR: never paired into lane 1
+                // CSR, FENCE, JALR: never paired into lane 1
                 illegal_o = 1'b1;
             end
         endcase

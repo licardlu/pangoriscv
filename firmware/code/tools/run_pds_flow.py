@@ -150,7 +150,7 @@ def check_image(bdir: Path) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
-    ap.add_argument("--freq", default="126", choices=["126", "27", "50", "40"])
+    ap.add_argument("--freq", default="126", choices=["126", "100", "27", "50", "40"])
     ap.add_argument("--mode", default="synth", choices=["synth", "full"])
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--image", default=str(CODE / "build" / "p5_126"))

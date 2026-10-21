@@ -1,24 +1,35 @@
 //=============================================================================
-// pangoriscv - rv32 core
+// pangoriscv - rv32 core (5.2 CoreMark/MHz @126 MHz rewrite)
 // Module : rv32_regfile           File : rtl/core/rv32/rv32_regfile.v
-// Rev    : 1.0                    Date : 2026-10-21
-// Brief  : 4-read-port, 1-write-port register file + write-through bypass
+// Rev    : 2.0                    Date : 2026-10-21
+// Brief  : 4-read-port, 1-write-port register file, asynchronous read
 //=============================================================================
 
-// Dual issue needs four source operands per cycle (rs1/rs2 of both slots) and
-// two destinations.  Two write ports would need two copies of every read
-// array (distributed RAM has one write port each), so this file keeps ONE write
-// port plus a one-entry write queue in the core: when both slots write, the
-// younger result is queued and written on the following cycle.  Consumers of a
-// queued result are covered by the exec-stage bypass network, so the queue is
-// invisible to the ISA.
+// Rev 2.0 changes the read from synchronous to asynchronous and that is the
+// whole point of the module: the old synchronous version needed the read data
+// to be latched into the next stage together with the instruction, so the
+// operand/instruction pairing silently depended on "ID advances every cycle".
+// The first load-use stall broke it -- the read pointer drifted to the *next*
+// instruction while the pipeline register held the current one, and the ALU
+// then executed with a stranger's operand (rs2 read as x0's zero, or as an
+// uninitialised entry: `sub x19,x17,x11` produced x17-0, `add x18` produced X).
 //
-// Reads are synchronous (distributed RAM) and land at the end of S2, which is
-// exactly where S3 needs them; the write-through mux below closes the
-// write-in-S2 / read-in-S2 corner without stalling.
+// With an asynchronous read the address is driven by the instruction that is
+// actually in the execute stage.  A frozen stage freezes its address, so the
+// data follows for free -- there is no alignment left to get wrong, and the
+// whole class of bug disappears instead of being patched a third time
+// (mistakes-log 21).
+//
+// Area: four 32x32 arrays (one copy per read port, because distributed RAM has
+// one read port per copy) is 4*32 = 128 LUTs for the P2 dual-issue core and
+// 64 LUTs for the single-issue P1 build (unused ports are pruned by
+// synthesis).  The synchronous version spent 4*32 + 4*5 = 148 flip-flops on
+// the same job, so this is smaller as well as correct.
+//
+// x0 is not a register: reads of it are forced to zero and writes to it are
+// dropped, which keeps rfile[0] out of the write path entirely.
 module rv32_regfile(
     input  wire        clk,
-    input  wire        rst_n,
     input  wire [4:0]  ra0,
     input  wire [4:0]  ra1,
     input  wire [4:0]  ra2,
@@ -31,41 +42,38 @@ module rv32_regfile(
     input  wire [4:0]  wa,
     input  wire [31:0] wd
 );
+    // One array per read port.  Not reset: per-entry reset would force these
+    // into flip-flops and multiply the area (mistakes-log 16).
+    // The port-0 copy keeps the name `rfile` on purpose: the ISA testbench
+    // snapshots the architectural register file through that hierarchical name,
+    // and all four copies are written with identical data, so it *is* the
+    // architectural state.
     reg [31:0] rfile [0:31];
-    reg [31:0] q0, q1, q2, q3;
-    integer i;
+    reg [31:0] m1 [0:31];
+    reg [31:0] m2 [0:31];
+    reg [31:0] m3 [0:31];
 
-    // Data arrays are not reset (mistakes-log 16: per-entry reset forces the
-    // distributed RAM into flip-flops and multiplies the area).
-    always @(posedge clk) begin
-        if (we && wa != 5'd0) rfile[wa] <= wd;
-    end
+    wire wr = we && (wa != 5'd0);
 
     always @(posedge clk) begin
-        q0 <= rfile[ra0];
-        q1 <= rfile[ra1];
-        q2 <= rfile[ra2];
-        q3 <= rfile[ra3];
+        if (wr) begin
+            rfile[wa] <= wd;
+            m1[wa] <= wd;
+            m2[wa] <= wd;
+            m3[wa] <= wd;
+        end
     end
 
-    // The data output belongs to the address that was presented one cycle
-    // earlier (the instruction now in RR), so both the x0 rule and the
-    // write-through mux must use that delayed address.  Using the live address
-    // instead returns the *next* instruction's register -- for a read of x0 that
-    // is the uninitialised entry, which is exactly the first bug the ISA
-    // regression caught in this core (x1 came out as 0xXXXXXXXX).
-    reg [4:0] a0_d, a1_d, a2_d, a3_d;
-    always @(posedge clk) begin
-        a0_d <= ra0; a1_d <= ra1; a2_d <= ra2; a3_d <= ra3;
-    end
+    // Write-through: a value written on this edge is visible to a read issued in
+    // the same cycle.  Without it a consumer one instruction behind the producer
+    // would read the stale entry (the write lands at the end of the cycle).
+    wire hit0 = wr && (wa == ra0);
+    wire hit1 = wr && (wa == ra1);
+    wire hit2 = wr && (wa == ra2);
+    wire hit3 = wr && (wa == ra3);
 
-    wire hit0 = we && (wa == a0_d) && (wa != 5'd0);
-    wire hit1 = we && (wa == a1_d) && (wa != 5'd0);
-    wire hit2 = we && (wa == a2_d) && (wa != 5'd0);
-    wire hit3 = we && (wa == a3_d) && (wa != 5'd0);
-
-    assign rd0 = (a0_d == 5'd0) ? 32'd0 : hit0 ? wd : q0;
-    assign rd1 = (a1_d == 5'd0) ? 32'd0 : hit1 ? wd : q1;
-    assign rd2 = (a2_d == 5'd0) ? 32'd0 : hit2 ? wd : q2;
-    assign rd3 = (a3_d == 5'd0) ? 32'd0 : hit3 ? wd : q3;
+    assign rd0 = (ra0 == 5'd0) ? 32'd0 : hit0 ? wd : rfile[ra0];
+    assign rd1 = (ra1 == 5'd0) ? 32'd0 : hit1 ? wd : m1[ra1];
+    assign rd2 = (ra2 == 5'd0) ? 32'd0 : hit2 ? wd : m2[ra2];
+    assign rd3 = (ra3 == 5'd0) ? 32'd0 : hit3 ? wd : m3[ra3];
 endmodule

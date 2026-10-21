@@ -143,12 +143,12 @@ module rv32_top(
 
     // RR -> EX (the instruction sitting in EX)
     reg         rr_valid;
-    reg  [31:0] rr_pc, rr_inst, rr_imm, rr_pred, rr_op1, rr_op2, rr_csr_old;
-    reg  [31:0] rr_csr_src;
+    reg  [31:0] rr_pc, rr_inst, rr_imm, rr_pred, rr_csr_old;
     reg  [4:0]  rr_rd, rr_rs1, rr_rs2, rr_fcause;
     reg         rr_we, rr_load, rr_store, rr_br, rr_jal, rr_jalr;
     reg         rr_csr, rr_mret, rr_ecall, rr_ebrk, rr_mul, rr_div;
     reg         rr_illegal, rr_ffault, rr_uns, rr_csr_illegal, rr_serial;
+    reg         rr_u1;
     reg  [3:0]  rr_alu;
     reg  [1:0]  rr_asel, rr_bsel, rr_size, rr_csr_op;
     reg  [2:0]  rr_br_op, rr_md_op;
@@ -226,8 +226,12 @@ module rv32_top(
     wire        wb_we = w_commit && w_we && (w_rd != 5'd0);
 
     rv32_regfile u_regs(
-        .clk(clk), .rst_n(rst_n),
-        .ra0(dec_rs1), .ra1(dec_rs2), .ra2(5'd0), .ra3(5'd0),
+        .clk(clk),
+        // Addresses come from the instruction currently in EX, not from the
+        // one being decoded: the array read is asynchronous, so the operand
+        // belongs to whoever is asking right now and a frozen stage freezes
+        // its own operand for free (rev 2.0 of rv32_regfile).
+        .ra0(rr_rs1), .ra1(rr_rs2), .ra2(5'd0), .ra3(5'd0),
         .rd0(rf_d0), .rd1(rf_d1), .rd2(), .rd3(),
         .we(wb_we), .wa(w_rd), .wd(w_value)
     );
@@ -236,11 +240,11 @@ module rv32_top(
     wire [31:0] fwd1 =
         (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs1) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid  && m_we  && !m_trap  && (m_rd  == rr_rs1) && (m_rd  != 5'd0)) ? m_value :
-        (wb_we    && (w_rd == rr_rs1)) ? w_value : rr_op1;
+        (wb_we    && (w_rd == rr_rs1)) ? w_value : rf_d0;
     wire [31:0] fwd2 =
         (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs2) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid  && m_we  && !m_trap  && (m_rd  == rr_rs2) && (m_rd  != 5'd0)) ? m_value :
-        (wb_we    && (w_rd == rr_rs2)) ? w_value : rr_op2;
+        (wb_we    && (w_rd == rr_rs2)) ? w_value : rf_d1;
 
     // ========================================================= EX datapath
     wire [31:0] alu_a = (rr_asel == 2'd1) ? rr_pc : (rr_asel == 2'd2) ? 32'd0 : fwd1;
@@ -303,6 +307,7 @@ module rv32_top(
     wire [31:0] csr_irq_cause;
 
     wire        rf_write_intent = id_csr && ((id_csr_op == 2'd0) || (id_rs1 != 5'd0));
+    wire [31:0] csr_src_w = rr_u1 ? fwd1 : {27'd0, rr_rs1};
     wire [31:0] csr_new = (w_csr_op == 2'd0) ? w_csr_src :
                           (w_csr_op == 2'd1) ? (w_csr_old | w_csr_src) :
                                                 (w_csr_old & ~w_csr_src);
@@ -438,42 +443,6 @@ module rv32_top(
     wire id_accept = fetch_valid && fetch_ready;
     // fetch_ready is already !stall && !serial && !halt && !redirect.
 
-    // ------------------------------------------------------------------ ID
-    always @(posedge clk) begin
-        if (!rst_n) begin
-            id_valid <= 1'b0; id_pc <= 32'd0; id_inst <= 32'd0; id_imm <= 32'd0;
-            id_pred <= 32'd0; id_rd <= 5'd0; id_rs1 <= 5'd0; id_rs2 <= 5'd0;
-            id_fcause <= 5'd0; id_u1 <= 0; id_u2 <= 0; id_we <= 0; id_load <= 0;
-            id_store <= 0; id_br <= 0; id_jal <= 0; id_jalr <= 0; id_csr <= 0;
-            id_mret <= 0; id_ecall <= 0; id_ebrk <= 0; id_mul <= 0; id_div <= 0;
-            id_illegal <= 0; id_ffault <= 0; id_uns <= 0; id_serial <= 0;
-            id_alu <= 4'd0; id_asel <= 2'd0; id_bsel <= 2'd0; id_size <= 2'd2;
-            id_csr_op <= 2'd0; id_br_op <= 3'd0; id_md_op <= 3'd0; id_csr_addr <= 12'd0;
-        end else if (!stall) begin
-            // id_* is the RR stage register: any stall must hold it, otherwise the
-            // instruction waiting in RR is overwritten by the next cycle's ID.
-            // Clearing it on a stall loses the instruction that is waiting there
-            // (the regression showed one instruction disappearing after a load).
-            id_valid <= id_accept;
-            if (id_accept) begin
-                id_pc <= fetch_pc; id_inst <= fetch_inst; id_imm <= dec_imm;
-                id_pred <= fetch_predicted_next_pc;
-                id_rd <= dec_rd; id_rs1 <= dec_rs1; id_rs2 <= dec_rs2;
-                id_u1 <= dec_u1; id_u2 <= dec_u2; id_we <= dec_we;
-                id_load <= dec_load; id_store <= dec_store; id_br <= dec_br;
-                id_jal <= dec_jal; id_jalr <= dec_jalr; id_csr <= dec_csr;
-                id_mret <= dec_mret; id_ecall <= dec_ecall; id_ebrk <= dec_ebrk;
-                id_mul <= dec_mul; id_div <= dec_div; id_illegal <= dec_illegal;
-                id_uns <= dec_uns; id_serial <= dec_serial;
-                id_alu <= dec_alu; id_asel <= dec_asel; id_bsel <= dec_bsel;
-                id_size <= dec_size; id_csr_op <= dec_csr_op; id_br_op <= dec_br_op;
-                id_md_op <= dec_md_op; id_csr_addr <= dec_csr_addr;
-                id_ffault <= fetch_fault;
-                id_fcause <= fetch_fault ? fetch_fault_cause : 5'd0;
-            end
-        end
-    end
-
     // ------------------------------------------------------------------ RR
     always @(posedge clk) begin
         if (!rst_n) begin
@@ -510,8 +479,8 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) begin
             rr_valid <= 1'b0; rr_pc <= 32'd0; rr_inst <= 32'd0; rr_imm <= 32'd0;
-            rr_pred <= 32'd0; rr_op1 <= 32'd0; rr_op2 <= 32'd0; rr_csr_old <= 32'd0;
-            rr_csr_src <= 32'd0; rr_rd <= 5'd0; rr_rs1 <= 5'd0; rr_rs2 <= 5'd0;
+            rr_pred <= 32'd0; rr_csr_old <= 32'd0; rr_u1 <= 1'b0;
+            rr_rd <= 5'd0; rr_rs1 <= 5'd0; rr_rs2 <= 5'd0;
             rr_fcause <= 5'd0; rr_we <= 0; rr_load <= 0; rr_store <= 0; rr_br <= 0;
             rr_jal <= 0; rr_jalr <= 0; rr_csr <= 0; rr_mret <= 0; rr_ecall <= 0;
             rr_ebrk <= 0; rr_mul <= 0; rr_div <= 0; rr_illegal <= 0; rr_ffault <= 0;
@@ -530,11 +499,9 @@ module rv32_top(
                 rr_serial <= id_serial; rr_alu <= id_alu; rr_asel <= id_asel;
                 rr_bsel <= id_bsel; rr_size <= id_size; rr_csr_op <= id_csr_op;
                 rr_br_op <= id_br_op; rr_md_op <= id_md_op; rr_csr_addr <= id_csr_addr;
-                rr_op1 <= rf_d0;
-                rr_op2 <= rf_d1;
                 rr_csr_old <= id_csr ? csr_rdata : 32'd0;
                 rr_csr_illegal <= id_csr ? csr_illegal : 1'b0;
-                rr_csr_src <= id_u1 ? rf_d0 : {27'd0, id_rs1};
+                rr_u1 <= id_u1;
             end
         end
     end
@@ -563,7 +530,7 @@ module rv32_top(
                 ex_uns <= rr_uns; ex_csr <= rr_csr; ex_mret <= rr_mret;
                 ex_serial <= rr_serial; ex_csr_op <= rr_csr_op;
                 ex_csr_addr <= rr_csr_addr; ex_csr_old <= rr_csr_old;
-                ex_csr_src <= rr_csr_src;
+                ex_csr_src <= csr_src_w;
             end
         end
     end
@@ -671,7 +638,7 @@ module rv32_top(
     // EX and one per commit, which is what identified every handshake bug so far.
     always @(posedge clk) if (rst_n && rr_valid)
         $display("TR_EX  pc=%08x inst=%08x rs1=%0d rs2=%0d op1=%08x op2=%08x fwd1=%08x fwd2=%08x ld=%b st=%b we=%b rd=%0d",
-                 rr_pc, rr_inst, rr_rs1, rr_rs2, rr_op1, rr_op2, fwd1, fwd2,
+                 rr_pc, rr_inst, rr_rs1, rr_rs2, rf_d0, rf_d1, fwd1, fwd2,
                  rr_load, rr_store, rr_we, rr_rd);
     always @(posedge clk) if (rst_n && w_commit)
         $display("TR_WB  pc=%08x inst=%08x rd=%0d we=%b val=%08x trap=%b cause=%0d",

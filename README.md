@@ -9,8 +9,8 @@
 
 > **性能专项（2026-10-21）**：**当前交付 3.8557 CoreMark/MHz**（板上实测，**1152** 迭代 / 11.066 s /
 > 五项 CRC 全对且 `Correct operation validated` / 27 MHz `All Constraints Met`，setup +4.484、
-> hold +0.032、失败端点 0 / 18,333 LUT / 9,836 FF）。
-> 位流 `bitstream/pangoriscv_i1152_p37.sbit`；证据 `evidence/records/optimization/perf-pair-raw-3.86/`；
+> hold +0.032、失败端点 0 / **17,534 LUT / 7,153 FF**）。
+> 位流 `bitstream/pangoriscv_i1152_e2.sbit`（同分数、面积 −10.9%）；证据 `evidence/records/optimization/perf-area-lutram/`；
 > 计划与 A/B 见 [docs/plan-perf-3.8.md](docs/plan-perf-3.8.md)。
 > 相对面积专项定版 3.4222：**+12.7% 分数、站点 +0.9%**（CoreMark/kLUT 0.1901 → **0.2103**）。
 >

@@ -153,6 +153,12 @@ module dcache_axi #(
     // RAMs a write-data flop that only feeds them.  The tag is stable from the
     // lookup until the last fill beat, so the extra cycle is free.
     reg [TAGW-1:0] tag_di_q;
+    // Write-ADDRESS retiming for the tag RAMs (hold).  `set_q[4] ->
+    // tag_mem_*/WADDR[4]` is the other half of the same chronic hold path: the set
+    // index cannot change between the accept edge and the fill edge, so a one-cycle
+    // delayed copy is identical when the write happens, and it gives the RAMs a
+    // write-address flop that feeds nothing else.
+    reg [IDXW-1:0] set_di_q;
     reg [IDXW-1:0] set_q;
     // Physical duplicate of set_q, used only as the write address of the line
     // RAMs (tag/data/valid/lru).  Both registers load the same value on the
@@ -226,7 +232,15 @@ module dcache_axi #(
     reg [1:0]  rresp_q;
 
     // ---- storage -----------------------------------------------------------
-    reg [TAGW-1:0] tag_mem   [0:SETS*WAYS-1];
+    // One tag array PER WAY.  The single {way,set} array needed two copies for the
+    // two simultaneous way compares, and every fill then had to drive both copies'
+    // write ports (42 distributed-RAM data pins from one flop) -- the hold path
+    // `tag_di_q -> tag_mem_*/DI` that PDS could not close (E2: -0.001 ns).
+    // Split in two, each array has exactly one read port and one write port, and a
+    // fill drives 21 pins of ONE array.  Behaviour is identical: way w's tag lives
+    // in tag_mem[_1][set] either way.
+    reg [TAGW-1:0] tag_mem   [0:SETS-1];      // way 0
+    reg [TAGW-1:0] tag_mem_1 [0:SETS-1];      // way 1
     reg [31:0] data_mem  [0:SETS*WAYS*LINE_WORDS-1];
     reg        valid_mem [0:SETS*WAYS-1];
     reg        lru_mem   [0:SETS-1];
@@ -253,8 +267,8 @@ module dcache_axi #(
     wire [2:0]      req_word = req_addr[4:2];
     wire req_in_cache = (req_addr < CACHED_LIMIT);
     wire early_req = (req_addr >= 32'h1000_0000) && (req_addr < DATA_RAM_LIMIT);
-    wire hit0 = valid_mem[widx(0,req_set)] && (tag_mem[widx(0,req_set)]==req_tag);
-    wire hit1 = valid_mem[widx(1,req_set)] && (tag_mem[widx(1,req_set)]==req_tag);
+    wire hit0 = valid_mem[widx(0,req_set)] && (tag_mem  [req_set]==req_tag);
+    wire hit1 = valid_mem[widx(1,req_set)] && (tag_mem_1[req_set]==req_tag);
     wire hit_any = hit0 | hit1;
     wire hit_way = hit1;                       // way 0 wins if both match
 
@@ -453,6 +467,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             state_q     <= ST_IDLE;
             tag_q       <= {TAGW{1'b0}};
             tag_di_q    <= {TAGW{1'b0}};
+            set_di_q    <= {IDXW{1'b0}};
             set_q       <= {IDXW{1'b0}};
             set_wr_q    <= {IDXW{1'b0}};
             word_q      <= 3'd0;
@@ -583,7 +598,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         if (m_rlast || beat_q==LINE_WORDS-1) begin
                             if (!rd_err_q && m_rresp==2'b00) begin
                                 valid_mem[widx(fill_way_q,set_wr_q)] <= 1'b1;
-                                tag_mem[widx(fill_way_q,set_wr_q)]   <= tag_di_q;
+                                if (fill_way_q) tag_mem_1[set_di_q] <= tag_di_q;
+                                else            tag_mem  [set_di_q] <= tag_di_q;
                                 lru_mem[set_wr_q] <= ~fill_way_q;
                                 resp_q <= 2'b00;
                             end else begin
@@ -731,8 +747,9 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 ST_FAULT: ;
                 default: state_q <= ST_FAULT;
             endcase
-            // tag write-data retiming stage (see the declaration comment)
+            // tag write data/address retiming stages (see the declarations)
             tag_di_q <= tag_q;
+            set_di_q <= set_wr_q;
 
             // ---- posted store queue bookkeeping (P34) ---------------------------
             // NOTE: the cache-line merge of an accepted posted store deliberately

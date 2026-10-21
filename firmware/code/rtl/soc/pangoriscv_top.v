@@ -34,7 +34,11 @@ module pangoriscv_top #(
  wire [31:0] gpio_ctrl,gpio_data;
  genvar i;
  generate for (i=0;i<8;i=i+1) begin : board_led
-  assign led[i]=soc_rst_n && gpio_ctrl[2*i+:2]==2'b01 && gpio_data[i];
+  // No soc_rst_n term: gpio_ctrl/gpio_data are reset to 0 by axi_gpio, so the pin
+  // is already low during reset, and the redundant gate only added a
+  // reset_sync -> led path that kept showing up as a marginal IO hold
+  // (docs/plan-efficiency.md section 10).
+  assign led[i]=gpio_ctrl[2*i+:2]==2'b01 && gpio_data[i];
  end endgenerate
 
  // ---------------------------------------------------------------------

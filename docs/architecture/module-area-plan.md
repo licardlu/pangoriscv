@@ -2,6 +2,12 @@
 
 ## 当前实验增补：X0/X1 执行分级
 
+- IFU 恢复路径：当指令队列空且响应属于当前 fetch_pc 时，直接把已归属的
+  cache 响应交给 IF/ID，同时按 push-pop 更新 FIFO；只消费一条时另一条仍入队。
+  stale/redirect/fault 规则保持，旧响应不会借直通路径穿透冲刷。
+  `ifu_axi` 无新增状态，组合 mux 预留 160 LUT/0 FF，位于 R_FETCH。
+  验证双字/单字接收、反压、stale response、同拍 pop/push 与新 CoreMark。
+
 - 程序容量实验：`pangoriscv_axi_soc` 的 program_ram 从 4096 字增为 8192 字，
   总线 ROM aperture 同步 0x4000→0x8000；数据 RAM 保持 16 KiB。
   `ifu_axi.EXEC_BYTES` 与 `branch_predictor.PGM_BYTES` 同步 32768，

@@ -165,20 +165,25 @@ module ifu_axi #(
     assign idle=(ocnt_q==0)&&(stale_cnt_q==0)&&empty;
 
     wire head_match=!empty&&(head_pc==fetch_pc);
-    assign fetch_valid=rst_n&&enable&&!redirect_valid&&head_match&&(stale_cnt_q==0);
-    assign result_pc=head_pc;
-    assign result_inst=q_inst[head_q];
-    assign result_pair=q_pair[head_q];
-    assign result_pc_hi=head_pc+32'd4;
-    assign result_inst_hi=q_inst_hi[head_q];
-    assign result_predicted_next_pc=q_pred[head_q];
-    assign result_predicted_next_pc_hi=q_pred_hi[head_q];
-    assign result_fault=q_fault[head_q];
-    assign result_fault_cause=q_cause[head_q];
-    assign result_fault_tval=head_pc;
-    assign result_fault_hi=q_fault[head_q];
-    assign result_fault_cause_hi=q_cause[head_q];
-    assign result_fault_tval_hi=head_pc+32'd4;
+    // Empty-queue response bypass. The response still has to belong to the
+    // oldest tracked request and exactly match the architectural fetch PC.
+    // Enqueue/pop bookkeeping is unchanged: if only word0 is consumed, word1
+    // stays in the FIFO at the incremented head. Backpressure enqueues both.
+    wire response_bypass=empty && rsp_owned && stale_cnt_q==0 && pcf0_q==fetch_pc;
+    assign fetch_valid=rst_n&&enable&&!redirect_valid&&(head_match||response_bypass)&&(stale_cnt_q==0);
+    assign result_pc=response_bypass ? pcf0_q : head_pc;
+    assign result_inst=response_bypass ? eng_rsp_data : q_inst[head_q];
+    assign result_pair=response_bypass ? (eng_rsp_pair && pdf0_q==pcf0_q+32'd4) : q_pair[head_q];
+    assign result_pc_hi=result_pc+32'd4;
+    assign result_inst_hi=response_bypass ? eng_rsp_data_hi : q_inst_hi[head_q];
+    assign result_predicted_next_pc=response_bypass ? pdf0_q : q_pred[head_q];
+    assign result_predicted_next_pc_hi=response_bypass ? pdf0_q2 : q_pred_hi[head_q];
+    assign result_fault=response_bypass ? (eng_rsp_resp!=0) : q_fault[head_q];
+    assign result_fault_cause=response_bypass ? 5'd1 : q_cause[head_q];
+    assign result_fault_tval=result_pc;
+    assign result_fault_hi=result_fault;
+    assign result_fault_cause_hi=result_fault_cause;
+    assign result_fault_tval_hi=result_pc_hi;
 
     // Consumer can take two only when it says so and the head really is a pair.
     wire take2=fetch_valid&&result_pair&&fetch_ready2;

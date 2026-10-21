@@ -67,6 +67,8 @@ def main() -> int:
     ap.add_argument("--tag", default="run", help="subdirectory under --out")
     ap.add_argument("--out", default=OUT_DEFAULT)
     ap.add_argument("--max-cycles", default="400000000")
+    ap.add_argument("--define", action="append", default=[], metavar="MACRO",
+                    help="extra +define+ passed to vlog (e.g. RV32_DEBUG)")
     ap.add_argument("--skip-compile", action="store_true",
                     help="reuse the work library of an earlier run with the same --tag")
     args = ap.parse_args()
@@ -106,7 +108,8 @@ def main() -> int:
             rc = subprocess.run([tools["vlib"], "work"], cwd=run_dir, env=env,
                                 stdout=log, stderr=subprocess.STDOUT).returncode
             if rc == 0:
-                rc = subprocess.run([tools["vlog"], "-sv", "-work", "work"] + incs
+                rc = subprocess.run([tools["vlog"], "-sv", "-work", "work"]
+                                + ["+define+" + d for d in args.define] + incs
                                     + sources(repo) + [tb], cwd=run_dir, env=env,
                                     stdout=log, stderr=subprocess.STDOUT).returncode
         if rc != 0:

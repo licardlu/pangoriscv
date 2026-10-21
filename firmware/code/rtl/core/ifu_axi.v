@@ -181,13 +181,16 @@ module ifu_axi #(
     // only do so when the refill path delivered the two words together, which is
     // why the core averaged about one instruction per cycle.
     //
-    // `q_pred[head] == head+4` keeps the architectural rule that the second word
-    // is only valid when the first was predicted to fall through, and a faulted
-    // second word is excluded so the shared fault fields below stay truthful.
+    // The rule is "the next entry is the *predicted successor*", not "the next
+    // entry is head+4".  For a non-control instruction those are the same thing.
+    // For a predicted-taken branch they are not: the chain prefetch has already
+    // queued the branch target behind the branch, so head+1 is the target and
+    // pairing head with it is exactly what lets the core spend one cycle on
+    // "branch + first target instruction" instead of a redirect bubble.  A
+    // faulted second word is excluded so the shared fault fields stay truthful.
     wire pair_adj =
         (count_q > {{(AW){1'b0}},1'b1}) &&
-        (q_pc[head_q+1'b1] == head_pc + 32'd4) &&
-        (q_pred[head_q] == head_pc + 32'd4) &&
+        (q_pc[head_q+1'b1] == q_pred[head_q]) &&
         !q_fault[head_q+1'b1];
     assign result_pair=response_bypass ? (eng_rsp_pair && pdf0_q==pcf0_q+32'd4) : pair_adj;
     assign result_pc_hi=result_pc+32'd4;

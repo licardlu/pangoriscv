@@ -199,6 +199,21 @@ module rv32_top(
     wire packet_load_use = dec_load && dec_we &&
                            ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
                             (dec_u2_h && (dec_rd == dec_rs2_h)));
+    // A multiply/divide in lane 0 is a different story from a plain ALU op:
+    // the product is the output of a four-DSP cascade (9.0 ns measured on
+    // `p7_path40b`), and feeding it into lane 1's operand mux puts that whole
+    // cascade *in series with* lane 1's adder inside one cycle.  That single
+    // pairing rule is what made the worst path 26.6 ns.
+    //
+    // Refusing exactly this pair (lane 1 reading the product its own lane 0 is
+    // still computing) costs almost nothing -- multiplies are rare in CoreMark
+    // and rarer still immediately followed by a dependent neighbour -- while
+    // refusing intra-pair RAW in general is what broke ISA tests 17/18/19/20
+    // (docs/lessons/mistakes-log.md section 26).  The distinction matters:
+    // only the producer that is *not* a single-cycle adder gets refused.
+    wire packet_md_use = (dec_mul || dec_div) && dec_we &&
+                         ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
+                          (dec_u2_h && (dec_rd == dec_rs2_h)));
     // Intra-pair RAW (lane 1 reading what lane 0 writes this cycle) must stay
     // pair-able: everything between addi/branch and the store data path in the
     // ISA suite is built on it (P37a, tests 17/18/19/20).  Trying to refuse it
@@ -207,7 +222,8 @@ module rv32_top(
     // docs/lessons/mistakes-log.md.  The chain is shortened at the ALU instead.
     wire lane0_mem = dec_load || dec_store;
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
-                   !packet_load_use && !(lane0_mem && lane1_mem) &&
+                   !packet_load_use && !packet_md_use &&
+                   !(lane0_mem && lane1_mem) &&
                    !fetch_fault && !fetch_fault_hi;
 
     // ========================================================= pipeline regs
@@ -431,21 +447,26 @@ module rv32_top(
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2) && (m_rd_h != 5'd0)) ? m_value_h :
         (m_valid && m_we && !m_trap && (m_rd == rr_rs2) && (m_rd != 5'd0)) ? m_value :
         rf_d1;
+    wire [31:0] alu_y;
+    wire        alu_eq, alu_lt, alu_ltu;
     // Lane 1 sees one producer lane 0 does not have: lane 0 of its own packet.
-    // Pairing rejects the one case that cannot be covered (lane 0 is a load or a
-    // multiply -- `packet_load_use`), so lane 0's result is always available
-    // combinationally here.
+    // Pairing rejects the two cases that cannot be covered -- lane 0 is a load
+    // (its data only exists in M2) or lane 0 is a multiply/divide (the product
+    // is a four-DSP cascade, 9.0 ns, and must not be chained in front of lane
+    // 1's adder) -- so `alu_y` is always the correct value here.  Feeding
+    // `ex_value_w` instead is what put the multiplier in series with lane 1's
+    // ALU and made the worst path 26.6 ns on `p7_path40b`.
     wire lane0_raw1 = rr_v1 && rr_we && (rr_rd == rr_rs1_h) && (rr_rd != 5'd0);
     wire lane0_raw2 = rr_v1 && rr_we && (rr_rd == rr_rs2_h) && (rr_rd != 5'd0);
     wire [31:0] fwd1_h =
-        lane0_raw1 ? ex_value_w :
+        lane0_raw1 ? alu_y :
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
         (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs1_h) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1_h) && (m_rd_h != 5'd0)) ? m_value_h :
         (m_valid && m_we && !m_trap && (m_rd == rr_rs1_h) && (m_rd != 5'd0)) ? m_value :
         rf_d0_h;
     wire [31:0] fwd2_h =
-        lane0_raw2 ? ex_value_w :
+        lane0_raw2 ? alu_y :
         (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
         (ex_valid && ex_we && !ex_load && !ex_trap && (ex_rd == rr_rs2_h) && (ex_rd != 5'd0)) ? ex_value :
         (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2_h) && (m_rd_h != 5'd0)) ? m_value_h :
@@ -458,8 +479,6 @@ module rv32_top(
     wire [31:0] alu_b = (rr_bsel == 2'd0) ? fwd2 :
                        (rr_bsel == 2'd2) ? 32'd4 : rr_imm;
 
-    wire [31:0] alu_y;
-    wire        alu_eq, alu_lt, alu_ltu;
     rv32_alu u_alu(
         .op(rr_alu), .a(alu_a), .b(alu_b),
         .y(alu_y), .eq(alu_eq), .lt(alu_lt), .ltu(alu_ltu)

@@ -175,15 +175,23 @@ module rv32_top(
     // misaligned-target trap cannot happen in this slot.  jalr is excluded --
     // its target is a runtime value and could be misaligned.
     wire lane1_ctrl = (dec_br_h || dec_jal_h) && !dec_imm_h[1];
-    wire lane1_ok   = lane1_alu || lane1_ctrl;
+    // Memory is allowed in lane 1 as long as it is the only memory op in the
+    // packet (the LSU has one port).  Loads are the bulk of it; stores are kept
+    // because the ISA suite exercises lane-1 store address/data forwarding.
+    wire lane1_mem  = (dec_load_h || dec_store_h) &&
+                      !(dec_jalr_h | dec_csr_h | dec_mret_h | dec_ecall_h |
+                        dec_ebrk_h | dec_mul_h | dec_div_h | dec_illegal_h);
+    wire lane1_ok   = lane1_alu || lane1_ctrl || lane1_mem;
     wire lane0_issue_alone = dec_serial || dec_br || dec_jal || dec_jalr;
     // A load in lane 0 cannot feed lane 1 in the same cycle (its data only
     // exists in M2), so such a pair is split rather than stalled in EX.
     wire packet_load_use = dec_load && dec_we &&
                            ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
                             (dec_u2_h && (dec_rd == dec_rs2_h)));
+    wire lane0_mem = dec_load || dec_store;
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
-                   !packet_load_use && !fetch_fault && !fetch_fault_hi;
+                   !packet_load_use && !(lane0_mem && lane1_mem) &&
+                   !fetch_fault && !fetch_fault_hi;
 
     // ========================================================= pipeline regs
     // ID -> RR (the instruction sitting in RR)
@@ -208,6 +216,8 @@ module rv32_top(
     reg  [31:0] id_pred_h;
     reg         id_ctrl_h, id_jal_h;
     reg  [2:0]  id_br_op_h;
+    reg         id_load_h, id_store_h, id_uns_h;
+    reg  [1:0]  id_size_h;
 
     // RR -> EX (the instruction sitting in EX)
     reg         rr_valid;
@@ -231,6 +241,8 @@ module rv32_top(
     reg  [31:0] rr_pred_h;
     reg         rr_ctrl_h, rr_jal_h;
     reg  [2:0]  rr_br_op_h;
+    reg         rr_load_h, rr_store_h, rr_uns_h;
+    reg  [1:0]  rr_size_h;
 
     // EX -> M1
     reg         ex_valid;
@@ -247,6 +259,10 @@ module rv32_top(
     reg         ex_we_h;
     reg         ex_ctrl_h, ex_taken_h, ex_uncond_h;
     reg  [31:0] ex_next_h;
+    reg         ex_load_h, ex_store_h, ex_uns_h, ex_trap_h;
+    reg  [1:0]  ex_size_h;
+    reg  [2:0]  ex_cause_h;
+    reg  [31:0] ex_addr_h, ex_sdata_h, ex_tval_h;
 
     // M1 -> M2
     reg         m_valid;
@@ -260,8 +276,9 @@ module rv32_top(
     reg  [31:0] m_pc_h, m_value_h;
     reg  [4:0]  m_rd_h;
     reg         m_we_h;
-    reg         m_ctrl_h, m_taken_h, m_uncond_h;
-    reg  [31:0] m_next_h;
+    reg         m_ctrl_h, m_taken_h, m_uncond_h, m_trap_h;
+    reg  [31:0] m_next_h, m_tval_h;
+    reg  [2:0]  m_cause_h;
 
     // M2 -> WB
     reg         w_valid;
@@ -275,8 +292,9 @@ module rv32_top(
     reg  [31:0] w_pc_h, w_value_h;
     reg  [4:0]  w_rd_h;
     reg         w_we_h;
-    reg         w_ctrl_h, w_taken_h, w_uncond_h;
-    reg  [31:0] w_next_h;
+    reg         w_ctrl_h, w_taken_h, w_uncond_h, w_trap_h;
+    reg  [31:0] w_next_h, w_tval_h;
+    reg  [2:0]  w_cause_h;
 
     // ========================================================= fetch / PC
     reg  [31:0] pc_q;
@@ -295,14 +313,24 @@ module rv32_top(
 
     // ========================================================= hazards
     wire m_is_mem   = ex_valid && (ex_load || ex_store) && !ex_trap;
+    // The memory op of a packet can come from either lane; lane 0 wins when both
+    // are set (pairing forbids that, this is defensive).
+    wire m_is_mem_h = ex_valid && ex_v1 && (ex_load_h || ex_store_h) &&
+                      !ex_trap_h && !m_is_mem;
+    wire mem_from_h = m_is_mem_h;
     // A load in M1 hands its data over in M2, so both lanes of the packet in EX
     // must wait when they read its destination.  Checking only lane 0 left lane 1
     // reading the stale entry, which is what corrupted CoreMark's printf
     // arguments (they are walked off the stack by load + ALU pairs).
-    wire load_use   = ex_valid && ex_load && ex_we &&
-                      ((ex_rd == rr_rs1) || (ex_rd == rr_rs2) ||
-                       (rr_v1 && ((ex_rd == rr_rs1_h) || (ex_rd == rr_rs2_h))));
-    wire mem_wait   = m_is_mem && !(done_valid && (mem_issued_q || (issue_mem && op_ready)));
+    wire ld_m1_0 = ex_valid && ex_load && ex_we;
+    wire ld_m1_1 = ex_valid && ex_v1 && ex_load_h && ex_we_h;
+    wire load_use   =
+        (ld_m1_0 && ((ex_rd == rr_rs1) || (ex_rd == rr_rs2) ||
+                     (rr_v1 && ((ex_rd == rr_rs1_h) || (ex_rd == rr_rs2_h))))) ||
+        (ld_m1_1 && ((ex_rd_h == rr_rs1) || (ex_rd_h == rr_rs2) ||
+                     (rr_v1 && ((ex_rd_h == rr_rs1_h) || (ex_rd_h == rr_rs2_h)))));
+    wire mem_wait   = (m_is_mem || m_is_mem_h) &&
+                      !(done_valid && (mem_issued_q || (issue_mem && op_ready)));
     wire div_wait   = rr_valid && rr_div && !rr_illegal && !div_rsp_valid;
     wire trap_wait  = w_valid && w_trap && !trap_ready;
     wire stall      = load_use || mem_wait || div_wait || trap_wait;
@@ -330,7 +358,7 @@ module rv32_top(
     wire        wb_we = w_commit && w_we && (w_rd != 5'd0);
     // Port 2 carries lane 1.  regs writes lane 0 first and lane 1 second, so a
     // same-register WAW inside a packet keeps the younger value.
-    wire        wb_we_h = w_commit && w_v1 && w_we_h && (w_rd_h != 5'd0);
+    wire        wb_we_h = w_commit && w_v1 && w_we_h && (w_rd_h != 5'd0) && !w_trap_h;
 
     // The register file is the delivered 4-read / 2-write array (`regs`): dual
     // issue needs two write ports in the same cycle (with ~70% pairing the core
@@ -437,6 +465,15 @@ module rv32_top(
                         (rr_br_op_h == 3'd2) ? alu_lt_h  :
                         (rr_br_op_h == 3'd3) ? !alu_lt_h :
                         (rr_br_op_h == 3'd4) ? alu_ltu_h : !alu_ltu_h;
+    wire [31:0] mem_addr_h  = fwd1_h + rr_imm_h;
+    wire [31:0] mem_sdata_h = fwd2_h;
+    // Misalignment is decided in EX so a lane-1 misaligned access never reaches
+    // the LSU at all (ISA case 20 checks exactly that no request is issued).
+    // Cause encoding matches lane 0: 4 load address misaligned, 6 store.
+    wire mem_misaln_h = (rr_load_h || rr_store_h) &&
+                        ((rr_size_h == 2'd1 && mem_addr_h[0]) ||
+                         (rr_size_h == 2'd2 && (|mem_addr_h[1:0])));
+    wire [4:0]  ex_cause_h_w = rr_store_h ? 5'd6 : 5'd4;
     wire ctrl_taken_h = rr_jal_h | (rr_ctrl_h & br_taken_h);
     wire [31:0] ctrl_target_h = rr_pc_h + rr_imm_h;
     wire [31:0] ctrl_next_h   = ctrl_taken_h ? ctrl_target_h : (rr_pc_h + 32'd4);
@@ -491,7 +528,13 @@ module rv32_top(
                                                 (w_csr_old & ~w_csr_src);
 
     wire        pipe_empty = !id_valid && !rr_valid && !ex_valid && !m_valid && !w_valid;
-    wire        sync_trap  = w_valid && w_trap && trap_ready && !halted_q;
+    // Either lane can trap now (a lane-1 load/store may fault).  Lane 0 is older,
+    // so it is the one that defines mepc/mcause when both are set -- though a
+    // lane-0 trap squashes lane 1, so the two never really compete.
+    wire        w_trap_any = w_trap || (w_v1 && w_trap_h);
+    wire        sync_trap  = w_valid && w_trap_any && trap_ready && !halted_q;
+    wire        trap1      = sync_trap && !w_trap && w_v1 && w_trap_h;
+    wire [31:0] trap_src_pc = w_trap ? w_pc : w_pc_h;
     // An interrupt is injected at a *boundary*, not when the pipe happens to be
     // empty: a spin loop never empties the pipe, so the old condition meant the
     // timer interrupt was never taken at all (ISA case 15 timed out inside
@@ -500,7 +543,7 @@ module rv32_top(
     // instruction has committed, and killing the younger ones is what the
     // redirect already does.
     wire        irq_trap   = csr_irq_pending && w_valid && w_ctrl && !w_trap &&
-                             !w_mret && !halted_q;
+                             !w_trap_h && !w_mret && !halted_q;
     wire        trap_go    = sync_trap || irq_trap;
     wire        mret_go    = w_valid && w_mret && !w_trap && !halted_q;
 
@@ -519,9 +562,10 @@ module rv32_top(
 
     // mepc: a synchronous trap returns to the faulting instruction, an
     // interrupt returns to the instruction that would have run next.
-    wire [31:0] trap_tgt_pc = irq_trap ? w_next_eff : w_pc;
-    wire [31:0] trap_code   = irq_trap ? csr_irq_cause : {27'd0, w_cause};
-    wire [31:0] trap_tval_i = irq_trap ? 32'd0 : w_tval;
+    wire [31:0] trap_tgt_pc = irq_trap ? w_next_eff : trap_src_pc;
+    wire [31:0] trap_code   = irq_trap ? csr_irq_cause :
+                              w_trap ? {27'd0, w_cause} : {29'd0, w_cause_h};
+    wire [31:0] trap_tval_i = irq_trap ? 32'd0 : (w_trap ? w_tval : w_tval_h);
 
     csr_native u_csr(
         .clk(clk), .rst_n(rst_n),
@@ -531,7 +575,7 @@ module rv32_top(
         .addr(w_valid && w_csr ? w_csr_addr : id_csr_addr),
         .write_intent(w_valid && w_csr ? 1'b1 : rf_write_intent),
         .commit(w_commit && w_csr),
-        .retire(w_commit), .retire_count(w_v1 ? 2'd2 : 2'd1),
+        .retire(w_commit), .retire_count((w_v1 && !w_trap_h) ? 2'd2 : 2'd1),
         .mret_fire(mret_go),
         .trap_enter(trap_go),
         .write_data(csr_new),
@@ -609,7 +653,8 @@ module rv32_top(
                 halt_pending_q <= 1'b0;
             end
             if (halted_q && !halt_req) halted_q <= 1'b0;
-            if (w_commit && !irq_trap) arch_next_q <= w_next_eff;
+            if (w_commit && !irq_trap)
+                arch_next_q <= (w_v1 && w_trap_h) ? w_pc_h : w_next_eff;
         end
     end
 
@@ -634,21 +679,24 @@ module rv32_top(
 
     always @(posedge clk) begin
         if (!rst_n) retire_cnt_q <= 64'd0;
-        else if (retire_fire) retire_cnt_q <= retire_cnt_q + (w_v1 ? 64'd2 : 64'd1);
+        else if (retire_fire) retire_cnt_q <= retire_cnt_q +
+                                              ((w_v1 && !w_trap_h) ? 64'd2 : 64'd1);
     end
     assign retire_order = retire_cnt_q;
 
     // ========================================================= M1 memory port
-    assign issue_mem = m_is_mem && !mem_issued_q && !(w_valid && w_trap) && !kill_all;
+    assign issue_mem = (m_is_mem || m_is_mem_h) && !mem_issued_q &&
+                       !(w_valid && (w_trap || (w_v1 && w_trap_h))) && !kill_all;
 
+    // One port, two possible owners: every field follows the owner.
     assign op_valid      = issue_mem;
-    assign is_store      = ex_store;
-    assign address       = ex_addr;
-    assign store_value   = ex_sdata;
-    assign op_pc         = ex_pc;
-    assign access_size   = {1'b0, ex_size};
-    assign load_unsigned = ex_uns;
-    assign op_rd         = ex_rd;
+    assign is_store      = mem_from_h ? ex_store_h : ex_store;
+    assign address       = mem_from_h ? ex_addr_h  : ex_addr;
+    assign store_value   = mem_from_h ? ex_sdata_h : ex_sdata;
+    assign op_pc         = mem_from_h ? ex_pc_h    : ex_pc;
+    assign access_size   = {1'b0, mem_from_h ? ex_size_h : ex_size};
+    assign load_unsigned = mem_from_h ? ex_uns_h   : ex_uns;
+    assign op_rd         = mem_from_h ? ex_rd_h    : ex_rd;
     assign done_ready    = 1'b1;
 
     // A cache hit can accept the request and answer it in the SAME cycle, so the
@@ -656,7 +704,9 @@ module rv32_top(
     // earlier cycle (mem_issued_q) or accepted in this one (mem_accept).
     wire        mem_rsp    = done_valid && (mem_issued_q || mem_accept);
     wire        mem_fault  = m_is_mem && mem_rsp && fault;
+    wire        mem_fault_h = m_is_mem_h && mem_rsp && fault;
     wire [4:0]  mem_cause = ex_store ? 5'd7 : 5'd5;
+    wire [4:0]  mem_cause_h = ex_store_h ? 5'd7 : 5'd5;
 
     // ========================================================= sequencing
     // id_accept / id_accept2 are declared next to the PC pointer.
@@ -703,6 +753,8 @@ module rv32_top(
                 id_pred_h <= fetch_predicted_next_pc_hi;
                 id_ctrl_h <= dec_br_h || dec_jal_h; id_jal_h <= dec_jal_h;
                 id_br_op_h <= dec_br_op_h;
+                id_load_h <= dec_load_h; id_store_h <= dec_store_h;
+                id_uns_h <= dec_uns_h; id_size_h <= dec_size_h;
             end
         end
     end
@@ -746,6 +798,8 @@ module rv32_top(
                 rr_we_h <= id_we_h;
                 rr_pred_h <= id_pred_h; rr_ctrl_h <= id_ctrl_h; rr_jal_h <= id_jal_h;
                 rr_br_op_h <= id_br_op_h;
+                rr_load_h <= id_load_h; rr_store_h <= id_store_h;
+                rr_uns_h <= id_uns_h; rr_size_h <= id_size_h;
             end
         end
     end
@@ -784,6 +838,11 @@ module rv32_top(
                 ex_rd_h <= rr_rd_h; ex_we_h <= rr_v1 && rr_we_h;
                 ex_ctrl_h <= rr_ctrl_h; ex_taken_h <= ctrl_taken_h;
                 ex_uncond_h <= rr_jal_h; ex_next_h <= ctrl_next_h;
+                ex_load_h <= rr_load_h; ex_store_h <= rr_store_h;
+                ex_uns_h <= rr_uns_h; ex_size_h <= rr_size_h;
+                ex_addr_h <= mem_addr_h; ex_sdata_h <= mem_sdata_h;
+                ex_trap_h <= mem_misaln_h; ex_cause_h <= ex_cause_h_w;
+                ex_tval_h <= mem_addr_h;
             end
         end
     end
@@ -818,6 +877,10 @@ module rv32_top(
                 m_rd_h <= ex_rd_h; m_we_h <= ex_we_h;
                 m_ctrl_h <= ex_ctrl_h; m_taken_h <= ex_taken_h;
                 m_uncond_h <= ex_uncond_h; m_next_h <= ex_next_h;
+                m_value_h <= (ex_load_h && mem_rsp) ? load_value : ex_value_h;
+                m_trap_h <= ex_trap_h || mem_fault_h;
+                m_cause_h <= mem_fault_h ? mem_cause_h[2:0] : ex_cause_h;
+                m_tval_h <= mem_fault_h ? fault_addr : ex_tval_h;
             end
         end
     end
@@ -853,6 +916,7 @@ module rv32_top(
                 w_rd_h <= m_rd_h; w_we_h <= m_we_h;
                 w_ctrl_h <= m_ctrl_h; w_taken_h <= m_taken_h;
                 w_uncond_h <= m_uncond_h; w_next_h <= m_next_h;
+                w_trap_h <= m_trap_h; w_cause_h <= m_cause_h; w_tval_h <= m_tval_h;
             end
         end else if (w_commit) begin
             w_done_q <= 1'b1;
@@ -878,7 +942,12 @@ module rv32_top(
         // the pipe twice -- a same-cycle accept must SET the flag even though the
         // stage is advancing, otherwise the (already consumed) response is gone
         // and the load waits forever.
-        mem_issued_q <= (m_is_mem && !mem_rsp) ? (mem_issued_q || mem_accept) : 1'b0;
+        // "Issued" means: *some* memory op is in M1 and has not been answered.
+        // Both lanes can own the port now, so the flag has to follow the owner --
+        // keying it on `m_is_mem` alone left a lane-1 load permanently
+        // un-issued, and its later response was then discarded as a stranger's.
+        mem_issued_q <= ((m_is_mem || m_is_mem_h) && !mem_rsp)
+                        ? (mem_issued_q || mem_accept) : 1'b0;
     end
 
     always @(posedge clk) begin
@@ -909,9 +978,8 @@ module rv32_top(
     wire [31:0] ep_h          = w_pc_h;
     wire [31:0] ep            = w_pc;
     wire        young_path_ok = 1'b1;
-    wire        mem_sel_h     = 1'b0;
-    wire        trap1         = 1'b0;
-    wire        x_valid       = 1'b0;
+    wire        mem_sel_h     = mem_from_h;
+    wire        x_valid       = rr_v1;
 
     // tb_coremark_uart reads the same statistics by name.  Where the single-issue
     // core has a counter-part the probe is wired to it, so the report stays
@@ -947,10 +1015,25 @@ module rv32_top(
     wire        ifault             = id_ffault;
     wire        ifaulth            = 1'b0;
 `ifdef RV32_DEBUG
-    always @(posedge clk) if (rst_n && w_commit)
-        $display("TR_C pc=%08x v1=%b we=%b rd=%0d val=%08x | h v1=%b we=%b rd=%0d val=%08x | wbwe=%b wbweh=%b",
-                 w_pc, w_valid, w_we, w_rd, wb_value, w_v1, w_we_h, w_rd_h, w_value_h,
-                 wb_we, wb_we_h);
+    // Pairing diagnostics: why a fetch opportunity did or did not become a pair.
+    // One bucket per reason, mutually exclusive, so the numbers add up to the
+    // number of cycles the front end presented something to consume.
+    integer pg_pair=0, pg_no_pair_flag=0, pg_l1_bad=0, pg_l0_alone=0,
+            pg_pkt_lduse=0, pg_fault=0, pg_stall=0, pg_l1_mem=0;
+    always @(posedge clk) if (rst_n) begin
+        if (!(fetch_valid && fetch_ready)) pg_stall = pg_stall + 1;
+        else if (id_accept2)                      pg_pair = pg_pair + 1;
+        else if (!fetch_pair)                     pg_no_pair_flag = pg_no_pair_flag + 1;
+        else if (!lane1_ok)                       pg_l1_bad = pg_l1_bad + 1;
+        else if (lane0_issue_alone)               pg_l0_alone = pg_l0_alone + 1;
+        else if (packet_load_use)                 pg_pkt_lduse = pg_pkt_lduse + 1;
+        else if (fetch_fault || fetch_fault_hi)   pg_fault = pg_fault + 1;
+        if (fetch_valid && fetch_ready && fetch_pair && !lane1_ok &&
+            (dec_load_h || dec_store_h))          pg_l1_mem = pg_l1_mem + 1;
+    end
+    final $display("PAIRGAP pair=%0d no_pair=%0d l1_notok=%0d (of which mem=%0d) l0_alone=%0d pkt_lduse=%0d fault=%0d nostall=%0d",
+                   pg_pair, pg_no_pair_flag, pg_l1_bad, pg_l1_mem, pg_l0_alone,
+                   pg_pkt_lduse, pg_fault, pg_stall);
     // Two invariants worth printing for every bring-up run: any trap, and any
     // control transfer whose target is not in the code window.  Both are silent
     // in a correct core, and both pinpoint the culprit when they are not.

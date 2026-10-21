@@ -621,25 +621,30 @@ module rv32_top(
 
     // ========================================================= bookkeeping
     always @(posedge clk) begin
+        // `serial_q` blocks fetch while a CSR/system instruction is in flight.
+        // It must also clear when that instruction is killed (a redirect can kill
+        // a serial instruction before it reaches WB) and whenever the pipe is
+        // empty -- otherwise one killed CSR locks the core out of fetching
+        // forever, which is exactly the "pipe drains and stops" signature the
+        // operand trace showed.
         if (!rst_n) serial_q <= 1'b0;
         else if (id_accept && id_serial) serial_q <= 1'b1;
-        else if (w_valid && w_serial && !trap_wait) serial_q <= 1'b0;
+        else if ((w_valid && w_serial) || pipe_empty || kill_all) serial_q <= 1'b0;
     end
 
     always @(posedge clk) begin
-        // Clear takes priority: a memory op that completes in its issue cycle
-        // leaves M1 immediately, and a sticky "issued" flag would block the next
-        // load that enters M1 and deadlock the pipe (the ISA regression hit this
-        // on two back-to-back loads).
-        if (!rst_n) mem_issued_q <= 1'b0;
-        else if (!hold_m1) mem_issued_q <= 1'b0;
-        else if (issue_mem && op_ready) mem_issued_q <= 1'b1;
+        // "Issued" means: a memory op is in M1 and has not been answered yet.
+        // Writing it as one expression removes the priority trap that deadlocked
+        // the pipe twice -- a same-cycle accept must SET the flag even though the
+        // stage is advancing, otherwise the (already consumed) response is gone
+        // and the load waits forever.
+        mem_issued_q <= (m_is_mem && !mem_rsp) ? (mem_issued_q || mem_accept) : 1'b0;
     end
 
     always @(posedge clk) begin
         if (!rst_n) div_issued_q <= 1'b0;
-        else if (!hold_ex) div_issued_q <= 1'b0;
-        else if (div_req && div_req_ready) div_issued_q <= 1'b1;
+        else div_issued_q <= (rr_valid && rr_div && !rr_illegal && !div_rsp_valid)
+                             ? (div_issued_q || (div_req && div_req_ready)) : 1'b0;
     end
 
     assign fetch_ready  = !hold_ex && !serial_q && !halt_pending_q && !halted_q &&
@@ -660,4 +665,17 @@ module rv32_top(
     wire        mem_sel_h     = 1'b0;
     wire        trap1         = 1'b0;
     wire        x_valid       = 1'b0;
+`ifdef RV32_TRACE
+    // Simulation-only operand trace (never compiled into a bitstream: the macro
+    // is only defined by the debug compile).  One line per instruction entering
+    // EX and one per commit, which is what identified every handshake bug so far.
+    always @(posedge clk) if (rst_n && rr_valid)
+        $display("TR_EX  pc=%08x inst=%08x rs1=%0d rs2=%0d op1=%08x op2=%08x fwd1=%08x fwd2=%08x ld=%b st=%b we=%b rd=%0d",
+                 rr_pc, rr_inst, rr_rs1, rr_rs2, rr_op1, rr_op2, fwd1, fwd2,
+                 rr_load, rr_store, rr_we, rr_rd);
+    always @(posedge clk) if (rst_n && w_commit)
+        $display("TR_WB  pc=%08x inst=%08x rd=%0d we=%b val=%08x trap=%b cause=%0d",
+                 w_pc, w_inst, w_rd, w_we, w_value, w_trap, w_cause);
+`endif
+
 endmodule

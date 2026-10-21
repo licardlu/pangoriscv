@@ -1,0 +1,36 @@
+version,2022.2-SP6.1<build 138931>
+project name,impl.pds
+
+Single Seed:
+Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
+single,OK,Fail,-1.647,7.126,0.019,0.009,NA,NA,NA,NA,NA,NA,NA,4.11,71.36,268.23,306.22,NA,NA,NA,414960,NA,NA,2344,2344,2344,2344,NA,0,0,-12.927,43,0.000,0,NA
+Pass Rate/Convergence Rate,100.00%,0.00%
+
+Synthesize:
+control_set,278
+Synthesize Performance Summary:
+slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
+slack value,2.163,0.000,NA,NA
+Synthesize Process Cpu Time,0h:2m:16s
+
+Device Map:
+Device Map Resource Usage Summary:
+Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
+Used,18583,9478,8,6,3684,NA,1,0,0
+Available,66600,133200,155,240,19900,NA,32,96,24
+Utilization(%),28%,8%,6%,3%,19%,NA,4%,0%,0%
+Device Map Process Cpu Time,0h:0m:21s
+
+Project Configurations:
+top module,pangoriscv_top
+compile," -top_module {pangoriscv_top} 
+ -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/firmware/code/build/p7_path40b/sources/rtl/core} "
+synthesize," -ads "
+device map,
+place & route," -fix_hold_violation_iterations 50 
+ -fix_hold_violation_threshold_for_clock_path_cross_srb 0 
+ -fix_hold_violation_threshold_for_clk_tree 0 "
+
+Test Parameters Configurations:
+testparam,
+

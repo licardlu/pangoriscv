@@ -86,6 +86,28 @@ module pangoriscv(
  reg alu_taken;
  wire [31:0] alu_result_h,alu_target_h;
  wire alu_taken_h;
+ wire [31:0] x_alu_result_h,x_alu_target_h;
+ wire x_alu_taken_h;
+ wire x_h_early=x_valid_h &&
+       ((xi_h[6:0]==7'h33 && xi_h[31:25]!=7'h01) || xi_h[6:0]==7'h13 ||
+        xi_h[6:0]==7'h37 || xi_h[6:0]==7'h17 || xi_h[6:0]==7'h63 || xi_h[6:0]==7'h6f) &&
+       !(x_valid && xwe && depends_on(xi_h,xrd));
+ reg h_early;
+ reg [31:0] early_result_h,early_target_h;
+ reg early_taken_h;
+ wire [31:0] late_result_h,late_target_h;
+ wire late_taken_h;
+ assign alu_result_h=h_early ? early_result_h : late_result_h;
+ assign alu_target_h=h_early ? early_target_h : late_target_h;
+ assign alu_taken_h=h_early ? early_taken_h : late_taken_h;
+ always @(posedge clk) begin
+   if(!rst_n) begin
+     h_early<=0; early_result_h<=0; early_target_h<=0; early_taken_h<=0;
+   end else if(x_valid_h && x_advance) begin
+     h_early<=x_h_early; early_result_h<=x_alu_result_h;
+     early_target_h<=x_alu_target_h; early_taken_h<=x_alu_taken_h;
+   end
+ end
  // X0 -> X1 result boundary: payload and result advance on the same handshake.
  always @(posedge clk) begin
    if(!rst_n) begin alu_result<=0; alu_target<=0; alu_taken<=0; end
@@ -152,20 +174,16 @@ module pangoriscv(
  // so there is no unresolved older branch, CSR or divide before its request.
  wire mem0=(op0==7'h03) || (op0==7'h23);
  wire mem1=(op1==7'h03) || (op1==7'h23);
- // P37a: RAW inside a pair is no longer a reason to refuse it.  Lane 0 is ALU
- // class here (see the term below), so its result is combinational in the very
- // cycle lane 1 executes: ex1_r1/ex1_r2 below forward it into lane 1's operands.
- // A load in lane 0 must still block (its data arrives cycles later, and its
- // alu_result is only the address), so the check is kept for mem0 only.
+ // Same-packet ALU RAW is resolved from the registered older X0 result.
+ // Load RAW cannot pair. WAR is safe because both sources latch together;
+ // WAW is safe because the younger write and bypass have priority.
  wire pair_ok=id_valid && id_valid_h &&
               (dpch==dpc+32'd4) &&
               (((alu0 || mem0) && (alu1 || ctrl1)) || (alu0 && mem1)) &&
               !dillegal && !dillegalh &&
               !dcwe && !dcweh &&
               !ifault && !ifaulth &&
-              (drd==5'd0 || !mem0 || (drd!=rs1h && drd!=rs2h)) &&
-              (drdh==5'd0 || (drdh!=rs1 && drdh!=rs2)) &&
-              (drd==5'd0 || drdh==5'd0 || drd!=drdh);
+              (!mem0 || !dwe || !depends_on(dinsth,drd));
 
  // id_ex drives in_ready (slot can take an instruction: empty or leaving).
  wire ex0_ready,ex1_ready;
@@ -355,31 +373,47 @@ module pangoriscv(
  wire x0_forwardable=x_valid && xwe && !xfault && !xillegal &&
        ((xi[6:0]==7'h33 && xi[31:25]!=7'h01) || xi[6:0]==7'h13 ||
         xi[6:0]==7'h37 || xi[6:0]==7'h17);
- // X0 lane 1 is younger than lane 0 and has not executed. Its destination
- // match stalls decode even if lane 0 offers a matching ready value.
- // X1 writes remain unavailable while the packet is waiting for memory.
- assign dep0=(x_valid_h && xwe_h && depends_on(dinst,xrd_h)) ||
-           (x_valid && xwe && !x0_forwardable && depends_on(dinst,xrd)) ||
-           (ex_valid_h && ewe_h && !retire1 && depends_on(dinst,erd_h)) ||
-           (ex_valid && ewe && !retire0 && depends_on(dinst,erd));
- assign dep1=(x_valid_h && xwe_h && depends_on(dinsth,xrd_h)) ||
-           (x_valid && xwe && !x0_forwardable && depends_on(dinsth,xrd)) ||
-           (ex_valid_h && ewe_h && !retire1 && depends_on(dinsth,erd_h)) ||
-           (ex_valid && ewe && !retire0 && depends_on(dinsth,erd));
+ wire x0_forwardable_h=x_h_early && xwe_h && !xfault_h && !xillegal_h;
+ // Resolve each true source against its youngest in-flight producer. An older
+ // pending load does not block a value overwritten by a newer ready ALU.
+ wire [27:0] hazard_producers={x_valid_h && xwe_h,xrd_h,x0_forwardable_h,
+                              x_valid && xwe,xrd,x0_forwardable,
+                              ex_valid_h && ewe_h,erd_h,retire1,
+                              ex_valid && ewe,erd,retire0};
+ function source_blocked;
+   input [4:0] src;
+   input [27:0] producers;
+   begin
+     if(src==0) source_blocked=0;
+     else if(producers[27] && producers[26:22]==src) source_blocked=!producers[21];
+     else if(producers[20] && producers[19:15]==src) source_blocked=!producers[14];
+     else if(producers[13] && producers[12:8]==src) source_blocked=!producers[7];
+     else if(producers[6] && producers[5:1]==src) source_blocked=!producers[0];
+     else source_blocked=0;
+   end
+ endfunction
+ assign dep0=(reads_rs1(dinst) && source_blocked(dinst[19:15],hazard_producers)) ||
+             (reads_rs2(dinst) && source_blocked(dinst[24:20],hazard_producers));
+ assign dep1=(reads_rs1(dinsth) && source_blocked(dinsth[19:15],hazard_producers)) ||
+             (reads_rs2(dinsth) && source_blocked(dinsth[24:20],hazard_producers));
  // EX -> ID forwarding.  The register file's same-cycle write-through alone is
  // not enough: the ID/EX latch samples the combinational read on the same edge
  // the producer retires, so it can capture the pre-write value.  Select the EX
  // result explicitly (lane 1 is younger and wins on a same-register collision).
- wire [31:0] rv1f = (x0_forwardable && xrd!=0 && xrd==rs1) ? x_alu_result :
+ wire [31:0] rv1f = (x0_forwardable_h && xrd_h!=0 && xrd_h==rs1) ? x_alu_result_h :
+                    (x0_forwardable && xrd!=0 && xrd==rs1) ? x_alu_result :
                     (retire1 && ewe_h && erd_h!=0 && erd_h==rs1) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs1)   ? wdata : rv1;
- wire [31:0] rv2f = (x0_forwardable && xrd!=0 && xrd==rs2) ? x_alu_result :
+ wire [31:0] rv2f = (x0_forwardable_h && xrd_h!=0 && xrd_h==rs2) ? x_alu_result_h :
+                    (x0_forwardable && xrd!=0 && xrd==rs2) ? x_alu_result :
                     (retire1 && ewe_h && erd_h!=0 && erd_h==rs2) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2)   ? wdata : rv2;
- wire [31:0] rv1hf= (x0_forwardable && xrd!=0 && xrd==rs1h) ? x_alu_result :
+ wire [31:0] rv1hf= (x0_forwardable_h && xrd_h!=0 && xrd_h==rs1h) ? x_alu_result_h :
+                    (x0_forwardable && xrd!=0 && xrd==rs1h) ? x_alu_result :
                     (retire1 && ewe_h && erd_h!=0 && erd_h==rs1h) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs1h)   ? wdata : rv1h;
- wire [31:0] rv2hf= (x0_forwardable && xrd!=0 && xrd==rs2h) ? x_alu_result :
+ wire [31:0] rv2hf= (x0_forwardable_h && xrd_h!=0 && xrd_h==rs2h) ? x_alu_result_h :
+                    (x0_forwardable && xrd!=0 && xrd==rs2h) ? x_alu_result :
                     (retire1 && ewe_h && erd_h!=0 && erd_h==rs2h) ? wdata_h :
                     (retire0 && ewe   && erd!=0   && erd==rs2h)   ? wdata : rv2h;
  // Registered X0 -> X1 forwarding inside one issue pair. The older result
@@ -504,11 +538,17 @@ module pangoriscv(
    .reg_we_o(),.reg_waddr_o(),.csr_wdata_o(),.csr_we_o(),.csr_waddr_o(),
    .div_start_o(),.div_dividend_o(),.div_divisor_o(),.div_op_o(),.div_reg_waddr_o(),
    .hold_flag_o());
+ // Independent young work executes in parallel in X0. Dependent work keeps
+ // the late X1 path; there is no same-cycle lane0 -> lane1 ALU chain.
+ ex_alu u_ex_h_early(.rst(rst_n),.inst_i(xi_h),.inst_addr_i(xp_h),
+   .reg1_rdata_i(xr1_h),.reg2_rdata_i(xr2_h),
+   .op1_i(xo1_h),.op2_i(xo2_h),.op1_jump_i(xj1_h),.op2_jump_i(xj2_h),
+   .reg_wdata_o(x_alu_result_h),.jump_flag_o(x_alu_taken_h),.jump_addr_o(x_alu_target_h));
  ex_alu u_ex_h(.rst(rst_n),.inst_i(ei_h),.inst_addr_i(ep_h),
    .reg1_rdata_i(ex1_r1),.reg2_rdata_i(ex1_r2),
    .op1_i(ex1_o1),.op2_i(ex1_o2),
    .op1_jump_i(ej1_h),.op2_jump_i(ej2_h),
-   .reg_wdata_o(alu_result_h),.jump_flag_o(alu_taken_h),.jump_addr_o(alu_target_h));
+   .reg_wdata_o(late_result_h),.jump_flag_o(late_taken_h),.jump_addr_o(late_target_h));
  div_adapter u_div_adapter(.clk(clk),.rst_n(rst_n),.req_valid(div_req_valid),
    .req_ready(div_req_ready),.dividend(er1),.divisor(er2),.op(ei[14:12]),
    .rsp_valid(div_rsp_valid),.rsp_ready(div_rsp_ready),.rsp_data(div_result));

@@ -1,0 +1,8 @@
+# ANALYSIS-ONLY constraint: the same PPLL ratios (14/3) driven by a slower
+# reference, so the core clock lands at 40 MHz (25.0 ns).  Nothing in the RTL or
+# the PLL settings changes -- this file exists only to find out how long the
+# longest path really is: an over-constrained run (126 MHz against a 21 ns path)
+# never finishes routing, and a satisfied run gives the answer directly.
+# Delivered constraints stay pango_native_126mhz.fdc.
+create_clock -name board_clk -period 116.666667 -waveform {0 58.3333335} [get_ports {clk}]
+create_generated_clock -name core_clk -source [get_ports {clk}] -multiply_by 14 -divide_by 3 [get_pins {u_core_pll/CLKOUT0}]

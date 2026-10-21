@@ -94,7 +94,18 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None) -> Path:
     ]
     if mode == "full":
         lines.append("add_constraint \"%s\"" % (bdir / "pango_native.pcf").as_posix())
-        pr = ["place_route"]
+        # The place-and-route action is `pnr`, not `place_route`: the latter is a
+        # report directory name, and calling it as a command aborts the flow with
+        # `invalid command name "place_route"` *after* dev_map, i.e. it looks like
+        # a successful synthesis plus a silent failure.  The hold-fix argument set
+        # is the one the delivered build uses (platform/pango_native/build.tcl);
+        # nothing in it relaxes a constraint, it only asks for more hold fixing.
+        pr = ["pnr",
+              "-fix_hold_violation_threshold", "0",
+              "-fix_hold_violation_threshold_for_clk_tree", "0",
+              "-fix_hold_violation_threshold_for_clock_path_cross_srb", "0",
+              "-fix_hold_violation_iterations", "50",
+              "-fix_hold_violation_in_route", "TRUE"]
         if seed is not None:
             pr += ["-seed", str(seed)]
         lines.append(" ".join(pr))
@@ -139,7 +150,7 @@ def check_image(bdir: Path) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
-    ap.add_argument("--freq", default="126", choices=["126", "27", "50"])
+    ap.add_argument("--freq", default="126", choices=["126", "27", "50", "40"])
     ap.add_argument("--mode", default="synth", choices=["synth", "full"])
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--image", default=str(CODE / "build" / "p5_126"))

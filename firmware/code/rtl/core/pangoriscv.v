@@ -48,7 +48,7 @@ module pangoriscv(
  wire young_flush,block_entry;
  wire dep0,dep1,dep0_raw;
  wire d0_late;
- reg x0_late,e0_late;
+ reg x0_late,e0_late,xh_late;
  wire [31:0] ex1_r1,ex1_r2;
  wire id_valid,id_valid_h,id_ready0,id_ready1;
  wire ex_valid,ex_valid_h,ex_leave,ex_leave0,ex_leave_h;
@@ -92,7 +92,7 @@ module pangoriscv(
  wire alu_taken_h;
  wire [31:0] x_alu_result_h,x_alu_target_h;
  wire x_alu_taken_h;
- wire x_h_early=x_valid_h &&
+ wire x_h_early=x_valid_h && !xh_late &&
        ((xi_h[6:0]==7'h33 && xi_h[31:25]!=7'h01) || xi_h[6:0]==7'h13 ||
         xi_h[6:0]==7'h37 || xi_h[6:0]==7'h17 || xi_h[6:0]==7'h63 || xi_h[6:0]==7'h6f) &&
        !(x_valid && xwe && depends_on(xi_h,xrd));
@@ -193,7 +193,7 @@ module pangoriscv(
  // id_ex drives in_ready (slot can take an instruction: empty or leaving).
  wire ex0_ready,ex1_ready;
  assign id_ready0=ex0_ready && ex1_ready && !block_entry && !dep0;
- assign id_ready1=id_ready0 && pair_ok && !dep1;
+ assign id_ready1=id_ready0 && pair_ok;
  // Keep the old hierarchical observability name used by the CoreMark testbench.
  wire id_ready=id_ready0;
 
@@ -402,8 +402,11 @@ module pangoriscv(
  assign d0_late=alu0 && dep0_raw;
  assign dep0=dep0_raw && !alu0;
  always @(posedge clk) begin
-   if(!rst_n || redirect_valid) x0_late<=0;
-   else if(id_valid && id_ready0) x0_late<=d0_late;
+   if(!rst_n || redirect_valid) begin x0_late<=0; xh_late<=0; end
+   else begin
+     if(id_valid && id_ready0) x0_late<=d0_late;
+     if(id_ready1) xh_late<=dep1;
+   end
  end
  // Only late ALU operands are refreshed here. This is a producer ALU ->
  // operand register path, never producer ALU -> consumer ALU in one cycle.
@@ -415,6 +418,14 @@ module pangoriscv(
  wire [31:0] x0_r2=x0_late ? late_r2 : xr2;
  wire [31:0] x0_o1=(x0_late && reads_rs1(xi)) ? late_r1 : xo1;
  wire [31:0] x0_o2=(x0_late && reads_rs2(xi)) ? late_r2 : xo2;
+ wire [31:0] late_r1h=(retire1 && ewe_h && erd_h!=0 && erd_h==xi_h[19:15]) ? wdata_h :
+                      (retire0 && ewe && erd!=0 && erd==xi_h[19:15]) ? wdata : xr1_h;
+ wire [31:0] late_r2h=(retire1 && ewe_h && erd_h!=0 && erd_h==xi_h[24:20]) ? wdata_h :
+                      (retire0 && ewe && erd!=0 && erd==xi_h[24:20]) ? wdata : xr2_h;
+ wire [31:0] x0_r1h=xh_late ? late_r1h : xr1_h;
+ wire [31:0] x0_r2h=xh_late ? late_r2h : xr2_h;
+ wire [31:0] x0_o1h=(xh_late && reads_rs1(xi_h)) ? late_r1h : xo1_h;
+ wire [31:0] x0_o2h=(xh_late && reads_rs2(xi_h) && xi_h[6:0]!=7'h23) ? late_r2h : xo2_h;
  assign dep1=(reads_rs1(dinsth) && source_blocked(dinsth[19:15],hazard_producers)) ||
              (reads_rs2(dinsth) && source_blocked(dinsth[24:20],hazard_producers));
  // EX -> ID forwarding.  The register file's same-cycle write-through alone is
@@ -539,8 +550,8 @@ module pangoriscv(
  id_ex u_x0_x1_h(.clk(clk),.rst_n(rst_n),.flush(1'b0),.in_valid(x_valid_h && back0_ready && !redirect_valid),
    .in_ready(back1_ready),.out_valid(ex_valid_h),.out_ready(ex_leave_h),
    .inst_i(xi_h),.inst_addr_i(xp_h),.reg_we_i(xwe_h),.reg_waddr_i(xrd_h),
-   .reg1_rdata_i(xr1_h),.reg2_rdata_i(xr2_h),.csr_we_i(xcweh),.csr_waddr_i(xcaddr_h),
-   .csr_rdata_i(xcr_h),.op1_i(xo1_h),.op2_i(xo2_h),.op1_jump_i(xj1_h),.op2_jump_i(xj2_h),
+   .reg1_rdata_i(x0_r1h),.reg2_rdata_i(x0_r2h),.csr_we_i(xcweh),.csr_waddr_i(xcaddr_h),
+   .csr_rdata_i(xcr_h),.op1_i(x0_o1h),.op2_i(x0_o2h),.op1_jump_i(xj1_h),.op2_jump_i(xj2_h),
    .fault_i(xfault_h),.fault_cause_i(xcause_h),.fault_tval_i(xt_h),.predicted_next_pc_i(xpred_h),
    .illegal_i(xillegal_h),.uses_rs1_i(xu1_h),.uses_rs2_i(xu2_h),
    .inst_o(ei_h),.inst_addr_o(ep_h),.reg_we_o(ewe_h),.reg_waddr_o(erd_h),

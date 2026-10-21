@@ -69,6 +69,17 @@ module pangoriscv(
  wire x_advance=back0_ready && back1_ready && !redirect_valid;
  wire [31:0] x_alu_result,x_alu_target;
  wire x_alu_taken;
+ wire x_is_mul=(xi[6:0]==7'h33 && xi[31:25]==7'h01 && !xi[14]);
+ wire x_mul_signed_a=(xi[14:12]==3'b001 || xi[14:12]==3'b010);
+ wire x_mul_signed_b=(xi[14:12]==3'b001);
+ wire signed [32:0] x_mul_a={x_mul_signed_a && xr1[31],xr1};
+ wire signed [32:0] x_mul_b={x_mul_signed_b && xr2[31],xr2};
+ wire signed [65:0] x_mul_product=x_mul_a*x_mul_b;
+ reg [63:0] mul_product;
+ always @(posedge clk) begin
+   if(!rst_n) mul_product<=64'd0;
+   else if(x_valid && x_advance && x_is_mul) mul_product<=x_mul_product[63:0];
+ end
  reg [31:0] alu_result,alu_target;
  reg alu_taken;
  wire [31:0] alu_result_h,alu_target_h;
@@ -103,6 +114,8 @@ module pangoriscv(
                   ei[13:12]==2 ? csr_old | csr_operand : csr_old & ~csr_operand;
  wire effective_illegal=eillegal || (is_csr && csr_illegal);
  wire is_div=(ei[6:0]==7'h33 && ei[31:25]==7'h01 && ei[14]);
+ wire is_mul=(ei[6:0]==7'h33 && ei[31:25]==7'h01 && !ei[14]);
+ wire [31:0] mul_result=(ei[14:12]==3'b000) ? mul_product[31:0] : mul_product[63:32];
  wire [31:0] div_result;
  wire div_req_ready,div_rsp_valid,div_req_valid,div_rsp_ready;
  reg issued;
@@ -249,7 +262,8 @@ module pangoriscv(
                    (mem_sel_h ? ex_leave_h : (ex_leave0 && is_memory));
  assign div_req_valid=rst_n && ex_valid && is_div && !issued && !local_fault;
  assign div_rsp_ready=ex_leave0 && is_div && issued;
- assign wdata=is_csr ? csr_old : is_load ? load_value : is_div ? div_result : alu_result;
+ assign wdata=is_csr ? csr_old : is_load ? load_value : is_div ? div_result :
+              is_mul ? mul_result : alu_result;
  assign rd=erd; assign rd_valid=retire0 && ewe && erd!=0;
  assign rd_h=erd_h; assign rd_valid_h=retire1 && ewe_h && erd_h!=0;
  assign wdata_h=is_load_h ? load_value : alu_result_h;
@@ -477,7 +491,7 @@ module pangoriscv(
    .csr_rdata_o(ecr_h),.op1_o(eo1_h),.op2_o(eo2_h),.op1_jump_o(ej1_h),.op2_jump_o(ej2_h),
    .fault_o(efault_h),.fault_cause_o(ecause_h),.fault_tval_o(et_h),.predicted_next_pc_o(epred_h),
    .illegal_o(eillegal_h),.uses_rs1_o(eu1_h),.uses_rs2_o(eu2_h));
- ex u_ex(.rst(rst_n),.inst_i(xillegal || xfault ? 32'h13 : xi),.inst_addr_i(xp),
+ ex #(.MUL_ENABLE(0)) u_ex(.rst(rst_n),.inst_i(xillegal || xfault ? 32'h13 : xi),.inst_addr_i(xp),
    .reg_we_i(xwe),.reg_waddr_i(xrd),.reg1_rdata_i(xr1),.reg2_rdata_i(xr2),
    .csr_we_i(1'b0),.csr_waddr_i(xcaddr),.csr_rdata_i(xcr),
    .int_assert_i(1'b0),.int_addr_i(32'd0),.op1_i(xo1),.op2_i(xo2),

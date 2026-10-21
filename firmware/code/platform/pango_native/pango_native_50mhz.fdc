@@ -1,0 +1,6 @@
+# 50 MHz on the CORE clock (period 20 ns): the loosest point that has ever
+# converged for this design, used only to get a COMPLETE route plus the real
+# worst-path list (a met, over-constrained run makes the router stop early --
+# docs/lessons/mistakes-log.md section 37).  Not the board constraint.
+create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
+create_clock -name core_clk -period 20.0 -waveform {0 10.0} [get_pins {u_core_pll/CLKOUT0}]

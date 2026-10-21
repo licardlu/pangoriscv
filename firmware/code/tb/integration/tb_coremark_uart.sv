@@ -530,6 +530,7 @@ module tb_coremark_uart;
             w_sgl_br_nopair=0;
     integer w_fpair=0, w_fsingle=0;   // fetch handshakes with / without a pair
     integer w_a_pair=0, w_a_single=0, w_a_ref=0, w_miss=0;
+    integer w_starve_stale=0, w_starve_inflight=0, w_starve_mismatch=0, w_starve_empty=0;
     integer w_r_lduse=0, w_r_mduse=0, w_r_memmem=0, w_r_alone=0,
             w_r_jalr=0, w_r_ser=0, w_r_l1bad=0, w_r_othr=0;
     integer w_none_starve=0, w_none_other=0;
@@ -572,6 +573,17 @@ module tb_coremark_uart;
             end
         end
         if(soc.core.pred_miss) w_miss = w_miss + 1;
+        // Starvation split: the IFU refuses to ask for the redirect target while
+        // it still owes a response to the stream it just flushed
+        // (`eng_req_valid && (stale_cnt_q==0)`).  If that gate is what the 0.3 M
+        // starve cycles sit in, the fix is "issue the target immediately and
+        // drop the stale response when it lands"; if not, the fix is elsewhere.
+        if(soc.core.fetch_ready && !soc.core.fetch_valid) begin
+            if(soc.core.ifu.stale_cnt_q != 0)      w_starve_stale = w_starve_stale + 1;
+            else if(soc.core.ifu.ocnt_q != 0)      w_starve_inflight = w_starve_inflight + 1;
+            else if(soc.core.ifu.count_q != 0)     w_starve_mismatch = w_starve_mismatch + 1;
+            else                                   w_starve_empty = w_starve_empty + 1;
+        end
         if(soc.core.cpu.id_valid && soc.core.cpu.id_valid_h) w_pair = w_pair + 1;        else if(soc.core.cpu.id_valid) begin
             w_single = w_single + 1;
             // Why is lane 1 missing?  A control transfer in lane 0 ends the
@@ -645,6 +657,79 @@ module tb_coremark_uart;
             4'd9: w_dc_drain = w_dc_drain + 1;
         endcase
 `endif
+    end
+
+    // ---- D6: WHY DOES THE FRONT END HAND OVER ONLY ONE WORD? -----------------
+    // `WIN_ACCEPT single=494,108` costs 494 kcycles today and 247 kcycles even
+    // if every one of them could be paired, so this is the largest single lever
+    // left.  Three mutually exclusive explanations, three different fixes:
+    //   (a) the pair would cross the 32 B line  -> `!eng_rsp_pair` in bypass, or
+    //       a head whose offset is 7 in the queue.  Fix = second-line lookup.
+    //   (b) the queue simply holds one entry    -> `count_q<=1`.  Fix = let the
+    //       request pipeline run further ahead.
+    //   (c) queued, two entries, but the second is not the head's predicted
+    //       successor                          -> the prefetch chain broke.
+    // Bucket by PC word offset as well: a stream that stays 8 B aligned never
+    // visits offset 7, so a tall bucket at 7 means (a) and a flat histogram
+    // means (b)/(c).
+    integer w_np_off0=0,w_np_off1=0,w_np_off2=0,w_np_off3=0,
+            w_np_off4=0,w_np_off5=0,w_np_off6=0,w_np_off7=0;
+    integer w_np_byp=0, w_np_queued=0, w_np_cnt_le1=0, w_np_cnt_gt1=0;
+    // Second LSU port: which lane wants memory.  (load,store) is cheapest to fix
+    // (the store only needs a queue slot), (load,load) needs a real dual port.
+    integer w_mm_ll=0, w_mm_ls=0, w_mm_sl=0, w_mm_ss=0;
+    // `l1bad` = lane 1 is an instruction this machine deliberately refuses to
+    // pair.  A second multiplier fixes only the first bucket.
+    integer w_l1_mul=0, w_l1_div=0, w_l1_jalr=0, w_l1_csr=0,
+            w_l1_ctl=0, w_l1_ill=0, w_l1_misc=0;
+    // `none other` = the front end HAS an instruction but the pipeline retires
+    // nothing.  Split by the core's own stall sources.
+    integer w_no_mem=0, w_no_div=0, w_no_trap=0, w_no_redir=0, w_no_hold=0, w_no_oth=0;
+    always @(posedge clk) if(rst_n && !sw_done) begin
+        if(soc.core.cpu.fetch_valid && soc.core.cpu.fetch_ready &&
+           !soc.core.cpu.fetch_pair) begin
+            case(soc.core.cpu.fetch_pc[4:2])
+                3'd0: w_np_off0 = w_np_off0 + 1;
+                3'd1: w_np_off1 = w_np_off1 + 1;
+                3'd2: w_np_off2 = w_np_off2 + 1;
+                3'd3: w_np_off3 = w_np_off3 + 1;
+                3'd4: w_np_off4 = w_np_off4 + 1;
+                3'd5: w_np_off5 = w_np_off5 + 1;
+                3'd6: w_np_off6 = w_np_off6 + 1;
+                default: w_np_off7 = w_np_off7 + 1;
+            endcase
+            if(soc.core.ifu.response_bypass) w_np_byp = w_np_byp + 1;
+            else                             w_np_queued = w_np_queued + 1;
+            if(soc.core.ifu.count_q <= 1)    w_np_cnt_le1 = w_np_cnt_le1 + 1;
+            else                             w_np_cnt_gt1 = w_np_cnt_gt1 + 1;
+        end
+        if(soc.core.cpu.fetch_valid && soc.core.cpu.fetch_ready &&
+           soc.core.cpu.fetch_pair && !soc.core.cpu.pair_ok &&
+           soc.core.cpu.lane0_mem && soc.core.cpu.lane1_mem) begin
+            if(soc.core.cpu.dec_load  && soc.core.cpu.dec_load_h)  w_mm_ll = w_mm_ll + 1;
+            else if(soc.core.cpu.dec_load)                         w_mm_ls = w_mm_ls + 1;
+            else if(soc.core.cpu.dec_load_h)                       w_mm_sl = w_mm_sl + 1;
+            else                                                   w_mm_ss = w_mm_ss + 1;
+        end
+        if(soc.core.cpu.fetch_valid && soc.core.cpu.fetch_ready &&
+           soc.core.cpu.fetch_pair && !soc.core.cpu.pair_ok &&
+           !soc.core.cpu.lane1_ok) begin
+            if(soc.core.cpu.dec_mul_h)      w_l1_mul  = w_l1_mul  + 1;
+            else if(soc.core.cpu.dec_div_h) w_l1_div  = w_l1_div  + 1;
+            else if(soc.core.cpu.dec_jalr_h)w_l1_jalr = w_l1_jalr + 1;
+            else if(soc.core.cpu.dec_csr_h) w_l1_csr  = w_l1_csr  + 1;
+            else if(soc.core.cpu.dec_br_h||soc.core.cpu.dec_jal_h) w_l1_ctl = w_l1_ctl + 1;
+            else if(soc.core.cpu.dec_illegal_h) w_l1_ill = w_l1_ill + 1;
+            else                            w_l1_misc = w_l1_misc + 1;
+        end
+        if(!soc.core.cpu.id_valid && soc.core.fetch_valid) begin
+            if(soc.core.cpu.mem_wait)        w_no_mem   = w_no_mem   + 1;
+            else if(soc.core.cpu.div_wait)   w_no_div   = w_no_div   + 1;
+            else if(soc.core.cpu.trap_wait)  w_no_trap  = w_no_trap  + 1;
+            else if(soc.core.cpu.redirect_valid) w_no_redir = w_no_redir + 1;
+            else if(soc.core.cpu.hold_ex)    w_no_hold  = w_no_hold  + 1;
+            else                             w_no_oth   = w_no_oth   + 1;
+        end
     end
 
     // ---- PAIR / FETCH supply decomposition (performance workstream) ------------
@@ -922,11 +1007,21 @@ module tb_coremark_uart;
                  w_sgl_nopair, w_sgl_br_nopair, w_sgl_memmem, w_sgl_lduse, w_sgl_mduse,
                  w_sgl_alone, w_sgl_l1bad, w_sgl_ffault, w_sgl_other);
         $display("WIN_FETCH handshake_pair=%0d handshake_single=%0d", w_fpair, w_fsingle);
+        $display("WIN_STARVE stale=%0d inflight=%0d mismatch=%0d empty=%0d",
+                 w_starve_stale, w_starve_inflight, w_starve_mismatch, w_starve_empty);
         $display("WIN_ACCEPT pair=%0d single=%0d refused_pair=%0d [lduse=%0d mduse=%0d memmem=%0d alone=%0d (jalr=%0d serial=%0d) l1bad=%0d other=%0d] mispred=%0d",
                  w_a_pair, w_a_single, w_a_ref, w_r_lduse, w_r_mduse, w_r_memmem,
                  w_r_alone, w_r_jalr, w_r_ser, w_r_l1bad, w_r_othr, w_miss);
         $display("WIN_STALL mem=%0d div=%0d trap=%0d stall=%0d hold_ex=%0d", 
                  w_mem, w_div, w_trap, w_stall, w_hold);
+        $display("WIN_NOISSUE mem=%0d div=%0d trap=%0d redir=%0d hold=%0d other=%0d",
+                 w_no_mem, w_no_div, w_no_trap, w_no_redir, w_no_hold, w_no_oth);
+        $display("WIN_NOPAIR off=%0d/%0d/%0d/%0d/%0d/%0d/%0d/%0d byp=%0d queued=%0d cnt<=1=%0d cnt>1=%0d",
+                 w_np_off0,w_np_off1,w_np_off2,w_np_off3,w_np_off4,w_np_off5,
+                 w_np_off6,w_np_off7, w_np_byp, w_np_queued, w_np_cnt_le1, w_np_cnt_gt1);
+        $display("WIN_MEMMEM ll=%0d ls=%0d sl=%0d ss=%0d", w_mm_ll, w_mm_ls, w_mm_sl, w_mm_ss);
+        $display("WIN_L1BAD mul=%0d div=%0d jalr=%0d csr=%0d ctl_msa=%0d ill=%0d misc=%0d",
+                 w_l1_mul, w_l1_div, w_l1_jalr, w_l1_csr, w_l1_ctl, w_l1_ill, w_l1_misc);
         $display("WIN_LSU request=%0d rdwait=%0d wrwait=%0d", w_lsu_req, w_lsu_rdwait, w_lsu_wrwait);
         $display("WIN_REQREF ld=%0d [idle=%0d rdar=%0d rddata=%0d hold=%0d byp=%0d drain=%0d post=%0d] st=%0d [idle=%0d wrreq=%0d wrresp=%0d hold=%0d drain=%0d post=%0d]",
                  w_reqld, w_ld_idle, w_ld_rdar, w_ld_rddata, w_ld_hold, w_ld_byp,

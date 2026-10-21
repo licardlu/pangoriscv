@@ -31,6 +31,42 @@ module csr_native(
  assign irq_cause=eligible[11] ? 32'h8000000b :
                   eligible[3] ? 32'h80000003 : 32'h80000007;
  reg readonly_csr;
+
+ // ---------------------------------------------------------------------------
+ // mcycle/minstret are 64 b and mcycle increments on EVERY cycle, so a plain
+ // `mcycle + 64'd1` is a 64-deep carry chain sitting in the same cycle as the
+ // pipeline.  Same treatment as perf_regs: 16 b quarters, carry taken from the
+ // registers, so the four adders run in parallel and the longest chain is 16.
+ // Value and cycle count are unchanged -- this is not a pipeline stage.
+ // ---------------------------------------------------------------------------
+ function [63:0] inc64;
+   input [63:0] v;
+   reg c1,c2,c3;
+   begin
+     c1 = (v[15:0]  == 16'hFFFF);
+     c2 = c1 && (v[31:16] == 16'hFFFF);
+     c3 = c2 && (v[47:32] == 16'hFFFF);
+     inc64 = { v[63:48] + {15'd0,c3}, v[47:32] + {15'd0,c2},
+               v[31:16] + {15'd0,c1}, v[15:0]  + 16'd1 };
+   end
+ endfunction
+ // minstret adds 0..2, not 1: keep the same granularity, take the quarter carry
+ // out of a 17 b sum instead of the "all ones" test.
+ function [63:0] inc64_n;
+   input [63:0] v;
+   input [1:0]  n;
+   reg [16:0] s0;
+   reg c1,c2,c3;
+   begin
+     s0 = {1'b0, v[15:0]} + {15'd0, n};
+     c1 = s0[16];
+     c2 = c1 && (v[31:16] == 16'hFFFF);
+     c3 = c2 && (v[47:32] == 16'hFFFF);
+     inc64_n = { v[63:48] + {15'd0,c3}, v[47:32] + {15'd0,c2},
+                 v[31:16] + {15'd0,c1}, s0[15:0] };
+   end
+ endfunction
+
  always @(*) begin
    read_data=0; illegal=0; readonly_csr=0;
    case(addr)
@@ -55,7 +91,7 @@ module csr_native(
  // This pre-trap state also drives interrupt eligibility and the redirect vector.
  always @(*) begin
    ns=status; ne=mie; nv=mtvec; nsc=mscratch; np=mepc; nc=mcause; nt=mtval;
-   ncy=mcycle+64'd1; ni=minstret+{62'd0,retire_count};
+   ncy=inc64(mcycle); ni=inc64_n(minstret,retire_count);
    if(commit) begin
     case(addr)
      12'h300: ns=(write_data & 32'h88) | 32'h1800;

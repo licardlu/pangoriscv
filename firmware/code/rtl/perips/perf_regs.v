@@ -192,8 +192,45 @@ module perf_regs #(
  );
  assign rd_data_w = rd_mux;
 
- integer i;
- always @(posedge clk) begin
+integer i;
+
+// ---------------------------------------------------------------------------
+// Increment helpers.  `cnt[i] + 64'd1` and `ext[i] + 32'd1` look free but they
+// are the widest carry chains in the SoC: on `p7_path40b` (40 MHz constraint,
+// fully routed) the #2 and #3 critical paths both ended in `perf_inst/cnt[2][56]`
+// at 30.2 ns -- the same as the real datapath, from a counter nobody reads in
+// the time-critical loop.
+//
+// The fix is structural, not a constraint: split the adder into 16-bit quarters
+// and take each inter-quarter carry from the REGISTERED value.  The four
+// adders then run in parallel off the flops, the longest chain is 16 deep, and
+// the carry is a two-level AND of already-settled bits.  Functionally identical
+// -- same value, same cycle, no extra flop.
+// ---------------------------------------------------------------------------
+function [63:0] inc64;
+    input [63:0] v;
+    reg c1, c2, c3;
+    begin
+        c1 = (v[15:0]  == 16'hFFFF);
+        c2 = c1 && (v[31:16] == 16'hFFFF);
+        c3 = c2 && (v[47:32] == 16'hFFFF);
+        inc64 = { v[63:48] + {15'd0, c3},
+                  v[47:32] + {15'd0, c2},
+                  v[31:16] + {15'd0, c1},
+                  v[15:0]  + 16'd1 };
+    end
+endfunction
+
+function [31:0] inc32;
+    input [31:0] v;
+    reg c1;
+    begin
+        c1 = (v[15:0] == 16'hFFFF);
+        inc32 = { v[31:16] + {15'd0, c1}, v[15:0] + 16'd1 };
+    end
+endfunction
+
+always @(posedge clk) begin
   if (!rst_n) begin
    for (i = 0; i < 8; i = i + 1) begin
     cnt[i] <= 64'd0;
@@ -215,26 +252,26 @@ module perf_regs #(
    end
    snap_valid <= 1'b0;
   end else begin
-   cnt[C_CYCLE] <= cnt[C_CYCLE] + 64'd1;
-   if (retire_fire) cnt[C_INST] <= cnt[C_INST] + 64'd1;
-   if (if_wait)     cnt[C_IFW]  <= cnt[C_IFW]  + 64'd1;
-   if (lsu_wait)    cnt[C_LSUW] <= cnt[C_LSUW] + 64'd1;
-   if (i_miss)      cnt[C_IMS]  <= cnt[C_IMS]  + 64'd1;
-   if (d_miss)      cnt[C_DMS]  <= cnt[C_DMS]  + 64'd1;
-   if (retire_fire && is_cf) cnt[C_CF] <= cnt[C_CF] + 64'd1;
-   if (pred_miss)   cnt[C_MP]   <= cnt[C_MP]   + 64'd1;
+   cnt[C_CYCLE] <= inc64(cnt[C_CYCLE]);
+   if (retire_fire) cnt[C_INST] <= inc64(cnt[C_INST]);
+   if (if_wait)     cnt[C_IFW]  <= inc64(cnt[C_IFW]);
+   if (lsu_wait)    cnt[C_LSUW] <= inc64(cnt[C_LSUW]);
+   if (i_miss)      cnt[C_IMS]  <= inc64(cnt[C_IMS]);
+   if (d_miss)      cnt[C_DMS]  <= inc64(cnt[C_DMS]);
+   if (retire_fire && is_cf) cnt[C_CF] <= inc64(cnt[C_CF]);
+   if (pred_miss)   cnt[C_MP]   <= inc64(cnt[C_MP]);
 
-   if (i_ar_fire) ext[X_I_AR] <= ext[X_I_AR] + 32'd1;
-   if (i_ar_fire && (i_arlen == 8'd7)) ext[X_I_AR7] <= ext[X_I_AR7] + 32'd1;
-   if (i_r_fire)  ext[X_I_RB] <= ext[X_I_RB] + 32'd1;
-   if (i_r_fire && i_rlast) ext[X_I_RL] <= ext[X_I_RL] + 32'd1;
-   if (d_ar_fire) ext[X_D_AR] <= ext[X_D_AR] + 32'd1;
-   if (d_ar_fire && (d_arlen == 8'd7)) ext[X_D_AR7] <= ext[X_D_AR7] + 32'd1;
-   if (d_r_fire)  ext[X_D_RB] <= ext[X_D_RB] + 32'd1;
-   if (d_r_fire && d_rlast) ext[X_D_RL] <= ext[X_D_RL] + 32'd1;
-   if (d_aw_fire) ext[X_D_AW] <= ext[X_D_AW] + 32'd1;
-   if (d_w_fire)  ext[X_D_WB] <= ext[X_D_WB] + 32'd1;
-   if (d_b_fire)  ext[X_D_B]  <= ext[X_D_B]  + 32'd1;
+   if (i_ar_fire) ext[X_I_AR] <= inc32(ext[X_I_AR]);
+   if (i_ar_fire && (i_arlen == 8'd7)) ext[X_I_AR7] <= inc32(ext[X_I_AR7]);
+   if (i_r_fire)  ext[X_I_RB] <= inc32(ext[X_I_RB]);
+   if (i_r_fire && i_rlast) ext[X_I_RL] <= inc32(ext[X_I_RL]);
+   if (d_ar_fire) ext[X_D_AR] <= inc32(ext[X_D_AR]);
+   if (d_ar_fire && (d_arlen == 8'd7)) ext[X_D_AR7] <= inc32(ext[X_D_AR7]);
+   if (d_r_fire)  ext[X_D_RB] <= inc32(ext[X_D_RB]);
+   if (d_r_fire && d_rlast) ext[X_D_RL] <= inc32(ext[X_D_RL]);
+   if (d_aw_fire) ext[X_D_AW] <= inc32(ext[X_D_AW]);
+   if (d_w_fire)  ext[X_D_WB] <= inc32(ext[X_D_WB]);
+   if (d_b_fire)  ext[X_D_B]  <= inc32(ext[X_D_B]);
 
    if (snap_req) begin
     for (i = 0; i < 8; i = i + 1) snap[i] <= cnt[i];

@@ -36,7 +36,7 @@
 // ---------------------------------------------------------------------------
 module ifu_axi #(
     parameter [31:0] EXEC_BASE=32'h00000000,
-    parameter [31:0] EXEC_BYTES=32'h00004000,
+    parameter [31:0] EXEC_BYTES=32'h00008000,
     // Queue depth.  Area workstream M4a: 16 -> 8.  The queue carries five
     // 32-bit arrays plus per-entry flags, so every entry is ~165 FF; the
     // outstanding-request accounting already bounds prefetch by DEPTH-2, so a

@@ -513,6 +513,140 @@ module tb_coremark_uart;
         sw_idstall=id_stall; sw_noretire=no_retire;
         sw_done=1;
     end
+    // ---- D1 (plan v6 section 4): SCORE-WINDOW-ONLY attribution ----------------
+    // Every counter above except the SCORE_WINDOW snapshot is gated on
+    // `!report_seen`, i.e. it also measures the CoreMark *report printing*, where
+    // the CPU spins on the UART status register.  That spin is 122,461 uncached
+    // MMIO reads at ~4.6 cycles each = 0.58 M cycles which are NOT in the score
+    // window (ADDR_REGION ld_hi=122,461, nonhit_hi=122,461).  Reading the
+    // whole-program counters as "the window's bottleneck" points the next
+    // optimization at the printer.  These probes are gated on `!sw_done`, so
+    // their buckets ADD UP to the window's cycle count.
+    integer w_mem=0, w_div=0, w_trap=0, w_stall=0, w_hold=0;
+    integer w_sgl_br=0, w_sgl_jal=0, w_sgl_jalr=0, w_sgl_mem=0, w_sgl_alu=0;
+    integer w_sgl_btaken=0;      // single-issue cycle whose lane 0 was a taken branch
+    integer w_sgl_nopair=0, w_sgl_memmem=0, w_sgl_lduse=0, w_sgl_mduse=0,
+            w_sgl_alone=0, w_sgl_l1bad=0, w_sgl_ffault=0, w_sgl_other=0,
+            w_sgl_br_nopair=0;
+    integer w_fpair=0, w_fsingle=0;   // fetch handshakes with / without a pair
+    integer w_a_pair=0, w_a_single=0, w_a_ref=0, w_miss=0;
+    integer w_r_lduse=0, w_r_mduse=0, w_r_memmem=0, w_r_alone=0,
+            w_r_jalr=0, w_r_ser=0, w_r_l1bad=0, w_r_othr=0;
+    integer w_none_starve=0, w_none_other=0;
+    integer w_pair=0, w_single=0, w_none=0, w_redir=0;
+    integer w_lsu_req=0, w_lsu_rdwait=0, w_lsu_wrwait=0;
+    integer w_reqld=0, w_reqst=0;
+    integer w_ld_idle=0, w_ld_rdar=0, w_ld_rddata=0, w_ld_hold=0, w_ld_byp=0,
+            w_ld_drain=0, w_ld_post=0, w_ld_oth=0;
+    integer w_st_idle=0, w_st_wrreq=0, w_st_wrresp=0, w_st_hold=0,
+            w_st_drain=0, w_st_post=0, w_st_oth=0;
+    integer w_dc_drain=0, w_dc_rdar=0, w_dc_rddata=0, w_dc_idle=0;
+    always @(posedge clk) if(rst_n && !sw_done) begin
+        if(soc.core.cpu.mem_wait)  w_mem   = w_mem   + 1;
+        if(soc.core.cpu.div_wait)  w_div   = w_div   + 1;
+        if(soc.core.cpu.trap_wait) w_trap  = w_trap  + 1;
+        if(soc.core.cpu.stall)     w_stall = w_stall + 1;
+        if(soc.core.cpu.hold_ex)   w_hold  = w_hold  + 1;
+        if(soc.core.cpu.redirect_valid) w_redir = w_redir + 1;
+        if(soc.core.cpu.fetch_valid && soc.core.cpu.fetch_ready)
+            if(soc.core.cpu.fetch_pair) w_fpair = w_fpair + 1;
+            else                        w_fsingle = w_fsingle + 1;
+        // Aligned view: `pair_ok` and `fetch_pair` are the two terms of the SAME
+        // accept edge, so this bucket is exact (the RR-stage buckets above are
+        // one cycle behind: `id_valid` is the ID->RR register).
+        if(soc.core.cpu.fetch_valid && soc.core.cpu.fetch_ready) begin
+            if(!soc.core.cpu.fetch_pair) w_a_single = w_a_single + 1;
+            else if(soc.core.cpu.pair_ok) w_a_pair = w_a_pair + 1;
+            else begin
+                w_a_ref = w_a_ref + 1;
+                if(soc.core.cpu.packet_load_use)                  w_r_lduse = w_r_lduse + 1;
+                else if(soc.core.cpu.packet_md_use)               w_r_mduse = w_r_mduse + 1;
+                else if(soc.core.cpu.lane0_mem && soc.core.cpu.lane1_mem) w_r_memmem = w_r_memmem + 1;
+                else if(soc.core.cpu.lane0_issue_alone) begin
+                    w_r_alone = w_r_alone + 1;
+                    if(soc.core.cpu.dec_jalr)  w_r_jalr = w_r_jalr + 1;
+                    if(soc.core.cpu.dec_serial)w_r_ser  = w_r_ser  + 1;
+                end
+                else if(!soc.core.cpu.lane1_ok)                   w_r_l1bad = w_r_l1bad + 1;
+                else                                              w_r_othr  = w_r_othr + 1;
+            end
+        end
+        if(soc.core.pred_miss) w_miss = w_miss + 1;
+        if(soc.core.cpu.id_valid && soc.core.cpu.id_valid_h) w_pair = w_pair + 1;        else if(soc.core.cpu.id_valid) begin
+            w_single = w_single + 1;
+            // Why is lane 1 missing?  A control transfer in lane 0 ends the
+            // packet by construction; anything else means the fetch stream only
+            // had one instruction to give.
+            if(soc.core.cpu.id_br)       w_sgl_br  = w_sgl_br  + 1;
+            else if(soc.core.cpu.id_jal) w_sgl_jal = w_sgl_jal + 1;
+            else if(soc.core.cpu.id_jalr)w_sgl_jalr= w_sgl_jalr+ 1;
+            else if(soc.core.cpu.id_load || soc.core.cpu.id_store) w_sgl_mem = w_sgl_mem + 1;
+            else                         w_sgl_alu = w_sgl_alu + 1;
+            // Second level: WHICH rule left lane 1 empty.  `pair_ok` is a chain of
+            // AND terms; bucketing the first false one is what tells "the fetch
+            // stream only had one word" apart from "we refused the pair".
+            if(!soc.core.cpu.fetch_pair)                        w_sgl_nopair = w_sgl_nopair + 1;
+            else if(soc.core.cpu.lane0_mem && soc.core.cpu.lane1_mem) w_sgl_memmem = w_sgl_memmem + 1;
+            else if(soc.core.cpu.packet_load_use)               w_sgl_lduse  = w_sgl_lduse  + 1;
+            else if(soc.core.cpu.packet_md_use)                 w_sgl_mduse  = w_sgl_mduse  + 1;
+            else if(soc.core.cpu.lane0_issue_alone)             w_sgl_alone  = w_sgl_alone  + 1;
+            else if(!soc.core.cpu.lane1_ok)                     w_sgl_l1bad  = w_sgl_l1bad  + 1;
+            else if(soc.core.cpu.fetch_fault || soc.core.cpu.fetch_fault_hi) w_sgl_ffault = w_sgl_ffault + 1;
+            else                                                w_sgl_other  = w_sgl_other  + 1;
+            if(!soc.core.cpu.fetch_pair && soc.core.cpu.id_br)  w_sgl_br_nopair = w_sgl_br_nopair + 1;
+            if(soc.core.cpu.id_br && (soc.core.cpu.id_pred != soc.core.cpu.id_pc + 32'd4))
+                w_sgl_btaken = w_sgl_btaken + 1;
+        end else begin
+            w_none = w_none + 1;
+            if(!soc.core.fetch_valid) w_none_starve = w_none_starve + 1;
+            else                      w_none_other  = w_none_other  + 1;
+        end
+        case(soc.core.lsu.state)
+            3'd1: w_lsu_req   = w_lsu_req   + 1;
+            3'd3: w_lsu_rdwait= w_lsu_rdwait+ 1;
+            3'd4: w_lsu_wrwait= w_lsu_wrwait+ 1;
+        endcase
+        // Who refuses the request?  The LSU parks in REQUEST for one cycle per
+        // memory op even when the cache takes it on that edge, so only the
+        // second and later cycles are a real refusal -- but the split by cache
+        // state is what decides whether the fix is "decouple the drain" or
+        // "deeper store queue".
+        if(soc.core.lsu.state==3'd1) begin
+            if(soc.core.lsu.is_store) begin
+                w_reqst = w_reqst + 1;
+                case(soc.core.data_cache.state_q)
+                    4'd0: w_st_idle = w_st_idle + 1;
+                    4'd4: w_st_wrreq= w_st_wrreq+ 1;
+                    4'd5: w_st_wrresp=w_st_wrresp+1;
+                    4'd6: w_st_hold = w_st_hold + 1;
+                    4'd9: w_st_drain= w_st_drain+ 1;
+                    4'd10:w_st_post = w_st_post + 1;
+                    default: w_st_oth = w_st_oth + 1;
+                endcase
+            end else begin
+                w_reqld = w_reqld + 1;
+                case(soc.core.data_cache.state_q)
+                    4'd0: w_ld_idle = w_ld_idle + 1;
+                    4'd2: w_ld_rdar = w_ld_rdar + 1;
+                    4'd3: w_ld_rddata=w_ld_rddata+1;
+                    4'd6: w_ld_hold = w_ld_hold + 1;
+                    4'd7: w_ld_byp  = w_ld_byp  + 1;
+                    4'd9: w_ld_drain= w_ld_drain+ 1;
+                    4'd10:w_ld_post = w_ld_post + 1;
+                    default: w_ld_oth = w_ld_oth + 1;
+                endcase
+            end
+        end
+`ifdef CACHE_ENABLE
+        case(soc.core.data_cache.state_q)
+            4'd0: w_dc_idle  = w_dc_idle  + 1;
+            4'd2: w_dc_rdar  = w_dc_rdar  + 1;
+            4'd3: w_dc_rddata= w_dc_rddata+ 1;
+            4'd9: w_dc_drain = w_dc_drain + 1;
+        endcase
+`endif
+    end
+
     // ---- PAIR / FETCH supply decomposition (performance workstream) ------------
     // Dual issue exists (D1/D2/D3) but IPC sits at ~1.0, so either the fetch
     // stream rarely offers an adjacent pair, or the pairing rules refuse it, or
@@ -780,6 +914,27 @@ module tb_coremark_uart;
                  qpush, qpop, qocc[0],qocc[1],qocc[2],qocc[3],qocc[4]);
         $display("SCORE_WINDOW cycles=%0d retires=%0d no_retire=%0d load=%0d store=%0d other=%0d id_stall=%0d",
                  sw_cycles, sw_retires, sw_noretire, sw_load, sw_store, sw_other, sw_idstall);
+        $display("WIN_ISSUE pair=%0d single=%0d none=%0d (starve=%0d other=%0d) redir=%0d",
+                 w_pair, w_single, w_none, w_none_starve, w_none_other, w_redir);
+        $display("WIN_SINGLE br=%0d (taken=%0d) jal=%0d jalr=%0d mem=%0d alu=%0d",
+                 w_sgl_br, w_sgl_btaken, w_sgl_jal, w_sgl_jalr, w_sgl_mem, w_sgl_alu);
+        $display("WIN_SGL_WHY nopair=%0d (br_nopair=%0d) memmem=%0d lduse=%0d mduse=%0d alone=%0d l1bad=%0d ffault=%0d other=%0d",
+                 w_sgl_nopair, w_sgl_br_nopair, w_sgl_memmem, w_sgl_lduse, w_sgl_mduse,
+                 w_sgl_alone, w_sgl_l1bad, w_sgl_ffault, w_sgl_other);
+        $display("WIN_FETCH handshake_pair=%0d handshake_single=%0d", w_fpair, w_fsingle);
+        $display("WIN_ACCEPT pair=%0d single=%0d refused_pair=%0d [lduse=%0d mduse=%0d memmem=%0d alone=%0d (jalr=%0d serial=%0d) l1bad=%0d other=%0d] mispred=%0d",
+                 w_a_pair, w_a_single, w_a_ref, w_r_lduse, w_r_mduse, w_r_memmem,
+                 w_r_alone, w_r_jalr, w_r_ser, w_r_l1bad, w_r_othr, w_miss);
+        $display("WIN_STALL mem=%0d div=%0d trap=%0d stall=%0d hold_ex=%0d", 
+                 w_mem, w_div, w_trap, w_stall, w_hold);
+        $display("WIN_LSU request=%0d rdwait=%0d wrwait=%0d", w_lsu_req, w_lsu_rdwait, w_lsu_wrwait);
+        $display("WIN_REQREF ld=%0d [idle=%0d rdar=%0d rddata=%0d hold=%0d byp=%0d drain=%0d post=%0d] st=%0d [idle=%0d wrreq=%0d wrresp=%0d hold=%0d drain=%0d post=%0d]",
+                 w_reqld, w_ld_idle, w_ld_rdar, w_ld_rddata, w_ld_hold, w_ld_byp,
+                 w_ld_drain, w_ld_post, w_reqst, w_st_idle, w_st_wrreq, w_st_wrresp,
+                 w_st_hold, w_st_drain, w_st_post);
+`ifdef CACHE_ENABLE
+        $display("WIN_DC idle=%0d rdar=%0d rddata=%0d drain=%0d", w_dc_idle, w_dc_rdar, w_dc_rddata, w_dc_drain);
+`endif
         $display("MEM_OPS ops=%0d ld=%0d st=%0d  axi_d_ar=%0d axi_d_aw=%0d", mem_ops, mem_ld, mem_st, d_ar, d_aw);
         $display("STORE_PATH st_wr_req=%0d st_wr_resp=%0d st_wr_hold=%0d st_total=%0d", st_wr_req, st_wr_resp, st_wr_hold, st_wr_req+st_wr_resp+st_wr_hold);
         $display("LSU_PATH empty=%0d request=%0d wdata=%0d rdwait=%0d wrwait=%0d complete=%0d", l_emp, l_req, l_wdat, l_rdwait, l_wrwait, l_comp);

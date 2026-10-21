@@ -188,15 +188,31 @@ module ifu_axi #(
     // pairing head with it is exactly what lets the core spend one cycle on
     // "branch + first target instruction" instead of a redirect bubble.  A
     // faulted second word is excluded so the shared fault fields stay truthful.
+    // Second queue slot.  `head_q+1'b1` in an index is evaluated in 32-bit
+    // arithmetic, so at head_q==DEPTH-1 it reads q_pc[DEPTH] -- outside the
+    // array, i.e. X.  The old code only ever indexed it behind `count_q>1`,
+    // which hid the wrap case; once the value is used unconditionally (see
+    // result_pc_hi below) it has to wrap like the pointers do.
+    wire [AW-1:0] head_nxt = head_q + 1'b1;
     wire pair_adj =
         (count_q > {{(AW){1'b0}},1'b1}) &&
-        (q_pc[head_q+1'b1] == q_pred[head_q]) &&
-        !q_fault[head_q+1'b1];
+        (q_pc[head_nxt] == q_pred[head_q]) &&
+        !q_fault[head_nxt];
     assign result_pair=response_bypass ? (eng_rsp_pair && pdf0_q==pcf0_q+32'd4) : pair_adj;
-    assign result_pc_hi=result_pc+32'd4;
-    assign result_inst_hi=response_bypass ? eng_rsp_data_hi : q_inst[head_q+1'b1];
+    // The second slot's PC is the second ENTRY's PC, which `pair_adj` has just
+    // proved to be `q_pred[head]` -- the predicted successor.  For everything
+    // except a predicted-taken control transfer that is head+4, which is why
+    // the constant spelling survived this long.  For a predicted-taken branch
+    // (or JAL) it is the TARGET, and the constant made the consumer see
+    // `lane1_is_pred = (head+4 == target) = 0`, so the core refused exactly the
+    // pair it had gone to the trouble of prefetching: measured 229,798 refused
+    // "branch+predict-target" packets per CoreMark run (WIN_ACCEPT alone bucket),
+    // one lost cycle each.  In the bypass path the pair is a consecutive 8 B
+    // beat by construction, so head+4 stays correct there.
+    assign result_pc_hi=response_bypass ? (result_pc+32'd4) : q_pc[head_nxt];
+    assign result_inst_hi=response_bypass ? eng_rsp_data_hi : q_inst[head_nxt];
     assign result_predicted_next_pc=response_bypass ? pdf0_q : q_pred[head_q];
-    assign result_predicted_next_pc_hi=response_bypass ? pdf0_q2 : q_pred[head_q+1'b1];
+    assign result_predicted_next_pc_hi=response_bypass ? pdf0_q2 : q_pred[head_nxt];
     assign result_fault=response_bypass ? (eng_rsp_resp!=0) : q_fault[head_q];
     assign result_fault_cause=response_bypass ? 5'd1 : q_cause[head_q];
     assign result_fault_tval=result_pc;

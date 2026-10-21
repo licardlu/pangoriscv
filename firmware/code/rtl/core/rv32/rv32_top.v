@@ -877,7 +877,13 @@ module rv32_top(
                 id_md_op <= dec_md_op; id_csr_addr <= dec_csr_addr;
                 id_ffault <= fetch_fault;
                 id_fcause <= fetch_fault ? fetch_fault_cause : 5'd0;
-                id_pc_h <= fetch_pc + 32'd4; id_imm_h <= dec_imm_h; id_op_h <= fetch_inst_hi[6:0];
+                // Lane 1 runs at the PC the IFU put it at, which is only
+                // fetch_pc+4 while lane 0 is fall-through.  When lane 0 is a
+                // predicted-taken control transfer and the IFU has already
+                // prefetched the target behind it, lane 1 *is* the target, so
+                // the constant would execute the right instruction at the
+                // wrong PC (wrong branch targets, wrong link values).
+                id_pc_h <= fetch_pc_hi; id_imm_h <= dec_imm_h; id_op_h <= fetch_inst_hi[6:0];
                 id_rd_h <= dec_rd_h; id_rs1_h <= dec_rs1_h; id_rs2_h <= dec_rs2_h;
                 id_alu_h <= dec_alu_h; id_asel_h <= dec_asel_h; id_bsel_h <= dec_bsel_h;
                 id_we_h <= dec_we_h;

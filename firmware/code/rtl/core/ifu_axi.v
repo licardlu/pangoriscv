@@ -173,11 +173,27 @@ module ifu_axi #(
     assign fetch_valid=rst_n&&enable&&!redirect_valid&&(head_match||response_bypass)&&(stale_cnt_q==0);
     assign result_pc=response_bypass ? pcf0_q : head_pc;
     assign result_inst=response_bypass ? eng_rsp_data : q_inst[head_q];
-    assign result_pair=response_bypass ? (eng_rsp_pair && pdf0_q==pcf0_q+32'd4) : q_pair[head_q];
+    // A pair means "the next queue entry is the consecutive word", not "both
+    // words happened to arrive in one bus response".  The queue already holds one
+    // entry per instruction (a two-word push stores the second word as its own
+    // entry), so pairing on adjacency lets a dual-issue consumer take two
+    // instructions per cycle whenever the queue has them -- previously it could
+    // only do so when the refill path delivered the two words together, which is
+    // why the core averaged about one instruction per cycle.
+    //
+    // `q_pred[head] == head+4` keeps the architectural rule that the second word
+    // is only valid when the first was predicted to fall through, and a faulted
+    // second word is excluded so the shared fault fields below stay truthful.
+    wire pair_adj =
+        (count_q > {{(AW){1'b0}},1'b1}) &&
+        (q_pc[head_q+1'b1] == head_pc + 32'd4) &&
+        (q_pred[head_q] == head_pc + 32'd4) &&
+        !q_fault[head_q+1'b1];
+    assign result_pair=response_bypass ? (eng_rsp_pair && pdf0_q==pcf0_q+32'd4) : pair_adj;
     assign result_pc_hi=result_pc+32'd4;
-    assign result_inst_hi=response_bypass ? eng_rsp_data_hi : q_inst_hi[head_q];
+    assign result_inst_hi=response_bypass ? eng_rsp_data_hi : q_inst[head_q+1'b1];
     assign result_predicted_next_pc=response_bypass ? pdf0_q : q_pred[head_q];
-    assign result_predicted_next_pc_hi=response_bypass ? pdf0_q2 : q_pred_hi[head_q];
+    assign result_predicted_next_pc_hi=response_bypass ? pdf0_q2 : q_pred[head_q+1'b1];
     assign result_fault=response_bypass ? (eng_rsp_resp!=0) : q_fault[head_q];
     assign result_fault_cause=response_bypass ? 5'd1 : q_cause[head_q];
     assign result_fault_tval=result_pc;

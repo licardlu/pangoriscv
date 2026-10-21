@@ -137,12 +137,16 @@ module rv32_decode(
             end
             OP_LOAD: begin
                 u1_r = 1;
+                // load_unsigned means ZERO-extend, so lb/lh are signed (0) and
+                // lbu/lhu are unsigned (1).  Getting this backwards swaps the
+                // sign of every byte/halfword load -- exactly what the ISA
+                // regression reported (lbu returning 0xffffffcd, and vice versa).
                 case (funct3)
-                    3'd0: begin l_r = 1; size_r = 2'd0; uns_r = 1; end  // lb
-                    3'd1: begin l_r = 1; size_r = 2'd1; uns_r = 1; end  // lh
+                    3'd0: begin l_r = 1; size_r = 2'd0; uns_r = 0; end  // lb
+                    3'd1: begin l_r = 1; size_r = 2'd1; uns_r = 0; end  // lh
                     3'd2: begin l_r = 1; size_r = 2'd2; uns_r = 1; end  // lw
-                    3'd4: begin l_r = 1; size_r = 2'd0; uns_r = 0; end  // lbu
-                    3'd5: begin l_r = 1; size_r = 2'd1; uns_r = 0; end  // lhu
+                    3'd4: begin l_r = 1; size_r = 2'd0; uns_r = 1; end  // lbu
+                    3'd5: begin l_r = 1; size_r = 2'd1; uns_r = 1; end  // lhu
                     default: illegal_r = 1;
                 endcase
                 if (!illegal_r) begin

@@ -249,3 +249,20 @@ LUT 侧因为"LUTRAM → BRAM"应当**净下降**；这是三项评分里 ③ �
 判断是"请求没发出去"还是"响应回来了没被接住"。已知 `mem_issued_q` 的置位/清零优先级
 改过一次（清优先），若仍卡住，优先查 `lsu_axi` 的 `fast_issue` 在 `op_valid` 只持续一拍时
 是否漏掉了接受。
+
+### 11.2 进展：test 2 只剩最后两条指令（rs2 读成 0/X）
+
+本轮修掉两个真 bug：
+1. **同拍完成**：D-Cache 命中时 `op_valid` 与 `done_valid` 可以同拍，只看 `mem_issued_q`
+   会把这次响应判成"不是我的"→ 死锁。门控改成 `done_valid && (mem_issued_q || mem_accept)`。
+2. **符号扩展极性反了**：`load_unsigned=1` 是**零**扩展，`lb/lh` 必须给 0、`lbu/lhu` 给 1。
+   原来写反，导致 `lbu` 返回 `0xffffffcd`、`lb` 返回 `0xcd`。
+
+结果：test 2 的 x11–x17 全对（`0x8000abcd / 0x8000abce / 0xcd / 0xffffffcd / 0x8000 /
+0xffff8000 / 0x12345678`）。**只剩最后两条**：
+- `add x18, x17, x13` → x18 = X
+- `sub x19, x17, x11` → 得到 `0x12345678`，等价于 **rs2（x11）读成 0**
+
+共同点：两条都是"紧跟在 load 之后的 ALU，rs2 来自更早的 load 结果"。下一步查
+`rf_d1 / a1_d / rr_op2` 这条第二读口的路径（x0 强制与写穿透都用 `a1_d`，
+若 `a1_d` 在 load-use 停顿时比 `q1` 晚一拍，就会把一条老指令的 rs2 当成 x0 → 读 0）。

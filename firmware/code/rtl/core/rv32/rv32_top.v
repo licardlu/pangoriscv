@@ -191,11 +191,15 @@ module rv32_top(
     reg  [31:0] arch_next_q;
     reg  [63:0] retire_cnt_q;
 
+    // Declared early: the hazard block needs the memory handshake.
+    wire issue_mem;
+    wire mem_accept = issue_mem && op_ready;
+
     // ========================================================= hazards
     wire m_is_mem   = ex_valid && (ex_load || ex_store) && !ex_trap;
     wire load_use   = ex_valid && ex_load && ex_we &&
                       ((ex_rd == rr_rs1) || (ex_rd == rr_rs2));
-    wire mem_wait   = m_is_mem && !done_valid;
+    wire mem_wait   = m_is_mem && !(done_valid && (mem_issued_q || (issue_mem && op_ready)));
     wire div_wait   = rr_valid && rr_div && !rr_illegal && !div_rsp_valid;
     wire trap_wait  = w_valid && w_trap && !trap_ready;
     wire stall      = load_use || mem_wait || div_wait || trap_wait;
@@ -411,7 +415,7 @@ module rv32_top(
     assign retire_order = retire_cnt_q;
 
     // ========================================================= M1 memory port
-    wire issue_mem = m_is_mem && !mem_issued_q && !(w_valid && w_trap) && !kill_all;
+    assign issue_mem = m_is_mem && !mem_issued_q && !(w_valid && w_trap) && !kill_all;
 
     assign op_valid      = issue_mem;
     assign is_store      = ex_store;
@@ -423,7 +427,11 @@ module rv32_top(
     assign op_rd         = ex_rd;
     assign done_ready    = 1'b1;
 
-    wire        mem_fault = m_is_mem && done_valid && fault;
+    // A cache hit can accept the request and answer it in the SAME cycle, so the
+    // response belongs to this instruction either way: it was either issued in an
+    // earlier cycle (mem_issued_q) or accepted in this one (mem_accept).
+    wire        mem_rsp    = done_valid && (mem_issued_q || mem_accept);
+    wire        mem_fault  = m_is_mem && mem_rsp && fault;
     wire [4:0]  mem_cause = ex_store ? 5'd7 : 5'd5;
 
     // ========================================================= sequencing
@@ -572,7 +580,7 @@ module rv32_top(
             m_valid <= hold_m1 ? 1'b0 : (ex_valid && !kill_all);
             if (ex_valid && !hold_m1) begin
                 m_pc <= ex_pc; m_inst <= ex_inst; m_rd <= ex_rd; m_we <= ex_we;
-                m_value <= (ex_load && done_valid) ? load_value : ex_value;
+                m_value <= (ex_load && mem_rsp) ? load_value : ex_value;
                 m_trap <= ex_trap || mem_fault;
                 m_cause <= mem_fault ? mem_cause : ex_cause;
                 m_tval <= mem_fault ? fault_addr : ex_tval;

@@ -81,6 +81,9 @@ if {![info exists ::env(PANGO_NATIVE_RUN_DIR)]} {
     error "Set PANGO_NATIVE_RUN_DIR to a new implementation directory to preserve existing evidence."
 }
 set run_dir [file normalize $::env(PANGO_NATIVE_RUN_DIR)]
+if {[file normalize [pwd]] ne $run_dir} {
+    error "Launch pds_shell with process working directory $run_dir; Tcl cd does not change PDS image resolution or project output directory."
+}
 foreach stage {compile synthesize device_map place_route} {
     if {[file exists [file join $run_dir $stage]]} {
         error "Refusing to overwrite existing implementation stage $run_dir/$stage"
@@ -102,13 +105,18 @@ foreach source $sources {
 foreach image {program.hex data.hex} {
     file copy -force [file join $image_dir $image] [file join $run_dir $image]
 }
+foreach header [glob [file join $repo rtl core *.vh] [file join $repo rtl core *.v]] {
+    if {[file tail $header] eq "defines.v" || [file extension $header] eq ".vh"} {
+        file copy -force $header [file join $source_dir rtl core [file tail $header]]
+    }
+}
 # RAM $readmemh paths resolve from this explicit working directory.
 cd $run_dir
 set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG676
 # Absolute constraint paths: after `cd $run_dir` a relative path would resolve
 # against the run directory instead of the layout directory.
 add_constraint $fdc_file
-compile -top_module pangoriscv_top -include_path [list [file join $repo rtl core]]
+compile -top_module pangoriscv_top -include_path [list [file join $source_dir rtl core]]
 # Guard against the silent empty-memory failure: if the working directory is wrong, axi_ram's
 # $readmemh cannot open program.hex/data.hex, PDS still completes, and the bitstream comes out
 # with no program content (observed 2026-10-10 in the project-root stray run: "Cannot open
@@ -125,7 +133,7 @@ if {[file isfile $compile_log]} {
     }
     puts "Board check: $loaded memory images loaded into the design."
 } else {
-    puts "Board check: compile log not found at $compile_log; memory load not verified."
+    error "Compile log missing at $compile_log; memory image loading is unverified."
 }
 synthesize -ads -selected_syn_tool_opt 2
 dev_map

@@ -1015,6 +1015,30 @@ module rv32_top(
     wire        ifault             = id_ffault;
     wire        ifaulth            = 1'b0;
 `ifdef RV32_DEBUG
+    // Where the cycles go.  These two counters are what turned "the cache must be
+    // too small" into "23% of the run is spent with an instruction parked in EX
+    // behind a load", so they earn their place in the bring-up toolbox:
+    //   MEMDBG  - instructions presented to the LSU vs retired memory ops
+    //             (equal values prove the core never re-issues an operation)
+    //   STALLDBG- one bucket per reason a packet could not be accepted
+    integer n_pres=0, n_acc=0, n_retmem=0;
+    integer c_ok=0, c_starve=0, c_lu=0, c_mw=0, c_div=0, c_rd=0;
+    always @(posedge clk) if (rst_n) begin
+        if (issue_mem) n_pres = n_pres + 1;
+        if (issue_mem && op_ready) n_acc = n_acc + 1;
+        if (rr_valid && !hold_ex && !kill_all &&
+            ((rr_load || rr_store) || (rr_v1 && (rr_load_h || rr_store_h))))
+            n_retmem = n_retmem + 1;
+        if (!fetch_valid) c_starve = c_starve + 1;
+        else if (fetch_ready) c_ok = c_ok + 1;
+        else if (load_use) c_lu = c_lu + 1;
+        else if (mem_wait) c_mw = c_mw + 1;
+        else if (div_wait) c_div = c_div + 1;
+        else if (redirect_any) c_rd = c_rd + 1;
+    end
+    final $display("MEMDBG presented=%0d accepted=%0d retired_mem=%0d", n_pres, n_acc, n_retmem);
+    final $display("STALLDBG accept=%0d starve=%0d load_use=%0d mem_wait=%0d div=%0d redirect=%0d",
+                   c_ok, c_starve, c_lu, c_mw, c_div, c_rd);
     // Pairing diagnostics: why a fetch opportunity did or did not become a pair.
     // One bucket per reason, mutually exclusive, so the numbers add up to the
     // number of cycles the front end presented something to consume.

@@ -358,7 +358,14 @@ module rv32_top(
     // ========================================================= redirect
     // A branch resolves in EX and may redirect immediately: the only younger
     // instruction is the one in RR, and an older trap overrides it later.
-    wire        br_miss  = rr_valid && is_ctrl && !ex_trap_w && (ctrl_next != rr_pred);
+    // A control transfer must only resolve on a cycle where the EX operands are
+    // valid.  While hold_ex is high the stage is frozen precisely because an
+    // operand is still in flight (load-use, divider, memory wait), so the target
+    // computed from it is stale.  Redirecting on that stale target killed the
+    // pipeline and sent `jr a5` -- right behind `lw a5,0(a0)` in CoreMark's
+    // get_seed_32 jump table -- to the table's data address.
+    wire        br_miss  = rr_valid && is_ctrl && !hold_ex && !ex_trap_w &&
+                           (ctrl_next != rr_pred);
     wire        resume   = halted_q && !halt_req;
     wire        redirect_any = trap_go || mret_go || br_miss || resume;
     wire [31:0] redirect_target = trap_go ? csr_vector :
@@ -647,6 +654,52 @@ module rv32_top(
     wire        mem_sel_h     = 1'b0;
     wire        trap1         = 1'b0;
     wire        x_valid       = 1'b0;
+
+    // tb_coremark_uart reads the same statistics by name.  Where the single-issue
+    // core has a counter-part the probe is wired to it, so the report stays
+    // meaningful; where the signal only exists because there is a second issue
+    // slot (alu0/alu1/mem0/ctrl1, the dpc/drd decode bundle) it is tied off.
+    wire        ex_leave           = rr_valid && !hold_ex;
+    wire        is_memory          = rr_load || rr_store;
+    wire        is_div             = rr_div;
+    wire        issued             = div_issued_q || mem_issued_q;
+    wire        id_ready           = !hold_ex;
+    wire        pred_train_control = w_commit && w_ctrl;
+    wire        pred_is_jalr       = rr_valid && rr_jalr;
+    wire [31:0] ei                 = rr_inst;
+    wire [31:0] ei_h               = 32'd0;
+    wire        id_valid_h         = 1'b0;
+    wire        id_ready1          = 1'b0;
+    wire        ex0_ready          = 1'b1;
+    wire        ex1_ready          = 1'b1;
+    wire        block_entry        = 1'b0;
+    wire        alu0               = rr_valid && !rr_load && !rr_store && !rr_csr &&
+                                     !rr_mul && !rr_div && !rr_br && !rr_jal && !rr_jalr;
+    wire        alu1               = 1'b0;
+    wire        mem0               = rr_valid && (rr_load || rr_store);
+    wire        ctrl1              = 1'b0;
+    wire [31:0] dpc                = id_pc;
+    wire [31:0] dpch               = 32'd0;
+    wire [4:0]  drd                = id_rd;
+    wire [4:0]  drdh               = 5'd0;
+    wire        dcwe               = id_csr;
+    wire        dcweh              = 1'b0;
+    wire        dillegal           = id_illegal;
+    wire        dillegalh          = 1'b0;
+    wire        ifault             = id_ffault;
+    wire        ifaulth            = 1'b0;
+`ifdef RV32_DEBUG
+    // Two invariants worth printing for every bring-up run: any trap, and any
+    // control transfer whose target is not in the code window.  Both are silent
+    // in a correct core, and both pinpoint the culprit when they are not.
+    always @(posedge clk) if (rst_n && trap_go)
+        $display("TR_TRAP pc=%08x cause=%0d tval=%08x irq=%b mepc=%08x",
+                 w_pc, trap_code, trap_tval_i, irq_trap, trap_tgt_pc);
+    // A control transfer into the data window can only be a wrong target.
+    always @(posedge clk) if (rst_n && redirect_any && redirect_target[31:28]==4'h1)
+        $display("TR_BADJMP from=%08x target=%08x pred=%08x jalr=%b jal=%b br=%b rs1v=%08x imm=%08x",
+                 rr_pc, redirect_target, rr_pred, rr_jalr, rr_jal, rr_br, fwd1, rr_imm);
+`endif
 `ifdef RV32_TRACE
     // Simulation-only operand trace (never compiled into a bitstream: the macro
     // is only defined by the debug compile).  One line per instruction entering

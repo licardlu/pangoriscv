@@ -31,7 +31,11 @@
 // a build wrapper that passes -Defines CACHE,PERF,PREDICT and the performance
 // image directory to the synthesis tool
 // ---------------------------------------------------------------------------
+// RV32_OLD_CORE builds the delivered 4-stage core instead of the new one: the
+// only way to A/B the two cores on the same image with one command line.
+`ifndef RV32_OLD_CORE
 `define CORE_RV32
+`endif
 `define CACHE_ENABLE
 `define PREDICT_ENABLE
 `define PERF_ENABLE

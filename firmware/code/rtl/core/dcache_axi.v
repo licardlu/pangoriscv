@@ -271,22 +271,32 @@ module dcache_axi #(
     wire hit1 = valid_mem[widx(1,req_set)] && (tag_mem_1[req_set]==req_tag);
     wire hit_any = hit0 | hit1;
 `ifdef DC_DBG
-    // Why does the hit rate stay low even with 4x the capacity?  Count hits,
-    // misses, and misses to the line that missed last time (a line that was just
-    // filled and immediately missed again means the fill does not stick).
-    integer n_hit=0, n_miss=0, n_reload=0, n_st=0;
+    // Distinguish "a request is being presented" from "a request is accepted".
+    // The first probe counted cycles with valid&&ready high, which over-counts
+    // whenever ready is a level and valid is held; the edge count is the number
+    // of requests actually presented, and the engine handshake count is the
+    // number that reached the refill/write path.
+    integer n_hit=0, n_miss=0, n_reload=0, n_st=0, n_pres=0, n_pres_st=0;
     reg [TAGW-1:0] last_tag_q; reg [IDXW-1:0] last_set_q; reg last_vld_q;
-    always @(posedge clk) if (rst_n && req_valid && req_ready) begin
-        if (req_write) n_st = n_st + 1;
-        else if (hit_any) n_hit = n_hit + 1;
-        else begin
-            n_miss = n_miss + 1;
-            if (last_vld_q && last_tag_q==req_tag && last_set_q==req_set)
-                n_reload = n_reload + 1;
-            last_tag_q = req_tag; last_set_q = req_set; last_vld_q = 1'b1;
+    reg acc_q;
+    always @(posedge clk) if (rst_n) begin
+        acc_q <= req_valid && req_ready;
+        if (req_valid && req_ready && !acc_q) begin      // a NEW presentation
+            if (req_write) begin n_pres_st = n_pres_st + 1; n_st = n_st + 1; end
+            else begin
+                n_pres = n_pres + 1;
+                if (hit_any) n_hit = n_hit + 1;
+                else begin
+                    n_miss = n_miss + 1;
+                    if (last_vld_q && last_tag_q==req_tag && last_set_q==req_set)
+                        n_reload = n_reload + 1;
+                    last_tag_q = req_tag; last_set_q = req_set; last_vld_q = 1'b1;
+                end
+            end
         end
     end
-    final $display("DCDBG hit=%0d miss=%0d same_line_reload=%0d store=%0d", n_hit, n_miss, n_reload, n_st);
+    final $display("DCDBG rd_new=%0d hit=%0d miss=%0d reload=%0d wr_new=%0d",
+                   n_pres, n_hit, n_miss, n_reload, n_pres_st);
 `endif
     wire hit_way = hit1;                       // way 0 wins if both match
 

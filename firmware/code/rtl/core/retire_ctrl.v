@@ -18,7 +18,12 @@ module retire_ctrl(
     output reg [31:0] arch_next_pc,
     output reg halt_pending,halted
 );
-    assign retire_fire=rst_n && !halted && ex_valid && ex_done && !ex_fault;
+    // A two-instruction packet may retire its older instruction and trap on
+    // the younger one on the same edge.  The caller supplies only the normal
+    // prefix in retire_count; the faulting instruction is never counted.
+    // Keep the prefix and trap atomic when the trap receiver is backpressured.
+    assign retire_fire=rst_n && !halted && ex_valid && ex_done &&
+                       (!ex_fault || (trap_ready && retire_count!=0));
     assign trap_fire=rst_n && !halted && trap_ready &&
         ((ex_valid && ex_done && ex_fault) ||
          (irq_pending && !halt_req && !halt_pending &&

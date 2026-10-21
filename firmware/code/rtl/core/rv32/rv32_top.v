@@ -188,6 +188,19 @@ module rv32_top(
     wire lane1_alu = !(dec_load_h | dec_store_h | dec_br_h | dec_jal_h | dec_jalr_h |
                        dec_csr_h | dec_mret_h | dec_ecall_h | dec_ebrk_h |
                        dec_mul_h | dec_div_h | dec_illegal_h);
+    // Lane 1 gets its OWN multiplier.  It used to refuse the pair on the grounds
+    // that sharing lane 0's four-DSP cascade put the product in series with lane
+    // 1's adder (26.6 ns on `p7_path40b`) -- and that reasoning was right about
+    // the series chain but wrong about the fix: refusing the pair still leaves
+    // the cascade in lane 1's operand mux (synthesis cannot read `pair_ok`), so
+    // the path stayed and the cycles were paid for nothing.
+    //
+    // Two cascades, each feeding its own lane's EX/M1 register, are parallel -- no
+    // series chain.  Cost: 4 APM and the pipeline slot below.  Measured demand:
+    // `WIN_L1BAD mul=115,086` of `l1bad=151,118` refusals per 20 iterations
+    // (evidence/records/optimization/p10-d1-window).  Divide stays refused: it is
+    // iterative, so a second unit is a second state machine, not a second adder.
+    wire lane1_mul_ok = dec_mul_h;
     // A branch or jal in lane 1 keeps the "lane 1 never traps" property: its
     // target is pc+imm, and requiring imm[1]==0 (imm[0] is an encoding zero for
     // both formats) makes that target 4-byte aligned by construction, so the
@@ -200,7 +213,7 @@ module rv32_top(
     wire lane1_mem  = (dec_load_h || dec_store_h) &&
                       !(dec_jalr_h | dec_csr_h | dec_mret_h | dec_ecall_h |
                         dec_ebrk_h | dec_mul_h | dec_div_h | dec_illegal_h);
-    wire lane1_ok   = lane1_alu || lane1_ctrl || lane1_mem;
+    wire lane1_ok   = lane1_alu || lane1_ctrl || lane1_mem || lane1_mul_ok;
     // A control transfer in lane 0 used to be un-pair-able on the grounds that
     // lane 1 would have to be pc+8, which is wrong-path whenever the branch is
     // predicted taken.  But the IFU's predicted-chain prefetch has already put
@@ -270,6 +283,8 @@ module rv32_top(
     reg  [2:0]  id_br_op_h;
     reg         id_load_h, id_store_h, id_uns_h;
     reg  [1:0]  id_size_h;
+    reg         id_mul_h;          // lane 1's own multiply (see `lane1_mul_ok`)
+    reg  [2:0]  id_md_op_h;
 
     // RR -> EX (the instruction sitting in EX)
     reg         rr_valid;
@@ -295,6 +310,8 @@ module rv32_top(
     reg  [2:0]  rr_br_op_h;
     reg         rr_load_h, rr_store_h, rr_uns_h;
     reg  [1:0]  rr_size_h;
+    reg         rr_mul_h;
+    reg  [2:0]  rr_md_op_h;
 
     // EX -> M1
     reg         ex_valid;
@@ -516,9 +533,10 @@ module rv32_top(
     rv32_mul u_mul(.op(rr_md_op), .a(fwd1), .b(fwd2), .y(mul_y));
 
     // ---------------------------------------------------------- lane 1 ALU
-    // Lane 1 is a plain integer ALU operation by construction (pairing rejects
-    // everything else), so it needs one adder/shifter/compare tree and nothing
-    // more: no second multiplier, no divider, no target adder.
+    // Lane 1 is an integer ALU operation or a multiply.  It needs one
+    // adder/shifter/compare tree plus its OWN four-DSP cascade: sharing lane 0's
+    // would put the product in series with lane 1's adder inside one cycle,
+    // which is precisely the 26.6 ns path that made `packet_md_use` exist.
     wire [31:0] alu_a_h = (rr_asel_h == 2'd1) ? rr_pc_h :
                           (rr_asel_h == 2'd2) ? 32'd0 : fwd1_h;
     wire [31:0] alu_b_h = (rr_bsel_h == 2'd0) ? fwd2_h :
@@ -529,7 +547,9 @@ module rv32_top(
         .op(rr_alu_h), .a(alu_a_h), .b(alu_b_h),
         .y(alu_y_h), .eq(alu_eq_h), .lt(alu_lt_h), .ltu(alu_ltu_h)
     );
-    wire [31:0] ex_value_h_w = alu_y_h;
+    wire [31:0] mul_y_h;
+    rv32_mul u_mul_h(.op(rr_md_op_h), .a(fwd1_h), .b(fwd2_h), .y(mul_y_h));
+    wire [31:0] ex_value_h_w = rr_mul_h ? mul_y_h : alu_y_h;
 
     // A branch or jal in lane 1 resolves here with the same comparator the ALU
     // already built: the target is pc+imm for both formats, so no second target
@@ -851,6 +871,7 @@ module rv32_top(
             id_rd_h <= 5'd0; id_rs1_h <= 5'd0; id_rs2_h <= 5'd0;
             id_alu_h <= 4'd0; id_asel_h <= 2'd0; id_bsel_h <= 2'd0;
             id_we_h <= 1'b0; id_op_h <= 7'd0;
+            id_mul_h <= 1'b0; id_md_op_h <= 3'd0;
             id_pred_h <= 32'd0; id_ctrl_h <= 1'b0; id_jal_h <= 1'b0; id_br_op_h <= 3'd0;
         end else if (!hold_ex || kill_all) begin
             // A kill must never be blocked by a freeze.  `hold_ex` is written as
@@ -892,6 +913,7 @@ module rv32_top(
                 id_br_op_h <= dec_br_op_h;
                 id_load_h <= dec_load_h; id_store_h <= dec_store_h;
                 id_uns_h <= dec_uns_h; id_size_h <= dec_size_h;
+                id_mul_h <= dec_mul_h; id_md_op_h <= dec_md_op_h;
             end
         end
     end
@@ -914,6 +936,7 @@ module rv32_top(
             rr_we_h <= 1'b0; rr_op_h <= 7'd0;
             rr_pred_h <= 32'd0; rr_ctrl_h <= 1'b0; rr_jal_h <= 1'b0; rr_br_op_h <= 3'd0;
             rr_load_h <= 1'b0; rr_store_h <= 1'b0; rr_uns_h <= 1'b0; rr_size_h <= 2'd2;
+            rr_mul_h <= 1'b0; rr_md_op_h <= 3'd0;
         end else if (!hold_ex || kill_all) begin
             // Same escape as the RD stage: freeze must not absorb a kill.
             rr_valid <= !hold_ex && id_valid && !kill_all && !kill_young;
@@ -939,6 +962,7 @@ module rv32_top(
                 rr_br_op_h <= id_br_op_h;
                 rr_load_h <= id_load_h; rr_store_h <= id_store_h;
                 rr_uns_h <= id_uns_h; rr_size_h <= id_size_h;
+                rr_mul_h <= id_mul_h; rr_md_op_h <= id_md_op_h;
             end
         end
     end

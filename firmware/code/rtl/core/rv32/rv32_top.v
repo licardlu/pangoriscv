@@ -437,7 +437,11 @@ module rv32_top(
             id_illegal <= 0; id_ffault <= 0; id_uns <= 0; id_serial <= 0;
             id_alu <= 4'd0; id_asel <= 2'd0; id_bsel <= 2'd0; id_size <= 2'd2;
             id_csr_op <= 2'd0; id_br_op <= 3'd0; id_md_op <= 3'd0; id_csr_addr <= 12'd0;
-        end else begin
+        end else if (!stall) begin
+            // id_* is the RR stage register: any stall must hold it, otherwise the
+            // instruction waiting in RR is overwritten by the next cycle's ID.
+            // Clearing it on a stall loses the instruction that is waiting there
+            // (the regression showed one instruction disappearing after a load).
             id_valid <= id_accept;
             if (id_accept) begin
                 id_pc <= fetch_pc; id_inst <= fetch_inst; id_imm <= dec_imm;
@@ -473,7 +477,7 @@ module rv32_top(
             rr_uns <= 0; rr_csr_illegal <= 0; rr_serial <= 0; rr_alu <= 4'd0;
             rr_asel <= 2'd0; rr_bsel <= 2'd0; rr_size <= 2'd2; rr_csr_op <= 2'd0;
             rr_br_op <= 3'd0; rr_md_op <= 3'd0; rr_csr_addr <= 12'd0;
-        end else if (!freeze_rr) begin
+        end else if (!freeze_ex) begin
             rr_valid <= id_valid && !kill_all && !kill_young;
             if (id_valid) begin
                 rr_pc <= id_pc; rr_inst <= id_inst; rr_imm <= id_imm; rr_pred <= id_pred;
@@ -505,8 +509,8 @@ module rv32_top(
             ex_csr <= 0; ex_mret <= 0; ex_serial <= 0; ex_size <= 2'd2;
             ex_csr_op <= 2'd0; ex_csr_addr <= 12'd0;
         end else if (!freeze_m1) begin
-            ex_valid <= freeze_rr ? 1'b0 : (rr_valid && !kill_all);
-            if (rr_valid && !freeze_rr) begin
+            ex_valid <= freeze_ex ? 1'b0 : (rr_valid && !kill_all);
+            if (rr_valid && !freeze_ex) begin
                 ex_pc <= rr_pc; ex_inst <= rr_inst; ex_rd <= rr_rd; ex_we <= rr_we;
                 ex_value <= ex_value_w;
                 ex_addr <= mem_addr; ex_sdata <= fwd2;
@@ -587,7 +591,7 @@ module rv32_top(
     always @(posedge clk) begin
         if (!rst_n) div_issued_q <= 1'b0;
         else if (div_req && div_req_ready) div_issued_q <= 1'b1;
-        else if (!freeze_rr) div_issued_q <= 1'b0;
+        else if (!freeze_ex) div_issued_q <= 1'b0;
     end
 
     assign fetch_ready  = !stall && !serial_q && !halt_pending_q && !halted_q &&

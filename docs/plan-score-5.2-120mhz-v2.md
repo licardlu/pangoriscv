@@ -209,3 +209,26 @@ LUT 侧因为"LUTRAM → BRAM"应当**净下降**；这是三项评分里 ③ �
 | 新工具 | `firmware/code/tools/run_coremark_sim.py`：单镜像编译+跑分，输出 cycles/retires/IPC/cycles-per-iter/五项 CRC |
 | 编译选项 | `-O3` 指令 **+1.1%**、周期 **−2.2%**（`-funroll-loops` 同类），**不是提分杠杆**，`-O2` 保持 |
 | 回归基线 | 当前树 ISA 21/21 PASS（`-march=rv32im_zicsr` 必须显式给，否则汇编报 zicsr 不支持） |
+
+## 11. P1 实施状态（2026-10-21 夜）
+
+新核已落地并在 SoC 里跑起来（`soc_config.vh` 的 `CORE_RV32` 开关）：
+`rv32_decode` / `rv32_alu` / `rv32_mul` / `rv32_regfile` / `rv32_top`，
+6 级 ID-RR-EX-M1-M2-WB、单发射、端口与 `pangoriscv` 完全一致，
+所以 SoC、Cache、AXI、外设、两个集成测试台、固件都没动。
+
+**已通过**：ISA case 1（ALU 依赖链）与 case 16（配对 WAW，单发射下退化为顺序执行）。
+**已修 4 个真 bug**（详见 `docs/lessons/mistakes-log.md` §21）：
+寄存器堆 x0/写穿透用错地址（操作数全 X）、`jal/jalr` 只有一个立即数（跳转目标变 pc+4）、
+冻结语义写反（等待中的 load 被丢掉）、`id_*` 在停顿期间被清零（RR 级指令被冲掉）。
+
+**当前现象**：退休轨迹仍会周期性"缺一条指令"（0x208 之后有时是 0x210、有时直接 0x214），
+不伴随 trap 或 redirect。说明保持/气泡的使能还有一处错位。
+
+**下一步（按这个顺序查，别再盲改）**：
+1. 把 6 个 stage register 的 `valid`/`payload` 使能画成一张表：
+   每级"谁能让它停"只能有一个来源（本级等待 / 上级停），两处都写就会丢或重。
+2. 用 `DBG` 打印 `(cycle, id_valid, rr_valid, ex_valid, m_valid, w_valid, stall, freeze_*)`，
+   找出"某一拍 valid 掉 0 但没有 kill"的位置——那就是丢指令的地方。
+3. 丢掉的那条指令 pc 在 IFU 队列里还在（`fetch_ready` 被 stall 关掉时不会弹出），
+   所以"丢"一定发生在 `id_*`/`rr_*` 之间，优先查 `id_valid <= id_accept` 的门控。

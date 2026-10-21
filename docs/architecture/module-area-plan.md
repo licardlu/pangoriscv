@@ -2,6 +2,16 @@
 
 ## 当前实验增补：X0/X1 执行分级
 
+- 时钟实现合同增补：现有 `pangoriscv_top` 内实例化一个 `GTP_PPLL`，
+  不增加 RTL 模块。27 MHz 输入，I=1/M=1/F=56/O0=12，VCO=1512 MHz、
+  PFD=27 MHz，核心实际目标 **126 MHz**。范围依据 PDS `ipm2l_pll/ui.tcl`
+  的 `pllCheck_adv`：PPLL VCO 1330–2133 MHz、PFD≥19 MHz。
+  所有 SoC/观察计数器改用 core_clk；异步 reset 由 KEY0 或 PLL 失锁触发，
+  在 core_clk 下两拍同步释放。无跨域数据总线。新增 1 PPLL / 0 LUTRAM，
+  组合预留 8 LUT、FF 沿用原 2 FF；generated clock 用 14/3 精确比值。
+  固件 CPU_FREQ_HZ 必须为 126000000。验证 PLL 锁定/失锁复位、频率比、
+  上板 UART/计时与全路径 setup/hold；实现约束不等于时序已通过。
+
 - 2026-10-21 首次新实现验证：17 例 ISA + 3 例 lane1 memory/fault 全通过；
   20 迭代 CRC 与 E2 记录一致，但 scored window 5,212,477→6,167,502。
   当前修订在 X0 并行预执行独立年轻 ALU，RAW 年轻槽仍延后 X1；

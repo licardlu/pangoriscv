@@ -17,6 +17,29 @@ module pangoriscv_top #(
  output wire uart_tx,
  output wire [7:0] led
 );
+ // PG2L100H PPLL legal range: VCO 1330..2133 MHz, PFD >=19 MHz.
+ // 27 * 56 = 1512 MHz VCO; /12 = 126 MHz core clock (>=120 MHz).
+ // Use the same clock for CPU, fabric, peripherals and observation counters.
+ wire core_clk,pll_locked;
+ GTP_PPLL #(
+  .CLKIN_FREQ(27.0),.LOCK_MODE(0),
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(56),
+  .STATIC_RATIO0(12),.STATIC_DUTY0(12),.STATIC_DUTYF(56),
+  .STATIC_RATIO1(56),.STATIC_DUTY1(56),
+  .STATIC_RATIO2(56),.STATIC_DUTY2(56),
+  .STATIC_RATIO3(56),.STATIC_DUTY3(56),
+  .STATIC_RATIO4(56),.STATIC_DUTY4(56),
+  .STATIC_RATIOPHY(56),.STATIC_DUTYPHY(56),
+  .INTERNAL_FB("CLKOUTF"),.EXTERNAL_FB("DISABLE"),.BANDWIDTH("OPTIMIZED")
+ ) u_core_pll(
+  .CLKIN1(clk),.CLKIN2(1'b0),.CLKIN_SEL(1'b0),.CLKFB(1'b0),
+  .CLKOUT0(core_clk),.LOCK(pll_locked),.RST(!rst_n),.PLL_PWD(1'b0),
+  .CLKOUT0_SYN(1'b0),.CLKOUT1_SYN(1'b0),.CLKOUT2_SYN(1'b0),
+  .CLKOUT3_SYN(1'b0),.CLKOUT4_SYN(1'b0),.CLKOUTPHY_SYN(1'b0),.CLKOUTF_SYN(1'b0),
+  .APB_CLK(1'b0),.APB_RST_N(1'b0),.APB_ADDR(5'd0),
+  .APB_SEL(1'b0),.APB_EN(1'b0),.APB_WRITE(1'b0),.APB_WDATA(16'd0)
+ );
+ wire reset_release=rst_n && pll_locked;
  // KEY0 asserts reset asynchronously. Every endpoint sees the same release.
  // Hold KEY0 during initial board bring-up; no power-on value is assumed.
  // The Synopsys/Pango attribute ASYNC_REG is not a legal attribute for Pango
@@ -26,8 +49,8 @@ module pangoriscv_top #(
  // syn_preserve is a documented Pango directive that stops sequential
  // optimization from folding the constant-1 stage away.
  reg [1:0] reset_sync /* synthesis syn_preserve = 1 */;
- always @(posedge clk or negedge rst_n) begin
-  if (!rst_n) reset_sync<=2'b00;
+ always @(posedge core_clk or negedge reset_release) begin
+  if (!reset_release) reset_sync<=2'b00;
   else reset_sync<={reset_sync[0],1'b1};
  end
  wire soc_rst_n=reset_sync[1];
@@ -80,7 +103,7 @@ module pangoriscv_top #(
  // These are dead-end registers, so they need syn_preserve as well.
  reg [31:0] obs_retire_count /* synthesis syn_keep = 1, syn_preserve = 1 */;
  reg [31:0] obs_trap_count   /* synthesis syn_keep = 1, syn_preserve = 1 */;
- always @(posedge clk) begin
+ always @(posedge core_clk) begin
   if(!soc_rst_n) begin
    obs_retire_count<=32'd0;
    obs_trap_count<=32'd0;
@@ -93,7 +116,7 @@ module pangoriscv_top #(
  pangoriscv_axi_soc #(
   .PROGRAM_INIT_FILE(PROGRAM_INIT_FILE),.DATA_INIT_FILE(DATA_INIT_FILE)
  ) soc(
-  .clk(clk),.rst_n(soc_rst_n),
+  .clk(core_clk),.rst_n(soc_rst_n),
   .uart_rx(uart_rx),.uart_tx(uart_tx),
   .gpio_input({1'b1,key}),.gpio_ctrl(gpio_ctrl),.gpio_data(gpio_data),
   .spi_miso(1'b1),.spi_mosi(),.spi_ss(),.spi_clk(),

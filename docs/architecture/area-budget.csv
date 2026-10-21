@@ -1,4 +1,5 @@
 kind,module,file,stage,lut,ff,lutram,drm,apm,region,status,note
+forecast,pangoriscv_top,soc/pangoriscv_top.v,clock,8,0,0,0,0,R_CORE,planned,"1 PPLL additional; 27*56/12=126MHz VCO1512 PFD27; reset synchronized on core clock; not measured"
 forecast,retire_ctrl,core/retire_ctrl.v,retire,32,0,0,0,0,R_CORE,implemented_unverified,"5.2/120 experimental allowance not measurement; commit older prefix on younger synchronous fault; tests deferred by user"
 forecast,id_alu,core/id_alu.v,decode,64,0,0,0,0,R_CORE,implemented_unverified,"5.2/120 experimental allowance not measurement; decode RV32I lane1 memory; no new storage"
 forecast,pangoriscv,core/pangoriscv.v,pipe,1900,1100,0,0,0,R_CORE,implemented_unverified,"5.2/120 allowance vs E2 not measured; parallel independent young ALU plus staggered RAW path and shared LSU"

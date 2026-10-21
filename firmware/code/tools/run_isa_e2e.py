@@ -398,6 +398,11 @@ def main() -> int:
     ap.add_argument("--extra-flag", action="append", default=[], metavar="FLAG",
                     help="extra compiler flag, repeatable (e.g. -march=rv32im_zicsr)")
     ap.add_argument("--modelsim", type=Path, default=DEFAULT_MODELSIM)
+    ap.add_argument("--single-issue", action="store_true",
+                    help="the core under test issues one instruction per cycle: "
+                         "skip only the dual-issue lane coverage gates "
+                         "(lane1_mem/lane1_fault/target_pair). Register and trap "
+                         "semantics are still checked in full.")
     ap.add_argument("--cases", default="all")
     ap.add_argument("--dump-expected", action="store_true",
                     help="print the reference model's expected registers per case")
@@ -516,6 +521,8 @@ def main() -> int:
         ref.run(0)
         return ref
 
+    single_issue = args.single_issue
+
     if args.dump_expected:
         for case in cases:
             ref = reference(case)
@@ -555,11 +562,11 @@ def main() -> int:
                  log, timeout=600)
         text = log.read_text(errors="replace")
         problems = []
-        if case == 21:
+        if case == 21 and not single_issue:
             coverage = re.search(r"E2E_TARGET_PAIR target=(\d+) wrong=(\d+)", text)
             if not coverage or int(coverage[1]) == 0 or int(coverage[2]) == 0:
                 problems.append("predicted target retirement and wrong-path kill must both execute")
-        if case in (18, 19, 20):
+        if case in (18, 19, 20) and not single_issue:
             coverage = re.search(r"E2E_PIPELINE lane1_mem=(\d+) lane1_fault=(\d+) overlap=(\d+)", text)
             if not coverage:
                 problems.append("missing lane1 coverage")

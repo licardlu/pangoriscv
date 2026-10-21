@@ -98,7 +98,9 @@ module rv32_top(
 
     localparam [31:0] RESET_PC = 32'd0;
 
-    // Declared before use: the hazard logic below needs the divider handshake.
+    // Declared before use: the hazard logic below needs the divider handshake,
+    // and the WB datapath takes its rd value straight from the CSR read bus.
+    wire [31:0] csr_rdata, csr_vector, csr_mepc;
     wire        div_req_ready, div_rsp_valid;
     wire [31:0] div_result;
 
@@ -223,6 +225,7 @@ module rv32_top(
     // The read is synchronous, so the address is presented while the
     // instruction is still in ID and the data lands when it is in RR.
     wire [31:0] rf_d0, rf_d1;
+    wire [31:0] wb_value = w_csr ? csr_rdata : w_value;
     wire        wb_we = w_commit && w_we && (w_rd != 5'd0);
 
     rv32_regfile u_regs(
@@ -233,7 +236,7 @@ module rv32_top(
         // its own operand for free (rev 2.0 of rv32_regfile).
         .ra0(rr_rs1), .ra1(rr_rs2), .ra2(5'd0), .ra3(5'd0),
         .rd0(rf_d0), .rd1(rf_d1), .rd2(), .rd3(),
-        .we(wb_we), .wa(w_rd), .wd(w_value)
+        .we(wb_we), .wa(w_rd), .wd(wb_value)
     );
 
     // ========================================================= bypass
@@ -302,7 +305,6 @@ module rv32_top(
     wire [31:0] ex_value_w  = rr_mul ? mul_y : rr_div ? div_result : alu_y;
 
     // ========================================================= CSR block
-    wire [31:0] csr_rdata, csr_vector, csr_mepc;
     wire        csr_illegal, csr_irq_pending;
     wire [31:0] csr_irq_cause;
 
@@ -314,16 +316,29 @@ module rv32_top(
 
     wire        pipe_empty = !id_valid && !rr_valid && !ex_valid && !m_valid && !w_valid;
     wire        sync_trap  = w_valid && w_trap && trap_ready && !halted_q;
-    wire        irq_trap   = csr_irq_pending && pipe_empty && !halted_q;
+    // An interrupt is injected at a *boundary*, not when the pipe happens to be
+    // empty: a spin loop never empties the pipe, so the old condition meant the
+    // timer interrupt was never taken at all (ISA case 15 timed out inside
+    // `lw; beq`).  The boundary is the retirement of a control-flow instruction:
+    // at that point the next pc is exactly known (w_next), every older
+    // instruction has committed, and killing the younger ones is what the
+    // redirect already does.
+    wire        irq_trap   = csr_irq_pending && w_valid && w_ctrl && !w_trap &&
+                             !w_mret && !halted_q;
     wire        trap_go    = sync_trap || irq_trap;
     wire        mret_go    = w_valid && w_mret && !w_trap && !halted_q;
 
-    wire [31:0] trap_tgt_pc = irq_trap ? arch_next_q : w_pc;
+    // mepc: a synchronous trap returns to the faulting instruction, an
+    // interrupt returns to the instruction that would have run next.
+    wire [31:0] trap_tgt_pc = irq_trap ? w_next : w_pc;
     wire [31:0] trap_code   = irq_trap ? csr_irq_cause : {27'd0, w_cause};
     wire [31:0] trap_tval_i = irq_trap ? 32'd0 : w_tval;
 
     csr_native u_csr(
         .clk(clk), .rst_n(rst_n),
+        // The read happens at WB: read_data is pre-edge, so it is exactly the
+        // architectural old value for this instruction, and all older CSR
+        // writes have already landed.
         .addr(w_valid && w_csr ? w_csr_addr : id_csr_addr),
         .write_intent(w_valid && w_csr ? 1'b1 : rf_write_intent),
         .commit(w_commit && w_csr),
@@ -403,7 +418,7 @@ module rv32_top(
     assign retire_inst = w_inst;
     assign rd_valid    = wb_we;
     assign rd          = w_rd;
-    assign wdata       = w_value;
+    assign wdata       = wb_value;
     assign rd_valid_h  = 1'b0;
     assign rd_h        = 5'd0;
     assign wdata_h     = 32'd0;
@@ -642,7 +657,7 @@ module rv32_top(
                  rr_load, rr_store, rr_we, rr_rd);
     always @(posedge clk) if (rst_n && w_commit)
         $display("TR_WB  pc=%08x inst=%08x rd=%0d we=%b val=%08x trap=%b cause=%0d",
-                 w_pc, w_inst, w_rd, w_we, w_value, w_trap, w_cause);
+                 w_pc, w_inst, w_rd, w_we, wb_value, w_trap, w_cause);
 `endif
 
 endmodule

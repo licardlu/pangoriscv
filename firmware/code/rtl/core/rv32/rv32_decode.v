@@ -123,8 +123,12 @@ module rv32_decode(
                 end else illegal_r = 1;
             end
             OP_BR: begin
+                // The comparator is the ALU, so the branch compares rs1 against
+                // **rs2**; b_sel=1 (immediate) would compare rs1 against the
+                // displacement.  bne survives that mistake by accident (1 != 16)
+                // which is why only beq/blt/bge showed up as broken.
                 br_r = 1; u1_r = 1; u2_r = 1;
-                imm_r = imm_b; b_sel_r = 2'd1;
+                imm_r = imm_b; b_sel_r = 2'd0;
                 case (funct3)
                     3'd0: br_op_r = 3'd0;   // beq
                     3'd1: br_op_r = 3'd1;   // bne
@@ -240,7 +244,11 @@ module rv32_decode(
                     end
                     3'd1, 3'd2, 3'd3, 3'd5, 3'd6, 3'd7: begin
                         csr_r = 1; we_r = 1;
-                        u1_r = (funct3 != 3'd5);   // rs1 form reads rs1, imm form does not
+                        // funct3 1/2/3 are the rs1 forms, 5/6/7 the immediate
+                        // forms (csrrwi/csrrsi/csrrci) whose rs1 field IS the
+                        // 5-bit zimm.  Testing only ==5 made csrrsi/csrrci read
+                        // a register instead of their immediate.
+                        u1_r = (funct3 < 3'd5);
                         csr_op_r = (funct3 == 3'd1 || funct3 == 3'd5) ? 2'd0 :
                                    (funct3 == 3'd2 || funct3 == 3'd6) ? 2'd1 : 2'd2;
                     end

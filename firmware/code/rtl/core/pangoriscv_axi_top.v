@@ -109,6 +109,9 @@ module pangoriscv_axi_top(
 `endif
  ifu_axi ifu(.clk(clk),.rst_n(rst_n),.enable(fetch_enable),
   .redirect_valid(redirect_valid || halt_req || halt_pending || halted || protocol_fault),
+  // The target is only meaningful for a real redirect; for the halt/flush
+  // flavours redirect_pc is don't-care because `enable` is low.
+  .redirect_pc(redirect_pc),
   .fetch_pc(request_pc),.predicted_next_pc(predict_next_pc),
   .chain_c(ifu_chain_c),.chain_predict_next_pc(ifu_chain_pred),
   .chain_c2(ifu_chain_c2),.chain_predict_next_pc2(ifu_chain_pred2),

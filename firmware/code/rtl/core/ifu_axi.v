@@ -46,6 +46,11 @@ module ifu_axi #(
     parameter integer DEPTH=8
 )(
     input wire clk,rst_n,enable,redirect_valid,
+    // The PC the redirect is going to.  `fetch_pc` is the CPU's *current* PC
+    // register, which only takes the target on the redirect edge itself, so
+    // without this input the unit cannot ask the cache for the target until the
+    // cycle after the redirect -- one guaranteed dead cycle per redirect.
+    input wire [31:0] redirect_pc,
     input wire [31:0] fetch_pc,predicted_next_pc,
     output wire fetch_valid,input wire fetch_ready,input wire fetch_ready2,
     output wire [31:0] result_pc,result_inst,
@@ -108,7 +113,14 @@ module ifu_axi #(
     // closes the one-cycle window right after a redirect in which next_pc_q
     // still held a stale chain PC while the queue had just been flushed.
     wire transparent=empty&&(ocnt_q==0)&&(stale_cnt_q==0);
-    wire [31:0] fetch_ptr=transparent?fetch_pc:next_pc_q;
+    // On the redirect edge the queue is dropped and pc_q still holds the old PC,
+    // so the only correct fetch pointer is the redirect target.  Using it here
+    // (instead of waiting one cycle for `fetch_pc` to move) lets the request go
+    // out in the same cycle, which is worth one cycle on every redirect:
+    // measured 137,249 redirects per CoreMark run and WIN_STARVE empty=137,250,
+    // i.e. one dead cycle each.
+    wire [31:0] fetch_ptr=redirect_valid?redirect_pc:
+                          (transparent?fetch_pc:next_pc_q);
     assign chain_c=fetch_ptr;
     assign chain_c2=fetch_ptr+32'd4;
     assign flush_lost=lost_q;
@@ -147,16 +159,30 @@ module ifu_axi #(
 
     // ---- engine handshake bookkeeping --------------------------------------
     wire rsp=eng_rsp_valid&&eng_rsp_ready;
-    wire rsp_owned=rsp&&(ocnt_q!=0);                    // answer to a tracked request
-    wire rsp_stale=rsp&&(ocnt_q==0)&&(stale_cnt_q!=0);  // owed to a flushed stream
+    // Order, not the counter, decides who a response belongs to: requests are
+    // answered in the order they were issued, so while any response is still
+    // owed to a flushed stream the next one to arrive is one of those.  This is
+    // what lets a redirect raise its own request while the old one is still in
+    // flight (see redir_issue) instead of waiting two cycles for it.
+    wire rsp_stale=rsp&&(stale_cnt_q!=0);              // owed to a flushed stream
+    wire rsp_owned=rsp&&(stale_cnt_q==0)&&(ocnt_q!=0); // answer to a tracked request
     wire rsp_live=rsp_owned||rsp_stale;
     // Occupancy after this edge's pop: what a request issued on the same edge
     // has to fit next to.
     wire [1:0] ocnt_after_pop=ocnt_q-(rsp_owned?2'd1:2'd0);
 
-    assign eng_req_valid=rst_n&&enable&&!redirect_valid&&!stop_q&&
-                         (stale_cnt_q==0)&&(reserved<=(DEPTH-2))&&
-                         (ocnt_after_pop<2'd2)&&!local_fault;
+    // A redirect may issue its request on the flush edge itself, but only when
+    // nothing is outstanding: then there is no response to become stale and the
+    // engine still sees exactly one request.  When a response is in flight the
+    // old gate applies (wait for it to be swallowed first).
+    // The engine accepts two requests, so the redirect may add one as long as
+    // at most one is already outstanding or owed.
+    wire [2:0] owed={1'b0,ocnt_q}+stale_cnt_q;
+    wire redir_issue=redirect_valid&&(owed<=3'd1);
+    assign eng_req_valid=rst_n&&enable&&!stop_q&&
+                         (ocnt_after_pop<2'd2)&&!local_fault&&
+                         (redirect_valid ? redir_issue
+                                         : ((stale_cnt_q==0)&&(reserved<=(DEPTH-2))));
     assign eng_req_addr=fetch_ptr;
     assign eng_req_size=2;
     assign eng_req_len=0;
@@ -253,6 +279,17 @@ module ifu_axi #(
             pcf0_q<=0; pcf1_q<=0;
             ocnt_q<=0;
             stale_cnt_q<=stale_cnt_q+{1'b0,ocnt_q}-(rsp_live?3'd1:3'd0);
+            // The target request raised on this very edge has to be registered
+            // here, otherwise the unit forgets what it asked for and the
+            // response would be swallowed as if it belonged to the flushed
+            // stream.  next_pc_q must follow the new chain too: from the next
+            // cycle `transparent` is false (one request in flight), so the
+            // prefetch pointer would otherwise walk the pre-redirect path.
+            if(redirect_valid&&issue) begin
+                pcf0_q<=redirect_pc; pdf0_q<=chain_next; pdf0_q2<=chain2_next;
+                ocnt_q<=2'd1;
+                next_pc_q<=expect_pair?packet_next:chain_next;
+            end
         end else if(head_lost) begin
             lost_q<=1; count_q<=0; head_q<=0; tail_q<=0; stop_q<=0;
             ocnt_q<=0; stale_cnt_q<=0; next_pc_q<=fetch_pc;

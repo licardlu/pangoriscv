@@ -1,5 +1,28 @@
 # 模块与面积架构（面积 / 效率专项的唯一依据）
 
+## P15 增补（2026-10-22）：先钉死"哪个核在跑"
+
+**这一条比面积更重要，先读**：`soc_config.vh` 默认 `define CORE_RV32`，
+`pangoriscv_axi_top.v` 的 `ifdef CORE_RV32` 选的是 **`rtl/core/rv32/rv32_top.v`**。
+也就是说本文上面所有 X0/X1、`rr_*`、`hold_ex`、`br_miss` 的讨论对应的才是**真正进位流的核**；
+`rtl/core/pangoriscv.v`（以及 `ex.v`/`id.v`/`ex_alu.v` 这条链）**不参与综合**。
+改后者对面积和时序零影响——本轮接手时差点按错的核动手，记在这里防再犯。
+
+### M-RV32 `rv32_top` —— `rtl/core/rv32/rv32_top.v` —— 4 级双发射核（交付核）
+
+- **面积（本轮实测，`device_map` `Used` 行）**：LUT 18,177 / FF 7,823 / LUTRAM 3,790 / DRM 8 / APM 10
+  （交付基线 17,869 / 7,823 / 3,790）。增量来源：S1 的 I$ way 拆分 +252 LUT（上一轮记为
+  "Δ面积 0"，与 `p14po120c` 的 18,121 不符，以实测为准）；`-dc_duplication TRUE` +56 LUT。
+  **这条与"面积只减不增"冲突，已在 plan v10 记录，属于"换频率"的显式例外。**
+- **关键路径（40 MHz 约束 p13seed7 `.rtr`）**：24.65 ns，Route 19.89 ns（82.5%），27 级；
+  链条 `rr_rs1 → ALU → fwd1_h → mem_addr_h → dcache early_req → mem_wait → br_miss
+  → redirect → ifu → I$ tag → hit0 → I$ data → rsp_data_hi_q`。
+- **本轮变更（`76b98cf`）**：`br_miss` 去掉 `!hold_ex`，改为
+  `ctrl_hold_ok = !trap_wait && !div_wait`。逐位等价（CoreMark `Total ticks 3,833,976` 不变）。
+  目的：把 D-cache 请求路径（5 跳 / 4.4 ns）从重定向锥里摘掉。
+- **测试**：`run_coremark_sim.py`（ticks/CRC）、`run_isa_e2e.py`（20/21，case 21 基线即红）。
+- **变更记录**：2026-10-22 P15 立卡（此前本文没有 `rv32_top` 的卡，因为一直按 `pangoriscv` 记）。
+
 ## 当前实验增补：X0/X1 执行分级
 
 - 预测目标配对：允许老槽 branch/JAL/JALR 与预测后继位置的独立 ALU 配对，

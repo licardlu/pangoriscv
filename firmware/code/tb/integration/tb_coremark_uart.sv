@@ -127,11 +127,16 @@ module tb_coremark_uart;
                 ctrl_retired=ctrl_retired+1;
             if(soc.core.pred_miss) mispred_retired=mispred_retired+1;
         end
+        // Periodic snapshots are behind TB_PROGRESS: their $display can interleave
+        // with the firmware's UART report and destroy the `Total ticks` line,
+        // which IS the score.  A/B runs therefore run without them.
+`ifdef TB_PROGRESS
         if(cycles%500000==0) begin
             $display("PROGRESS cycles=%0d retires=%0d traps=%0d faults=%0d uart_chars=%0d pc=%08x arch_next_pc=%08x halted=%b last_retire_cycle=%0d uart_ctrl=%08x uart_status=%08x uart_tx=%b",
                      cycles,retired,traps,faults,chars,retire_pc,arch_next_pc,halted,last_retire_cycle,
                      soc.uart_inst.ctrl_q,soc.uart_inst.stat_q,uart_tx);
         end
+`endif
         if(cycles-last_retire_cycle > 200000 && cycles>200000) begin
             $display("STALL_DETECT cycles=%0d last_retire_cycle=%0d retires=%0d arch_next_pc=%08x retire_pc=%08x uart_ctrl=%08x uart_baud=%08x uart_status=%08x",
                      cycles,last_retire_cycle,retired,arch_next_pc,retire_pc,soc.uart_inst.ctrl_q,soc.uart_inst.baud_q,soc.uart_inst.stat_q);
@@ -148,12 +153,14 @@ module tb_coremark_uart;
             if(faults<8) $display("BUS_FAULT cycle=%0d",cycles);
         end
         // Liveness snapshot: shows whether the pipeline is still advancing.
+`ifdef TB_PROGRESS
         if(cycles!=0 && cycles%500000==0) begin
             $display("LIVE cycle=%0d retires=%0d arch_next_pc=%08x pc=%08x if_idle=%b lsu_state=%0d op_valid=%b done_valid=%b halted=%b",
                 cycles,retired,arch_next_pc,retire_pc,
                 soc.core.if_idle, soc.core.lsu.state,
                 soc.core.op_valid, soc.core.done_valid, halted);
         end
+`endif
         // First bus faults: which access failed, so a trap loop can be attributed.
         // P9: a completion is now reported on the engine RESPONSE edge, which is
         // READ_WAIT (3) for loads and WRITE_WAIT (4) for stores; COMPLETE (5) only

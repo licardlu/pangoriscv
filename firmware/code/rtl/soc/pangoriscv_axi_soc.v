@@ -106,21 +106,58 @@ module pangoriscv_axi_soc #(
   .protocol_fault(peripheral_fault[4]),
   `AXI_READ_CONNECT(s,s,6),`AXI_WRITE_CONNECT(s,s,6));
 `ifdef PERF_ENABLE
+ // T1a (plan v7 section 2): every event tap passes through one FF before it can
+ // reach a counter enable.  The taps are combinational views of the core's own
+ // control path -- `if_wait = fetch_enable && fetch_ready && !fetch_valid` hangs
+ // off the branch-mispredict cone, and each 64 b counter's CE sits behind a
+ // 16-stage CECO carry chain -- so the unregistered form WAS the tail of the
+ // worst placed path (p7_path40b: br_miss -> perf_if_wait -> cnt[2][*]/CECO x16,
+ // 2.18 ns of pure counter carry plus 1.7 ns of br_miss fanout).
+ //
+ // This costs one FF per tap and one cycle of skew on a *measurement* counter
+ // only: the score comes from mcycle/minstret inside csr_native.v, which are not
+ // touched.  Every tap goes through the same stage, so no two counters disagree.
+ reg p_i_miss_q,p_d_miss_q,p_if_wait_q,p_lsu_wait_q,p_pred_miss_q;
+ reg p_i_ar_q,p_i_r_q,p_i_rlast_q,p_d_ar_q,p_d_r_q,p_d_rlast_q;
+ reg p_d_aw_q,p_d_w_q,p_d_b_q;
+ reg [7:0] p_i_arlen_q,p_d_arlen_q;
+ wire p_i_ar_w = m_arvalid[0] && m_arready[0];
+ wire p_i_r_w  = m_rvalid[0]  && m_rready[0];
+ wire p_d_ar_w = m_arvalid[1] && m_arready[1];
+ wire p_d_r_w  = m_rvalid[1]  && m_rready[1];
+ wire p_d_aw_w = m_awvalid[1] && m_awready[1];
+ wire p_d_w_w  = m_wvalid[1]  && m_wready[1];
+ wire p_d_b_w  = m_bvalid[1]  && m_bready[1];
+ always @(posedge clk) begin
+   if(!rst_n) begin
+     p_i_miss_q<=0; p_d_miss_q<=0; p_if_wait_q<=0; p_lsu_wait_q<=0;
+     p_pred_miss_q<=0; p_i_ar_q<=0; p_i_r_q<=0; p_i_rlast_q<=0;
+     p_d_ar_q<=0; p_d_r_q<=0; p_d_rlast_q<=0; p_d_aw_q<=0; p_d_w_q<=0;
+     p_d_b_q<=0; p_i_arlen_q<=0; p_d_arlen_q<=0;
+   end else begin
+     p_i_miss_q<=perf_i_miss;   p_d_miss_q<=perf_d_miss;
+     p_if_wait_q<=perf_if_wait; p_lsu_wait_q<=perf_lsu_wait;
+     p_pred_miss_q<=perf_pred_miss;
+     p_i_ar_q<=p_i_ar_w; p_i_arlen_q<=m_arlen[0+:8];
+     p_i_r_q<=p_i_r_w;   p_i_rlast_q<=m_rlast[0];
+     p_d_ar_q<=p_d_ar_w; p_d_arlen_q<=m_arlen[8+:8];
+     p_d_r_q<=p_d_r_w;   p_d_rlast_q<=m_rlast[1];
+     p_d_aw_q<=p_d_aw_w; p_d_w_q<=p_d_w_w; p_d_b_q<=p_d_b_w;
+   end
+ end
  // The AXI activity taps watch the CPU side of the interconnect (m_*), so they
  // count exactly the bursts the caches issue.  pred_miss reports the dynamic
  // predictor's misses when PREDICT_ENABLE is set and the static not-taken
  // reference otherwise (see rtl/core/pangoriscv.v).
  perf_regs perf_inst(.clk(clk),.rst_n(rst_n),
-  .retire_fire(retire_fire),.retire_inst(retire_inst),.pred_miss(perf_pred_miss),
-  .i_miss(perf_i_miss),.d_miss(perf_d_miss),
-  .if_wait(perf_if_wait),.lsu_wait(perf_lsu_wait),
-  .i_ar_fire(m_arvalid[0] && m_arready[0]),.i_arlen(m_arlen[0+:8]),
-  .i_r_fire(m_rvalid[0] && m_rready[0]),.i_rlast(m_rlast[0]),
-  .d_ar_fire(m_arvalid[1] && m_arready[1]),.d_arlen(m_arlen[8+:8]),
-  .d_r_fire(m_rvalid[1] && m_rready[1]),.d_rlast(m_rlast[1]),
-  .d_aw_fire(m_awvalid[1] && m_awready[1]),
-  .d_w_fire(m_wvalid[1] && m_wready[1]),
-  .d_b_fire(m_bvalid[1] && m_bready[1]),
+  .retire_fire(retire_fire),.retire_inst(retire_inst),.pred_miss(p_pred_miss_q),
+  .i_miss(p_i_miss_q),.d_miss(p_d_miss_q),
+  .if_wait(p_if_wait_q),.lsu_wait(p_lsu_wait_q),
+  .i_ar_fire(p_i_ar_q),.i_arlen(p_i_arlen_q),
+  .i_r_fire(p_i_r_q),.i_rlast(p_i_rlast_q),
+  .d_ar_fire(p_d_ar_q),.d_arlen(p_d_arlen_q),
+  .d_r_fire(p_d_r_q),.d_rlast(p_d_rlast_q),
+  .d_aw_fire(p_d_aw_q),.d_w_fire(p_d_w_q),.d_b_fire(p_d_b_q),
   .protocol_fault(perf_fault),
   `AXI_READ_CONNECT(s,s,7),`AXI_WRITE_CONNECT(s,s,7)
  );

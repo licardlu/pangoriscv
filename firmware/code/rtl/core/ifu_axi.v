@@ -69,6 +69,13 @@ module ifu_axi #(
     input wire eng_rsp_valid,output wire eng_rsp_ready,
     input wire [31:0] eng_rsp_data,input wire [31:0] eng_rsp_data_hi,
     input wire eng_rsp_pair,input wire [1:0] eng_rsp_resp,
+    // Combinational, valid in the cycle of the request handshake: "this request
+    // will be answered with two words".  The cache derives it from the same
+    // combinational lookup that loads its response register, so `expect_pair`
+    // here and the width of the response can never disagree.  It differs from
+    // `req_addr[4:2]!=7` only for a word-7 request whose successor line is
+    // resident, which is exactly the cross-line pair (plan v7 section 1).
+    input wire eng_req_pair_ahead,
     // ---- T1/T10 prefetch chain --------------------------------------------
     // chain_c holds the PC of the next request; chain_c2 is chain_c+4 (the
     // second word of the same 8 B packet).  The predictor answers both.
@@ -140,8 +147,14 @@ module ifu_axi #(
     // taken, otherwise PC+8.  Only meaningful while chain_c2 == fetch_ptr+4.
     wire [31:0] chain2_next=(!chain2_unknown)?chain_predict_next_pc2:fetch_ptr+32'd8;
 
-    // A pair can only be fetched when the requested word does not end the line.
-    wire expect_pair=!local_fault&&(fetch_ptr[4:2]!=3'd7);
+    // A pair can only be fetched when the engine says it will answer with two
+    // words.  Before the cross-line pair this was `fetch_ptr[4:2]!=7`; the
+    // engine now also pairs a word-7 request with word 0 of the next line, so
+    // the decision has to come from the engine instead of from the address.
+    // An unwired port ($z/$x) degrades to the pre-v7 rule, so the unit tests
+    // that drive this module without a cache keep their old fetch stream.
+    wire ahead_unknown=(^eng_req_pair_ahead)===1'bx;
+    wire expect_pair=!local_fault&&(ahead_unknown?(fetch_ptr[4:2]!=3'd7):eng_req_pair_ahead);
     wire first_taken=(chain_next!=fetch_ptr+32'd4);
     wire [31:0] packet_next=first_taken?chain_next:
                             (chain2_next != fetch_ptr+32'd8) ? chain2_next : fetch_ptr+32'd8;

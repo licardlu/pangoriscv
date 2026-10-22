@@ -36,6 +36,7 @@ module pangoriscv_axi_top(
  wire [31:0] ifu_chain_c,ifu_chain_pred,ifu_chain_c2,ifu_chain_pred2;
  wire [31:0] if_rsp_data_hi;
  wire if_rsp_pair;
+ wire if_pair_ahead;
  wire ifu_flush_lost;
  wire pred_miss;
  wire [4:0] fetch_cause;
@@ -129,7 +130,8 @@ module pangoriscv_axi_top(
   .eng_req_addr(if_req_addr),.eng_req_size(if_req_size),.eng_req_len(if_req_len),
   .eng_req_id(if_req_id),.eng_rsp_valid(if_rsp_valid),.eng_rsp_ready(if_rsp_ready),
   .eng_rsp_data(if_rsp_data),.eng_rsp_data_hi(if_rsp_data_hi),
-  .eng_rsp_pair(if_rsp_pair),.eng_rsp_resp(if_rsp_resp)
+  .eng_rsp_pair(if_rsp_pair),.eng_rsp_resp(if_rsp_resp),
+  .eng_req_pair_ahead(if_pair_ahead)
  );
 `ifdef CACHE_ENABLE
  // the caches/H1: the two-way set-associative I-cache takes the place of the single-beat
@@ -140,6 +142,7 @@ module pangoriscv_axi_top(
   .req_addr(if_req_addr),.req_size(if_req_size),.req_len(if_req_len),.req_id(if_req_id),
   .rsp_valid(if_rsp_valid),.rsp_ready(if_rsp_ready),.rsp_data(if_rsp_data),
   .rsp_data_hi(if_rsp_data_hi),.rsp_pair(if_rsp_pair),
+  .req_pair_ahead(if_pair_ahead),
   .rsp_resp(if_rsp_resp),.rsp_id(),.protocol_fault(if_pf),.config_fault(if_cf),
   .miss_pulse(if_cache_miss),.access_pulse(),`AXI_READ_CONNECT(m,m,0)
  );
@@ -154,6 +157,7 @@ module pangoriscv_axi_top(
  assign if_cache_miss=1'b0;
  assign if_rsp_data_hi=32'd0;
  assign if_rsp_pair=1'b0;
+ assign if_pair_ahead=1'b0;          // the single-beat engine never pairs
 `endif
  lsu_axi lsu(.clk(clk),.rst_n(rst_n),
   .op_valid(op_valid && !protocol_fault),.op_ready(op_ready),.is_store(is_store),

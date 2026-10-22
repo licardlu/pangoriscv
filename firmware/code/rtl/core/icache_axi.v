@@ -56,6 +56,12 @@ module icache_axi (
     // cross the 32 B line (word offset 7), in which case the IFU issues single.
     output reg [31:0] rsp_data_hi,
     output reg rsp_pair,
+    // Combinational, valid while the request handshake is in progress: "the
+    // response to THIS request will carry two words".  The IFU must know this
+    // in the same cycle it raises the request, because it decides there whether
+    // the prefetch pointer advances by 4 or by 8.  Both sides read the same
+    // value on the same edge, so they cannot disagree.
+    output wire req_pair_ahead,
     output reg [1:0] rsp_resp,
     output reg [3:0] rsp_id,
     output reg protocol_fault,
@@ -105,6 +111,21 @@ module icache_axi (
     reg        valid_mem[0:SETS*2-1];         // {way,set}
     reg        lru_mem  [0:SETS-1];           // 1 = way1 is the LRU victim
 
+    // ---- cross-line pair side arrays (plan v7 section 1) -------------------
+    // Word offset 7 needs (word7 of line L, word0 of line L+32B).  The two words
+    // live in two different sets, so the banked data array cannot serve them in
+    // one cycle.  These two arrays hold {tag, word0} of whatever line sits in
+    // way0/way1 of a set, indexed by that set alone: reading both gives the
+    // linear successor of any line without a second port on the main array.
+    // `succv0/succv1` mirror valid_mem for exactly those entries and are the
+    // only part that has to be reset/invalidated, which a plain FF array can do
+    // in one cycle (a distributed RAM cannot).
+    reg [52:0] succ0_mem[0:SETS-1];           // {tag[20:0], word0[31:0]}
+    reg [52:0] succ1_mem[0:SETS-1];
+    reg        succv0[0:SETS-1];
+    reg        succv1[0:SETS-1];
+    reg [31:0] fill_w0_q;                      // beat 0 of the line being filled
+
     reg [2:0] state;
     reg [31:0] addr_q;
     reg [3:0] id_q;
@@ -136,14 +157,31 @@ module icache_axi (
     wire [2:0] hit_word_off = req_addr[4:2];
     wire [2:0] hit_e_off = (hit_word_off + 3'd1) >> 1;   // ceil(w/2)
     wire [2:0] hit_o_off = hit_word_off >> 1;            // floor(w/2)
-    wire       hit_pair  = (hit_word_off != 3'd7);
     wire [8:0] hit_e_index = {req_addr[10:5], hit_way, hit_e_off[1:0]};
     wire [8:0] hit_o_index = {req_addr[10:5], hit_way, hit_o_off[1:0]};
     wire [31:0] hit_even = even_mem[hit_e_index];
     wire [31:0] hit_odd  = odd_mem [hit_o_index];
-    wire [31:0] hit_word    = hit_word_off[0] ? hit_odd  : hit_even;
-    wire [31:0] hit_word_hi = hit_pair ?
-                              (hit_word_off[0] ? hit_even : hit_odd) : 32'd0;
+    wire [31:0] hit_word = hit_word_off[0] ? hit_odd  : hit_even;
+
+    // Cross-line successor lookup.  nxt_set/nxt_tag describe the 32 B line that
+    // starts 8 B after this request, i.e. exactly the line word 8 lives in.
+    // The set index wraps inside the cache, so the tag has to take the carry.
+    wire [5:0]  nxt_set  = req_addr[10:5] + 6'd1;
+    wire [20:0] nxt_tag  = req_tag + {20'd0,(req_addr[10:5]=={6{1'b1}})};
+    wire [52:0] succ0_w  = succ0_mem[nxt_set];
+    wire [52:0] succ1_w  = succ1_mem[nxt_set];
+    wire        succ_ok0 = succv0[nxt_set] && (succ0_w[52:32]==nxt_tag);
+    wire        succ_ok1 = succv1[nxt_set] && (succ1_w[52:32]==nxt_tag);
+    wire [31:0] succ_word0 = succ_ok1 ? succ1_w[31:0] : succ0_w[31:0];
+    // A cross-line pair is only safe when the current line hits (otherwise the
+    // miss path answers, and it returns a single word at offset 7) and the
+    // successor line is resident with the expected tag.
+    wire        xline_ok  = (hit_word_off==3'd7) && (hit0||hit1) && (succ_ok0||succ_ok1);
+    wire        pair_now  = (hit_word_off!=3'd7) || xline_ok;
+    assign      req_pair_ahead = pair_now;
+    wire [31:0] hit_word_hi = (hit_word_off!=3'd7) ?
+                              (hit_word_off[0] ? hit_even : hit_odd) : succ_word0;
+
     // The line address is {tag,set,5'b0}: the 32 B line the requested word is in.
     wire [31:0] line_addr = {tag_q, set_q, 5'b0};
 
@@ -201,12 +239,20 @@ module icache_axi (
             // is only set on the fill edge that also writes its tag.
             for(i=0;i<SETS*2;i=i+1) valid_mem[i]<=0;
             for(i=0;i<SETS;i=i+1) lru_mem[i]<=0;
+            for(i=0;i<SETS;i=i+1) begin succv0[i]<=0; succv1[i]<=0; end
+            fill_w0_q<=0;
         end else begin
             miss_pulse<=0;
             access_pulse<=0;
             rsp_valid<=0;
             if(invalidate) begin
                 for(i=0;i<SETS*2;i=i+1) valid_mem[i]<=0;
+                // The side arrays keep their data (a distributed RAM cannot be
+                // cleared entry by entry) and are invalidated through these two
+                // FF arrays, which do clear in one cycle.  `invalidate` is a
+                // level in this SoC (halt/download/resume), so a level clear is
+                // enough: it is still high on every cycle a fill could race it.
+                for(i=0;i<SETS;i=i+1) begin succv0[i]<=0; succv1[i]<=0; end
                 // A burst in flight must not re-validate the line it is filling.
                 if(state==IC_AR || state==IC_FILL) fill_kill<=1;
             end
@@ -242,12 +288,12 @@ module icache_axi (
                             // the IC_RESP hold path stays correct if rsp_ready is late.
                             rsp_data_q<=hit_word;
                             rsp_data_hi_q<=hit_word_hi;
-                            rsp_pair_q<=hit_pair;
+                            rsp_pair_q<=pair_now;
                             rsp_resp_q<=`AXI_RESP_OKAY;
                             rsp_valid<=1;
                             rsp_data<=hit_word;
                             rsp_data_hi<=hit_word_hi;
-                            rsp_pair<=hit_pair;
+                            rsp_pair<=pair_now;
                             rsp_resp<=`AXI_RESP_OKAY;
                             rsp_id<=req_id;
                             state<=IC_RESP;
@@ -280,6 +326,9 @@ module icache_axi (
                         if(!fill_kill) begin
                             if(!beat_q[0]) even_mem[{set_q,way_q,beat_q[2:1]}]<=m_rdata;
                             else           odd_mem [{set_q,way_q,beat_q[2:1]}]<=m_rdata;
+                            // Beat 0 is this line's word 0 -- the very word a
+                            // cross-line pair needs as its second half.
+                            if(beat_q==3'd0) fill_w0_q<=m_rdata;
                         end
                         if(m_rlast) begin
                             if(beat_q!=3'd7) begin
@@ -289,6 +338,16 @@ module icache_axi (
                                 if(!fill_kill && !line_bad) begin
                                     tag_mem[{way_q,set_q}]<=tag_q;
                                     valid_mem[{way_q,set_q}]<=1'b1;
+                                    // Publish {tag, word0} for this {set,way} so
+                                    // the line BEFORE it can answer a
+                                    // cross-line pair out of the side array.
+                                    if(!way_q) begin
+                                        succ0_mem[set_q]<={tag_q,fill_w0_q};
+                                        succv0[set_q]<=1'b1;
+                                    end else begin
+                                        succ1_mem[set_q]<={tag_q,fill_w0_q};
+                                        succv1[set_q]<=1'b1;
+                                    end
                                 end
                                 lru_mem[set_q]<=~way_q;
                                 // A failed beat is returned to the IFU as a fetch

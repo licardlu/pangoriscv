@@ -2012,3 +2012,47 @@ pnr 前才读，那时设计已存在，报错也正常（`ConstraintEditor-0027
 `--place-only`，几分钟）：坐标边界 + 实例名形式 + 约束通道三件事一次标定完，
 把结论写进计划书的标定章节，再写真正的 floorplan。判据永远是 log 里的
 `E:`/`failed` 行，不是命令后面的 `successfully`。
+
+## 48. 详细布线卡在 2~3k 条"未布"上不收尾——先分离 hold-fix 空转与真拥塞（2026-10-22，P13）
+
+**现象**：40 MHz 约束下摆放 WNS +1.5 ns（过得很好）、全局布线 15 轮 0 条未布，
+但**详细布线**从 27k 条磨到 2.2~2.5k 条后就卡住：数字上下震荡
+（2,292→2,533→2,377→2,469...），200+ 轮不再下降。120 MHz 同样卡在 3.8k。
+pds_shell 还会在 ~270 轮/48 分钟处无解释退出（exit≠0、log 尾部是正常迭代行、无 .rtr）。
+
+**查什么**（按顺序分离，每一步都有判据）：
+1. **hold-fix 空转？** 把 `-fix_hold_violation_*` 全部去掉重跑（`--plain-pnr`）。
+   实测：照样卡 2.2~2.5k ⇒ **hold 参数不是原因**（它们只是让收敛更慢一点）。
+2. **真拥塞？** `-plc_decongestion 1`、`-share_router_control_signal TRUE`
+   （压 CE/RS 扇出）、`-dc_duplication TRUE`（复制高扇出单元）三个开关逐个/组合试。
+3. **摆放随机性？** 换 `-gplace_seed`/`-gplace_times`（多 seed 摆放选优）。
+4. **结构？** 三个 LUTRAM 阵列（data_ram 2,048 + I$ + D$）共用走廊时，
+   WADDR/CE 总线是巨型交叉线——**按 skill §9.9 分区**才是根治。
+
+**原因**（截至本条，已证实的部分）：最后 2k+ 条是**震荡而非单调下降**——
+每轮都有网被竞争者拆掉重布。这是拥塞的指纹，不是时序目标不可达的指纹
+（摆放明明是过的）。40 MHz 的 p7_path40b（P8 之前 RTL）同流程能收尾，
+说明回归出在 P9~P12 的 RTL/资源变化（lane1 乘法器 +4 APM、跨行成对 +106 LUTRAM）。
+
+**怎么办**：把"布线不收敛"当成独立问题先解决（它是位流/上板的前置），
+实验按上表 1→4 顺序做，**每个实验记下"卡在哪一档"**（本例：无 hold 参数卡 2.3k）。
+判据是"Unrouted nets"序列：**单调下降=在收敛，震荡=拥塞**。
+别把两种混为一谈就去动 RTL。
+
+## 49. pnr 的 `-number_of_router_thread` 本器件不支持；`bit_gen` 不是命令（2026-10-22，P13）
+
+**现象**：`pnr ... -number_of_router_thread 4` 使整个 pnr 行被跳过
+（`E: Flow-0182: option number_of_router_thread is not support for the device` +
+`Flow-0163: Failed to parse ... at line N`），流程继续跑合成但**永远到不了摆放**。
+另外生成脚本里的 `bit_gen` 报 `invalid command name "bit_gen"`——正确命令是
+`gen_bit_stream`（build.tcl 里就是这个）。
+
+**查什么**：任何 run 后先 grep `Flow-01` 与 `invalid command`；被跳过的 pnr
+不会有任何 `Worst slack` 输出——"跑了很久但没有摆放数据"就是这个指纹。
+
+**原因**：pnr 的选项按器件能力过滤，help 里列了不代表本器件支持；
+bitstream 生成命令是 `gen_bit_stream`，`bit_gen` 不存在（因为此前每次都在
+pnr 阶段卡死、从来没执行到那一行，所以一直没暴露）。
+
+**怎么办**：给 pnr 加实验性参数时，先用一个**便宜的短流程**确认参数被接受
+（看 log 有没有 `Action pnr`/`Worst slack`）；生成位流的命令名以 build.tcl 为准。

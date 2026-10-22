@@ -18,13 +18,18 @@ module pangoriscv_top #(
  output wire [7:0] led
 );
  // PG2L100H PPLL legal range: VCO 1330..2133 MHz, PFD >=19 MHz.
- // 27 * 56 = 1512 MHz VCO; /12 = 126 MHz core clock (>=120 MHz).
+ // 27 * 56 = 1512 MHz VCO; /42 = 36 MHz core clock.
+ // DELIVERY frequency: the P13 routed implementation closes at 24.65 ns
+ // (estimated fmax 40.56 MHz, see evidence p13-board-verify), so 36 MHz keeps
+ // >=3 ns of margin on the board.  For the 126 MHz analysis builds use
+ // STATIC_RATIO0(12)/STATIC_DUTY0(12) (=126 MHz) -- those are timing-spec runs
+ // only and must NOT be flashed: 24.65 ns paths cannot run at 126 MHz.
  // Use the same clock for CPU, fabric, peripherals and observation counters.
  wire core_clk,pll_locked;
  GTP_PPLL #(
   .CLKIN_FREQ(27.0),.LOCK_MODE(0),
   .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(56),
-  .STATIC_RATIO0(12),.STATIC_DUTY0(12),.STATIC_DUTYF(56),
+  .STATIC_RATIO0(42),.STATIC_DUTY0(42),.STATIC_DUTYF(56),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

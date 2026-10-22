@@ -253,18 +253,6 @@ module rv32_top(
     // made lane 1 stop carrying any memory operation at all -- see
     // docs/lessons/mistakes-log.md.  The chain is shortened at the ALU instead.
     wire lane0_mem = dec_load || dec_store;
-    // P15b: a lane-1 control transfer may no longer pair behind a lane-0 memory
-    // op.  That single restriction is what lets br_miss_h drop `mem_wait` from
-    // its cone: with lane 0 never a load/store, `ex_is_mem` is 0 by opcode and
-    // `ex_is_mem_h` needs a lane-1 memory op, which is impossible here.  Cost is
-    // measured, not assumed -- see the ticks A/B in plan v11.
-    wire pair_l1_ctrl = dec_br_h || dec_jal_h;
-    // P17: the P16 rule `!(lane0_mem && lane1_ctrl)` is GONE.  The cycle budget
-    // (plan v12 section 6) priced it at 10,257 single-issue cycles per iteration
-    // -- 5.4% of the whole run -- which is far more than the 2.6 ns it bought.
-    // It was only ever needed because br_miss_h could not see mem_wait; the gate
-    // below puts mem_wait back for the one case that needs it (lane 0 holding an
-    // un-accepted memory op) and nowhere else.
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
                    !packet_load_use && !packet_md_use &&
                    !(lane0_mem && lane1_mem) &&
@@ -773,14 +761,7 @@ module rv32_top(
     wire        resume   = halted_q && !halt_req;
     // At most one lane is a control transfer (pairing forbids lane 0 when it is
     // a control), so the two mispredict sources are mutually exclusive.
-    // A lane-1 redirect kills the whole packet, so it may not fire while lane 0
-    // holds a memory op the D-cache has not accepted: the op would be dropped
-    // (the accept edge is what moves it to M).  Gating on `rr_mem && mem_wait`
-    // -- not on mem_wait alone -- keeps every other lane-1 redirect free of the
-    // D-cache cone, which is what made the P16 restriction unnecessary.
-    wire        lane0_mem_wait = (rr_load || rr_store) && mem_wait;
-    wire        br_miss_h = rr_v1 && rr_ctrl_h && !trap_wait && !div_wait &&
-                            !lane0_mem_wait && ctrl_miss_h;
+    wire        br_miss_h = rr_v1 && rr_ctrl_h && !hold_ex && ctrl_miss_h;
     wire        kill_young = br_miss || br_miss_h;
     wire        kill_all   = trap_go || mret_go;
     wire        id_bypass    = !id_valid && id_accept && !kill_all &&
@@ -828,29 +809,7 @@ module rv32_top(
     // ========================================================= predictor
     wire        pred_take, ct_take, ct_take2;
     wire [31:0] pred_target, ct_target, ct_target2;
-    // BTB size is a first-class tuning knob for the 120 MHz plan (v12): every
-    // mispredict costs ~4 cycles once the redirect after-effect is counted
-    // (1 redir + ~2.5 lost pairing + the bubble), so entries trade directly
-    // against the pipeline depth we can afford.  The `ifdef` lets a sim A/B
-    // change only the table size; synthesis without a define keeps 64.
-`ifdef BTB256
-    branch_predictor #(.ENTRIES(256)) u_bp(
-`elsif BTB128
-    branch_predictor #(.ENTRIES(128)) u_bp(
-`elsif BTB32
-    branch_predictor #(.ENTRIES(32)) u_bp(
-`elsif BTB64
-    branch_predictor #(.ENTRIES(64)) u_bp(
-`else
-    // DELIVERY default is 32 entries.  64 measured  5.260 vs 5.196 (worth
-    // 2,337 ticks/iteration) but it does NOT route: 18,957 LUT sits past this
-    // device's congestion knee and the detailed router stalls near 18 k
-    // unrouted nets, while the 18,157 LUT build converges in 575 iterations.
-    // 128/256 were measured too and are saturated (256 buys only 812/iteration),
-    // so paying area for entries is a dead end -- the table is capacity-saturated
-    // at 64.  Use +define+BTB64/+define+BTB128/+define+BTB256 for analysis.
-    branch_predictor #(.ENTRIES(32)) u_bp(
-`endif
+    branch_predictor u_bp(
         .clk(clk), .rst_n(rst_n),
         .fetch_pc(pc_q), .predict_taken(pred_take), .predict_target(pred_target),
         .fetch_pc2(chain_c), .predict_taken2(ct_take), .predict_target2(ct_target),
@@ -1490,107 +1449,5 @@ module rv32_top(
         $display("TR_WB  pc=%08x inst=%08x rd=%0d we=%b val=%08x trap=%b cause=%0d",
                  w_pc, w_inst, w_rd, w_we, wb_value, w_trap, w_cause);
 `endif
-
-`ifdef RV32_PROF
-    // ===================================================== cycle budget (v2)
-    // Mutually exclusive: every clock lands in exactly one bucket, and the
-    // buckets sum to `cycles`.  The v1 profiler used non-exclusive counters and
-    // they overlapped by 20%, which is useless for deciding what to spend.
-    //
-    // Reading guide:
-    //   pair      ideal cycle (2 instructions)
-    //   single    one issue slot wasted -- the blocker histogram says why
-    //   starve    front end had nothing (I$ miss / queue drain)
-    //   memwait   D-cache could not accept the request
-    //   divwait   divide in flight
-    //   trapwait  WB trap not yet accepted
-    integer cb_cyc=0, cb_pair=0, cb_single=0, cb_starve=0, cb_redir=0,
-            cb_memwait=0, cb_divwait=0, cb_trapwait=0;
-    integer sb_nopair=0, sb_l1notok=0, sb_l1mem=0, sb_l1ctrl=0, sb_lduse=0,
-            sb_mduse=0, sb_alone=0, sb_fault=0, sb_other=0;
-    // redirect source split, edge detected (the wires stay high for ~2 cycles)
-    reg br_miss_d=1'b0, br_miss_h_d=1'b0;
-    integer mp_br0=0, mp_jal0=0, mp_jalr0=0, mp_br1=0, mp_jal1=0;
-    integer n_ret=0, n_call=0, n_jalr=0;
-    integer mph [0:255];
-    reg [31:0] mpi [0:255];
-    reg        mpl [0:255];
-    integer k;
-    initial begin
-        for (k=0;k<256;k=k+1) begin mph[k]=0; mpi[k]=32'd0; mpl[k]=1'b0; end
-    end
-    always @(posedge clk) if (rst_n) begin
-        cb_cyc = cb_cyc + 1;
-        if (redirect_any)                            cb_redir    = cb_redir    + 1;
-        else if (mem_wait)                           cb_memwait  = cb_memwait  + 1;
-        else if (div_wait)                           cb_divwait  = cb_divwait  + 1;
-        else if (trap_wait)                          cb_trapwait = cb_trapwait + 1;
-        else if (!(fetch_valid && fetch_ready))      cb_starve   = cb_starve   + 1;
-        else if (id_accept2)                         cb_pair     = cb_pair     + 1;
-        else begin
-            cb_single = cb_single + 1;
-            if (!fetch_pair)                          sb_nopair  = sb_nopair  + 1;
-            else if (!lane1_ok)                       sb_l1notok = sb_l1notok + 1;
-            else if (lane0_mem && lane1_mem)          sb_l1mem   = sb_l1mem   + 1;
-            else if (lane0_mem && pair_l1_ctrl)       sb_l1ctrl  = sb_l1ctrl  + 1;
-            else if (packet_load_use)                 sb_lduse   = sb_lduse   + 1;
-            else if (packet_md_use)                   sb_mduse   = sb_mduse   + 1;
-            else if (lane0_issue_alone)               sb_alone   = sb_alone   + 1;
-            else if (fetch_fault || fetch_fault_hi)   sb_fault   = sb_fault   + 1;
-            else                                      sb_other   = sb_other   + 1;
-        end
-        // mispredicts, rising edge only
-        if (br_miss && !br_miss_d) begin
-            if (rr_jalr)      mp_jalr0 = mp_jalr0 + 1;
-            else if (rr_jal)  mp_jal0  = mp_jal0  + 1;
-            else              mp_br0   = mp_br0   + 1;
-        end
-        if (br_miss_h && !br_miss_h_d) begin
-            if (rr_jal_h)     mp_jal1  = mp_jal1  + 1;
-            else              mp_br1   = mp_br1   + 1;
-        end
-        // Mispredicting-PC histogram: a count of *which* instruction is wasting
-        // the cycle is worth more than any aggregate, because it turns "4.4%
-        // mispredict rate" into a short list of fixable sites.  Indexed by
-        // PC[9:2] so the printout is stable against image layout shifts.
-        if (br_miss && !br_miss_d) begin
-            mph[rr_pc[9:2]] = mph[rr_pc[9:2]] + 1;
-            mpi[rr_pc[9:2]] = rr_inst;
-            mpl[rr_pc[9:2]] = 1'b0;
-        end
-        if (br_miss_h && !br_miss_h_d) begin
-            mph[rr_pc_h[9:2]] = mph[rr_pc_h[9:2]] + 1;
-            mpi[rr_pc_h[9:2]] = {25'd0, rr_op_h};
-            mpl[rr_pc_h[9:2]] = 1'b1;
-        end
-        br_miss_d   <= br_miss;
-        br_miss_h_d <= br_miss_h;
-        // return / call population: without a big `ret` count a RAS cannot pay
-        if (w_commit && (w_inst[6:0] == 7'h67)) begin
-            n_jalr = n_jalr + 1;
-            if ((w_inst[19:15] == 5'd1 || w_inst[19:15] == 5'd5) &&
-                (w_inst[31:20] == 12'd0)) n_ret = n_ret + 1;
-        end
-        if (w_commit && (w_inst[6:0] == 7'h6f) &&
-            (w_inst[11:7] == 5'd1 || w_inst[11:7] == 5'd5)) n_call = n_call + 1;
-    end
-    final begin
-        $display("CYC cycles=%0d pair=%0d single=%0d starve=%0d redir=%0d memwait=%0d divwait=%0d trapwait=%0d",
-                 cb_cyc, cb_pair, cb_single, cb_starve, cb_redir, cb_memwait,
-                 cb_divwait, cb_trapwait);
-        $display("CYC_SUM check=%0d", cb_pair+cb_single+cb_starve+cb_redir+cb_memwait+cb_divwait+cb_trapwait);
-        $display("SINGLE nopair=%0d l1notok=%0d l1mem=%0d l1ctrl=%0d lduse=%0d mduse=%0d alone=%0d fault=%0d other=%0d",
-                 sb_nopair, sb_l1notok, sb_l1mem, sb_l1ctrl, sb_lduse, sb_mduse,
-                 sb_alone, sb_fault, sb_other);
-        $display("SINGLE_SUM check=%0d",
-                 sb_nopair+sb_l1notok+sb_l1mem+sb_l1ctrl+sb_lduse+sb_mduse+sb_alone+sb_fault+sb_other);
-        $display("MISPRED br0=%0d jal0=%0d jalr0=%0d br1=%0d jal1=%0d", mp_br0, mp_jal0, mp_jalr0, mp_br1, mp_jal1);
-        $display("RETPOP n_ret=%0d n_call=%0d n_jalr=%0d", n_ret, n_call, n_jalr);
-        for (k=0;k<256;k=k+1)
-            if (mph[k] >= 200)
-                $display("MPPC pc=%08x n=%0d lane1=%b inst=%08x", {k, 2'b00}, mph[k], mpl[k], mpi[k]);
-    end
-`endif
-
 
 endmodule

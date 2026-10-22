@@ -31,16 +31,25 @@ module pangoriscv_top #(
  // not the highest timing point.  Reverting the PLL here keeps the repo able to
  // reproduce the delivered bitstream -- do not leave it at an unrouted frequency.
  //
- // Exact-integer-MHz PLL family for future attempts (VCO = 27*F must be in range):
- //   45.000 = 27*50/30, 50.000 = 27*50/27, 42.000 = 27*56/36.
- //   120.000 is NOT reachable (needs F/M = 40/9 -> VCO 1080 or 2160, both illegal).
+ // Exact-MHz PLL family (VCO = 27*F/M must be 1330..2133 MHz, PFD >= 19 MHz):
+ //   36.000 = 27*56/42   39.000 = 27*52/36   40.000 = 27*40/27
+ //   42.000 = 27*56/36   45.000 = 27*50/30   50.000 = 27*50/27
+ //   120.46 = 27*58/13  <-- 120 MHz class.  The earlier note in this file said
+ //   120 MHz was unreachable because F/M=40/9 forces VCO 1080 or 2160; that
+ //   derivation forgot the OUTPUT divider is free and takes 0.125 steps
+ //   (ipm2l_pll/ui.tcl, STATIC_RATIO0).  27*58=1566 is a legal VCO and
+ //   1566/13 = 120.4615 MHz, so the PLL can clock a 120 MHz-class core.
+ //   (27*60/13.5 = 120.000 exactly, but STATIC_RATIO0 is an integer parameter.)
  // Analysis builds only: STATIC_RATIO0(12)/STATIC_DUTY0(12) = 126 MHz.
  // Use the same clock for CPU, fabric, peripherals and observation counters.
+ // P18: 39 MHz = 27*52/36.  The routed worst path of this RTL family is
+ // 24.598 ns (p15nx45 .rtr), so 25.641 ns is the highest exact-MHz step that
+ // still has margin; 45 MHz (22.22 ns) FAILS in routing by -2.376 ns.
  wire core_clk,pll_locked;
  GTP_PPLL #(
   .CLKIN_FREQ(27.0),.LOCK_MODE(0),
-  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
-  .STATIC_RATIO0(30),.STATIC_DUTY0(30),.STATIC_DUTYF(50),
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(52),
+  .STATIC_RATIO0(36),.STATIC_DUTY0(36),.STATIC_DUTYF(52),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

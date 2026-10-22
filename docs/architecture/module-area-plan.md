@@ -23,6 +23,25 @@
 - **测试**：`run_coremark_sim.py`（ticks/CRC）、`run_isa_e2e.py`（20/21，case 21 基线即红）。
 - **变更记录**：2026-10-22 P15 立卡（此前本文没有 `rv32_top` 的卡，因为一直按 `pangoriscv` 记）。
 
+### P18 变更（2026-10-23）：P17 的配对恢复已回退，实测净收益为零
+
+`rv32_top.v` 回退到 `76b98cf` 的版本（去掉 `112bb22` 的"恢复 lane0 访存 + lane1 控制配对"）。
+
+| 版本 | Total ticks (20 it) | 分数 | 可布线性 |
+|---|---|---|---|
+| P17（`112bb22`） | 3,833,976 | 5.2165 | **4 次构建（seed 7/3 × 45/39 MHz）全部不收敛** |
+| **回退到 `76b98cf`** | **3,833,976** | **5.2165** | `p15nx45` 在 45 MHz 下收敛（575 轮）|
+
+P17 声称的 +3,610 拍/迭代，被 BTB64→32 的 −2,300 拍抵掉，**净值恰好为 0**
+（两个版本的 `Total ticks` 逐位相同）。代价却是可布线性变差。
+⇒ 交付口径固定为 `76b98cf` 的配对规则：`pair_ok` 含 `!(lane0_mem && lane1_mem)`，
+不含 `lane0_mem_wait` 门控。面积不变（18,157~18,181 LUT）。
+
+另：`pnr -seed` 与 `-dc_duplication` / `-refineplacement_cluster` / `-logic_optimize_enable` /
+`-slack_prior_in_global_router` / `-max_ctrl_chain_length` 在 P18 的实测中**全部是空操作**
+（摆放与布线逐位相同，任务号 P18a/P18b、s0base/s0dup/s0clus/s0all）。
+详见 `evidence/records/optimization/p18-physical-probes/measurement.md`。
+
 ## 当前实验增补：X0/X1 执行分级
 
 - 预测目标配对：允许老槽 branch/JAL/JALR 与预测后继位置的独立 ALU 配对，

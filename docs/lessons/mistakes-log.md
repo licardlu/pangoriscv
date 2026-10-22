@@ -2146,3 +2146,119 @@ else if (packet_load_use)             sb_lduse
 A/B 不再需要进度行；要看进度就显式 `+define+TB_PROGRESS`，并接受这次运行的
 `Total ticks` 可能不可用。**另外**：`$display` 的 `` `ifdef `` 必须包住整个
 `if(...) begin ... end`，包在 `begin` 里面会让未定义时的 `if/end` 结构被编译掉。
+
+## 54. "摆放时序通过"被当成"频率达标"（2026-10-23，P18）
+
+**现象**：报告里写"45 MHz 时序已达标（摆放层面）WNS +1.548 ns、TNS=0"，
+于是结论变成"唯一障碍是布线收敛"。而同一份网表布线后是
+`WNS −2.376 ns、4,077 个端点失败、Estimated 40.65 MHz`。
+
+**查什么**：`pnr` 日志里 `Worst slack after placement is ...` / `Worst slack is ...`
+是**摆放估计**（用估算线延迟）。真正的判据只在
+`report_timing/*.rtr` 的 `Performance Summary` 里：
+`Requested vs Estimated Frequency`、`Setup(Slow) WNS`、`Failing Endpoints`。
+`report_timing` 读的是布线后的数据库，没有布线就没有 `.rtr`（`-place_only` 构建
+根本没有这个文件）。
+
+**原因**：这套网表在当前摆放质量下，**布线比摆放估计多 ~3.8 ns（18%）**。
+两者不是同一口径，差一个量级都正常。
+
+**怎么办**：
+1. 任何"频率达标"结论必须引 `.rtr` 的 `Estimated Frequency` 与
+   `Setup(Slow) WNS ≥ 0` + `Failing Endpoints = 0`，并注明**布线后**。
+2. 摆放值只能用于**同一轮内的相对比较**（A/B 排序），不能当结论，也不能写进交接表。
+3. `-place_only` 构建的产物只有 `run.log` 里的 `Worst slack`，标注成"摆放探针"。
+
+## 55. `pnr` 选项"写了"不等于"生效了"，要先用逐位相同排除掉（2026-10-23，P18）
+
+**现象**：`-dc_duplication TRUE`、`-refineplacement_cluster TRUE`、
+`-logic_optimize_enable TRUE` 三组加上去，摆放结果与基线**逐位相同**
+（都是 `Worst slack is 1462`、LUT 18,181、LUTRAM 3,790），
+日志里也没有任何 `W:`/`E:` 提示说选项被忽略。
+
+**查什么**：做 A/B 时，先看两组的**中间量是否完全相同**（`Worst slack after
+detailed placement`、`before Replication Place`、TNS）。完全相同 ⇒ 选项没生效，
+后面 1.5 h 的布线没必要跑。
+
+**原因**：PDS 2022.2-SP6.1 对这几个选项在本流程/本器件上是静默 no-op。
+`help pnr` 里能列出来的选项，**不代表**这条流程会用。
+
+**怎么办**：
+1. 选项类实验先用 `-place_only`（8 min）做，且**必须**先确认中间量不同，再跑满流程。
+2. 已确认 no-op（截至 P18）：`-dc_duplication`、`-refineplacement_cluster`、
+   `-logic_optimize_enable`。仍有效：`-plc_decongestion`、
+   `-share_router_control_signal`、`-seed`、`-place_only`。
+3. 未验证但值得单独试：`-slack_prior_in_global_router`、`-place_worst_slack`、
+   `-route_constraint_iterate*`、`-max_ctrl_chain_length`。
+
+## 56. 利用率 33% 时，区域约束**没有压缩空间**——这才是三次 floorplan 全负的原因（2026-10-23，P18）
+
+**现象**：横带 / 竖带 / 紧凑方块三种 floorplan 全部负优化（−0.6 ~ −2.7 ns），
+每次都能"合法加载、绑定成功"，所以一直以为是形状没选对。
+
+**查什么**：先算账，别先画形状。
+```
+设计 18,181 LUT + 3,790 LUTRAM = 21,971 LUT 当量
+def_region 网格 123 × 204 = 25,092 格，1 格 ≈ 2.65 LUT
+⇒ 设计占 8,290 格 = 33% 的合法网格
+```
+想把关键路径的物理跨度减半，就要把 8,290 格塞进 12,500 格 → **66% 局部利用率**。
+66% 的局部利用率在这个器件上必然拥塞；48% 的"紧凑方块"实测已经 −2.7 ns。
+
+**原因**：**这个设计不稀疏**。27% 的 LUT 利用率听起来很低，但换成区域网格是 33%，
+而走线延迟 0.66 ns/跳 的根源是"相关逻辑分属不同模块、被摆在模块级的不同位置"，
+不是"设计摊得太开"。区域约束能改"放哪儿"，改不了"必须连哪些"。
+
+**怎么办**：
+1. **不要再试第四种 floorplan 形状**。除非设计面积先降 30% 以上（例如
+   `data_ram` 进 BRAM 省掉 2,048 LUTRAM），否则没有可压缩的余地。
+2. 降走线延迟只能靠**打断组合路径**（加流水寄存器）——寄存器给了摆放器
+   "把两级分别放在各自扇出附近"的自由，这是 floorplan 做不到的。
+3. 判据：加寄存器后，**每一级**的 `Route` 占比应显著下降（目标 <70%）；
+   若仍 >80%，说明该级逻辑还是太宽，需要再切。
+
+## 57. 120 MHz 的 PLL 分频比是**可达**的（2026-10-23，P18）
+
+**现象**：`pangoriscv_top.v` 与 `pango_native_120mhz.fdc` 都写着
+"120 MHz 不可达（F/M=40/9 → VCO 1080 或 2160，均非法）"，
+导致 120 MHz 被当成"只能做时序规格、出不了位流"。
+
+**查什么**：`ipm2l_pll/ui.tcl` —— 输出分频器 `STATIC_RATIO0` 是**独立**的，
+且支持 0.125 粒度（`dutyFracShownUnit_basicPage` 里有 `abs_odiv/0.125`）。
+约束只有两条：VCO ∈ [1330, 2133] MHz、PFD ≥ 19 MHz。
+
+**原因**：原推导把"输出频率 = VCO / 120"当成了 O 必须是整数且等于 F/…，
+漏掉了 O 可以取任意整数（甚至 0.125 步长的小数）。
+
+**怎么办**：
+```
+120.4615 MHz = 27 × 58 / 13     VCO = 1566 ✓   PFD = 27 ✓   （整数参数，可直接用）
+120.000  MHz = 27 × 60 / 13.5   VCO = 1620 ✓（需小数分频寄存器）
+```
+出 120 MHz 位流时用 58/13，并把时序约束写成 **8.3014 ns**（不是 8.333），
+否则"约束通过"比"实际运行"松 0.4%。
+
+## 58. `run_coremark_sim.py` 的 `cycles` 不是分数口径（2026-10-23，P18）
+
+**现象**：改了一处 RTL，runner 打印 `cycles/iter=285,827`，而记忆里的分数口径是
+`190,129 拍/迭代`，于是判定"回归 50%"并回退了改动。
+
+**查什么**：打开 `.sim_runs/coremark_sim/<tag>/transcript.txt`，看固件自己打印的
+```
+# Total ticks      : 3833976
+# Iterations       : 20
+```
+分数只认这一行：`分数 = Iterations × 1e6 / Total ticks`。
+
+**原因**：runner 的 `cycles` 是**仿真周期总数 / 迭代数**，包含约 190 万拍的
+启动期（`.bss` 清零 + UART 轮询，其中 122k 次轮询读 miss 各约 9.5 拍）。
+`Total ticks` 只覆盖固件的计时区间。两者差 1.9 M 拍，**在 20 迭代规模下差 50%**，
+恰好落进"看起来像严重回归"的区间。
+
+**怎么办**：
+1. 跨 build 比分数，**只用 `transcript.txt` 的 `Total ticks`**；
+   runner 的 `cycles` 只能用于同一图片、同一起点的横向比较，且不能换算成分数。
+2. 更可靠的判据：`Total ticks` 与基线**逐位相同**（本项目多次出现"改动完全免费"，
+   逐位相同是正常结果，不是量测失败）。
+3. 反过来说：**如果 `Total ticks` 逐位相同但 `cycles` 不同，说明改动没被仿真覆盖**，
+   要查 TB 是否真的重编译（看 `compile ok` 那一行）。

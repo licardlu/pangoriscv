@@ -371,6 +371,22 @@ module rv32_top(
     wire        fetch_fire = fetch_valid && fetch_ready;
     wire        id_accept  = fetch_valid && fetch_ready;
     wire        id_accept2 = id_accept && pair_ok;
+    // ---- S2: ID-register bypass (plan v7 section 2) ------------------------
+    // The IF/ID register is pure storage: every v_rr_* is loaded from v_id_*,
+    // which itself was loaded from the *combinational* decoders (u_decode is fed
+    // by fetch_inst, not by id_inst).  So an arriving instruction needs two
+    // edges to reach EX, and whenever the pipeline has been drained -- once per
+    // redirect, 137,530 of them per CoreMark run -- the second edge is pure
+    // bubble: measured 145,951 `none other` cycles (WIN_NOISSUE), i.e. the front
+    // end had an instruction and nothing issued.
+    //
+    // When the pipeline holds nothing at all there is no older instruction to
+    // order against, so the decoded word can be written straight into RR and the
+    // ID register simply is not loaded that cycle.  CSR/system instructions are
+    // excluded: they read the CSR file from the ID stage
+    // (csr_native .addr(id_csr_addr)) and would sample a different address one
+    // cycle early.  A fetch fault is excluded so the fault plumbing keeps its
+    // single, already-verified path.
     assign      request_pc = pc_q;
 
     reg         halted_q, halt_pending_q, serial_q, mem_issued_q, div_issued_q;
@@ -569,8 +585,14 @@ module rv32_top(
                          (rr_size_h == 2'd2 && (|mem_addr_h[1:0])));
     wire [4:0]  ex_cause_h_w = rr_store_h ? 5'd6 : 5'd4;
     wire ctrl_taken_h = rr_jal_h | (rr_ctrl_h & br_taken_h);
+    // Same shape as lane 0 (T1b): both candidate next PCs in parallel, the
+    // mispredict compare on both, and only a 2:1 mux behind `br_taken_h`.
     wire [31:0] ctrl_target_h = rr_pc_h + rr_imm_h;
-    wire [31:0] ctrl_next_h   = ctrl_taken_h ? ctrl_target_h : (rr_pc_h + 32'd4);
+    wire [31:0] ctrl_pc4_h    = rr_pc_h + 32'd4;
+    wire [31:0] ctrl_next_h   = ctrl_taken_h ? ctrl_target_h : ctrl_pc4_h;
+    wire        miss_tgt_h    = (ctrl_target_h != rr_pred_h);
+    wire        miss_pc4_h    = (ctrl_pc4_h    != rr_pred_h);
+    wire        ctrl_miss_h   = ctrl_taken_h ? miss_tgt_h : miss_pc4_h;
 
     wire        div_req = rr_valid && rr_div && !rr_illegal && !div_issued_q;
     div_adapter u_div(
@@ -587,14 +609,29 @@ module rv32_top(
                               (rr_br_op == 3'd4) ? alu_ltu : !alu_ltu;
     wire        is_ctrl     = rr_br || rr_jal || rr_jalr;
     wire        ctrl_taken  = (rr_jal || rr_jalr) ? 1'b1 : (rr_br && br_taken);
+    // T1b (plan v7 section 2): the two candidate next PCs are built in parallel
+    // and the mispredict check is evaluated on BOTH of them, so the only thing
+    // that has to wait for `br_taken` is a 2:1 mux.  Written the obvious way
+    // (`ctrl_next = ctrl_taken ? target : pc+4; br_miss = ctrl_next != pred`) the
+    // placement put the target adder AND the 32 b equality compare in series
+    // after the branch comparator: p7_path40b showed
+    //   u_alu_h slt COUT chain -> br_taken -> ex_next COUT chain -> eq COUT chain
+    // i.e. three 32 b carry chains in a single cycle.  Now the comparator and the
+    // compares to `rr_pred` overlap, and one carry chain leaves the path.
+    wire [31:0] ctrl_pc4   = rr_pc + 32'd4;
     wire [31:0] ctrl_target = (rr_jal || rr_jalr) ? ((rr_jalr ? fwd1 : rr_pc) + rr_imm)
                                                   : (rr_pc + rr_imm);
-    wire [31:0] ctrl_next   = ctrl_taken ? ctrl_target : (rr_pc + 32'd4);
+    wire [31:0] ctrl_next   = ctrl_taken ? ctrl_target : ctrl_pc4;
+    wire        miss_tgt_w  = (ctrl_target != rr_pred);
+    wire        miss_pc4_w  = (ctrl_pc4    != rr_pred);
+    // jal/jalr always take the target; a branch takes it only when taken.
+    wire        ctrl_miss_w = (rr_jal || rr_jalr) ? miss_tgt_w :
+                              (br_taken ? miss_tgt_w : miss_pc4_w);
     // "lane 0 is a control transfer and its destination is not what the front end
     // predicted".  Used by the hazard block (declared up there) to make lane 1 of
     // such a packet invisible: it is wrong-path, and unlike the branch itself it
     // has no business touching memory.
-    assign      ctrl_miss_now = rr_valid && is_ctrl && (ctrl_next != rr_pred);
+    assign      ctrl_miss_now = rr_valid && is_ctrl && ctrl_miss_w;
     wire [31:0] mem_addr    = fwd1 + rr_imm;
 
     wire        ctrl_misaln = is_ctrl && ctrl_taken && (ctrl_target[1:0] != 2'b00);
@@ -697,13 +734,16 @@ module rv32_top(
     // pipeline and sent `jr a5` -- right behind `lw a5,0(a0)` in CoreMark's
     // get_seed_32 jump table -- to the table's data address.
     wire        br_miss  = rr_valid && is_ctrl && !hold_ex && !ex_trap_w &&
-                           (ctrl_next != rr_pred);
+                           ctrl_miss_w;
     wire        resume   = halted_q && !halt_req;
     // At most one lane is a control transfer (pairing forbids lane 0 when it is
     // a control), so the two mispredict sources are mutually exclusive.
-    wire        br_miss_h = rr_v1 && rr_ctrl_h && !hold_ex && (ctrl_next_h != rr_pred_h);
+    wire        br_miss_h = rr_v1 && rr_ctrl_h && !hold_ex && ctrl_miss_h;
     wire        kill_young = br_miss || br_miss_h;
     wire        kill_all   = trap_go || mret_go;
+    wire        id_bypass    = !id_valid && id_accept && !kill_all &&
+                               !dec_csr && !dec_mret && !dec_ecall && !dec_ebrk &&
+                               !dec_serial && !dec_illegal && !fetch_fault;
 
     // The redirect is NOT registered.  Registering it (br_go_q/br_pc_q) is the
     // textbook fix for "compare -> flush -> IFU pointer" and it does take
@@ -881,9 +921,9 @@ module rv32_top(
             // P9 made that easy to hit: the younger instruction can be a store
             // that is still waiting for a 20-cycle AXI write response, and it
             // then re-traps on the way out (ISA case 19).
-            id_valid <= !hold_ex && id_accept && !kill_all && !kill_young;
-            id_v1    <= !hold_ex && id_accept2 && !kill_all && !kill_young;
-            if (id_accept) begin
+            id_valid <= !hold_ex && id_accept && !kill_all && !kill_young && !id_bypass;
+            id_v1    <= !hold_ex && id_accept2 && !kill_all && !kill_young && !id_bypass;
+            if (id_accept && !id_bypass) begin
                 id_pc <= fetch_pc; id_inst <= fetch_inst; id_imm <= dec_imm;
                 id_pred <= fetch_predicted_next_pc;
                 id_rd <= dec_rd; id_rs1 <= dec_rs1; id_rs2 <= dec_rs2;
@@ -915,6 +955,20 @@ module rv32_top(
                 id_uns_h <= dec_uns_h; id_size_h <= dec_size_h;
                 id_mul_h <= dec_mul_h; id_md_op_h <= dec_md_op_h;
             end
+            if (id_bypass) begin
+                // The instruction went straight into RR, so the ID register must
+                // NOT receive it -- it would then be visible to RR for a second
+                // cycle and execute twice.  What has to be neutralised is the
+                // handful of ID fields whose user does not check id_valid:
+                //   id_serial -> serial_q <= id_accept && id_serial
+                //                (a stale 1 serialises the front end forever)
+                //   id_csr / id_csr_op / id_rs1 -> rf_write_intent, dcwe
+                //   id_csr_addr -> csr_native .addr()
+                // Leaving them stale measured 19.4 M ticks instead of 3.97 M:
+                // the CRC stayed correct but every accept set serial_q.
+                id_csr <= 1'b0; id_csr_op <= 2'd0; id_csr_addr <= 12'd0;
+                id_rs1 <= 5'd0; id_serial <= 1'b0;
+            end
         end
     end
 
@@ -939,30 +993,70 @@ module rv32_top(
             rr_mul_h <= 1'b0; rr_md_op_h <= 3'd0;
         end else if (!hold_ex || kill_all) begin
             // Same escape as the RD stage: freeze must not absorb a kill.
-            rr_valid <= !hold_ex && id_valid && !kill_all && !kill_young;
-            rr_v1    <= !hold_ex && id_v1 && !kill_all && !kill_young;
-            if (id_valid) begin
-                rr_pc <= id_pc; rr_inst <= id_inst; rr_imm <= id_imm; rr_pred <= id_pred;
-                rr_rd <= id_rd; rr_rs1 <= id_rs1; rr_rs2 <= id_rs2; rr_fcause <= id_fcause;
-                rr_we <= id_we; rr_load <= id_load; rr_store <= id_store; rr_br <= id_br;
-                rr_jal <= id_jal; rr_jalr <= id_jalr; rr_csr <= id_csr; rr_mret <= id_mret;
-                rr_ecall <= id_ecall; rr_ebrk <= id_ebrk; rr_mul <= id_mul; rr_div <= id_div;
-                rr_illegal <= id_illegal; rr_ffault <= id_ffault; rr_uns <= id_uns;
-                rr_serial <= id_serial; rr_alu <= id_alu; rr_asel <= id_asel;
-                rr_bsel <= id_bsel; rr_size <= id_size; rr_csr_op <= id_csr_op;
-                rr_br_op <= id_br_op; rr_md_op <= id_md_op; rr_csr_addr <= id_csr_addr;
-                rr_csr_old <= id_csr ? csr_rdata : 32'd0;
-                rr_csr_illegal <= id_csr ? csr_illegal : 1'b0;
-                rr_u1 <= id_u1;
-                rr_pc_h <= id_pc_h; rr_imm_h <= id_imm_h; rr_op_h <= id_op_h;
-                rr_rd_h <= id_rd_h; rr_rs1_h <= id_rs1_h; rr_rs2_h <= id_rs2_h;
-                rr_alu_h <= id_alu_h; rr_asel_h <= id_asel_h; rr_bsel_h <= id_bsel_h;
-                rr_we_h <= id_we_h;
-                rr_pred_h <= id_pred_h; rr_ctrl_h <= id_ctrl_h; rr_jal_h <= id_jal_h;
-                rr_br_op_h <= id_br_op_h;
-                rr_load_h <= id_load_h; rr_store_h <= id_store_h;
-                rr_uns_h <= id_uns_h; rr_size_h <= id_size_h;
-                rr_mul_h <= id_mul_h; rr_md_op_h <= id_md_op_h;
+            // S2: the RR stage takes either the registered ID word or, on a
+            // bypass, the word the combinational decoders just produced.  Every
+            // source on the right of the bypass case is the same expression the
+            // ID block above uses to load its register, so the two paths cannot
+            // drift apart.
+            rr_valid <= !hold_ex && (id_valid || id_bypass) && !kill_all && !kill_young;
+            rr_v1    <= !hold_ex && ((id_bypass ? id_accept2 : id_v1)) &&
+                        !kill_all && !kill_young;
+            if (id_valid || id_bypass) begin
+                rr_pc   <= id_bypass ? fetch_pc : id_pc;
+                rr_inst <= id_bypass ? fetch_inst : id_inst;
+                rr_imm  <= id_bypass ? dec_imm : id_imm;
+                rr_pred <= id_bypass ? fetch_predicted_next_pc : id_pred;
+                rr_rd   <= id_bypass ? dec_rd : id_rd;
+                rr_rs1  <= id_bypass ? dec_rs1 : id_rs1;
+                rr_rs2  <= id_bypass ? dec_rs2 : id_rs2;
+                rr_fcause <= id_bypass ? (fetch_fault ? fetch_fault_cause : 5'd0) : id_fcause;
+                rr_we   <= id_bypass ? dec_we : id_we;
+                rr_load <= id_bypass ? dec_load : id_load;
+                rr_store<= id_bypass ? dec_store : id_store;
+                rr_br   <= id_bypass ? dec_br : id_br;
+                rr_jal  <= id_bypass ? dec_jal : id_jal;
+                rr_jalr <= id_bypass ? dec_jalr : id_jalr;
+                rr_csr  <= id_bypass ? 1'b0 : id_csr;
+                rr_mret <= id_bypass ? 1'b0 : id_mret;
+                rr_ecall<= id_bypass ? 1'b0 : id_ecall;
+                rr_ebrk <= id_bypass ? 1'b0 : id_ebrk;
+                rr_mul  <= id_bypass ? dec_mul : id_mul;
+                rr_div  <= id_bypass ? dec_div : id_div;
+                rr_illegal <= id_bypass ? 1'b0 : id_illegal;
+                rr_ffault  <= id_bypass ? 1'b0 : id_ffault;
+                rr_uns  <= id_bypass ? dec_uns : id_uns;
+                rr_serial <= id_bypass ? 1'b0 : id_serial;
+                rr_alu  <= id_bypass ? dec_alu : id_alu;
+                rr_asel <= id_bypass ? dec_asel : id_asel;
+                rr_bsel <= id_bypass ? dec_bsel : id_bsel;
+                rr_size <= id_bypass ? dec_size : id_size;
+                rr_csr_op <= id_bypass ? 2'd0 : id_csr_op;
+                rr_br_op  <= id_bypass ? dec_br_op : id_br_op;
+                rr_md_op  <= id_bypass ? dec_md_op : id_md_op;
+                rr_csr_addr <= id_bypass ? 12'd0 : id_csr_addr;
+                rr_csr_old  <= (!id_bypass && id_csr) ? csr_rdata : 32'd0;
+                rr_csr_illegal <= (!id_bypass && id_csr) ? csr_illegal : 1'b0;
+                rr_u1 <= id_bypass ? dec_u1 : id_u1;
+                rr_pc_h  <= id_bypass ? fetch_pc_hi : id_pc_h;
+                rr_imm_h <= id_bypass ? dec_imm_h : id_imm_h;
+                rr_op_h  <= id_bypass ? fetch_inst_hi[6:0] : id_op_h;
+                rr_rd_h  <= id_bypass ? dec_rd_h : id_rd_h;
+                rr_rs1_h <= id_bypass ? dec_rs1_h : id_rs1_h;
+                rr_rs2_h <= id_bypass ? dec_rs2_h : id_rs2_h;
+                rr_alu_h <= id_bypass ? dec_alu_h : id_alu_h;
+                rr_asel_h<= id_bypass ? dec_asel_h : id_asel_h;
+                rr_bsel_h<= id_bypass ? dec_bsel_h : id_bsel_h;
+                rr_we_h  <= id_bypass ? dec_we_h : id_we_h;
+                rr_pred_h<= id_bypass ? fetch_predicted_next_pc_hi : id_pred_h;
+                rr_ctrl_h<= id_bypass ? (dec_br_h || dec_jal_h) : id_ctrl_h;
+                rr_jal_h <= id_bypass ? dec_jal_h : id_jal_h;
+                rr_br_op_h <= id_bypass ? dec_br_op_h : id_br_op_h;
+                rr_load_h  <= id_bypass ? dec_load_h : id_load_h;
+                rr_store_h <= id_bypass ? dec_store_h : id_store_h;
+                rr_uns_h   <= id_bypass ? dec_uns_h : id_uns_h;
+                rr_size_h  <= id_bypass ? dec_size_h : id_size_h;
+                rr_mul_h   <= id_bypass ? dec_mul_h : id_mul_h;
+                rr_md_op_h <= id_bypass ? dec_md_op_h : id_md_op_h;
             end
         end
     end

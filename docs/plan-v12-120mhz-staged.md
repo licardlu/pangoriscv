@@ -235,5 +235,8 @@ Worst slack is 1548, TNS after placement is 0
 去掉 `!(lane0_mem && lane1_ctrl)`，改成
 `br_miss_h = ... && !((rr_load||rr_store) && mem_wait) && ctrl_miss_h`。
 - 收益：3,610 拍/迭代（实测，不是剖析器估的 10,257，见 mistakes-log §52）；
-- 代价：`mem_wait` 只经一个 AND+OR 进入 `br_miss_h`，约 1~1.5 ns（待 45 MHz 构建确认）；
+- **代价实测只有 0.086 ns**：45 MHz 摆放 WNS 从 p16r45c 的 +1.548 ns 变到 p17r45 的
+  +1.462 ns。原先估的 1~1.5 ns 高估了一个数量级——因为 S2 已经把 D-cache 请求路径
+  从 lane-0 重定向锥里摘掉了，lane-1 这条本来就不再是最差路径。
+  ⇒ **P16 的配对禁止几乎是纯损失**（3,610 拍/迭代换 0.086 ns）。
 - 正确性：CoreMark CRC 五项全对；ISA e2e **20/21**（case 21 与基线同样红）。

@@ -167,3 +167,53 @@ LUTRAM −2,048、LUT −2,797（首次综合）。
    BTB64 下误预测 2,355/迭代，`188,888 + 2,355 = 191,243 → 5.228`，
    仍在 5.2 以上，而路径可望降到 ~14 ns（约 70 MHz）。
 3. 之后再谈 120 MHz：需要双端口 D$（−12,256 拍）+ 2~3 刀。
+
+## 7. 仿真原始数据（.sim_runs 已删前抄录）
+
+```
+--- p19bram
+# Total ticks      : 3833976
+# Iterations       : 20
+# seedcrc          : 0x54414c55
+# [0]crclist       : 0xe714
+# [0]crcmatrix     : 0x1fd7
+# [0]crcstate      : 0x8e3a
+# [0]crcfinal      : 0x4983
+
+--- p19btb64
+# Total ticks      : 3776288
+# Iterations       : 20
+# seedcrc          : 0x54414c55
+# [0]crclist       : 0xe714
+# [0]crcmatrix     : 0x1fd7
+# [0]crcstate      : 0x8e3a
+# [0]crcfinal      : 0x4983
+
+--- p20cut
+# Total ticks      : 3872252
+# Iterations       : 20
+# seedcrc          : 0x54414c55
+# [0]crclist       : 0xe714
+# [0]crcmatrix     : 0x1fd7
+# [0]crcstate      : 0x8e3a
+# [0]crcfinal      : 0x4983
+
+```
+
+| 配置 | Total ticks (20 it) | 分数 | 备注 |
+|---|---|---|---|
+| BRAM + BTB32 | 3,833,976 | 5.2165 | 基线 |
+| BRAM + BTB64（交付） | 3,776,288 | **5.2963** | |
+| BRAM + BTB64 + 重定向切断 | 3,872,252 | 5.1650 | **不达标，未交付** |
+
+### 7.1 关于仿真 transcript 里的 `seedcrc 0x54414c55`
+
+仿真 transcript 打印 `# seedcrc : 0x54414c55`，而固件里 `seedcrc` 是 `ee_u16`、
+按 `%04x` 打印——**u16 不可能输出 8 位十六进制**，所以这一行在仿真通道里不可信
+（UART/xprintf 的变参宽度问题）。上板的 `seedcrc 0xe9f5` 才是 CoreMark
+performance run 的标准值，且上板三项子 CRC 与 `*_known_crc[3]` 逐位相同、
+`Correct operation validated` 由 CoreMark 自己判定。
+
+**结论：上板数据的判据只用上板输出自身**（seedcrc + 三个子 CRC + validated），
+不与仿真 transcript 的 `seedcrc` / `crcfinal` 交叉比对（两者的 `crcfinal` 本来就
+因迭代数不同而不同，见 §1.1）。

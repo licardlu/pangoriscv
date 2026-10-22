@@ -98,3 +98,32 @@ ISA e2e: 20 / 21 PASS（case 21 基线即红）
 轮询窗口），分数只认固件自己打印的 `Total ticks`。
 同一个 `cycles=5,716,551` 在三份 transcript 里都出现（改动前 / 改动后 / 回退后），
 而 `Total ticks` 也三次都是 3,833,976。
+
+## 6. 三份 transcript 的关键行（原始证据，来自 .sim_runs，已删前抄录）
+
+```
+--- p18lp/transcript.txt
+# Total ticks      : 3833976
+# Iterations       : 20
+# [0]crclist       : 0xe714
+# [0]crcmatrix     : 0x1fd7
+# [0]crcstate      : 0x8e3a
+# [0]crcfinal      : 0x4983
+
+--- p18rev/transcript.txt
+# Total ticks      : 3833976
+# Iterations       : 20
+# [0]crclist       : 0xe714
+# [0]crcmatrix     : 0x1fd7
+# [0]crcstate      : 0x8e3a
+# [0]crcfinal      : 0x4983
+
+--- p18final/transcript.txt
+# Total ticks      : 3833976
+# Iterations       : 20
+# [0]crclist       : 0xe714
+# [0]crcmatrix     : 0x1fd7
+# [0]crcstate      : 0x8e3a
+# [0]crcfinal      : 0x4983
+
+```

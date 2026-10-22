@@ -386,16 +386,14 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 2. **职责**：2 路组相联 I-Cache，**64 组 × 2 路 × 8 字 = 4 KB**；命中当拍返回，缺失走 AXI 8 拍补行；不做 MMU/权限。
 4. **接口**：请求侧 `req_*`（32b 地址、8b len、4b id）；响应侧 `rsp_data/rsp_data_hi`（32b×2）、`rsp_pair`；AXI 读侧 `m_ar*/m_r*`。
 5. **内部状态**：`state`、`addr_q`、`id_q`、`set_q`、`word_q`、`tag_q[20:0]`、`way_q`、`rd_index_q[9:0]`、`rsp_data_q/rsp_data_hi_q`、`beat_q`、`fill_bad_q/fill_kill`。
-6. **存储**：`even_w0/even_w1/odd_w0/odd_w1`（各 256×32，LUTRAM；**P14 按 way 拆分**，
-   原 `even_mem/odd_mem` 512×32 索引含 way 位 → tag 比较串在数据读前面）+ 按读口复制的副本
-   （**不是冗余**：命中查找与 miss 回放两条路径同拍各读一次，一份 RAM 只有一个读口）；
+6. **存储**：`even_mem/odd_mem`（512×32，LUTRAM）+ 按读口复制的 `even_mem_1/odd_mem_1`（**不是冗余**：
+   命中查找与 miss 回放两条路径同拍各读一次，一份 RAM 只有一个读口）；
    标签 `tag_mem[0:127]`（21 bit）**自 E2 起是 LUTRAM**（`ram64x1d`，按 2 个读口复制成 2 份）。
 7. **面积**：2,089/3,071/1,024/0/0 → **2,089/待定/512**（M5 条件）。
 8. **物理区域**：`R_ICACHE`（与 `R_FETCH` 相邻；同区总线最宽，禁止跨区）。
-9. **关键路径**：**P14 前**是24.65 ns 主路径尾段：`tag_mem DO → hit0 → _N82(fanout 159) → odd_mem DO → hit_word_hi → rsp_data_hi_q`（tag 比较串在数据读前）。**P14 后**：way 拆分使 tag 比较与数据读并行，尾段只剩输出级 mux。
+9. **关键路径**：**hold 前 5 之一**：`way_q → odd_mem_1_3_11/ram64x1d/WADDR[2]`。
 10. **测试**：`tb/unit/tb_icache_axi.sv`、`run_icache_tests.py`。
 11. **变更**：2026-10-21 立卡；M5 先做归属分析（3,071 FF 与源码 ~200 位不符），证据成立才删副本。**头注释 "32 sets" 已过时（实际 64 组），随 M5 一并修正。**
-    **P14（2026-10-22，120 MHz 专项）**：数据阵列按 way 拆分（even_mem/odd_mem → even_w0/even_w1/odd_w0/odd_w1，总位数不变），命中路径无条件并行读两路，`hit0` 只做输出级 way 选择。目的：把 tag LUTRAM 读 + 比较从数据读的串行链上摘下来（关键路径82.5% 是 route、尾段白串一整级 LUTRAM）。零 CPI：同一 accept 拍应答不变。回归：icache 单测 1/1 PASS，CoreMark 20it `Total ticks 3,833,976` 与 p12 基线逐位一致、CRC 五项全对。ΔLUTRAM 0（位数不变），ΔLUT 待测（+4 个 32b way mux vs −索引 way 位译码）。
     **E1（2026-10-21，效率专项）**：M5 留下的"3,071 FF 与源码不符"查清了 ——
     复位段 `for(i...) tag_mem[i]<=0` 逐项清零 128×21 位，而分布式 RAM **没有按项复位**的能力，
     工具只能把整块 tag 做成触发器（连带 128:1 的读 mux 变成 LUT）。

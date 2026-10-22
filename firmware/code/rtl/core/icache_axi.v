@@ -105,22 +105,8 @@ module icache_axi (
     //   even bank index = {way,set,(w+1)>>1}, odd bank index = {way,set,w>>1}
     //   w even -> (even,odd);  w odd -> (odd,even)
     // The total bit count is unchanged (SETS*2*WORDS*32).
-    //
-    // P14 (2026-10-22): the way bit moved OUT of the data-array index.  Each
-    // bank is split into a per-way half (even_w0/even_w1/odd_w0/odd_w1,
-    // 256x32 each) so the hit lookup reads BOTH ways unconditionally and
-    // `hit0` only selects the way at the output mux.  Before this, the index
-    // carried `hit_way = f(tag compare)`, putting the tag LUTRAM read and its
-    // comparison in SERIES with the data LUTRAM read -- exactly the tail of
-    // the 24.65 ns critical path (p13seed7 .rtr: tag_mem DO -> hit0 -> _N82
-    // fanout 159 -> odd_mem DO -> mux -> rsp_data_hi_q).  Tag compare and
-    // data read now run in PARALLEL.  Zero CPI (same accept-edge response),
-    // area-neutral (same total bits, same 2 read ports per logical array).
-    // See docs/plan-score-5.2-120mhz-v9.md section 2 S1.
-    reg [31:0] even_w0[0:SETS*(WORDS/2)-1];
-    reg [31:0] even_w1[0:SETS*(WORDS/2)-1];
-    reg [31:0] odd_w0 [0:SETS*(WORDS/2)-1];
-    reg [31:0] odd_w1 [0:SETS*(WORDS/2)-1];
+    reg [31:0] even_mem[0:SETS*2*(WORDS/2)-1];
+    reg [31:0] odd_mem [0:SETS*2*(WORDS/2)-1];
     reg [20:0] tag_mem  [0:SETS*2-1];         // {way,set}
     reg        valid_mem[0:SETS*2-1];         // {way,set}
     reg        lru_mem  [0:SETS-1];           // 1 = way1 is the LRU victim
@@ -163,23 +149,18 @@ module icache_axi (
     wire hit1 = valid_mem[{1'b1,req_set}] && (tag_mem[{1'b1,req_set}]==req_tag);
     wire miss_way = !valid_mem[{1'b0,req_set}] ? 1'b0 :
                     (!valid_mem[{1'b1,req_set}] ? 1'b1 : lru_mem[req_set]);
-    // T3 fast hit path: both ways' word RAMs are read combinationally from the
-    // incoming request (the way bit is NOT in the index -- see the P14 note on
-    // the array declarations), so a hit can be answered on the accept edge
-    // without waiting for the tag comparison to pick a way.  The address the
-    // miss path uses later is still registered into rd_index_q.
+    // T3 fast hit path: the word RAM is read combinationally from the incoming
+    // request, so a hit can be answered on the accept edge instead of going
+    // through a separate read state. The address the miss path uses later is
+    // still registered into rd_index_q.
+    wire       hit_way  = hit0 ? 1'b0 : 1'b1;
     wire [2:0] hit_word_off = req_addr[4:2];
     wire [2:0] hit_e_off = (hit_word_off + 3'd1) >> 1;   // ceil(w/2)
     wire [2:0] hit_o_off = hit_word_off >> 1;            // floor(w/2)
-    wire [7:0] hit_e_index = {req_addr[10:5], hit_e_off[1:0]};
-    wire [7:0] hit_o_index = {req_addr[10:5], hit_o_off[1:0]};
-    // Parallel per-way reads; the tag comparison only steers the output mux.
-    wire [31:0] hit_even_w0 = even_w0[hit_e_index];
-    wire [31:0] hit_even_w1 = even_w1[hit_e_index];
-    wire [31:0] hit_odd_w0  = odd_w0 [hit_o_index];
-    wire [31:0] hit_odd_w1  = odd_w1 [hit_o_index];
-    wire [31:0] hit_even = hit0 ? hit_even_w0 : hit_even_w1;
-    wire [31:0] hit_odd  = hit0 ? hit_odd_w0  : hit_odd_w1;
+    wire [8:0] hit_e_index = {req_addr[10:5], hit_way, hit_e_off[1:0]};
+    wire [8:0] hit_o_index = {req_addr[10:5], hit_way, hit_o_off[1:0]};
+    wire [31:0] hit_even = even_mem[hit_e_index];
+    wire [31:0] hit_odd  = odd_mem [hit_o_index];
     wire [31:0] hit_word = hit_word_off[0] ? hit_odd  : hit_even;
 
     // Cross-line successor lookup.  nxt_set/nxt_tag describe the 32 B line that
@@ -213,12 +194,10 @@ module icache_axi (
     wire [2:0]  rd_e_off  = (rd_word + 3'd1) >> 1;
     wire [2:0]  rd_o_off  = rd_word >> 1;
     wire        rd_pair   = (rd_word != 3'd7);
-    wire [7:0]  rd_e_index = {rd_set, rd_e_off[1:0]};
-    wire [7:0]  rd_o_index = {rd_set, rd_o_off[1:0]};
-    // Miss-path replay: way is known here (it is in rd_index_q), so this read
-    // selects its half directly -- it shares each half's second read port.
-    wire [31:0] rd_even = rd_way ? even_w1[rd_e_index] : even_w0[rd_e_index];
-    wire [31:0] rd_odd  = rd_way ? odd_w1 [rd_o_index] : odd_w0 [rd_o_index];
+    wire [8:0]  rd_e_index = {rd_set, rd_way, rd_e_off[1:0]};
+    wire [8:0]  rd_o_index = {rd_set, rd_way, rd_o_off[1:0]};
+    wire [31:0] rd_even = even_mem[rd_e_index];
+    wire [31:0] rd_odd  = odd_mem [rd_o_index];
     wire [31:0] rd_word0 = rd_word[0] ? rd_odd : rd_even;
     wire [31:0] rd_word1 = rd_pair ? (rd_word[0] ? rd_even : rd_odd) : 32'd0;
     wire beat_bad = (m_rresp!=`AXI_RESP_OKAY);
@@ -345,15 +324,8 @@ module icache_axi (
                             fill_resp_q<=m_rresp;
                         end
                         if(!fill_kill) begin
-                            // Fill writes route by way_q into the per-way halves
-                            // (P14 split -- see the array declarations).
-                            if(!beat_q[0]) begin
-                                if(!way_q) even_w0[{set_q,beat_q[2:1]}]<=m_rdata;
-                                else       even_w1[{set_q,beat_q[2:1]}]<=m_rdata;
-                            end else begin
-                                if(!way_q) odd_w0 [{set_q,beat_q[2:1]}]<=m_rdata;
-                                else       odd_w1 [{set_q,beat_q[2:1]}]<=m_rdata;
-                            end
+                            if(!beat_q[0]) even_mem[{set_q,way_q,beat_q[2:1]}]<=m_rdata;
+                            else           odd_mem [{set_q,way_q,beat_q[2:1]}]<=m_rdata;
                             // Beat 0 is this line's word 0 -- the very word a
                             // cross-line pair needs as its second half.
                             if(beat_q==3'd0) fill_w0_q<=m_rdata;

@@ -81,3 +81,19 @@ place-only 先探 WNS（8.333 ns 约束），再满实现 + seed 抽签（配方
 
 **回退判据**：任何改动使 20it ticks 变差 >0.5% 或 CRC 变 → 立即回退；
 上板 CRC 任一失配 → 该位流作废，不得报分。
+
+## 4. 实测记录（随执行更新）
+
+| 构建 | 配置 | 结果 |
+|---|---|---|
+| p14s1 仿真 | S1 I$ way 拆分 | `Total ticks 3,833,976` 与 p12 **逐位一致**，CRC 五项全对，icache 单测 1/1，ISA 20/21（case 21 红是探针口径问题，基线即红，见 v2 §19.7） |
+| p14r40 / p14po120 | PCF floorplan（def_inst_region） | **pnr 又崩**（`E: Failed to execute the script`，15 s）——PCF 绑定通道不可用，mistakes-log 47 再次确认 |
+| p14po120b | FDC floorplan v2（y 带 [20,183]）+ place-only @8.33 ns | 摆放 WNS **−10,998 ps**——比无区域的 −10,410（p13po120）**更差**。收窄 y 带加剧拥塞，方向错误 |
+| p14r40b | FDC floorplan v2 + seed 7 @40 MHz | 摆放 WNS +1,479 ps；详细布线 74 轮卡 ~3.6k **震荡**（无区域 seed 7 是 285 轮收 0）——区域约束削弱了 seed 7 的可布性 |
+
+**结论（第一轮 A/B）**：
+1. **S1 仿真侧全绿**，功能等价成立。
+2. **floorplan v2 的收窄 y 带是负优化**：摆放 WNS 反而恶化 0.6 ns，布线从收敛变震荡。
+   拥塞是当前第一矛盾，压缩摆放自由度适得其反——**回退 y 带到 0..199，或干脆去掉区域约束**，
+   把可布性还给 seed 抽签（P13 的实证钥匙）。
+3. S1 对时序的贡献需要**无区域同 seed A/B**（p14ab40 vs p13seed7）来干净测量。

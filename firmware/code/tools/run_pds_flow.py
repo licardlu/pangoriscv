@@ -95,13 +95,13 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
     ]
     if mode == "full":
         lines.append("add_constraint \"%s\"" % (bdir / "pango_native.pcf").as_posix())
-        # Floorplanning (P13): region constraints must be issued *after* dev_map
-        # (the UCE manual: PAP_REGION is carried down the flow and resolved at
-        # dev_map; the PCF forms def_region/def_inst_region are placed with the
-        # PCF).  The file is plain Tcl driving the pds_shell def_* commands, so
-        # it can also `catch`/`puts` its own diagnostics into run.log.
+        # Floorplanning (P13): region constraints ride in as a *constraint file*
+        # (`add_constraint`), same as the board PCF, placed after dev_map.
+        # NOT `source`d Tcl: pds_shell evaluates sourced scripts during project
+        # creation, when no design database exists yet, and a bare def_region
+        # then kills the whole shell with no error and exit 0.
         if floorplan is not None:
-            lines.append("source \"%s\"" % floorplan.as_posix())
+            lines.append("add_constraint \"%s\"" % (bdir / floorplan.name).as_posix())
         # The place-and-route action is `pnr`, not `place_route`: the latter is a
         # report directory name, and calling it as a command aborts the flow with
         # `invalid command name "place_route"` *after* dev_map, i.e. it looks like
@@ -178,15 +178,20 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--image", default=str(CODE / "build" / "p5_126"))
     ap.add_argument("--floorplan", default=None,
-                    help="Tcl file with def_region/def_inst_region (sourced after dev_map)")
+                    help="PCF-format region file (def_region/def_inst_region), "
+                         "added as a constraint after dev_map")
     ap.add_argument("--place-only", action="store_true",
                     help="stop after placement (pnr -place_only); for non-routeable constraints")
     a = ap.parse_args()
 
     bdir = stage(a.tag, Path(a.image))
     fp = Path(a.floorplan).resolve() if a.floorplan else None
-    if fp is not None and not fp.is_file():
-        raise SystemExit("floorplan file not found: %s" % fp)
+    if fp is not None:
+        if not fp.is_file():
+            raise SystemExit("floorplan file not found: %s" % fp)
+        # Staged next to the other constraints: a constraint file must live in
+        # the build directory (same rule as the PCF/FDC copies in stage()).
+        shutil.copy2(fp, bdir / fp.name)
     tcl = write_tcl(bdir, a.freq, a.mode, a.seed, floorplan=fp,
                     place_only=a.place_only)
     print("build dir : %s" % bdir)

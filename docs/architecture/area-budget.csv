@@ -1,6 +1,6 @@
 kind,module,file,stage,lut,ff,lutram,drm,apm,region,status,note
 forecast,ifu_axi,core/ifu_axi.v,fetch,160,0,0,0,0,R_FETCH,planned,"empty FIFO response bypass; ownership and stale response guards retained"
-forecast,pangoriscv_axi_soc,soc/pangoriscv_axi_soc.v,mem,100,16,0,4,0,R_MEM,planned,"32KiB program RAM allowance vs E2; data RAM16KiB; unmodified CoreMark O3 enabled"
+forecast,pangoriscv_axi_soc,soc/pangoriscv_axi_soc.v,mem,100,16,0,4,0,R_ICACHE+R_DCACHE,planned,"32KiB program RAM allowance vs E2; data RAM16KiB; unmodified CoreMark O3 enabled. P13: program ROM shares R_ICACHE (its DRM column x=26 is in that rectangle); data RAM joins R_DCACHE (it is LUTRAM, needs CLMA columns)"
 forecast,branch_predictor,core/branch_predictor.v,fetch,0,64,0,0,0,R_FETCH,planned,"PGM_BYTES32768 adds one tag and one target bit per entry; no entry count increase"
 forecast,pangoriscv_top,soc/pangoriscv_top.v,clock,8,0,0,0,0,R_CORE,planned,"1 PPLL additional; 27*56/12=126MHz VCO1512 PFD27; reset synchronized on core clock; not measured"
 forecast,retire_ctrl,core/retire_ctrl.v,retire,32,0,0,0,0,R_CORE,implemented_unverified,"5.2/120 experimental allowance not measurement; commit older prefix on younger synchronous fault; tests deferred by user"
@@ -13,7 +13,7 @@ measured,__totals_m3__,,,19113,11183,3628,4,6,,measured,"M3 delivery profile (PE
 measured,__totals_m4a__,,,18006,9877,3628,4,6,,measured,"M4a delivery profile (PERF off) 2026-10-21: LUT -1107, FF -1306, S 33924->31511"
 delta,perf_regs,perips/perf_regs.v,instrument,0,-1665,0,0,0,none,done,M1 MEASURED (jointly with axi_reg_slave): -1527 LUT / -1769 FF; see area-M1/measurement.md
 delta,axi_reg_slave,perips/axi_reg_slave.v,periph,0,0,0,0,0,R_IO,done,M1: 6 instances -> 5; the 594-LUT one belongs to perf_regs (measured delta includes it)
-delta,axi_ram_data,perips/axi_ram.v,mem,0,0,-2048,4,0,R_MEM,blocked,"M2 BLOCKED 2026-10-21: syn_ramstyle translated to PAP_RAM_STYLE then ignored; block_ram, block_ram+no_rw_check and explicit byte lanes all tried, reverted; see area-M2/measurement.md"
+delta,axi_ram_data,perips/axi_ram.v,mem,0,0,-2048,4,0,R_DCACHE,blocked,"M2 BLOCKED 2026-10-21: syn_ramstyle translated to PAP_RAM_STYLE then ignored; block_ram, block_ram+no_rw_check and explicit byte lanes all tried, reverted; see area-M2/measurement.md. P13 region R_MEM->R_DCACHE: it stays LUTRAM so it needs CLMA columns on the D side"
 delta,branch_predictor,core/branch_predictor.v,fetch,-1309,-1152,0,0,0,R_FETCH,done,"M3 MEASURED: -1309 LUT / -1152 FF (tag 25->7, target 32->14); A/B bit-identical; see area-M3/measurement.md"
 delta,ifu_axi,core/ifu_axi.v,fetch,-1107,-1306,0,0,0,R_FETCH,done,"M4a MEASURED: DEPTH 16->8, -1107 LUT / -1306 FF; A/B -0.06% cycles, CRC same. M4b (q_pred_hi) DEFERRED: it is the BTB prediction for PC+4, needs a 4th lookup port; see area-M4a/measurement.md"
 delta,icache_axi,core/icache_axi.v,mem,0,0,0,0,0,R_ICACHE,closed,"M5 CLOSED 2026-10-21: 2 async read ports per bank -> the mapper replicates the arrays and registers each port's output (3,070 FF, 8 KB LUTRAM for a 4 KB cache). DRM has a single read port, so deleting a copy removes a read port. No RTL change; see area-M5/measurement.md"

@@ -78,16 +78,18 @@ BRAM/DRM 放外圈**。
 
 DRM 列（x=26/54/106）与 APM 列（x=86）是硬件固定资源，区域矩形把它们含进对应集群。
 
-### 3.2 物理实现形式
+### 3.2 物理实现形式（踩坑后定稿）
 
-PDS 的区域约束有两个入口，都落成 `def_region` / `def_inst_region`：
+PDS 的区域约束两个入口最终都落成 `def_region` / `def_inst_region`：
 
-- FDC：`define_global_attribute {PAP_REGION} {...}` + `define_attribute {i:...} {PAP_REGION} {...}`，
-  dev_map 沿层级展开到 GTP 实例。
-- PCF/Tcl（**本轮采用**）：`firmware/code/platform/pango_native/pango_native_floorplan.tcl`，
-  `run_pds_flow.py --floorplan <file>` 在 dev_map 之后 source 它。用 Tcl 而不是 PCF 文本，
-  是为了让每个 `def_*` 都能 `catch` 并把结果打进 run.log——静默失效的区域约束
-  和生效的约束在日志上长得一模一样（mistakes-log §34 的教训）。
+- FDC：`define_global_attribute {PAP_REGION} {...}` + `define_attribute {i:...} {...}`。
+- **PCF（本轮采用）**：`firmware/code/platform/pango_native/pango_native_floorplan.pcf`，
+  `run_pds_flow.py --floorplan <file>` 用 `add_constraint` 在 dev_map 之后与板级 PCF 一起载入。
+
+**不能用 `source` 载 Tcl 版**：pds_shell 在项目创建阶段就会执行被 source 的脚本，
+此时设计数据库还不存在，裸 `def_region` 会把整个 shell **静默打死**
+（无错误、无日志、exit 0——和 mistakes-log §11 的"无镜像位流"同级别的坑）。
+区域约束必须走**约束文件**通道（deferred 解析），不能走脚本执行通道。
 
 坐标系：`show_device` 输出的站点名 `CLMA_<x>_<y>` 的后缀就是 floorplan 坐标
 （x∈10..122、y∈0..245；26/54/106 为 DRM 列、86 为 APM 列）。`.rtr` 里的

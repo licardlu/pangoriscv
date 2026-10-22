@@ -253,9 +253,16 @@ module rv32_top(
     // made lane 1 stop carrying any memory operation at all -- see
     // docs/lessons/mistakes-log.md.  The chain is shortened at the ALU instead.
     wire lane0_mem = dec_load || dec_store;
+    // P15b: a lane-1 control transfer may no longer pair behind a lane-0 memory
+    // op.  That single restriction is what lets br_miss_h drop `mem_wait` from
+    // its cone: with lane 0 never a load/store, `ex_is_mem` is 0 by opcode and
+    // `ex_is_mem_h` needs a lane-1 memory op, which is impossible here.  Cost is
+    // measured, not assumed -- see the ticks A/B in plan v11.
+    wire pair_l1_ctrl = dec_br_h || dec_jal_h;
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
                    !packet_load_use && !packet_md_use &&
                    !(lane0_mem && lane1_mem) &&
+                   !(lane0_mem && pair_l1_ctrl) &&
                    !fetch_fault && !fetch_fault_hi;
 
     // ========================================================= pipeline regs
@@ -761,7 +768,10 @@ module rv32_top(
     wire        resume   = halted_q && !halt_req;
     // At most one lane is a control transfer (pairing forbids lane 0 when it is
     // a control), so the two mispredict sources are mutually exclusive.
-    wire        br_miss_h = rr_v1 && rr_ctrl_h && !hold_ex && ctrl_miss_h;
+    // Same argument as br_miss, now that lane 0 can never be a memory op behind a
+    // lane-1 control (the pairing rule above): only trap_wait / div_wait remain.
+    wire        br_miss_h = rr_v1 && rr_ctrl_h && !trap_wait && !div_wait &&
+                            ctrl_miss_h;
     wire        kill_young = br_miss || br_miss_h;
     wire        kill_all   = trap_go || mret_go;
     wire        id_bypass    = !id_valid && id_accept && !kill_all &&
@@ -809,7 +819,7 @@ module rv32_top(
     // ========================================================= predictor
     wire        pred_take, ct_take, ct_take2;
     wire [31:0] pred_target, ct_target, ct_target2;
-    branch_predictor u_bp(
+    branch_predictor #(.ENTRIES(64)) u_bp(
         .clk(clk), .rst_n(rst_n),
         .fetch_pc(pc_q), .predict_taken(pred_take), .predict_target(pred_target),
         .fetch_pc2(chain_c), .predict_taken2(ct_take), .predict_target2(ct_target),

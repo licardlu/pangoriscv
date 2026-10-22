@@ -2109,3 +2109,40 @@ JAL 丢了重定向，错路 0xd0 被退休，随后 `traps=1` 跑飞。逻辑�
 **怎么办**：单 license 环境**一次只跑一个 seed**，靠"换 seed 重跑"抽签；
 要并行就先把 license 加到 N 份。查 `help pnr` 是找参数的最快路径（比 PDF 快得多），
 加新参数先用一次便宜的 place-only 验证它被接受（log 里出现 `Worst slack` 才算生效）。
+
+## 52. 互斥分桶的 `else if` 顺序会把"重叠原因"错标成"单一原因"（2026-10-23，P17）
+
+**现象**：周期账显示 `l1ctrl`（lane0 访存 + lane1 控制）占 10,257 拍/迭代，
+按此恢复配对后实测只赚到 **3,610** 拍/迭代。差 2.8 倍。
+
+**原因**：剖析器用 `else if` 链，
+```
+else if (lane0_mem && lane1_mem)      sb_l1mem
+else if (lane0_mem && pair_l1_ctrl)   sb_l1ctrl
+else if (packet_load_use)             sb_lduse
+```
+当 lane0 是 **load** 且 lane1 读它的结果时，`lane0_mem && pair_l1_ctrl` 和
+`packet_load_use` **同时为真**，但链条先命中 `l1ctrl`，于是这批"load-use"被记成
+了"访存+控制"。恢复配对后它们仍然是 single（因为真正的阻塞是 load-use），
+`l1ctrl` 只降了 68,591/20 而不是全部。
+
+**查什么**：每个桶必须能独立回答"如果我只消除这一个原因，能赚多少"。
+`else if` 只能给出"按这个优先级分，谁先命中"，两者不等价。
+
+**怎么办**：分桶用**两个层次**——
+1. 互斥桶用于**加总等于总数**的校验（`CYC_SUM`、`SINGLE_SUM` 都做了，很好）；
+2. 每个原因另配一个**独立**（非互斥）计数器，用来估收益。
+   估收益时看独立计数器，不要看互斥桶。
+
+## 53. TB 的周期性 `$display` 会冲掉 UART 报告里的 `Total ticks`（2026-10-23，P17）
+
+**现象**：`Total ticks  : PROGRESS cycles=4000000 retires=...` —— 数字被进度行覆盖，
+多次 A/B 里 `Total ticks` 变成 "corrupt"，而它**就是分数**。
+
+**原因**：TB 每 50 万拍 `$display("PROGRESS ...")`，固件在结尾通过 UART 打印报告，
+两个通道在 transcript 里交错。
+
+**怎么办**：把 `PROGRESS` / `LIVE` 包进 `` `ifdef TB_PROGRESS ``（默认关）。
+A/B 不再需要进度行；要看进度就显式 `+define+TB_PROGRESS`，并接受这次运行的
+`Total ticks` 可能不可用。**另外**：`$display` 的 `` `ifdef `` 必须包住整个
+`if(...) begin ... end`，包在 `begin` 里面会让未定义时的 `if/end` 结构被编译掉。

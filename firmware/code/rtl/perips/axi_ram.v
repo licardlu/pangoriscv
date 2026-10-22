@@ -39,9 +39,23 @@ module axi_ram #(
                WRITE_DRAIN=4,WRITE_WAIT=5,WRITE_RESP=6,FAULT=7;
     localparam [32:0] END_ADDR={1'b0,BASE_ADDR}+WORDS*33'd4;
     reg [2:0] state;
-    reg [31:0] mem[0:WORDS-1];
+    // P19: block-RAM inference.  The array used to be written from one always
+    // block and read from inside the response state machine
+    // (`read_data<=mem[read_index]` under `case(state)`), and the mapper put
+    // every 4096x8 slice into GTP_RAM64X1DP -- 4 x 512 = 2,048 distributed-RAM
+    // primitives, 54% of the whole design's LUTRAM.  The ROM instance escaped
+    // this only because WRITE_ENABLE=0 deletes the write path entirely.
+    //
+    // The two accesses are now in one always block with registered addresses,
+    // which is the canonical simple-dual-port pattern the mapper accepts:
+    //   write: byte enables, address `write_index`     (registers)
+    //   read : unconditional, address `read_index`     (registers)
+    // `mem_rdata` is consumed by the FSM one cycle later, exactly where
+    // `read_data<=mem[read_index]` used to sample it, so no latency changes.
+    reg [31:0] mem[0:WORDS-1] /* synthesis syn_ramstyle = "block_ram" */;
+    reg [31:0] mem_rdata;
     reg ar_saved,aw_saved,w_saved,prefer_write;
-    reg [31:0] ar_addr,aw_addr,w_data,read_data;
+    reg [31:0] ar_addr,aw_addr,w_data;
     reg [3:0] ar_id,aw_id,w_strb,response_id;
     reg [7:0] ar_len,aw_len,beats_left;
     reg [2:0] ar_size,aw_size;
@@ -107,7 +121,11 @@ module axi_ram #(
     assign s_awready=rst_n && state==IDLE && !aw_saved;
     assign s_wready=rst_n && ((state==IDLE && !w_saved) || state==WRITE_DRAIN);
     assign s_rvalid=rst_n && state==READ_RESP;
-    assign s_rdata=read_data;
+    // P19: driven by the array's registered output (`mem_rdata`).  `read_index`
+    // is latched on the IDLE->READ_MEM edge, so mem_rdata holds word N during
+    // the READ_RESP cycle -- exactly the cycle the old `read_data` register
+    // presented.  Zero extra latency, one register fewer.
+    assign s_rdata=read_good?mem_rdata:32'd0;
     assign s_rid=response_id;
     assign s_rresp=response_code;
     assign s_rlast=beats_left==0;
@@ -117,19 +135,27 @@ module axi_ram #(
     initial begin
         if(INIT_FILE!="") $readmemh(INIT_FILE,mem);
     end
-    // No reset on the memory array: this is a synchronous single-port access.
+    // The memory array is touched in exactly ONE always block, with both
+    // addresses coming from registers.  That is what lets the mapper see a
+    // simple dual-port block RAM (one write port with byte enables, one
+    // registered read port) instead of a 4,096-deep LUT mux.
     always @(posedge clk) begin
-        if(write_event)
-            for(lane=0;lane<4;lane=lane+1)
-                if(w_strb[lane]) mem[write_index][8*lane+:8]<=w_data[8*lane+:8];
+        if(write_event) begin
+            if(w_strb[0]) mem[write_index][7:0]  <=w_data[7:0];
+            if(w_strb[1]) mem[write_index][15:8] <=w_data[15:8];
+            if(w_strb[2]) mem[write_index][23:16]<=w_data[23:16];
+            if(w_strb[3]) mem[write_index][31:24]<=w_data[31:24];
+        end
+        mem_rdata<=mem[read_index];
     end
+    // No reset on the memory array: this is a synchronous single-port access.
     always @(posedge clk) begin
         if(!rst_n) begin
             state<=IDLE; ar_saved<=0; aw_saved<=0; w_saved<=0; prefer_write<=0;
             ar_addr<=0; aw_addr<=0; ar_id<=0; aw_id<=0; ar_len<=0; aw_len<=0;
             ar_size<=0; aw_size<=0; ar_burst<=0; aw_burst<=0;
             ar_lock<=0; aw_lock<=0; w_data<=0; w_strb<=0; w_last<=0;
-            read_data<=0; response_id<=0; response_code<=0; beats_left<=0;
+            response_id<=0; response_code<=0; beats_left<=0;
             read_good<=0; read_index<=0; delay_left<=0; protocol_fault<=0;
         end else begin
             if(s_arvalid && s_arready) begin
@@ -167,8 +193,8 @@ module axi_ram #(
                     end
                 end
                 READ_MEM: begin
-                    if(read_good) read_data<=mem[read_index];
-                    else read_data<=0;
+                    // The array output is already registered (`mem_rdata`); this
+                    // state only paces the response.
                     delay_left<=READ_DELAY;
                     // READ_DELAY=0 means "no modelled latency", yet the original
                     // code still burned a whole cycle in READ_WAIT for it.  The

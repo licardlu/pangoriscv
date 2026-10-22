@@ -39,7 +39,7 @@ module branch_predictor #(
     //      32     15,316,450        -          154,553   12,572
     //      64     15,059,217     -1.68%        116,246  ~14,500 (extrapolated)
     //     128     15,035,153     -1.84%        112,723   16,572 (measured)
-    parameter integer ENTRIES = 32          // direct-mapped sets, index derived from ENTRIES
+    parameter integer ENTRIES = 64          // P19: 32 -> 64; the block-RAM move freed 2,797 LUT
 )(
     input wire clk,
     input wire rst_n,

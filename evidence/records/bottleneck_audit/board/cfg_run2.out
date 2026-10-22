@@ -1,0 +1,60 @@
+M_PROCESS_FINISH_STARTED
+
+Executing : cfg_connect -ip 127.0.0.1 -port 65420
+Connecting to server[127.0.0.1 : 65420].
+Connect to server[127.0.0.1 : 65420] successfully.
+COMMAND[check version information] execute successfully, takes 1.1 secs.
+The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+COMMAND[get_cable_paras] execute successfully, takes 1.6 secs.
+Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+sbit = D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/bitstream/pangoriscv_board36_i2000.sbit
+Executing : cfg_connect -ip 127.0.0.1 -port 65420
+W: Configuration-4002: Tcl parameter check failed: The connection is already connected, please check the connection's status..
+Server is disconnect
+Connecting to server[127.0.0.1 : 65420].
+Connect to server[127.0.0.1 : 65420] successfully.
+COMMAND[check version information] execute successfully, takes 0.1 secs.
+The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+COMMAND[get_cable_paras] execute successfully, takes 1.5 secs.
+Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+connect OK
+clean ERR: invalid command name "cfg_clean"
+Executing : cfg_scan_chain
+PANGO USB CABLE II cable driver: D2XX DLL
+PG2L100H
+This device configure situation (done bit): 1
+COMMAND[Open config cable] execute successfully, takes 0.6 secs.
+Executing : cfg_scan_chain successfully.
+scan_chain OK: 1
+===== cfg_assign_file =====
+Executing : cfg_assign_file -file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/bitstream/pangoriscv_board36_i2000.sbit
+Executing : cfg_assign_file -file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/bitstream/pangoriscv_board36_i2000.sbit successfully.
+assign_file OK: 1
+===== cfg_program (download to SRAM, no verify) =====
+Executing : cfg_program
+The Progress: 0%The Progress: ¨„¨„11%The Progress: ¨„¨„¨„15%The Progress: ¨„¨„¨„¨„20%The Progress: ¨„¨„¨„¨„¨„25%The Progress: ¨„¨„¨„¨„¨„¨„30%The Progress: ¨„¨„¨„¨„¨„¨„¨„35%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„40%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„45%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„50%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„55%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„60%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„65%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„70%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„75%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„80%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„85%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„90%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„95%The Progress: ¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„¨„100%The done bit is 1
+COMMAND[Program] execute successfully, takes 3.8 secs.
+Executing : cfg_program successfully.
+program OK: 1
+===== cfg_scan_chain (done bit after program) =====
+Executing : cfg_scan_chain
+PANGO USB CABLE II cable driver: D2XX DLL
+PG2L100H
+This device configure situation (done bit): 1
+COMMAND[Open config cable] execute successfully, takes 0.6 secs.
+Executing : cfg_scan_chain successfully.
+scan2 OK: 1
+Executing : cfg_read_device_property -mode 0
+The ID value is: 0x00602899
+COMMAND[Get device id] execute successfully, takes 0.6 secs.
+Executing : cfg_read_device_property -mode 0 successfully.
+id OK: 00602899
+Executing : cfg_disconnect
+Server is disconnect
+Executing : cfg_disconnect successfully.
+disconnect OK
+PROGRAM_ONLY_DONE

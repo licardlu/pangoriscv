@@ -3,8 +3,23 @@
 用 Verilog 实现的一款 RISC-V RV32IM 处理器核，自带原生 AXI4 总线与 SoC，已在 Pango PG2L100H 开发板上
 跑通 CoreMark（400 次迭代，5 项 CRC 全部符合）。
 
-> **当前状态（2026-10-18 独立复核）**：最新交付为 **768 迭代、2.6740 CoreMark/MHz（RTL 仿真，未上板）**；
-> 下文的 400 迭代 / 1.35 / 12,694 LUT / “四级流水线”等均为历史版本。
+> **当前交付（2026-10-22 P13，板上实测）**：**5.213 CoreMark/MHz @ 36 MHz**
+> （2000 迭代 / 10.66 s / 五项 CRC 全对 / `Correct operation validated`）。
+> 位流 `bitstream/pangoriscv_board36_i2000.sbit`（SHA256 `CCEFDD8B…3E37F6`）；
+> 证据 `evidence/records/optimization/p13-board-verify/`。
+> 分数口径：`Iterations × 1e6 / Total ticks = 2000e6 / 383,673,358`（不用整数截断的秒数）。
+> 频率口径：位流 PLL 实配 36 MHz（27×56/42）；同 RTL 在 **40 MHz 约束下 All Constraints Met**
+> （setup +0.558 / hold +0.033 / 0 失败端点，分析构建 `p13seed7`，估计 fmax 40.56 MHz）。
+> 交付位流 setup +1.200 ns 全过、hold 残留 3 端点 −0.035 ns（data_ram 写地址跨列偏斜，
+> 板上实测不受影响，见 measurement.md"时序遗留"）。
+> **布线配方**（PDS 2022.2-SP6.1，缺省 hold 参数 + `-gplace_seed 3 -plc_decongestion 1
+> -share_router_control_signal TRUE`）——可布性靠 placement seed，详见
+> [docs/plan-score-5.2-120mhz-v8.md](docs/plan-score-5.2-120mhz-v8.md) §8 与
+> [mistakes-log §48](docs/lessons/mistakes-log.md)。
+> 120 MHz 目标：实测路径 24.65 ns（约 40.5 MHz），要到 120 MHz 需 EX 拆级（P14 计划），
+> 会吃约 2.3% 分数——边界与折算已写进 plan v8。
+>
+> **历史交付**：`pangoriscv_i1152_e2.sbit`（旧核 3.8557 板测，1152 迭代 / 27 MHz）；
 > 完整问题、验收缺口与修复顺序见 **[docs/verification.md](docs/verification.md)**。
 
 > **性能专项（2026-10-21）**：**当前交付 3.8557 CoreMark/MHz**（板上实测，**1152** 迭代 / 11.066 s /

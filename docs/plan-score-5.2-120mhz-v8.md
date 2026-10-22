@@ -252,3 +252,30 @@ x 10          28 30      50  58            86  90          108 110     122
 4. 烧板 + 抓 UART + 核 CRC/分数 → 证据入 `evidence/records/optimization/p13-board-verify/`。
 5. 若时间还有：FDC `PAP_REGION` 模块化布线 A/B（对拥塞与最差路径），守住分数面积。
 6. 错误经验（布线类）进 mistakes-log；清理 build 下 A/B 目录；README 状态块刷新。
+
+## 8. 布线收敛战报（13:00-14:00 实测）
+
+| 实验 | 配方 | 详细布线结局 |
+|---|---|---|
+| p13anat40 / p13routeB2 | 交付 hold 参数 / `--plain-pnr` | 卡 2.1~2.5k，**震荡** ⇒ hold 参数不是原因 |
+| p13routeC | +`-plc_decongestion 1` | 无尾部改善 |
+| **p13seed7** | `--plain-pnr -gplace_seed 7 -plc_decongestion 1 -share_router_control_signal TRUE` | **285 轮收 0**，全程单调下降 |
+| p13combo2 | FDC 区域约束 + decongestion + CE-share + dc_duplication（无 seed） | 尾部 ~1.2k 震荡（好于 2.2k 但不收） |
+
+**根因：摆放随机性 + 拥塞**。`-gplace_seed 7` 换了一个摆放，详细布线就能收敛——
+这是本轮的"钥匙"。区域约束（模块化布线）把尾部从 2.2k 压到 1.2k 但单独不够；
+两者叠加（seed + 区域）未测（时间优先给上板）。
+
+**p13seed7 时序（40 MHz 约束，同一位流构建）**：
+`All Constraints Met`；setup WNS **+0.558 ns**、hold WHS +0.033 ns、0/66,481 失败端点；
+估计 fmax **40.56 MHz**（24.65 ns 路径）。关键路径：`cpu/rr_rs1[*]` →
+`instruction_cache/rsp_data_hi_q` / `ifu/q_pc|q_pred`（R_CORE→R_FETCH/R_ICACHE 跨界）。
+
+**上板位流 `p13board36`**：PLL 27×56/42 = **36 MHz**（24.65 ns 路径留 3.1 ns 裕量；
+42 MHz 装不下、126 MHz 必花）、`pango_native_36mhz.fdc`、镜像 2000 迭代/`--cpu-mhz 36`
+（10.65 s ≥ 10 s）、同 seed7 布线配方。摆放 WNS **+3,095 ps** ✓。
+
+**⚠️ 重要教训（补）**：同一 seed 不同 PLL 净表 → 摆放不同 → 可布性不同。
+`p13board36`（36 MHz PLL、seed 7 同款配方）在 2.6k 处**开始震荡**（2,605→2,441→2,641），
+与 seed7（126 MHz PLL 净表）285 轮收 0 不是同一回事。**换 PLL 后必须重新找 seed**。
+已并行开 `p13b36s3`（seed 3）与 `p13b36s13`（seed 13 + dc_duplication）重试。

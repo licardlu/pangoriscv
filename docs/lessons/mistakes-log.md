@@ -2056,3 +2056,56 @@ pnr 阶段卡死、从来没执行到那一行，所以一直没暴露）。
 
 **怎么办**：给 pnr 加实验性参数时，先用一个**便宜的短流程**确认参数被接受
 （看 log 有没有 `Action pnr`/`Worst slack`）；生成位流的命令名以 build.tcl 为准。
+
+## 50. "更保守"的防御性 AND 项会让重定向丢失（2026-10-22，P15）
+
+**现象**：把 `br_miss` 的 `!hold_ex` 换成 `!trap_wait && !div_wait && !lane1_mem_raw`
+（多一个"配对不变量"的防御项），CoreMark 在 retire 2855（PC 0xc8 的 JAL）分歧：
+JAL 丢了重定向，错路 0xd0 被退休，随后 `traps=1` 跑飞。逻辑上"多加一个与项只会更保守"，
+实际却**反向**——它把这个该发的重定向挡住了。
+
+**查什么**：
+1. 先比 `retire_trace.txt` 的**第一个分歧退休号**，不要从头读波形；分歧点前后的
+   `pc/inst` 两列一比就知道是哪条指令丢了重定向。
+2. 再问："我加的这个项，在**该信号本来会拉高的那群输入**上是不是恒 0？"
+   不是"会不会更安全"，而是"会不会误挡"。
+
+**原因**：流水线冻结（`hold_ex`）时 `rr_*` 全部保持，lane1 的旧译码（`rr_load_h`）仍在，
+`rr_v1` 也还在，于是 `lane1_mem_raw` 在 lane0 控制指令**需要**重定向的周期里为 1。
+而设计本身已经保证了"控制指令 miss 时 packet 里没有访存"：
+`ex_is_mem_h` 带 `!ctrl_miss_now`，而 `ctrl_miss_now = rr_valid && is_ctrl && ctrl_miss_w`
+正是 `br_miss` 的触发条件。所以那个防御项**既多余又有害**。
+
+**怎么办**：做"去掉某个门控"的手术时，先在 RTL 里找出**同源的已有保证**
+（本例：`ctrl_miss_now`），用它证明"该门控在触发集上恒真"，然后只保留真正需要的分项。
+不要靠"再加一个条件让它更安全"——那是给冻结期的陈旧信号开了一个反向的口子。
+回归判据只有一条：`Total ticks` 与基线**逐位一致** + CRC 五项全对。
+
+## 51. `pnr` 的选项远不止 3 个；`-parallel` 单 license 下会全部失败（2026-10-22，P15）
+
+**现象**：`-parallel 8 -gplace_times 8 -saved_outcome 1` 期望"8 个 seed 并行摆放选最好"，
+实测 8 个全部失败（`I: Running PnR with seed 21 failed. Total:8/8`），且无 E: 级错误。
+
+**查什么**：`pds_shell` 里 `puts [help pnr]` 能直接打出**完整选项表**（不需要翻 PDF）。
+本轮从这张表里发现的、之前完全没用的关键项：
+
+| 选项 | 作用 |
+|---|---|
+| `-dc_duplication TRUE` | Design Cells Duplication，自动复制高扇出单元 |
+| `-logic_optimize_enable TRUE` | 摆放期逻辑优化 |
+| `-logic_optimize_lut6d_combing_strategy N` | LUT6D 打包策略 |
+| `-dispose_dram_prior TRUE` | 分布式 RAM 优先摆放（I$ 阵列曾偏出 126 列） |
+| `-dispose_carrychain_prior TRUE` | 进位链优先 |
+| `-place_worst_slack ps` | 摆放期 WNS 目标 |
+| `-refineplacement_mode/-iteration/-cluster` | 精修摆放 |
+| `-slack_weight` / `-pin_cost_increasing_speed` | 时序权重 |
+| `-parallel`/`-gplace_times`/`-saved_outcome` | 多种子并行摆放（**要多个 license**） |
+| `-route_parallel`/`-route_saved_outcome` | 多种子并行布线 |
+
+**原因**：`-parallel` 是"多进程各吃一份 fabric license"，本机只有 1 份
+（`new_pds_F4A80DA47D72.lic`），于是每个子进程都拿不到 license → 全失败。
+**不是** seed 本身不可布。
+
+**怎么办**：单 license 环境**一次只跑一个 seed**，靠"换 seed 重跑"抽签；
+要并行就先把 license 加到 N 份。查 `help pnr` 是找参数的最快路径（比 PDF 快得多），
+加新参数先用一次便宜的 place-only 验证它被接受（log 里出现 `Worst slack` 才算生效）。

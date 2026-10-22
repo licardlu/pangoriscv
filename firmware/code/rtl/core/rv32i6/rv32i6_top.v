@@ -40,15 +40,20 @@ module rv32i6_top(
     localparam [31:0] NOP      = 32'h0000_0013;   // addi x0,x0,0
 
     // ---------------------------------------------------------------------
-    // F1 -- address generation with a 2-deep fetch-valid pipeline
+    // F1/F2 -- fetch + a 4-entry instruction queue
     // ---------------------------------------------------------------------
-    // The memory registers its data one cycle after the address is presented, so
-    // the PC that belongs with `imem_data` is the PC of the PREVIOUS cycle
-    // (pc_q), not the current one.  Pairing `imem_data` with the current pc_f was
-    // the G1 bug that made the core execute the right instruction at the wrong
-    // PC (it cleared .bss forever because the destination pointer never moved).
-    // `fill` re-fills the two pipeline slots after a redirect; `capture` gates
-    // the ID register so a wrong-path word can never enter it.
+    // Two things went wrong without the queue, both of them "one fetch slot
+    // silently lost":
+    //   1. `imem_data` belongs to the address presented in the PREVIOUS cycle,
+    //      so pairing it with the current pc_f executed the right instruction at
+    //      the wrong PC.  Fixed by carrying pc_q alongside the data.
+    //   2. A load-use stall froze pc_f/pc_q/fill while the BRAM kept producing
+    //      data for the old address; when the stall ended the next capture was
+    //      off by one slot (the .bss loop skipped its `sw` and read the branch
+    //      word one slot early).
+    // With a queue the fetch NEVER stalls on the consumer: it keeps filling as
+    // long as there is room, and ID pops.  A stall is then purely a pop-side
+    // event and cannot corrupt the PC/data pairing.
     reg  [31:0] pc_f, pc_q;
     reg  [1:0]  fill;
     reg         id_valid;
@@ -56,35 +61,59 @@ module rv32i6_top(
     wire        redirect;
     wire [31:0] redirect_pc;
     wire        stall;
-    wire        capture = fill[0];
+    wire        capture = fill[0] && !redirect;
+
+    localparam integer QD = 4;
+    reg [31:0] q_pc   [0:QD-1];
+    reg [31:0] q_inst [0:QD-1];
+    reg [1:0]  q_wr, q_rd;
+    reg [2:0]  q_cnt;
+
+    wire q_empty = (q_cnt == 3'd0);
+    wire q_full  = (q_cnt == QD[2:0]);
+    wire q_pop   = !q_empty && !stall_div && !stall_lu && !redirect;
+    wire q_push  = capture && (!q_full || q_pop);
+    wire fetch_halt = q_full && !q_pop;
 
     always @(posedge clk) begin
         if (!rst_n) begin
-            pc_f <= RESET_PC; pc_q <= RESET_PC; fill <= 2'b00; id_valid <= 1'b0;
+            pc_f <= RESET_PC; pc_q <= RESET_PC; fill <= 2'b00;
         end else if (redirect) begin
             pc_f <= redirect_pc;
-            pc_q <= pc_f;              // in-flight word is wrong-path: capture blocked
+            pc_q <= pc_f;          // in-flight word is wrong-path; capture is blocked
             fill <= 2'b00;
-            id_valid <= 1'b0;
-        end else if (!stall) begin
+        end else if (!fetch_halt) begin
             pc_f <= pc_f + 32'd4;
             pc_q <= pc_f;
             fill <= {fill[0], 1'b1};
-            id_valid <= capture;
-        end else begin
-            id_valid <= 1'b0;          // stall: hold the fetch, bubble the ID
         end
     end
     assign imem_addr = {pc_f[31:3], 3'b000};
 
+    always @(posedge clk) begin
+        if (!rst_n || redirect) begin
+            q_wr <= 2'd0; q_rd <= 2'd0; q_cnt <= 3'd0;
+        end else begin
+            if (q_push) begin
+                q_pc[q_wr]   <= pc_q;
+                q_inst[q_wr] <= pc_q[2] ? imem_data[63:32] : imem_data[31:0];
+                q_wr <= q_wr + 2'd1;
+            end
+            if (q_pop) q_rd <= q_rd + 2'd1;
+            q_cnt <= q_cnt + {2'd0, q_push} - {2'd0, q_pop};
+        end
+    end
+
     reg  [31:0] pc_id, inst_id;
     always @(posedge clk) begin
-        if (!rst_n) begin
-            pc_id <= RESET_PC; inst_id <= NOP;
-        end else if (capture && !stall) begin
-            pc_id   <= pc_q;
-            inst_id <= pc_q[2] ? imem_data[63:32] : imem_data[31:0];
+        if (!rst_n || redirect) begin
+            pc_id <= RESET_PC; inst_id <= NOP; id_valid <= 1'b0;
+        end else if (q_pop) begin
+            pc_id <= q_pc[q_rd]; inst_id <= q_inst[q_rd]; id_valid <= 1'b1;
+        end else if (!stall_lu && !stall_div) begin
+            id_valid <= 1'b0;      // queue empty: bubble
         end
+        // on a stall the ID register holds its instruction
     end
 
     // ---------------------------------------------------------------------

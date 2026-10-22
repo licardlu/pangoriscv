@@ -47,6 +47,14 @@ module tb_rv32i6;
         .dmem_wdata(dmem_wdata), .dmem_rdata(dmem_rdata)
     );
 
+    // debug: every JALR that reaches E, with the operand it actually used
+    always @(posedge clk) begin
+        if (rst_n && u_core.e_valid && u_core.e_jalr)
+            $display("JALR pc=%08x rs1=%08x imm=%08x tgt=%08x rd=%0d rdval(x1)=%08x",
+                     u_core.e_pc, u_core.fwd1, u_core.e_imm, u_core.jr_target,
+                     u_core.e_rd, u_core.u_rf.rfile[1]);
+    end
+
     integer fd, n_retire;
     integer cycles;
     reg [31:0] last_pc;

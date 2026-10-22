@@ -1,0 +1,74 @@
+diff --git a/firmware/code/rtl/core/ifu_axi.v b/firmware/code/rtl/core/ifu_axi.v
+index ecf9211..913b455 100644
+--- a/firmware/code/rtl/core/ifu_axi.v
++++ b/firmware/code/rtl/core/ifu_axi.v
+@@ -149,8 +149,18 @@ module ifu_axi #(
+     // out in the same cycle, which is worth one cycle on every redirect:
+     // measured 137,249 redirects per CoreMark run and WIN_STARVE empty=137,250,
+     // i.e. one dead cycle each.
+-    wire [31:0] fetch_ptr=redirect_valid?redirect_pc:
+-                          (transparent?fetch_pc:next_pc_q);
++    // P20 (the frequency cut): `redirect_valid?redirect_pc:` is GONE.
++    //
++    // Keeping it made `redirect_pc` drive, combinationally and in the same cycle:
++    // the I$ request address, `local_fault` (-> eng_req_valid) and, through the
++    // queue write enable, the fetch FIFO.  On the routed netlist that is the
++    // 25.4 ns critical path (`redirect_pc[27]` alone is a 2.338 ns net).
++    //
++    // The request now goes out on the NEXT cycle through `transparent` (queue
++    // empty, nothing in flight, nothing owed), with `next_pc_q` pre-seeded from
++    // `redirect_pc` for the case where a stale response still blocks
++    // `transparent`.  Cost: exactly one cycle per redirect.
++    wire [31:0] fetch_ptr=transparent?fetch_pc:next_pc_q;
+     assign chain_c=fetch_ptr;
+     assign chain_c2=fetch_ptr+32'd4;
+     assign flush_lost=lost_q;
+@@ -207,18 +217,13 @@ module ifu_axi #(
+     // has to fit next to.
+     wire [1:0] ocnt_after_pop=ocnt_q-(rsp_owned?2'd1:2'd0);
+ 
+-    // A redirect may issue its request on the flush edge itself, but only when
+-    // nothing is outstanding: then there is no response to become stale and the
+-    // engine still sees exactly one request.  When a response is in flight the
+-    // old gate applies (wait for it to be swallowed first).
+-    // The engine accepts two requests, so the redirect may add one as long as
+-    // at most one is already outstanding or owed.
+-    wire [2:0] owed={1'b0,ocnt_q}+stale_cnt_q;
+-    wire redir_issue=redirect_valid&&(owed<=3'd1);
++    // P20: the `redirect_valid ? redir_issue : ...` branch is gone with the
++    // same-cycle request it guarded (see fetch_ptr).  `redirect_valid` still
++    // gates `fetch_valid`, `local_push` and the queue flush in the FSM, so the
++    // drop-and-refetch semantics are unchanged -- only the issue cycle moves.
+     assign eng_req_valid=rst_n&&enable&&!stop_q&&
+                          (ocnt_after_pop<2'd2)&&!local_fault&&
+-                         (redirect_valid ? redir_issue
+-                                         : ((stale_cnt_q==0)&&(reserved<=(DEPTH-2))));
++                         (stale_cnt_q==0)&&(reserved<=(DEPTH-2));
+     assign eng_req_addr=fetch_ptr;
+     assign eng_req_size=2;
+     assign eng_req_len=0;
+@@ -326,17 +331,13 @@ module ifu_axi #(
+             pcf0_q<=0; pcf1_q<=0;
+             ocnt_q<=0;
+             stale_cnt_q<=stale_cnt_q+{1'b0,ocnt_q}-(rsp_live?3'd1:3'd0);
+-            // The target request raised on this very edge has to be registered
+-            // here, otherwise the unit forgets what it asked for and the
+-            // response would be swallowed as if it belonged to the flushed
+-            // stream.  next_pc_q must follow the new chain too: from the next
+-            // cycle `transparent` is false (one request in flight), so the
+-            // prefetch pointer would otherwise walk the pre-redirect path.
+-            if(redirect_valid&&issue) begin
+-                pcf0_q<=redirect_pc; pdf0_q<=chain_next; pdf0_q2<=chain2_next;
+-                ocnt_q<=2'd1;
+-                next_pc_q<=expect_pair?packet_next:chain_next;
+-            end
++            // P20: no request is raised on the flush edge any more, so there is
++            // nothing to register into pcf0_q here.  `next_pc_q` is seeded with
++            // the target instead: from the next cycle `transparent` selects
++            // `fetch_pc`, but when a stale response is still owed `transparent`
++            // is false and the prefetch pointer would otherwise keep walking the
++            // pre-redirect chain.
++            next_pc_q<=redirect_pc;
+         end else if(head_lost) begin
+             lost_q<=1; count_q<=0; head_q<=0; tail_q<=0; stop_q<=0;
+             ocnt_q<=0; stale_cnt_q<=0; next_pc_q<=fetch_pc;

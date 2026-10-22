@@ -2285,3 +2285,66 @@ rip-up-and-reroute 的全部轮次，会低估 6~13 倍（`p15nx45` 那一栏是
    继续等下去没有意义，直接换配置或回退，不要"再等等看"。
 4. 因此**可布线性必须作为一等约束**：任何 RTL 改动先在 `-place_only` 上看摆放，
    再用"是否能收敛"验收，最后才看分数与时序。分数再好、不能布线的改动等于零。
+
+## 60. 布线不收敛的唯一确定解是"降面积"，不是 seed / floorplan（2026-10-23，P20）
+
+**现象**：18.2k LUT 时代，同一份网表在 39/45 MHz 全部卡在详细布线（停 3,618 / 震荡
+340~385）；查 seed、查 floorplan、查去拥塞参数，全部无效。
+
+**怎么做的**：把 `data_ram` 从分布式 RAM 挪进块 RAM，LUT 18,181 → 15,992
+（LUTRAM 3,790 → 1,742），**什么都没改其它，39 MHz 一次跑通，212 轮收敛**。
+
+**查什么**（降面积的第一步永远是找"该进块 RAM 却进了分布式 RAM"的阵列）：
+`synthesize/apm_drm_lutram_utilization.log` 里每个阵列的 `Primitives` 列。
+若 `4096 x 8` 后面写 `GTP_RAM64X1DP`（64×1），就是分布式 RAM；
+写 `GTP_DRM36K_E1` 才是块 RAM。1 个 4096×8 的分布式阵列 = 512 个原语。
+
+**原因**：映射器只认"读写都在同一个 always 块、地址都来自寄存器、字节使能是展开的
+if"这种简单双口写法。读放在状态机的 `case` 里、写在另一个 always 块，它就退回分布式。
+
+**怎么办**（`rtl/perips/axi_ram.v` 的 P19 改法，可照抄到任何 RAM）：
+1. 读、写放进同一个 always 块；
+2. 两个地址都用寄存器，不用组合地址；
+3. 字节写展开成 4 个 `if(strb[i])`，不要 `for` 循环 + 变量 part-select；
+4. 数组声明加 `/* synthesis syn_ramstyle = "block_ram" */`；
+5. 想让"寄存读"不多花一拍：`s_rdata` 直接取已寄存的阵列输出，地址在同一拍锁存，
+   消费方在下一次 `READ_RESP` 取——时序与原来的 `read_data` 寄存器逐拍一致。
+
+**判据**：改完先看 LUTRAM 计数是否降到预期，再跑 20 迭代仿真确认 `Total ticks`
+**逐位不变**（这类改动是纯物理的，分数不该动）。
+
+## 61. `Total ticks` 里 `crcfinal` 随迭代数变化，别把仿真的 20 迭代值当上板判据（2026-10-23，P20）
+
+**现象**：上板 2300 迭代报 `crcfinal 0x988c`，而文档判据写的是 `0x4983`，看起来像
+CRC 错了。CoreMark 却打印了 `Correct operation validated`。
+
+**查什么**：`tests/example/coremark/core_main.c` 的 `iterate()`：
+```c
+res->crc=0;
+for (i=0; i<iterations; i++) {
+    crc=core_bench_list(res,1);
+    res->crc=crcu16(crc,res->crc);     // 跨迭代累积
+    ...
+}
+```
+`crcfinal` 就是 `res->crc`，**必然随 `iterations` 变**。20 迭代 → 0x4983，
+2300 迭代 → 0x988c。
+
+**怎么办**：
+1. 上板判据用 `seedcrc`（performance run 固定 `0xe9f5`）+ `crclist/crcmatrix/crcstate`
+   这三项（与 `list_known_crc[3]/matrix_known_crc[3]/state_known_crc[3]` 逐位比对）
+   + CoreMark 自己打印的 `Correct operation validated`；
+2. `crcfinal` 只能和**同迭代数**的那次运行比；
+3. 别再抄"五项 CRC = 0x4983/..."当上板判据——那是 20 迭代仿真的值，上板永远对不上。
+
+## 62. 切流水线的代价必须实测，不能从计数器推（2026-10-23，P20）
+
+**现象**：按"每次误预测 +1 拍"估，BTB64 下切一刀应值 2,355 拍/迭代；实测
+**+4,798 拍/迭代（约 2.09 拍/次）**，把 5.2963 直接打到 5.1650。
+
+**原因**：切口落在"重定向→取指请求"这个位置时，除了误预测本身，还要多付一次
+"等老旧响应吞完"的拍（`stale_cnt_q` 非 0 时 `transparent` 为假，请求要再等）。
+
+**怎么办**：任何切流水线的方案，**先按 §58 的方法跑 20 迭代读 `Total ticks`**，
+用实测值判断能不能装进 5.2 的预算（每迭代 ≤ 192,307 拍）。估出来的数只配用来
+排优先级，不配用来做交付决定。

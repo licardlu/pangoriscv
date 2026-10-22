@@ -1,5 +1,41 @@
 # 发布版位流
 
+> ## ✅ 当前交付（2026-10-23）：`pangoriscv_board39_i2300_5p294.sbit`
+>
+> **板上 CoreMark/MHz = 5.2941 @ 39 MHz / LUT 15,992**（三项指标同出这一份位流）
+>
+> | 项 | 值 | 证据 |
+> |---|---|---|
+> | 板测 `Total ticks` | **434,442,833** | `evidence/records/optimization/p19-bram-btb64/board_p20b.txt` |
+> | 板测 `Iterations` | 2300 | 同上 |
+> | 运行时间 | 434,442,833 / 39 MHz = **11.14 s ≥ 10 s** ✓ | 由 ticks 反推 |
+> | 板测五项 CRC | `0xe9f5 / 0xe714 / 0x1fd7 / 0x8e3a / 0x988c` | 同上，`Correct operation validated` |
+> | **CoreMark/MHz** | **5.2941** | 2300 × 1e6 / 434,442,833 |
+> | 约束频率 / 布线后 | 39.000 MHz / **39.3252 MHz**（WNS **+0.212 ns**，setup 失败端点 **0**）| `report_timing.rtr` |
+> | hold | WHS **−0.007 ns**，2 个端点失败（见下"已知残留"）| `report_timing.rtr` |
+> | 面积（`device_map` `Used`）| **LUT 15,992 / FF 7,823 / LUTRAM 1,742 / DRM 12** | `synthesize_device_map_run.log` |
+> | CoreMark/kLUT | **0.3311** | 5.2941 / 15.992 |
+> | 位流 SHA256 | `771477ce099cb9afae0c99eadf905d87dd7c41e3e25fd06b046cd73567932612` | |
+> | 约束文件 | `pango_native_39mhz.fdc`；PLL `27*52/36` | |
+> | 镜像 | `build/native_software/coremark/performance/hw_i2300_39` | |
+>
+> **已知残留**：hold 有 2 个端点差 7 ps（`WHS −0.007`，慢/快角各 2 个）。
+> 上一版交付 `board36` 同样有 1 个端点的同类残留且上板正常。这一项**不合规**
+> （要求 setup/hold 均无失败端点），正在用 `-fix_hold_violation_threshold 100`
+> 与 `-check_clk_net_route_by_srb TRUE` 重跑修正。
+>
+> **相对上一版（`pangoriscv_board36_i2000.sbit`：5.213 @ 36 MHz / 18,181 LUT）**：
+> 分数 +1.6%、频率 +8.3%、LUT −12.0%、LUTRAM −54%。
+>
+> **`crcfinal` 随迭代数变化，不是错**：`core_main.c` 的 `iterate()` 里
+> `res->crc=crcu16(crc,res->crc)` 在 `for(i=0;i<iterations;i++)` 内累积，
+> 20 迭代是 0x4983，2300 迭代是 0x988c。`seedcrc 0xe9f5` 才是 CoreMark
+> performance run 的固定值。旧文档把 20 迭代仿真的 CRC 当上板判据，是错的。
+
+---
+
+## 历史版本
+
 > **当前交付（2026-10-21）：`pangoriscv_i1152_e2.sbit` —— 板上 3.8557（同一分数，面积 −10.9%）**
 > （298,780,717 ticks / 1152 迭代 / 11.066 s / 五项 CRC 全对；LUT 17,534 / FF 7,153 / kLUT 0.2199；
 > setup +7.816 / hold +0.025 / 失败端点 0）

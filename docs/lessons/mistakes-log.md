@@ -1960,3 +1960,55 @@ WIN_DC idle=17,960,827
    重定向目标早就按正常路径进了 ID —— 条件写对了，时机永远不重合。
    **旁路类改动的收益必须先量"条件成立的那一拍与需要它的那一拍是否重合"**，
    不重合就白写。
+
+## 46. 区域约束不能用 `source` 的 Tcl 送——项目创建阶段会被静默打死（2026-10-22，P13）
+
+**现象**：`impl.tcl` 里 `source floorplan.tcl`（内容是 `def_region`/`def_inst_region`），
+pds_shell 启动后 run.log 只有 license 两行就结束，**exit 0**，
+没有 `Analyzing project file`，没有报错，没有 traceback。
+同一个构建目录把 floorplan 换成只含 `puts` 的文件，流程就正常跑起来。
+
+**查什么**：run.log 里有没有 `Analyzing project file` 这一行。没有 = 死在**项目创建
+阶段**（脚本还没进执行阶段）。再看被 `source` 的文件里是否有需要设计数据库的命令
+（`def_region`/`def_inst_region`/`get_cells`...）。
+
+**原因**：pds_shell 创建 `.pds` 项目时会把脚本求值一遍（`build.tcl` 里的老注释
+"PDS evaluates setup once while creating its project and again to execute it" 说的就是这个）。
+此时设计数据库不存在，`def_region` 直接触发进程级死亡——`catch` 拦不住，
+`-continue` 也不管用，exit 0 让你误以为"跑完了"。probe 脚本里同样：一调
+`def_region`，之前所有 `puts` 都消失。
+
+**怎么办**：区域约束只走**约束文件**通道（PCF 里的 `def_region`/`def_inst_region` 行，
+`add_constraint` 载入），不走脚本执行通道。约束文件是 deferred 解析，
+pnr 前才读，那时设计已存在，报错也正常（`ConstraintEditor-0027` 等）。
+见 `platform/pango_native/pango_native_floorplan.pcf`。
+
+## 47. PDS 只收一个 .pcf；show_device 名字、网格名、floorplan 坐标是三套编号（2026-10-22，P13）
+
+**现象**：区域约束写好了，`add_constraint floorplan.pcf` 之后 pnr 报
+`PhysicalConstraintEditor-4040: Only one .pcf file can be added, old .pcf file is cleared`
+——板级 IO LOC 被顶掉；同时 `def_region` 报
+`ConstraintEditor-0027: Region value contains illegal floorplan coordinates`，
+`def_inst_region soc/core/cpu` 报 `PhysicalConstraintEditor-0023: Instance ... cannot be found`。
+
+**查什么**：三个独立的坑要分开查：
+1. **通道**：`.pcf` 只能有一个。第二份约束要么合并进板级 pcf，要么走 FDC 的
+   `PAP_REGION` 属性（`define_global_attribute` + `define_attribute`）。
+2. **坐标**：三套编号互不通用——`show_device` 输出的 `CLMA_<x>_<y>`（PG2L100H：
+   x∈10..122、y∈0..245）、时序报告/`clk_region_info.txt` 的网格名 `CLMA_<A>_<B>`
+   （A≤357、B≤1,219）、以及 `def_region` 的 floorplan 坐标（实测合法域
+   x≤122、y≤203 或 244，见 plan v8 §6 的两轮探针）。**写 def_region 前先跑探针标定**：
+   十几个从 (1,2,3,4) 到 (0,1000,0,1000) 的矩形一次跑完，看哪些被收。
+3. **实例名**：净表路径是 `soc/uart_inst/...`（斜杠，合成日志可证），但
+   `def_inst_region` 要**点号**形式（UCE 手册示例 `u_top_module.sub_module`）。
+   斜杠形式报 "cannot be found"，而且**报错行后面还会打印 successfully**——
+   以 Error 行为准，别被 successfully 骗了。
+
+**原因**：PDS 的物理约束编辑器有自己的对象命名与坐标系，和报告输出的命名、
+和 GUI 的站点名都不同源。工具对越界坐标/未知实例不 fail-fast（继续跑、exit 0），
+错误只藏在 log 的 E: 行里。
+
+**怎么办**：新机器/新器件第一次写区域约束，先跑一轮"探针构建"（只到 pnr 前，
+`--place-only`，几分钟）：坐标边界 + 实例名形式 + 约束通道三件事一次标定完，
+把结论写进计划书的标定章节，再写真正的 floorplan。判据永远是 log 里的
+`E:`/`failed` 行，不是命令后面的 `successfully`。

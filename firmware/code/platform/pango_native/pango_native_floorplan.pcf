@@ -1,62 +1,85 @@
 # pango_native_floorplan.pcf -- P13 modular floorplanning (physical regions).
 #
-# Loaded by run_pds_flow.py --floorplan via add_constraint, right next to the
-# board PCF (after dev_map).  PCF format, NOT sourced Tcl: pds_shell evaluates
-# a sourced script during project creation (before any design exists), and a
-# bare def_region without a design database kills the whole shell silently --
-# no error, no log, exit 0 (learned the hard way; see mistakes-log).
+# Appended to the staged board PCF by run_pds_flow.py --floorplan (PDS accepts
+# only one .pcf per flow -- PhysicalConstraintEditor-4040).  Constraint-file
+# form, NOT sourced Tcl: pds_shell evaluates sourced scripts during project
+# creation and a bare def_region without a design database kills the shell
+# silently (mistakes-log 46).
 #
-# Coordinate system (from PDS `show_device` for PG2L100H): the floorplan (x,y)
-# of a site IS the suffix of its name, e.g. CLMA_58_120 is at (58,120).
-# CLMA/CLMS columns x = 10,14,18,22,30,...,122; gaps at 26/54/106 are DRM
-# columns, x=86 is the APM column; tile rows y = 0..245.
-# def_region syntax: def_region <name> <xmin> <xmax> <ymin> <ymax>
-# (Pango Design Suite User Guide section 2.10).
+# COORDINATES (calibrated 2026-10-22 by probe builds p13fpcal / p13fpcal2,
+# plan v8 section 6): the def_region space of PG2L100H accepts x 0..122 and
+# y 0..203 (y=203 accepted, y=220 rejected => y_max is 203; the reconfigurable
+# area note in the PDS manual matches).  x>=118 pairs with y<=199 only
+# (def_region 118 122 0 203 was rejected, 0 122 0 199 accepted) -- the top
+# right corner is off the legal floorplan, so R_IO stops at x=117.
+# These are NOT the show_device site-name suffixes (those run y to 245) and
+# NOT the timing-report grid names (those run to A=357/B=1219) -- mistakes-log 47.
 #
-# Layout follows the data flow left to right (module-area-plan section 9.9:
-# widest busiest bus must not cross a region; two LUTRAM arrays must not share
-# a corridor; BRAM stays on its dedicated column):
+# INSTANCE NAMES: dotted form (UCE manual: u_top_module.sub_module).  Every
+# binding is written twice -- dotted first, slashed second -- because the
+# netlist prints slash paths (soc/uart_inst/...) while the constraint editor
+# resolves dots; a rejected line is logged as an E: and does not stop the flow,
+# so the surviving form is the one that bound (check the log's def_inst_region
+# lines).
 #
-#   x 10          28 30      50  58            86  90          108 110     122
-#     [  R_ICACHE  ][ R_FETCH][    R_CORE      ][   R_DCACHE   ][   R_IO   ]
-#     icache+prog   ifu+u_bp  cpu regs/ALU/APM   dcache+lsu+data  fabric+
-#     ROM(DRM x=26)            (APM col x=86!)   ram(LUTRAM)      perips
-#     |<-- 64b fetch bus -->|  |<-- lsu/mem -->|
+# LAYOUT follows the data flow left to right (module-area-plan section 9.9:
+# the widest busiest bus must not cross a region; two LUTRAM arrays must not
+# share a corridor; BRAM stays on its dedicated column):
+#
+#   x 10        28 30      50  58        88  90        108 110    117
+#     [ R_ICACHE ][ R_FETCH][   R_CORE   ][  R_DCACHE  ][  R_IO  ]
+#     icache+prog  ifu+u_bp  cpu regs/ALU  dcache+lsu+   fabric+
+#     ROM                   /APM col x=86 data ram      perips
+#     |<--64b fetch bus-->| |<-- lsu/mem -->|
 #
 # Two placement facts the geometry encodes:
-#   * u_mul/u_mul_h are APM primitives and the only APM column is x=86, so
-#     R_CORE must include x=86 or the multipliers cannot legally land in it.
+#   * u_mul/u_mul_h are APM primitives and the only APM column is around x=86
+#     (show_device: APM_86_*), so R_CORE must include x=86 or the multipliers
+#     cannot legally land in it.
 #   * soc.data_ram is 2,048 LUTRAM (M2 to BRAM was blocked, area-M2), so it
 #     needs CLMA columns, not a DRM column -- it sits with the D-side cluster.
-#
-# Instance names use the netlist slash paths (soc/core/cpu form), matching the
-# timing reports; if pnr reports an instance as unknown, check this first.
 
-def_region R_ICACHE 10 28 0 245
-def_region R_FETCH 30 50 0 245
-def_region R_CORE 58 86 20 225
-def_region R_DCACHE 90 108 0 245
-def_region R_IO 110 122 0 245
+def_region R_ICACHE 10 28 0 199
+def_region R_FETCH 30 50 0 199
+def_region R_CORE 58 88 0 199
+def_region R_DCACHE 90 108 0 199
+def_region R_IO 110 117 0 199
 
 # I side: cache + program ROM (its DRM column x=26 is inside R_ICACHE)
+def_inst_region soc.core.instruction_cache R_ICACHE
 def_inst_region soc/core/instruction_cache R_ICACHE
+def_inst_region soc.program_ram R_ICACHE
 def_inst_region soc/program_ram R_ICACHE
 # fetch: IFU + BTB (card M03 says R_FETCH; u_bp is a child of cpu and overrides
 # the cpu-wide binding below)
+def_inst_region soc.core.ifu R_FETCH
 def_inst_region soc/core/ifu R_FETCH
+def_inst_region soc.core.cpu.u_bp R_FETCH
 def_inst_region soc/core/cpu/u_bp R_FETCH
 # core pipeline
+def_inst_region soc.core.cpu R_CORE
 def_inst_region soc/core/cpu R_CORE
 # D side: cache + LSU (card M18) + data RAM (LUTRAM, needs CLMA columns)
+def_inst_region soc.core.data_cache R_DCACHE
 def_inst_region soc/core/data_cache R_DCACHE
+def_inst_region soc.core.lsu R_DCACHE
 def_inst_region soc/core/lsu R_DCACHE
+def_inst_region soc.data_ram R_DCACHE
 def_inst_region soc/data_ram R_DCACHE
 # AXI island + peripherals (cards M20/M21/M24-M31 say R_IO)
+def_inst_region soc.fabric R_IO
 def_inst_region soc/fabric R_IO
+def_inst_region soc.core.instruction_engine R_IO
 def_inst_region soc/core/instruction_engine R_IO
+def_inst_region soc.core.data_engine R_IO
 def_inst_region soc/core/data_engine R_IO
+def_inst_region soc.uart_inst R_IO
 def_inst_region soc/uart_inst R_IO
+def_inst_region soc.gpio_inst R_IO
 def_inst_region soc/gpio_inst R_IO
+def_inst_region soc.timer_inst R_IO
 def_inst_region soc/timer_inst R_IO
+def_inst_region soc.spi_inst R_IO
 def_inst_region soc/spi_inst R_IO
+def_inst_region soc.irq_inst R_IO
 def_inst_region soc/irq_inst R_IO

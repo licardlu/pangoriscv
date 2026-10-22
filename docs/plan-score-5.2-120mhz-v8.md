@@ -91,9 +91,10 @@ PDS 的区域约束两个入口最终都落成 `def_region` / `def_inst_region`�
 （无错误、无日志、exit 0——和 mistakes-log §11 的"无镜像位流"同级别的坑）。
 区域约束必须走**约束文件**通道（deferred 解析），不能走脚本执行通道。
 
-坐标系：`show_device` 输出的站点名 `CLMA_<x>_<y>` 的后缀就是 floorplan 坐标
-（x∈10..122、y∈0..245；26/54/106 为 DRM 列、86 为 APM 列）。`.rtr` 里的
-`CLMA_<A>_<B>`（A≤357、B≤1219）是**另一套网格编号**，不要混用。
+坐标系：**还在标定**（见 §6）。`show_device` 的 `CLMA_<x>_<y>` 后缀与 `.rtr` 的
+`CLMA_<A>_<B>` 网格编号都不是 `def_region` 直接接受的坐标——第一轮按前者写被
+`ConstraintEditor-0027: illegal floorplan coordinates` 全部拒绝。另注意
+`PhysicalConstraintEditor-4040`：**只允许一个 .pcf**，后加的会顶掉板级 pcf。
 
 ### 3.3 区域几何（编码了两个硬事实）
 
@@ -145,17 +146,30 @@ x 10          28 30      50  58            86  90          108 110     122
 - **D-Cache 第二读口 / R6 写路径 / BTB 扩容**：v7 §4 已排后，理由不变。
 - **为好看拆模块**：skill §9.8，模块边界阻断跨边界优化，通常加面积。
 
-## 6. 标定记录（坐标系已定）
+## 6. 标定记录（进行中）
 
-- `show_device` 命名 `CLMA_<x>_<y>` 的后缀**就是 floorplan 坐标**（`def_region` 用的就是这套）：
-  x ∈ {10,14,18,22,30,...,122}（24 列；26/54/106 是 DRM 列、86 是 APM 列），
-  y ∈ {0,1,4,...,245}（120 行）。CLMA 1,940 + CLMS 660 = 2,600 tiles。
-- `.rtr`/`clk_region_info.txt` 里的 `CLMA_<A>_<B>`（A∈21..357 step 6、B∈6k/6k+1、
-  11,675 个）是**网格编号**（约 6× 细于 tile 编号），只用于读时序报告，
-  不要拿去当 def_region 坐标。
-- `def_region` 越界值的行为：_（S2 的 run.log 里 FLOORPLAN 行会给出）_
-- 实例名格式：`def_inst_region` 接受 `soc.core.cpu`（点）还是 `soc/core/cpu`（斜杠）：
-  _（同上，fp_bind 两种都试并打印）_
+- `show_device` 命名 `CLMA_<x>_<y>`：x ∈ {10,...,122}、y ∈ {0,...,245}（2,600 tiles）。
+- `.rtr`/`clk_region_info.txt` 网格命名 `CLMA_<A>_<B>`：A ≤ 357、B ≤ 1,219（11,675 个，约 6× 密）。
+- **第一轮坐标标定（p13fp120b，已实测）**：按 show_device 空间写的 `def_region R_* 10 28 0 245`
+  全部被拒：`ConstraintEditor-0027: Region value contains illegal floorplan coordinates`。
+  ⇒ show_device 后缀**不是** def_region 坐标（推翻 §3.2 的假设）。
+- **实例名（p13fp120b，已实测）**：斜杠形式 `soc/core/cpu`、`soc/uart_inst` 报
+  `PhysicalConstraintEditor-0023: Instance ... cannot be found`。净表里的路径确实是
+  `soc/fabric/...`、`soc/uart_inst/...`（合成日志可证），但约束命令要的是**点号**形式
+  （UCE 手册示例 `u_top_module.sub_module`）——下一轮用 `soc.uart_inst` 试。
+- **载入通道（p13fp120b，已实测）**：`PhysicalConstraintEditor-4040: Only one .pcf file can
+  be added, old .pcf file is cleared` —— 后加的 floorplan.pcf 会**顶掉**板级 pcf（IO LOC）。
+  最终形态要么合进一个 pcf，要么走 FDC 的 `PAP_REGION`。
+- **第二轮坐标探针（p13fpcal2）——边界已钉死**：
+  `y ≤ 203`（203 收、220/244/245 全拒）；`x ≤ 122` 且 `x≥118` 时 `y ≤ 199`
+  （`(118,122,0,203)` 被拒、`(0,122,0,199)` 收）；零宽矩形 `(122,122,...)` 被拒。
+  ⇒ **def_region 合法域：x∈[0,122]、y∈[0,203]，右上角 x≥118 时 y≤199**。
+  y_max=203 恰好 = 网格 B_max/6（1219/6=203）——`def_region` 坐标疑似网格名编号的
+  (A/3, B/6)；但 x=122 的存在（T15 收）说明 x 侧含 IO 环，网格名 A≤357 不够解释。
+  **不依赖该映射**：floorplan 只需要"区域相对位置与合法性"，APM 列用宽矩形覆盖
+  （R_CORE x[58,88] 含 show_device 的 x=86 APM 列）。
+- 实例名：**两种都写**（点号在前、斜杠在后），被拒的那行只是 log 里的 E:，
+  不阻断流程；以实际绑定成功的为准（下一轮 run.log 的 def_inst_region 行）。
 
 ## 7. 实测记录（随执行更新）
 

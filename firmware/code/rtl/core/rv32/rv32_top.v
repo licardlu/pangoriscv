@@ -733,7 +733,30 @@ module rv32_top(
     // computed from it is stale.  Redirecting on that stale target killed the
     // pipeline and sent `jr a5` -- right behind `lw a5,0(a0)` in CoreMark's
     // get_seed_32 jump table -- to the table's data address.
-    wire        br_miss  = rr_valid && is_ctrl && !hold_ex && !ex_trap_w &&
+    //
+    // P15 / plan v10 S2: `!hold_ex` used to gate this redirect, and that put the
+    // whole D-cache request path into the loop that ends at the I-cache:
+    //   mem_addr -> dcache early_req -> op_ready -> mem_wait -> !hold_ex -> br_miss
+    // 5 hops / 4.4 ns of the 24.65 ns board path (p13seed7 .rtr).  It is a
+    // *false* dependency, and the proof is already in this file: `ex_is_mem_h`
+    // carries `!ctrl_miss_now`, and `ctrl_miss_now` is exactly
+    // `rr_valid && is_ctrl && ctrl_miss_w` -- the same predicate `br_miss` needs.
+    // So whenever this redirect can fire, `ex_is_mem_h` (and therefore
+    // `mem_wait`) is already 0 by construction; `ex_is_mem` needs rr_load/
+    // rr_store, a disjoint opcode decode from is_ctrl.  Dropping the term is
+    // therefore an identity on the firing set, not a behaviour change.
+    // Only the two hold_ex terms that can really be high here stay:
+    //   * `trap_wait` -- an older WB trap the receiver has not accepted yet;
+    //                    the redirect must lose to it.
+    //   * `div_wait`  -- defensive; a control is never a divide.
+    // `br_miss_h` keeps `!hold_ex`: there lane 0 really can be a memory op.
+    // NOTE: do not add a `lane1_mem_raw` term here.  It looks like a safe
+    // restatement of the pairing invariant, but a stale lane-1 load decode can
+    // survive a freeze and then *blocks* a legitimate lane-0 redirect
+    // (measured: CoreMark diverges at retire 2855, JAL at 0xc8 loses its
+    // redirect and the wrong-path word at 0xd0 retires).
+    wire        ctrl_hold_ok  = !trap_wait && !div_wait;
+    wire        br_miss  = rr_valid && is_ctrl && ctrl_hold_ok && !ex_trap_w &&
                            ctrl_miss_w;
     wire        resume   = halted_q && !halt_req;
     // At most one lane is a control transfer (pairing forbids lane 0 when it is

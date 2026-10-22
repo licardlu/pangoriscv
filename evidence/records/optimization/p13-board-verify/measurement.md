@@ -156,7 +156,7 @@ CoreMark/MHz = Iterations × 1e6 / Total ticks
 |---|---|---|
 | 执行效率 | **5.213 CoreMark/MHz** | 板上 `Total ticks` 反推，五项 CRC 全对 |
 | 时钟频率 | **36 MHz 板上实测运行**；同 RTL 在 40 MHz 约束下 All Constraints Met（分析构建 p13seed7） | 位流 PLL 27×56/42=36 MHz；40 MHz 口径出自独立分析构建，不混报 |
-| 资源效率 | LUT 17,185（26%）/ FF 7,677 / LUTRAM 3,684（核心 RTL 与 p12 同，综合口径） | CoreMark/kLUT = 5.213/17.185 = **0.303** |
+| 资源效率 | **LUT 17,869（27%）/ FF 7,823 / LUTRAM 3,790 / DRM 8 / APM 10**（本位流 device_map） | **CoreMark/kLUT = 5.213/17.869 = 0.292** |
 
 ## 时序遗留（诚实记录）
 
@@ -165,3 +165,10 @@ CoreMark/MHz = Iterations × 1e6 / Total ticks
 与 build.tcl 记录的 cache tag 写地址慢性路径同族）。hold 修复器跑了 5 轮没有修掉。
 **板上 CoreMark 照常跑通（CRC 全对）**——但按"setup/hold 无失败端点"的频率合规口径，
 36 MHz 需注明该残留；完全合规的频率证据是 p13seed7 的 40 MHz All Constraints Met。
+
+## 本位流 device_map 资源（与分数/时序同源）
+
+```
+APM 10 / 240 | FF 7,823 / 133,200 | LUT 17,869 / 66,600 (27%)
+Distributed RAM 3,790 / 19,900 | DRM 8 / 155 | IO 13
+```

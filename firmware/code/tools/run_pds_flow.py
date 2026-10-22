@@ -151,7 +151,7 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
         else:
             lines.append("report_timing")
             lines.append("gen_netlist")
-            lines.append("bit_gen")
+            lines.append("gen_bit_stream")
     else:
         lines.append("report_timing")
     tcl = bdir / "impl.tcl"

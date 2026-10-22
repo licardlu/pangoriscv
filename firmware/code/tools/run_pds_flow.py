@@ -79,7 +79,7 @@ def stage(tag: str, image_from: Path) -> Path:
 
 def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
               floorplan: Path | None = None, place_only: bool = False,
-              pnr_extra: str | None = None) -> Path:
+              pnr_extra: str | None = None, plain_pnr: bool = False) -> Path:
     src = bdir / "sources" / "rtl"
     files = ([src / "core" / (m + ".sv") for m in CORE]
              + [src / "bus" / (m + ".sv") for m in BUS]
@@ -103,8 +103,17 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
         # `source`d Tcl: pds_shell evaluates sourced scripts during project
         # creation, when no design database exists yet, and a bare def_region
         # then kills the whole shell with no error and exit 0.
+        #
+        # A `.fdc` floorplan (PAP_REGION attributes) instead merges into the
+        # staged frequency FDC -- the channel that survives dev_map, which is
+        # where the PCF def_inst_region bindings crash pnr (P13, see
+        # evidence/records/optimization/p13-modular-pnr/).
         if floorplan is not None:
-            with (bdir / "pango_native.pcf").open("a", encoding="utf-8") as fh:
+            if floorplan.suffix == ".fdc":
+                target = bdir / ("pango_native_%smhz.fdc" % freq)
+            else:
+                target = bdir / "pango_native.pcf"
+            with target.open("a", encoding="utf-8") as fh:
                 fh.write("\n# ---- P13 modular floorplanning (%s) ----\n" % floorplan.name)
                 fh.write(floorplan.read_text(encoding="utf-8"))
         lines.append("add_constraint \"%s\"" % (bdir / "pango_native.pcf").as_posix())
@@ -114,12 +123,13 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
         # a successful synthesis plus a silent failure.  The hold-fix argument set
         # is the one the delivered build uses (platform/pango_native/build.tcl);
         # nothing in it relaxes a constraint, it only asks for more hold fixing.
-        pr = ["pnr",
-              "-fix_hold_violation_threshold", "0",
-              "-fix_hold_violation_threshold_for_clk_tree", "0",
-              "-fix_hold_violation_threshold_for_clock_path_cross_srb", "0",
-              "-fix_hold_violation_iterations", "50",
-              "-fix_hold_violation_in_route", "TRUE"]
+        pr = ["pnr"]
+        if not plain_pnr:
+            pr += ["-fix_hold_violation_threshold", "0",
+                   "-fix_hold_violation_threshold_for_clk_tree", "0",
+                   "-fix_hold_violation_threshold_for_clock_path_cross_srb", "0",
+                   "-fix_hold_violation_iterations", "50",
+                   "-fix_hold_violation_in_route", "TRUE"]
         if seed is not None:
             pr += ["-seed", str(seed)]
         if pnr_extra:
@@ -193,6 +203,9 @@ def main() -> int:
     ap.add_argument("--pnr-extra", default=None,
                     help="extra pnr args appended verbatim (e.g. "
                          "'-number_of_router_thread 4 -dump_router_congestion_plot TRUE')")
+    ap.add_argument("--plain-pnr", action="store_true",
+                    help="omit the hold-fix pnr args (H1 routing test: do they cause "
+                         "rip-up thrash that never converges?)")
     a = ap.parse_args()
 
     bdir = stage(a.tag, Path(a.image))
@@ -200,7 +213,8 @@ def main() -> int:
     if fp is not None and not fp.is_file():
         raise SystemExit("floorplan file not found: %s" % fp)
     tcl = write_tcl(bdir, a.freq, a.mode, a.seed, floorplan=fp,
-                    place_only=a.place_only, pnr_extra=a.pnr_extra)
+                    place_only=a.place_only, pnr_extra=a.pnr_extra,
+                    plain_pnr=a.plain_pnr)
     print("build dir : %s" % bdir)
     print("mode      : %s  freq %s MHz  seed %s" % (a.mode, a.freq, a.seed))
     rc = run(bdir, tcl, "run.log")

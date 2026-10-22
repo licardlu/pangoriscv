@@ -42,14 +42,18 @@ module pangoriscv_top #(
  //   (27*60/13.5 = 120.000 exactly, but STATIC_RATIO0 is an integer parameter.)
  // Analysis builds only: STATIC_RATIO0(12)/STATIC_DUTY0(12) = 126 MHz.
  // Use the same clock for CPU, fabric, peripherals and observation counters.
- // P18: 39 MHz = 27*52/36.  The routed worst path of this RTL family is
- // 24.598 ns (p15nx45 .rtr), so 25.641 ns is the highest exact-MHz step that
- // still has margin; 45 MHz (22.22 ns) FAILS in routing by -2.376 ns.
+ // P18: kept at 36 MHz = 27*56/42, because that is the only frequency the
+ // repository can still reproduce a *delivered* bitstream for
+ // (bitstream/pangoriscv_board36_i2000.sbit).  The 39 MHz ratio is 27*52/36
+ // and the constraint is already in platform/pango_native/pango_native_39mhz.fdc
+ // with a ready image (build/native_software/coremark/performance/hw_i2300_39);
+ // switch to it only together with a build that actually finishes detailed
+ // routing, otherwise the repo can no longer reproduce the delivered bitstream.
  wire core_clk,pll_locked;
  GTP_PPLL #(
   .CLKIN_FREQ(27.0),.LOCK_MODE(0),
-  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(52),
-  .STATIC_RATIO0(36),.STATIC_DUTY0(36),.STATIC_DUTYF(52),
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(56),
+  .STATIC_RATIO0(42),.STATIC_DUTY0(42),.STATIC_DUTYF(56),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

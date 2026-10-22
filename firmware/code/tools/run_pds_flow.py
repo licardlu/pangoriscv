@@ -77,7 +77,8 @@ def stage(tag: str, image_from: Path) -> Path:
     return bdir
 
 
-def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None) -> Path:
+def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
+              floorplan: Path | None = None, place_only: bool = False) -> Path:
     src = bdir / "sources" / "rtl"
     files = ([src / "core" / (m + ".sv") for m in CORE]
              + [src / "bus" / (m + ".sv") for m in BUS]
@@ -94,6 +95,13 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None) -> Path:
     ]
     if mode == "full":
         lines.append("add_constraint \"%s\"" % (bdir / "pango_native.pcf").as_posix())
+        # Floorplanning (P13): region constraints must be issued *after* dev_map
+        # (the UCE manual: PAP_REGION is carried down the flow and resolved at
+        # dev_map; the PCF forms def_region/def_inst_region are placed with the
+        # PCF).  The file is plain Tcl driving the pds_shell def_* commands, so
+        # it can also `catch`/`puts` its own diagnostics into run.log.
+        if floorplan is not None:
+            lines.append("source \"%s\"" % floorplan.as_posix())
         # The place-and-route action is `pnr`, not `place_route`: the latter is a
         # report directory name, and calling it as a command aborts the flow with
         # `invalid command name "place_route"` *after* dev_map, i.e. it looks like
@@ -108,10 +116,24 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None) -> Path:
               "-fix_hold_violation_in_route", "TRUE"]
         if seed is not None:
             pr += ["-seed", str(seed)]
+        # place_only: stop after placement.  At constraints where routing never
+        # converges (120 MHz, P13) the router spins forever and the only
+        # comparable number is the placement WNS -- a half-routed WNS is not a
+        # measurement (mistakes-log 34).  `pnr -place_only` is a documented pnr
+        # flag ("Place Only"), so the same action/hold args stay in place.
+        if place_only:
+            pr += ["-place_only"]
         lines.append(" ".join(pr))
-        lines.append("report_timing")
-        lines.append("gen_netlist")
-        lines.append("bit_gen")
+        if place_only:
+            # Placement-only builds stop here on purpose: `report_timing` reads
+            # the PnR database only (no route => no .rtr), and there is no
+            # bitstream to generate.  The placement WNS/TNS is already printed
+            # by pnr itself ("Worst slack ... after placement") in run.log.
+            lines.append("puts \"PLACE_ONLY_DONE (pnr -place_only) -- no route, no bitstream\"")
+        else:
+            lines.append("report_timing")
+            lines.append("gen_netlist")
+            lines.append("bit_gen")
     else:
         lines.append("report_timing")
     tcl = bdir / "impl.tcl"
@@ -150,14 +172,23 @@ def check_image(bdir: Path) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
-    ap.add_argument("--freq", default="126", choices=["126", "120", "100", "27", "50", "40"])
+    ap.add_argument("--freq", default="126",
+                    choices=["126", "120", "100", "80", "60", "50", "40", "27"])
     ap.add_argument("--mode", default="synth", choices=["synth", "full"])
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--image", default=str(CODE / "build" / "p5_126"))
+    ap.add_argument("--floorplan", default=None,
+                    help="Tcl file with def_region/def_inst_region (sourced after dev_map)")
+    ap.add_argument("--place-only", action="store_true",
+                    help="stop after placement (pnr -place_only); for non-routeable constraints")
     a = ap.parse_args()
 
     bdir = stage(a.tag, Path(a.image))
-    tcl = write_tcl(bdir, a.freq, a.mode, a.seed)
+    fp = Path(a.floorplan).resolve() if a.floorplan else None
+    if fp is not None and not fp.is_file():
+        raise SystemExit("floorplan file not found: %s" % fp)
+    tcl = write_tcl(bdir, a.freq, a.mode, a.seed, floorplan=fp,
+                    place_only=a.place_only)
     print("build dir : %s" % bdir)
     print("mode      : %s  freq %s MHz  seed %s" % (a.mode, a.freq, a.seed))
     rc = run(bdir, tcl, "run.log")

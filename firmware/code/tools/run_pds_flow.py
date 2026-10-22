@@ -78,7 +78,8 @@ def stage(tag: str, image_from: Path) -> Path:
 
 
 def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
-              floorplan: Path | None = None, place_only: bool = False) -> Path:
+              floorplan: Path | None = None, place_only: bool = False,
+              pnr_extra: str | None = None) -> Path:
     src = bdir / "sources" / "rtl"
     files = ([src / "core" / (m + ".sv") for m in CORE]
              + [src / "bus" / (m + ".sv") for m in BUS]
@@ -94,14 +95,19 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
         "dev_map",
     ]
     if mode == "full":
-        lines.append("add_constraint \"%s\"" % (bdir / "pango_native.pcf").as_posix())
-        # Floorplanning (P13): region constraints ride in as a *constraint file*
-        # (`add_constraint`), same as the board PCF, placed after dev_map.
-        # NOT `source`d Tcl: pds_shell evaluates sourced scripts during project
+        # Floorplanning (P13): region constraints ride in the SAME constraint
+        # file as the board IO LOCs.  PDS allows only one .pcf per flow
+        # (`PhysicalConstraintEditor-4040: Only one .pcf file can be added,
+        # old .pcf file is cleared`), so the floorplan lines are appended to
+        # the staged copy of pango_native.pcf.  Constraint-file form, NOT
+        # `source`d Tcl: pds_shell evaluates sourced scripts during project
         # creation, when no design database exists yet, and a bare def_region
         # then kills the whole shell with no error and exit 0.
         if floorplan is not None:
-            lines.append("add_constraint \"%s\"" % (bdir / floorplan.name).as_posix())
+            with (bdir / "pango_native.pcf").open("a", encoding="utf-8") as fh:
+                fh.write("\n# ---- P13 modular floorplanning (%s) ----\n" % floorplan.name)
+                fh.write(floorplan.read_text(encoding="utf-8"))
+        lines.append("add_constraint \"%s\"" % (bdir / "pango_native.pcf").as_posix())
         # The place-and-route action is `pnr`, not `place_route`: the latter is a
         # report directory name, and calling it as a command aborts the flow with
         # `invalid command name "place_route"` *after* dev_map, i.e. it looks like
@@ -116,6 +122,8 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
               "-fix_hold_violation_in_route", "TRUE"]
         if seed is not None:
             pr += ["-seed", str(seed)]
+        if pnr_extra:
+            pr += pnr_extra.split()
         # place_only: stop after placement.  At constraints where routing never
         # converges (120 MHz, P13) the router spins forever and the only
         # comparable number is the placement WNS -- a half-routed WNS is not a
@@ -182,18 +190,17 @@ def main() -> int:
                          "added as a constraint after dev_map")
     ap.add_argument("--place-only", action="store_true",
                     help="stop after placement (pnr -place_only); for non-routeable constraints")
+    ap.add_argument("--pnr-extra", default=None,
+                    help="extra pnr args appended verbatim (e.g. "
+                         "'-number_of_router_thread 4 -dump_router_congestion_plot TRUE')")
     a = ap.parse_args()
 
     bdir = stage(a.tag, Path(a.image))
     fp = Path(a.floorplan).resolve() if a.floorplan else None
-    if fp is not None:
-        if not fp.is_file():
-            raise SystemExit("floorplan file not found: %s" % fp)
-        # Staged next to the other constraints: a constraint file must live in
-        # the build directory (same rule as the PCF/FDC copies in stage()).
-        shutil.copy2(fp, bdir / fp.name)
+    if fp is not None and not fp.is_file():
+        raise SystemExit("floorplan file not found: %s" % fp)
     tcl = write_tcl(bdir, a.freq, a.mode, a.seed, floorplan=fp,
-                    place_only=a.place_only)
+                    place_only=a.place_only, pnr_extra=a.pnr_extra)
     print("build dir : %s" % bdir)
     print("mode      : %s  freq %s MHz  seed %s" % (a.mode, a.freq, a.seed))
     rc = run(bdir, tcl, "run.log")

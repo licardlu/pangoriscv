@@ -520,10 +520,12 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 4. **接口**：`op_valid/op_ready`、`is_store/address/store_value/access_size`（32b、3b）、`done_valid/load_value/fault`（32b）。
 5. **内部状态**：`state`、`address_q/value_q/size_q/pc_q/rd_q`。
 7. **面积**：253/105/0/0/0 → **不变**。
-8. **物理区域**：`R_CORE` 边缘，紧邻 `R_DCACHE`。
+8. **物理区域**：`R_DCACHE`（矩形 region 做不了"边缘"，取贴 `R_DCACHE` 一侧：
+   lsu↔dcache 握手在每个访存指令的 miss 环上，比 lsu↔cpu 的请求口更热；
+   `R_DCACHE` 与 `R_CORE` 本就相邻，两个方向都只跨一条边界）。
 9. **关键路径**：不在前 8。
 10. **测试**：`tb/unit/tb_lsu_axi.sv`、`tb/axi/tb_lsu_axi_ram.sv`。
-11. **变更**：2026-10-21 立卡（**本专项禁止改动其语义**）。
+11. **变更**：2026-10-21 立卡（**本专项禁止改动其语义**）。2026-10-22 P13 落地区域约束，区域归属如上。
 
 #### M19 `dcache_axi` — `rtl/core/dcache_axi.v` — 存储
 2. **职责**：2 路组相联 D-Cache，**32 组 × 2 路 × 8 字 = 2 KB**，写通 + 行填充，MMIO 走 bypass；不做一致性。
@@ -566,16 +568,16 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 #### M20 `axi_read_engine` — `rtl/core/axi_read_engine.v` — 访存
 2. **职责**：AXI4 读引擎（AR/R），支持猝发；不做地址译码。
 7. **面积**：3/4/0/0/0 → **不变**。
-8. **物理区域**：`R_IO`。
+8. **物理区域**：`R_IO`（3 LUT 的薄适配器，贴互连即可；fill 总线两端都跨区，随哪端收益为零）。
 10. **测试**：`tb/axi/tb_axi_read_engine.sv`。
-11. **变更**：2026-10-21 立卡。
+11. **变更**：2026-10-21 立卡。2026-10-22 P13 落地区域约束（与卡一致，未改归属）。
 
 #### M21 `axi_data_engine` — `rtl/core/axi_data_engine.v` — 访存
 2. **职责**：AXI4 写引擎（AW/W/B），写掩码与错误响应。
 7. **面积**：17/82/0/0/0 → **不变**。
-8. **物理区域**：`R_IO`。
+8. **物理区域**：`R_IO`（同 M20，薄适配器）。
 10. **测试**：`tb/axi/tb_axi_data_engine.sv`、`sim/run_engine_tests.py`（64 例，含 8 例粘滞故障）。
-11. **变更**：2026-10-21 立卡。
+11. **变更**：2026-10-21 立卡。2026-10-22 P13 落地区域约束（与卡一致，未改归属）。
     **P35（2026-10-21，性能专项）**：① 允许在与主机交 B 的**同拍**接收下一笔
     （`req_ready` 门控在 `b_valid && b_ready`，`WRITE_OWNERSHIP`/`EARLY_STORE_COMPLETION` 契约不变）；
     ② 请求与 W 同拍到达时跳过 `WR_PREP`（`w_ready` 加故障门控，粘滞故障契约不变）。
@@ -617,18 +619,22 @@ CoreMark/kLUT = 3.4222 / 18.006 = 0.1901（P21 0.1718，+10.6%）
 2. **职责**：0x0000_0000 的 16 KB 程序存储器（`WRITE_ENABLE=0`，只读），带 `$readmemh` 初始化。
 6. **存储**：`mem[4096][31:0]` → **4 × `GTP_DRM36K_E1`（BRAM/ROM）**，已是最优。
 7. **面积**：150/143/0/4/0 → **不变**。
-8. **物理区域**：`R_MEM`（外圈；BRAM 走专用布线）。
+8. **物理区域**：`R_ICACHE`（与 I-Cache 同区：程序 ROM 在 DRM 专用列 x=26，
+   该列就画在 `R_ICACHE` 的矩形里；fill 路径两端同区）。
 10. **测试**：`tb/axi/tb_axi_ram.sv`、`tb/axi/tb_axi_memory.sv`。
 11. **变更**：2026-10-21 立卡（**它是 M2 的可行性依据**：同文件同流程已能推断 BRAM）。
+    2026-10-22 P13 落地区域约束：`R_MEM` 改名 `R_ICACHE` 共区（DRM 列画进 I 侧矩形）。
 
 #### M23 `axi_ram`（data）— `rtl/perips/axi_ram.v` — 存储（**M2 目标**）
 2. **职责**：0x1000_0000 的 16 KB 数据 RAM（可写、字节掩码）。
 6. **存储**：`mem[4096][31:0]` 被推断成 **4 × 4096×8 的 LUTRAM（2,048 个 `GTP_RAM64X1DP`）** ← 本专项最大热点。
 7. **面积**：1,022/212/**2,048**/0/0 → **1,022/212/0（DRM 4→8）**。
-8. **物理区域**：`R_MEM`（M2 之后走 BRAM 专用布线，可放外圈）。
+8. **物理区域**：`R_DCACHE`（它是 LUTRAM 不是 DRM——M2 被阻断——所以要 CLMA 列，
+   放 D 侧集群里；load miss 回填路径最短）。
 9. **关键路径**：**hold 前 6 之一**：`data_ram/aw_addr[7] → mem_3_50_5/ram64x1d/WADDR[5]`（M2 会同时缓解这条路径）。
 10. **测试**：`tb/axi/tb_axi_ram.sv`、`run_ram_tests.py`（20/20）。
 11. **变更**：2026-10-21 立卡；M2 加 `syn_ramstyle="block_ram"`，必要时 `no_rw_check`。
+    2026-10-22 P13 落地区域约束：`R_MEM` 改 `R_DCACHE`（LUTRAM 需要 CLMA 列，见字段 8）。
 
 ### 5.6 总线
 

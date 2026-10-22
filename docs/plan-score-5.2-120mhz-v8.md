@@ -66,50 +66,47 @@ perf_if_wait → cnt/CECO x16(2.18 ns)`。
 与 skill §9.9 三条规矩：**最宽最频繁的总线不跨 region；两个 LUTRAM 阵列不共用走廊；
 BRAM/DRM 放外圈**。
 
-### 3.1 六个区域与归属
+### 3.1 六个区域与归属（与 module-area-plan 卡片字段 8 一致，2026-10-22 同步）
 
-| 区域 | 实例 | 依据 |
-|---|---|---|
-| `R_CORE` | `soc.core.cpu`（`rv32_top`：regs/ALU/2 mul/div/CSR/ctrl/bp） | 4×32b 读 + 2×32b 写是最高频总线，全部在这一块内部；必须紧凑成方块 |
-| `R_FETCH` | `soc.core.ifu` | 与 `R_ICACHE` 相邻，64b/拍取指总线不跨区 |
-| `R_ICACHE` | `soc.core.instruction_cache`（含 2 个 LUTRAM 旁路阵列） | 与 `R_FETCH` 同侧；与 `R_DCACHE` **不共用走廊** |
-| `R_DCACHE` | `soc.core.data_cache` + `soc.core.lsu` + `soc.core.data_engine` | 紧贴 `R_CORE` 的 LSU 一侧；与 I 侧分开 |
-| `R_MEM` | `soc.program_ram` + `soc.data_ram`（DRM） | 外圈 DRM 列（x=26/54/106 一带），专用布线，拉线便宜 |
-| `R_IO` | `soc.fabric` / uart / gpio / timer / spi / irq / perf_inst | IO 引脚一侧（uart_tx=C24、led 在 A17..E18），低频，放边 |
+| 区域 | 矩形（x1,x2,y1,y2） | 实例 | 依据 |
+|---|---|---|---|
+| `R_ICACHE` | (10,28,0,245) | `soc.core.instruction_cache`、`soc.program_ram` | 64b/拍取指总线两端同侧；程序 ROM 的 DRM 列 x=26 画进本区 |
+| `R_FETCH` | (30,50,0,245) | `soc.core.ifu`、`soc.core.cpu.u_bp` | 与 `R_ICACHE`/`R_CORE` 都相邻；BTB 在取指环上（卡 M03） |
+| `R_CORE` | (58,86,20,225) | `soc.core.cpu`（regs/ALU/2mul/div/CSR/ctrl） | **必须含 x=86 的 APM 列**，两个乘法器才落得进；紧凑方块，区内关键路径（旁路→ALU→比较→重定向） |
+| `R_DCACHE` | (90,108,0,245) | `soc.core.data_cache`、`soc.core.lsu`、`soc.data_ram` | 与 `R_CORE` 相邻；data_ram 是 2,048 LUTRAM（M2 被阻断）要 CLMA 列；与 I 侧不共走廊 |
+| `R_IO` | (110,122,0,245) | `soc.fabric`、两个 AXI 引擎、uart/gpio/timer/spi/irq | 薄适配器与外设，贴引脚一侧 |
 
-`instruction_engine` 跟 `R_ICACHE`（读引擎贴 cache）。PLL/IO 寄存不约束。
+DRM 列（x=26/54/106）与 APM 列（x=86）是硬件固定资源，区域矩形把它们含进对应集群。
 
 ### 3.2 物理实现形式
 
-PDS 的区域约束有两个入口，都走 `def_region` / `def_inst_region`：
+PDS 的区域约束有两个入口，都落成 `def_region` / `def_inst_region`：
 
-- FDC：`define_global_attribute {PAP_REGION} {R_CORE(x1,x2,y1,y2);...}[CLMA,CLMS,APM,DRM]`
-  + `define_attribute {i:soc.core.cpu} {PAP_REGION} {R_CORE}`（模块实例属性，
-  dev_map 会沿层级展开到全部 GTP 实例——这正是"按模块布线"的正确粒度）。
-- PCF/Tcl：`def_region R_CORE x1 x2 y1 y2` + `def_inst_region <inst> R_CORE`。
+- FDC：`define_global_attribute {PAP_REGION} {...}` + `define_attribute {i:...} {PAP_REGION} {...}`，
+  dev_map 沿层级展开到 GTP 实例。
+- PCF/Tcl（**本轮采用**）：`firmware/code/platform/pango_native/pango_native_floorplan.tcl`，
+  `run_pds_flow.py --floorplan <file>` 在 dev_map 之后 source 它。用 Tcl 而不是 PCF 文本，
+  是为了让每个 `def_*` 都能 `catch` 并把结果打进 run.log——静默失效的区域约束
+  和生效的约束在日志上长得一模一样（mistakes-log §34 的教训）。
 
-坐标系（floorplan 坐标）必须先**标定**：`show_device` 给的站点名 `CLMA_<a>_<b>`
-（a∈10..122、b∈0..245）与 .rtr 里的网格名 `CLMA_<A>_<B>`（A≤357、B≤1219）
-不是同一套编号。标定办法：一次校准构建，把 `soc.core.cpu` 约进试验区域，
-从落地网格名反推比例。把映射写进本文件 §6，供后人复用。
+坐标系：`show_device` 输出的站点名 `CLMA_<x>_<y>` 的后缀就是 floorplan 坐标
+（x∈10..122、y∈0..245；26/54/106 为 DRM 列、86 为 APM 列）。`.rtr` 里的
+`CLMA_<A>_<B>`（A≤357、B≤1219）是**另一套网格编号**，不要混用。
 
-### 3.3 区域几何（标定后按实测修正，先按数据流摆）
-
-沿数据流横排，取指侧在左、访存侧在右、存储在外圈：
+### 3.3 区域几何（编码了两个硬事实）
 
 ```
-y
-↑   [ R_ICACHE ][ R_FETCH ][ R_CORE ][ R_DCACHE ]
-|   [  LUTRAM  ][   IFU   ][regs/ALU ][lsu/dcache]
-|   [----------][---------][---------][----------]
-|   [        R_MEM (DRAM 列, 外圈)               ]
-|   [                 R_IO (底边, 引脚侧)          ]
-+--------------------------------------------------> x
+x 10          28 30      50  58            86  90          108 110     122
+  [  R_ICACHE  ][ R_FETCH][    R_CORE      ][   R_DCACHE   ][   R_IO   ]
+  icache+prog   ifu+u_bp  cpu regs/ALU/APM   dcache+lsu+data  fabric+
+  ROM(DRM x=26)            (APM 列 x=86!)   ram(LUTRAM)      perips
+  |<-- 64b fetch bus -->|  |<-- lsu/mem -->|
 ```
 
-原则：`R_CORE` 用**方块**（边长比接近 1:1），因为它的关键路径全在区内，
-面积最小化周长就是最小化跨区线。`R_ICACHE`/`R_DCACHE` 分列两侧，
-各自贴自己的模块，保证 cache tag/data 的 LUTRAM 阵列走廊独立。
+1. `u_mul`/`u_mul_h` 是 APM 原语，而全芯片 APM 列只有 x=86 ⇒ `R_CORE` 的矩形
+   **必须含 x=86**，否则乘法器在区内无处安放。
+2. `soc.data_ram` 是 2,048 个 LUTRAM（M2 转 BRAM 被阻断）⇒ 它要 CLMA 列，
+   不能只给 DRM 列；放 D 侧集群（load miss 回填最短）。
 
 ### 3.4 风险与回退
 
@@ -146,13 +143,17 @@ y
 - **D-Cache 第二读口 / R6 写路径 / BTB 扩容**：v7 §4 已排后，理由不变。
 - **为好看拆模块**：skill §9.8，模块边界阻断跨边界优化，通常加面积。
 
-## 6. 标定记录（S0b 后填）
+## 6. 标定记录（坐标系已定）
 
-- `show_device` 命名：`CLMA_<a>_<b>`，a ∈ {10,14,...,122}，b ∈ {0,1,4,...,245}；
-  CLMS/DRM/APM 同构（DRM 列 x=26/54/106，APM 列 x=86）。
-- `.rtr` 网格命名：`CLMA_<A>_<B>`，A ∈ {21,27,...,357}，B ∈ {6k,6k+1}，k≤203。
-- 两套编号的映射：_（S0b 实测后填）_
-- `def_region` 有效范围：_（标定时用越界值探测）_
+- `show_device` 命名 `CLMA_<x>_<y>` 的后缀**就是 floorplan 坐标**（`def_region` 用的就是这套）：
+  x ∈ {10,14,18,22,30,...,122}（24 列；26/54/106 是 DRM 列、86 是 APM 列），
+  y ∈ {0,1,4,...,245}（120 行）。CLMA 1,940 + CLMS 660 = 2,600 tiles。
+- `.rtr`/`clk_region_info.txt` 里的 `CLMA_<A>_<B>`（A∈21..357 step 6、B∈6k/6k+1、
+  11,675 个）是**网格编号**（约 6× 细于 tile 编号），只用于读时序报告，
+  不要拿去当 def_region 坐标。
+- `def_region` 越界值的行为：_（S2 的 run.log 里 FLOORPLAN 行会给出）_
+- 实例名格式：`def_inst_region` 接受 `soc.core.cpu`（点）还是 `soc/core/cpu`（斜杠）：
+  _（同上，fp_bind 两种都试并打印）_
 
 ## 7. 实测记录（随执行更新）
 

@@ -18,12 +18,23 @@ module pangoriscv_top #(
  output wire [7:0] led
 );
  // PG2L100H PPLL legal range: VCO 1330..2133 MHz, PFD >=19 MHz.
- // 27 * 56 = 1512 MHz VCO; /42 = 36 MHz core clock.
- // DELIVERY frequency: the P13 routed implementation closes at 24.65 ns
- // (estimated fmax 40.56 MHz, see evidence p13-board-verify), so 36 MHz keeps
- // >=3 ns of margin on the board.  For the 126 MHz analysis builds use
- // STATIC_RATIO0(12)/STATIC_DUTY0(12) (=126 MHz) -- those are timing-spec runs
- // only and must NOT be flashed: 24.65 ns paths cannot run at 126 MHz.
+ // 27 * 56 = 1512 MHz VCO; /42 = 36 MHz core clock.  THIS IS THE DELIVERY SETTING:
+ // it must stay equal to the bitstream in bitstream/ (pangoriscv_board36_i2000.sbit).
+ //
+ // If you are about to change this to chase a higher frequency, read plan v10
+ // section 9 first.  Measured 2026-10-22: placement closes at 45 MHz (+1.30 ns at
+ // 22.22 ns) and at 50 MHz (+1.04 ns at 20 ns), but DETAILED ROUTING does not
+ // converge at either -- unrouted nets fall monotonically and then flatten around
+ // 9-11 k (18,470@5 -> 10,369@21 -> 9,237@26 for 45 MHz), the congestion
+ // fingerprint of mistakes-log 48, at ~40-90 s per iteration.  36 MHz still routes
+ // in ~285 iterations.  So 36 MHz is the highest *routable* point found so far,
+ // not the highest timing point.  Reverting the PLL here keeps the repo able to
+ // reproduce the delivered bitstream -- do not leave it at an unrouted frequency.
+ //
+ // Exact-integer-MHz PLL family for future attempts (VCO = 27*F must be in range):
+ //   45.000 = 27*50/30, 50.000 = 27*50/27, 42.000 = 27*56/36.
+ //   120.000 is NOT reachable (needs F/M = 40/9 -> VCO 1080 or 2160, both illegal).
+ // Analysis builds only: STATIC_RATIO0(12)/STATIC_DUTY0(12) = 126 MHz.
  // Use the same clock for CPU, fabric, peripherals and observation counters.
  wire core_clk,pll_locked;
  GTP_PPLL #(

@@ -141,6 +141,16 @@ PLL 频点：120.7(76/17) / 121.5(72/16) 为 ≥120 的最近点（**恰 120.000
 | base_oct22 | HEAD RTL + 新镜像（GCC 15 重建 20it） | `Total ticks 3,833,976`，与交付位流口径**逐位一致**；cycles 5,716,551 / retires 7,025,687 / mispred 68,827 / CRC 0x4983 → **基线锚点** |
 | s2（第一版） | br_miss 去掉 `!hold_ex`，外加 `lane1_mem_raw` 防御项 | **失败**：CoreMark 在 retire 2855 分歧，0xc8 的 JAL 丢失重定向，错路 0xd0 被退休，traps=1 |
 | s2b（修正版） | `ctrl_hold_ok = !trap_wait && !div_wait` | **通过**：cycles/retires/mispred/CRC 与基线**完全相同**，`Total ticks 3,833,976` → 零 CPI 成立 |
+| p15po120a | 8.333 ns 摆放探测，seed 3，无区域 | 摆放 WNS **−11,055 ps**（TNS −100,700,932）⇒ 摆放上限 19.4 ns |
+| p15po120b | 同上 + 紧凑 2D 方块（96×146，只绑 soc.core） | **−13,800 ps**，比无区域更差 ⇒ 区域约束第三次负优化 |
+| p15po120c | 同上 + `-dc_duplication/-logic_optimize/-dispose_dram_prior/-parallel 8` | 8/8 seed 因单 license 失败，无数据 |
+| p15r50 | 50 MHz 满实现，seed 3，decong 1 + CE-share + dc_dup | 摆放 **+1.036 ns / TNS 0**；布线 18,810@7 → 11,549@21（斜率 240/轮）**不收敛**，34 min 终止 |
+| p15r45 | 45 MHz 满实现，seed 7，decong 1 + CE-share | 摆放 **+1.162 ns / TNS 0**；布线 18,470@5 → 9,237@26（斜率 226/轮）**不收敛**，38 min 终止 |
+| p15r45b | 45 MHz，seed 3，decong 2 + `-dispose_dram_prior` | 摆放 **+1.300 ns / TNS 0**；布线起点更差（21,859@4）**不收敛**，23 min 终止 |
+
+**结论**：摆放已经不是瓶颈（45/50 MHz 都 TNS=0），**详细布线是瓶颈**，且是"收敛速度"而非
+"不可达"——单调下降但斜率衰减，总在 9k~11k 处变平。36 MHz（27.78 ns）仍是唯一能出位流的频点，
+PLL 已回退 56/42。下一轮第一件事：验证 **S1 是否是布线恶化的元凶**（P13 的 285 轮收敛在 S1 之前）。
 
 **S2 为什么会踩坑（写进 mistakes-log）**：`lane1_mem_raw = rr_v1 && (rr_load_h||rr_store_h)`
 看起来是"配对不变量"的安全复述，实际会**反向**生效——冻结期间 lane1 的旧译码仍在，

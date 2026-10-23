@@ -50,12 +50,13 @@ module pangoriscv_top #(
  wire core_clk,pll_locked;
  GTP_PPLL #(
   .CLKIN_FREQ(27.0),.LOCK_MODE(0),
-  // P48e: 50 MHz = 27*50/27 (VCO 1350).  The 48 MHz build `p48r48d` routed at
-  // 19.355 ns with a 20.000 ns tightest declared clock; the two 50 MHz builds
-  // that asked for 19.231 ns routed at 21.60 / 21.12.  This build therefore
-  // claims 50 MHz with a SINGLE 20.000 ns clock (see pango_native_50mhz.fdc).
-  // 48 MHz (27*64/36) is the fallback and is the frequency of the delivered,
-  // timing-clean `pangoriscv_board48_i2700_w148.sbit`.
+  // P48e/P49: 50 MHz = 27*50/27 (VCO 1350) -- the delivered rung and the only
+  // sweet spot of this netlist family.  Measured, one clock declared each time:
+  //   20.000 ns (50 MHz) -> routed 19.355 ns  ✓
+  //   19.608 ns (51 MHz) -> routed 20.815 ns  ✗ (p49r51)
+  //   19.231 ns (52 MHz) -> routed 21.120 / 21.600 ns ✗ (p48r50b / p48r50)
+  // Tightening the declared period below 20.000 ns degrades the result
+  // monotonically, so 50 MHz is the ceiling without a pipeline cut.
   .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
   .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(50),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),

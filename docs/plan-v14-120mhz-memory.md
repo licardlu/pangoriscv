@@ -164,3 +164,51 @@ P31a/P31b 用 `--freq 45/50` 跑，但 `pangoriscv_top.v` 里的 PLL 还停在 1
 `STATIC_RATIOI/M/F/O0`，算出 `27/I*F/(M*O)`，与请求频率差 >1% 或 VCO 越界就**直接拒绝**。
 同时加 `--pll-freq`（默认等于 `--freq`），只用于"过约束探针"，并在日志里显式打印
 "RTL 跑 X MHz、时序按 Y MHz 检查"。
+
+---
+
+## 9. 本轮交付（2026-10-23 上板实测）
+
+### 9.1 新交付位流
+
+```
+bitstream/pangoriscv_board48_i2700_5p245.sbit
+sha256 331273cb7a9d19be167f4f95183eb3231302352e7d2ba31ac59b5566636c856e
+
+CoreMark/MHz = 5.2447 @ 48 MHz
+  Total ticks 514,808,895 / 2700 iterations / 10.72 s（≥10 s）
+  seedcrc 0xe9f5  crclist 0xe714  crcmatrix 0x1fd7  crcstate 0x8e3a  crcfinal 0xa14c
+  Correct operation validated
+时序：All Constraints Met
+  setup WNS +0.252 ns / 0 失败端点，布线后 48.5885 MHz
+  hold  WHS +0.021 ns / 0 失败端点          ← 上一版的 −0.007 残留已清除
+面积：LUT 17,105 / FF 8,693 / LUTRAM 2,274 / DRM 12
+```
+
+### 9.2 三项指标对比
+
+| 指标 | board39 | **board48** | 变化 |
+|---|---|---|---|
+| 最高时钟频率 | 39 MHz | **48 MHz** | **+23.1%** |
+| CoreMark/MHz | 5.2941 | 5.2447 | −0.9% |
+| CoreMark/kLUT | 0.3311 | 0.3066 | −7.4% |
+
+两份位流都保留：**要频率选 board48，要分数/面积效率选 board39**。
+
+### 9.3 关键路径的归属变了：从 D$ 变成 CPU 的 WB→EX 转发
+
+- `P31b`（未切 LRU）最差路径：`m_inst[11] → lru_mem[30]/I5`，20.135 ns。
+- `P33a`（切了 LRU）最差路径：**`soc/core/cpu/w_valid → soc/core/cpu/ex_value_h[20]`**，
+  21.633 ns —— **D$ 已经不是瓶颈了**。
+- `P33a` 里 D$ 的 `set_di_q → tag_mem/ram64x1d/WADDR` 只排第 4~6，slack +6.4 ns。
+
+⇒ 下一步要提频，切的是 **写回→执行的操作数转发 mux**，而这类切分属于"ALU 段再分一级"，
+每刀 +4,791 拍，预算余量只有 1,772 拍 ⇒ **仍然装不下**。
+⇒ 这就是 5.2 与 120 MHz 在这个微架构上的最终矛盾点：**任何一级流水线切分都付不起。**
+
+### 9.4 摆放抽签是当前最大不确定性
+
+同一份 RTL 在 50 MHz 约束下的两次实现：20.135 ns 与 21.633 ns，**差 1.5 ns**。
+这个方差大于本轮两处结构性改动的收益（0.48 ns）。
+⇒ 单次构建的时序数字不能作为"RTL 好坏"的判据，只能作为"这一次实现的判据"；
+   要比较 RTL 必须多次实现取最好值，成本是每次 1.5~4 h。

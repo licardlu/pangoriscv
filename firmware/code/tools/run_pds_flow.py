@@ -79,7 +79,8 @@ def stage(tag: str, image_from: Path) -> Path:
 
 def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
               floorplan: Path | None = None, place_only: bool = False,
-              pnr_extra: str | None = None, plain_pnr: bool = False) -> Path:
+              pnr_extra: str | None = None, plain_pnr: bool = False,
+              place_db: Path | None = None) -> Path:
     src = bdir / "sources" / "rtl"
     files = ([src / "core" / (m + ".sv") for m in CORE]
              + [src / "bus" / (m + ".sv") for m in BUS]
@@ -132,6 +133,18 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
                    "-fix_hold_violation_in_route", "TRUE"]
         if seed is not None:
             pr += ["-seed", str(seed)]
+        if place_db is not None:
+            # Two-step flow (P60): place once under a MUCH tighter period than
+            # the one we intend to ship, then route that placement under the
+            # real period.
+            #
+            # Why: the placer's effort is driven by the SDC period, not by
+            # -place_worst_slack (measured: asking for +8 ns at 55 MHz gave a
+            # WORSE placement, 17.18 ns, than the default 16.93 ns, while the
+            # same netlist constrained at 120 MHz placed at 14.07 ns).  So the
+            # only way to get the 14 ns placement while shipping a 55 MHz
+            # implementation is to place at 120 and route at 55.
+            pr += ["-input_place_db_file", Path(place_db).as_posix()]
         if pnr_extra:
             pr += pnr_extra.split()
         # place_only: stop after placement.  At constraints where routing never
@@ -242,6 +255,11 @@ def main() -> int:
     ap.add_argument("--pnr-extra", default=None,
                     help="extra pnr args appended verbatim (e.g. "
                          "'-number_of_router_thread 4 -dump_router_congestion_plot TRUE')")
+    ap.add_argument("--place-db", default=None,
+                    help="route from an existing placement DB (-input_place_db_file). "
+                         "Used for the two-step flow: place under a much tighter "
+                         "period than the one being shipped, then route under the "
+                         "real period with the real constraint file.")
     ap.add_argument("--plain-pnr", action="store_true",
                     help="omit the hold-fix pnr args (H1 routing test: do they cause "
                          "rip-up thrash that never converges?)")
@@ -261,9 +279,12 @@ def main() -> int:
     fp = Path(a.floorplan).resolve() if a.floorplan else None
     if fp is not None and not fp.is_file():
         raise SystemExit("floorplan file not found: %s" % fp)
+    pdb = Path(a.place_db).resolve() if a.place_db else None
+    if pdb is not None and not pdb.is_file():
+        raise SystemExit("placement DB not found: %s" % pdb)
     tcl = write_tcl(bdir, a.freq, a.mode, a.seed, floorplan=fp,
                     place_only=a.place_only, pnr_extra=a.pnr_extra,
-                    plain_pnr=a.plain_pnr)
+                    plain_pnr=a.plain_pnr, place_db=pdb)
     print("build dir : %s" % bdir)
     print("mode      : %s  freq %s MHz  seed %s" % (a.mode, a.freq, a.seed))
     rc = run(bdir, tcl, "run.log")

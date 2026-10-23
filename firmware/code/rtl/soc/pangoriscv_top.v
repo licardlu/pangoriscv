@@ -57,8 +57,8 @@ module pangoriscv_top #(
   //   19.231 ns (52 MHz) -> routed 21.120 / 21.600 ns ✗ (p48r50b / p48r50)
   // Tightening the declared period below 20.000 ns degrades the result
   // monotonically, so 50 MHz is the ceiling without a pipeline cut.
-  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
-  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(50),
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(60),
+  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(60),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

@@ -3029,3 +3029,85 @@ crcfinal    : 0x4983      （五项 CRC 全对）
    `csr_native` 的 `addr` 在模块内部还被写通道用，从顶层看不出来。
 3. 结论：CSR 这条路要动，必须先把 `csr_native` 拆成**独立读地址 + 写地址**（接口改动），
    不是"两行"。本轮到此关闭（`plan-v19 §12`）。
+
+---
+
+## 89. 切② 的第三条路：`serial_q` 早置一拍，读在 M2 就成立了（2026-10-24，P56）
+
+**现象**：lesson 88 已经给"CSR 读离不开 WB"下了结论（两次 ISA 否决）。
+但按 §88 的建议 3 把 `csr_native` 拆成三端口（`addr` 写 / `raddr` 读 / `iaddr` 合法性）后，
+**第一次仍然 ISA 19/21**（case 6：`csrrs x3,mscratch,x0` 读回 0 而不是 0xffffffff）。
+
+**查什么**：在 `csr_native` 里加一条 `$display` 打印 `commit/addr/write_data/mscratch/nsc`，
+一次 6 秒的 `--cases 6` 就能看到：
+
+```
+CSRN commit=1 addr=340 wd=ffffffff mscr=00000000 nsc=ffffffff   <- csrrw 写 mscratch
+CSRN commit=1 addr=340 wd=00000000 mscr=ffffffff nsc=00000000   <- csrrs 读到旧值 0，把它写回去
+```
+
+**原因**：`serial_q` 的置位条件是 `id_accept && id_serial`，而 `id_serial` 是**已经在 ID 里**
+那条指令的标志 —— 于是紧随串行指令之后的那条会**在屏障升起前漏进 ID 一拍**。
+相邻两条 CSR 指令因此只隔 1 拍，后一条正好在**前一条提交的同一拍**进 M2。
+
+而 CSR 的写在 WB 的**边沿**才落地 ⇒ 读在 M2 就永远差半拍。同时 `csr_new`（RMW 基值）
+和 `rd` 必须用**同一个采样**，所以"读改到 M2、写回用别的来源"两条路一起死。
+
+**怎么办**：把置位条件改成"正在被接受的那条"——
+`id_accept && (dec_serial || id_serial)`。屏障早一拍升起，相邻 CSR 指令正好隔开 1 拍，
+M2 取值落在前一条提交之后的周期。实测：
+
+```
+Total ticks : 3,810,700   （逐位不变）
+crcfinal    : 0x4983
+ISA e2e     : 20/21       （case 6 / case 7 全过，只剩基线红的 case 21）
+LUT 17,174 -> 17,021，FF 8,693 -> 8,597（死掉的 rr/ex/m_csr_old 链被裁掉）
+```
+
+**可复用的判据**：`serial_q` / 任何"屏障"寄存器的置位条件，要问一句
+**它看的是"已经在级里的那条"还是"正在被接受的那条"**。差一拍，在
+"后一条要读前一条的副作用"这类场景里就是 19/21 和 20/21 的差别。
+（`--cases 6` 单例 6 秒，是这类问题的正确探针，不要一上来跑全量。）
+
+---
+
+## 90. 把"数组写地址打一拍"做对之后，PDS 综合从 3 分钟变成 40 分钟（2026-10-24，P56）
+
+**现象**：`dcache_axi` 把 store 命中的阵列写改成寄存器输出（`sw_we_q/sw_idx_q/sw_data_q/sw_strb_q`）
+＋读侧 10 位比较转发。功能完全正确（ticks 逐位不变、CRC 全对、ISA 20/21），
+但 `--mode synth` 卡在 **`Start tech-mapping phase 2`**：正常 2~3 分钟，此时 **40 分钟不结束**，
+进程 CPU 一直 97%、内存在涨（3.0→3.2 GB），**没有任何错误信息**。
+
+**查什么**：不要等。三个数就能判定：`flow.log` 最后一行是不是 `Start tech-mapping phase 2`、
+`multiseed_summary.csv` 的 `Synthesize Process Cpu Time` 是否还是 NA、
+以及**对照一棵去掉该改动的树重跑**（本轮：去掉 ⑥ 后 2m52s 完成，五次复现一致）。
+
+**原因（推定，但有对照）**：写地址/写数据/写使能全部来自寄存器之后，这 4 个字节阵列
+在映射器眼里同时具备"同步写 + 组合读"两种 RAM 形态，tech-mapping 会在
+LUTRAM 与 DRM 之间反复尝试，代价爆炸。加 `(* syn_ramstyle = "distributed" *)`
+到四个阵列上**无效**（另一次 9 分钟仍不结束）。
+
+**怎么办**：
+1. **判据**：任何"给推断阵列换写端口来源"的改动，先跑 `--mode synth` 并计时；
+   `Synthesize Process Cpu Time` 超过基线 3 倍就把它当成"该改动不可综合"，不要等它跑完。
+2. 本轮的处理：⑥ **功能上完全正确**、值 2.58 ns，但**不进交付树**，
+   补丁存 `docs/patches/cut6-deferred-dcache-write.patch`；
+   等找到映射器接受的写法（例如把转发比较移到 way 选择之前，或把延迟写并入现有 FSM 的
+   `case` 结构里）再回来。
+3. 注意这也是"**功能正确 ≠ 能交付**"的第三种形态：前两种是分数不够（lesson 85）和
+   ISA 挂（lesson 88），这一种是**工具链吃不下**。
+
+---
+
+## 91. 上板扫描链脚本里的端口不是命令行那个 —— 要设 `PANGO_JTAG_PORT`（2026-10-24，P56）
+
+**现象**：`cdt_cfg.exe -file 00_scan_chain.tcl -ip 127.0.0.1 -port 65420` 一直打印
+`Connecting to server[127.0.0.1 : 51015]` 然后 `Fail to connect ... connection was refused`。
+
+**原因**：`00_scan_chain.tcl` 自己写了 `set port "51015"`，只在环境变量
+`PANGO_JTAG_PORT` 存在时才覆盖 —— **命令行 `-port` 只给 cdt_cfg 自己用，被脚本里的 set 盖掉**。
+
+**怎么办**：`PANGO_JTAG_PORT=65420 cdt_cfg.exe -file 00_scan_chain.tcl -ip 127.0.0.1 -port 65420`。
+另外 JtagServer 要先起：`cdt_js.exe -port 65420 -work_dir <dir>`。
+起好之后真连不上的报错是 `JtagServer-0306: No devices detected`（板子没上电/排线没接），
+和端口不通（`connection refused`）是两回事，别混。

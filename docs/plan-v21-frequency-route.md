@@ -1,131 +1,120 @@
-# v21 —— 频率攻坚：切② 的第三种做法成功 + 切⑥ 落地（2026-10-24）
+# v21 —— 切② 成功（第三种做法）+ 切⑥ 综合不可用 + 55 MHz 收官（2026-10-24）
 
 工作分支 `exp/split`（从交付 `exp/pair45` 拉出，**不叠加 S1+S2**）。
 本文档只记录**有实测支撑**的结论。
 
 ---
 
-## 0. 成绩
+## 0. 本轮成绩单
 
 | 项 | 结果 | 证据 |
 |---|---|---|
-| 切⑥ D\$ 阵列写口打拍 | **完成，零 CPI** | ticks 3,810,700 / CRC 0x4983 / ISA 20/21 |
-| 切② CSR 读口解耦（第三版）| **完成，零 CPI** | ticks 3,810,700 / CRC 0x4983 / ISA 20/21 |
-| 上板 | **被硬件阻断**：JTAG `No devices detected`（板子未上电/排线未接）| `bottleneck_audit/board/p50_scan_chain.log` |
-
-两刀合计从最差路径上拿走 **② 5.30 ns + ⑥ 2.58 ns**，CPI 一分未花。
+| 切② CSR 读口解耦（第三次做法）| **成功，零 CPI**：ticks 3,810,700 逐位不变 / CRC 0x4983 / ISA 20/21 | `.sim_runs/coremark_sim/p50_c2b`、`isa-e2e-*` |
+| 切⑥ D\$ 阵列写口打拍 | **功能全对（同上三项），但 PDS 综合吃不下**（tech-mapping 40 min 不结束）| 见 `docs/patches/cut6-deferred-dcache-write.patch` |
+| 面积 | LUT **17,174 → 17,021**（−153）、FF **8,693 → 8,597**（−96）| `build/p50syn_c2only` |
+| 120 MHz | **实测不可达**：120 MHz 约束下摆放仍差 **−5.77 ns**（路径 14.07 ns）| `build/po120_c2` |
+| 交付目标 | 改押 **55 MHz**（PLL 27×55/27，VCO 1485；镜像 2900 迭代 = 10.05 s）| `build/p50r55` |
 
 ---
 
-## 1. 切② 前两次错在哪（值得记住的机制，不是流水账）
+## 1. 切②：为什么前两次失败、第三次怎么成
 
-plan v19 §11/§12 记过两次失败：读口只接 `id_csr_addr`（ISA 11/21）、
-`wb_value` 取 `w_csr_old`（ISA 19/21）。本轮加探针后把机制彻底看清：
+### 1.1 前两次失败的机制（lesson 88 只记了现象，这里补机制）
 
-### 1.1 `serial_q` 只隔 1 拍
+`serial_q` 的置位条件是 `id_accept && id_serial`，而 `id_serial` 是**已经在 ID 里**那条
+指令的标志 ⇒ 紧随串行指令之后的那条会**在屏障升起前漏进 ID 一拍**。
+于是相邻两条 CSR 指令只隔 1 拍，后一条正好在**前一条提交的同一拍**进 M2。
 
-`serial_q` 在被串行指令**接受**时置位、在它**到达 WB** 的拍清零，所以下一条指令
-会在它 WB 的**同一拍**进入 M2。而 CSR 的写在 WB 的**边沿**才落地
-⇒ 相邻两条 CSR 指令里，后一条最早只能在**它自己的 WB 拍**读到前一条的结果。
+而 CSR 的写在 WB 的**边沿**才落地 ⇒ 任何"读提前到 M2"的做法都差半拍。
+更硬的一条：`csr_new = w_csr_old | w_csr_src` 既是写回 CSR 的新值、也决定 `rd`，
+**两者必须是同一个采样** —— 所以"读改早、写回另取来源"也不行。
 
-### 1.2 读-改-写与 rd 必须是同一个采样
-
-`csr_new = w_csr_old | w_csr_src` 既是写回 CSR 的新值，也决定 rd 的旧值。把读提前到 M2
-后探针给出（`csrrs x3,mscratch,x0` 跟在 `csrrw x2,mscratch,x1` 后面）：
+探针实证（`--cases 6`，6 秒）：
 
 ```
 CSRN commit=1 addr=340 wd=ffffffff mscr=00000000 nsc=ffffffff   <- csrrw 写 mscratch
-CSRN commit=1 addr=340 wd=00000000 mscr=ffffffff nsc=00000000   <- csrrs 读到旧值 0，把它写回去
+CSRN commit=1 addr=340 wd=00000000 mscr=ffffffff nsc=00000000   <- csrrs 读到旧值 0，又写回去
 ```
 
-`csrrs rd,csr,x0` 语义上**不写**，但 `commit` 只看 `w_commit && w_csr`，于是把 0 写了回去。
+`csrrs rd,csr,x0` 语义上不写，但 `commit` 只看 `w_commit && w_csr` ⇒ 把 0 写了回去。
 
-## 2. 切② 第三版：怎么修
+### 1.2 第三版的三处改动（缺一不可）
 
-三处改动，缺一不可：
-
-1. **`csr_native` 拆三个地址端口**：`addr`（提交写）、`raddr`（取值，接 M2）、
-   `iaddr`（合法性判断，接 ID）。读用的 12 路 mux 从此只喂一个寄存器。
-2. **`wb_value = w_csr ? w_csr_old : w_value`**，`w_csr_old <= csr_rdata`（M2 采）。
+1. `csr_native` 拆**三个**地址端口：`addr`（提交写）、`raddr`（取值，接 **M2**）、
+   `iaddr`（合法性判断，接 ID）。读的 12 路 mux 从此只喂一个寄存器。
+2. `wb_value = w_csr ? w_csr_old : w_value` 且 `w_csr_old <= csr_rdata`（M2 采）。
    `w_valid` 与 12 路 CSR mux 从 RF 写口前面彻底消失。
-3. **`serial_q` 早一拍置位**：`id_accept && (dec_serial || id_serial)`。
-   原来是 `id_serial`（已经在 ID 里那条），会让紧随其后的指令"漏进" ID 一拍。
-   改成 `dec_serial`（正在被接受那条）后，相邻 CSR 指令正好隔开 1 拍，
-   M2 取值就落到了前一条提交之后的那个周期。
+3. `serial_q` **早一拍置位**：`id_accept && (dec_serial || id_serial)`。
+   相邻 CSR 指令正好隔开 1 拍，M2 取值落在前一条提交之后的周期。
 
-**为什么第 3 条是承重的**：单独做 1+2 就是 v19 的第二次失败。第 3 条把"相邻 CSR 的
-取值点"从"前一条提交的同一拍"推到"下一拍"，读-改-写与 rd 才拿到同一个正确值。
+第 3 条是承重的：只做 1+2 就是 v19 的第二次失败（ISA 19/21）。
 
-实测：`Total ticks 3,810,700` **逐位不变**，五项 CRC 全对，ISA **20/21**
-（case 6 `CSR read/write rules`、case 7 `mcycle/minstret` 都过，只剩基线本就红的 case 21）。
+### 1.3 判据
 
-### 2.1 一条新的判据（补进 lesson）
-
-> "CSR / 寄存器堆 / 陷阱类改动，`ticks 逐位不变 + CRC 对` 不够，必须 ISA 20/21"
-> 这条仍然成立；本轮补一条**正向**经验：
-> **`serial_q` 的置位条件用的是"已经在 ID 的那条"还是"正在被接受的那条"，
-> 差一拍，而这一拍正好决定相邻 CSR 指令能不能读到前一条的提交。**
+```
+Total ticks : 3,810,700   （逐位不变）
+五项 CRC    : 0x4983 / 0xe714 / 0x1fd7 / 0x8e3a
+ISA e2e     : 20/21       （case 6 CSR read/write、case 7 mcycle 全过；只剩基线红的 case 21）
+```
 
 ---
 
-## 3. 切⑥ 的实现
+## 2. 切⑥：功能正确，但工具链吃不下
 
-`dcache_axi.v`：store 命中的阵列写从 `didx(hit_way,req_set,req_word)` 组合锥改成
-`sw_we_q/sw_idx_q/sw_data_q/sw_strb_q` 寄存器，下一拍落地；读侧加
+实现（`docs/patches/cut6-deferred-dcache-write.patch`）：store 命中的阵列写改成
+`sw_we_q/sw_idx_q/sw_data_q/sw_strb_q` 寄存器输出、下一拍落地；读侧加
 `sw_idx_q == rd_didx` 的 10 位比较 + 字节 mux 做 store→load 转发。
-被删掉的是 `N4033[0]`（fanout=256，单根网线 **2.58 ns**，路径尾部）。
+被删掉的是 `N4033[0]`（fanout=256，单根网线 **2.58 ns**，原路径尾部）。
 
-判定"转发是必需的"依据：CoreMark 每迭代 store 约 2e4 次，"store 后阻塞一拍读"
-直接是 −0.7 分（v19 §13 已算过），所以只能转发不能阻塞。
+验证：ticks 3,810,700 / CRC 0x4983 / ISA 20/21 —— **全对**。
+
+**但它让 PDS 的 `tech-mapping phase 2` 从 2~3 分钟变成 40+ 分钟不结束**
+（CPU 97%、内存 3.0→3.2 GB 持续涨、无任何报错）。去掉该改动后 2m52s 完成，
+五次复现一致；给四个阵列加 `(* syn_ramstyle = "distributed" *)` 也无效（另一次 9 min 仍不结束）。
+
+⇒ **不进交付树**，补丁封存。这是"功能正确 ≠ 能交付"的第三种形态
+（前两种：分数不够 lesson 85、ISA 挂 lesson 88）。
 
 ---
 
-## 4. 剩余路径与 120 MHz 的边界账
+## 3. 120 MHz：本轮用硬数据关死
 
-交付版最差路径（`p48e/report_timing.rtr`，19.563 ns）逐段，以及本轮之后的状态：
-
-| 段 | 内容 | 段耗 | 状态 |
+| 约束 | 摆放后最差路径 | 摆放 slack | 说明 |
 |---|---|---|---|
-| ① | CLK→`w_valid` | 0.25 | — |
-| ② | `w_valid`→CSR 读 mux→`alu_a` | **5.30** | **已消除**（§2）|
-| ③ | ALU（lane 0）| 3.31 | 仍在 |
-| ④ | `alu_y`→`fwd1_h`→lane1 地址加法器 | 3.16 | 仍在 |
-| ⑤ | D\$ 查找 | 4.89 | 仍在 |
-| ⑥ | 阵列写地址（fanout 256）| 2.58 | **已消除**（§3）|
+| 8.301 ns（120 MHz）| **14.07 ns** | **−5.77 ns** | 摆放器已经尽力（比 60 MHz 那次还紧 1.4 ns）|
+| 16.667 ns（60 MHz）| 15.50 ns | +1.165 ns | 摆放器放松了努力 |
+| 20.000 ns（50 MHz，交付）| 18.32 ns | +1.683 ns | 布线后 19.355 ns（+0.645）|
 
-### 4.1 新的关键结构事实
+**结论**：切② 之后这条网表的"摆放地板"约 **14 ns**（≈70 MHz）。到 120 MHz 还差 5.8 ns，
+需要**两级流水**（每级 ≥4,945 拍的重定向代价），而 5.2 分只剩 1,772 拍余量。
+⇒ **5.2 分与 120 MHz 在"2 发射 + 现微架构"下不可同时成立**，本轮有摆放实测支撑。
 
-- **lane 0 自己的访存**：地址 = `fwd1 + imm`，**不经过 ALU** ⇒
-  `fwd(1.19) + adder(0.68) + D$(4.89) ≈ 6.8 ns`，本来就够快。
-- **lane 1 的访存**：地址 = `fwd1_h + imm_h`，而 `fwd1_h` 在**同包 RAW** 时就是
-  lane 0 的 `alu_y` ⇒ 路径变成 `RF读 → fwd → ALU(③) → fwd1_h(④) → adder → D$(⑤)`，
-  串联 ~14 ns。**这才是唯一让整机上不去的原因。**
-- 所以：`alu_y → fwd1_h → lane1 adder` 这条链是剩下最大的一刀（③+④ ≈ 5 ns）。
+### 3.1 剩下唯一还有价值的零拍候选（留给下一轮）
 
-### 4.2 为什么不能"干脆禁止 lane1 访存"
-
-ISA case 18（`lane1 memory: address/store-data forwarding and load consumers`）
-就是覆盖它的用例，配对覆盖率是判据的一部分 ⇒ 禁止配对会直接挂。
-
-### 4.3 120 MHz 的代价账（未变）
-
-若要再切一级把 ①②之间或 ALU 之前的那段独立出来，分支会晚一级解决
-⇒ **每迭代 +4,945 拍**（重定向次数）；5.2 分只剩 **1,772 拍**余量
-（192,307 − 190,535）。所以：
-**任何再加的流水级都必须先有 3k~5k 拍/迭代的净减，否则分数掉到 5.1 以下。**
+`alu_y → fwd1_h → lane1 地址加法器`（③+④ ≈ 5 ns）。它只因为**同包内 RAW 且 lane1 是访存**
+才存在，而 ISA 17/18 正是覆盖它的用例 ⇒ 不能靠"禁止配对"消除。
+可行方向：lane 0 的 ALU 若为 `add/addi/sub`，lane 1 的地址写成
+`alu_a + alu_b + imm_h`（三输入 CSA + 一条进位链），**绕过 ALU→mux 两级**，
+理论省 3~4 ns 且不花一拍。属结构性改动，需单独立项。
 
 ---
 
-## 5. 下一步（按性价比排序）
+## 4. 交付目标：55 MHz（为什么不是 60）
 
-1. **量本轮的真实频率收益**：`--freq 50 --mode full --place-only` 与满流程，
-   看 `report_timing` 的最差路径换成了什么。预期从 19.5 ns 降到 13~15 ns（≈70~77 MHz）。
-2. **`alu_y → lane1 adder` 那一刀（唯一还有价值的零拍候选）**：
-   lane 0 的 ALU 若为 `add/addi/sub`，lane 1 的地址可以写成
-   `alu_a + alu_b + imm_h`（三输入：CSA + 一条进位链），**绕过 ALU→mux 两级**，
-   理论上省 3~4 ns 而不是花 1 拍。代价是"只有加减能走快路"，
-   其它 opcode 仍走原路（那部分保持现状即可，不做新 stall）。
-   这是结构性改动，需单独立项 + ISA 17/18 判据。
-3. **上板**：先把 ②+⑥ 的位流跑出来，板子一上电就测；`cfg_scan_chain` 的
-   正确调用方式已在本轮记录（脚本内部默认端口 51015，必须用环境变量
-   `PANGO_JTAG_PORT` 覆盖，命令行 `-port` 不起作用）。
+布线在摆放之上还要 1.0~2.4 ns（交付那次 1.04 ns；51 MHz 那次 2.4 ns）。
+
+- 60 MHz：摆放 +1.165 → 布线后 −0.6 ~ +0.2 ns，**五五开**。
+- 55 MHz（18.18 ns）：按 0.85×周期 的摆设规律，摆放 slack 约 +2.0~2.7 ns
+  → 布线后 +0.3 ~ +1.3 ns，**有真实余量**。
+
+只跑得起一次满流程（合成 2 min + 摆放 3 min + 布线 **5~6 h**），所以取 55 MHz。
+镜像 `hw_i2900_55`：2900 迭代 × 190,535 拍 ÷ 55 MHz = **10.05 s**（满足 ≥10 s）。
+
+---
+
+## 5. 上板
+
+- JtagServer：`cdt_js.exe -port 65420 -work_dir <dir>`；扫描要用
+  `PANGO_JTAG_PORT=65420` 覆盖脚本里的默认 51015（lesson 91）。
+- 本轮实测：`JtagServer-0306: No devices detected`（板子未上电 / 排线未接），
+  与前三次一致。**位流一出就再试，硬件事不可为的部分如实记录。**

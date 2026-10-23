@@ -335,7 +335,7 @@ module pangoriscv(
  wire resume=halted && !halt_req;
  assign redirect_valid=trap_fire || (retire_fire && last_next!=last_pred) || resume;
  assign redirect_pc=trap_fire ? csr_mtvec : resume ? arch_next_pc : last_next;
- csr_native u_csr(.clk(clk),.rst_n(rst_n),.addr(ei[31:20]),
+ csr_native u_csr(.clk(clk),.rst_n(rst_n),.addr(ei[31:20]),.raddr(ei[31:20]),.iaddr(ei[31:20]),
    .write_intent(csr_intent),.commit(retire0 && csr_intent),
    .retire(retire_any),.retire_count(retire_count),
    .mret_fire(retire0 && is_mret),

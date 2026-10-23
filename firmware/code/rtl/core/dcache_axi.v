@@ -121,6 +121,7 @@ module dcache_axi #(
     input  wire [1:0]  m_bresp
 );
     localparam integer LINE_WORDS = 8;                 // 32 B / 4 B
+    localparam integer DIDXW = $clog2(SETS*WAYS*LINE_WORDS);  // data-array index width
     localparam [7:0]   REFILL_LEN = LINE_WORDS - 1;    // ARLEN=7 -> 8 beats
     // Address slicing derived from SETS so the cache is resized by parameter
     // alone (optimization plan P2.2). At SETS=32 this reproduces the previous
@@ -276,6 +277,25 @@ module dcache_axi #(
     reg        lru_pend_q;
     reg [IDXW-1:0] lru_pend_set_q;
     reg        lru_pend_way_q;
+    // P50 cut 6: the store-hit array write is deferred one cycle.
+    //
+    // The array write used to be
+    //     if (w_strb[i]) data_mem_bi[didx(hit_way,req_set,req_word)] <= w_data[..]
+    // i.e. driven by the whole `req_addr -> tag compare -> way select` cone, and
+    // its least significant index bit fanned out to 256 LUTRAM WADDR pins.  That
+    // net alone was 2.58 ns and the tail of the routed critical path (plan v19
+    // section 10 segment 6).  Writing from registers removes the cone from the
+    // write side entirely.
+    //
+    // The price is READ-AFTER-WRITE: a load accepted in the cycle right after a
+    // store would still see the old byte.  Losing a cycle to block that read is
+    // not an option (CoreMark stores are ~2e4 per iteration), so the pending
+    // store is forwarded into the read data instead -- a DIDXW-bit compare and a
+    // byte mux, both on the read path, which is not the critical one.
+    reg              sw_we_q;
+    reg [DIDXW-1:0]  sw_idx_q;
+    reg [31:0]       sw_data_q;
+    reg [3:0]        sw_strb_q;
 
     function integer widx;   // (way, set) -> line slot
         input integer w;
@@ -469,7 +489,17 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // answering one here would retire it while ST_WR_REQ still owns the engine.
     wire accept_hit = rst_n && req_valid && req_ready && !req_write &&
                       req_in_cache && hit_any;
-    wire [31:0] accept_word = dread(didx(hit_way,req_set,req_addr[4:2]));
+    // P50 cut 6: forward the still-pending array write into the read data.
+    wire [DIDXW-1:0] rd_didx  = didx(hit_way,req_set,req_addr[4:2]);
+    wire [31:0]      rd_raw   = dread(rd_didx);
+    wire             sw_bpass = sw_we_q && (sw_idx_q == rd_didx);
+    wire [31:0]      rd_word  = sw_bpass
+        ? { sw_strb_q[3] ? sw_data_q[31:24] : rd_raw[31:24],
+            sw_strb_q[2] ? sw_data_q[23:16] : rd_raw[23:16],
+            sw_strb_q[1] ? sw_data_q[15:8]  : rd_raw[15:8],
+            sw_strb_q[0] ? sw_data_q[7:0]   : rd_raw[7:0] }
+        : rd_raw;
+    wire [31:0] accept_word = rd_word;
 
     assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP) || accept_hit);
     assign rsp_data  = (state_q==ST_BYP_RESP) ? rdata_q
@@ -562,6 +592,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             lru_pend_q     <= 1'b0;
             lru_pend_set_q <= {IDXW{1'b0}};
             lru_pend_way_q <= 1'b0;
+            sw_we_q        <= 1'b0;
+            sw_idx_q       <= {DIDXW{1'b0}};
+            sw_data_q      <= 32'd0;
+            sw_strb_q      <= 4'd0;
             for (s=0;s<SETS;s=s+1) begin
                 lru_mem[s] <= 1'b0;
                 for (w=0;w<WAYS;w=w+1) valid_mem[widx(w,s)] <= 1'b0;
@@ -573,6 +607,17 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             // (ST_HIT / refill completion) keeps priority with the same value.
             lru_pend_q <= 1'b0;
             if (lru_pend_q) lru_mem[lru_pend_set_q] <= ~lru_pend_way_q;
+            // P50 cut 6: land the deferred store-hit array write from registers.
+            // Non-blocking, so a store accepted on this same edge registers into
+            // sw_* for the next cycle while this one still writes the previous
+            // store -- two back-to-back stores to one word end up newest-last.
+            sw_we_q <= 1'b0;
+            if (sw_we_q) begin
+                if (sw_strb_q[0]) data_mem_b0[sw_idx_q] <= sw_data_q[7:0];
+                if (sw_strb_q[1]) data_mem_b1[sw_idx_q] <= sw_data_q[15:8];
+                if (sw_strb_q[2]) data_mem_b2[sw_idx_q] <= sw_data_q[23:16];
+                if (sw_strb_q[3]) data_mem_b3[sw_idx_q] <= sw_data_q[31:24];
+            end
             case (state_q)
                 // ------------------------------------------------------ IDLE
                 ST_IDLE: if (req_valid && req_ready) begin
@@ -600,11 +645,11 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         wstrb_q <= w_strb;
                         wreq_q  <= 1'b1;
                         if (req_in_cache && hit_any) begin
-                            // P30: only the strobed byte lanes are written.
-                            if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
-                            if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
-                            if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
-                            if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                            // P50 cut 6: hand the write to the deferred block above.
+                            sw_we_q   <= 1'b1;
+                            sw_idx_q  <= didx(hit_way,req_set,req_word);
+                            sw_data_q <= w_data;
+                            sw_strb_q <= w_strb;
                         end
                         if (early_req) begin
                             resp_q   <= `AXI_RESP_OKAY;

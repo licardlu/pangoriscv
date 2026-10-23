@@ -9,7 +9,25 @@
 // M-only CSR state. Normal commit -> MRET -> trap is one atomic transition.
 module csr_native(
  input wire clk,rst_n,
- input wire [11:0] addr,
+ // P50 split 2 (second attempt): commit address, value-read address and the
+ // ID-stage legality address are SEPARATE ports.
+ //
+ // They used to be one `addr`, muxed as `w_valid && w_csr ? w_csr_addr :
+ // id_csr_addr`, which put the WB-valid flop at the head of a cone running
+ //   w_valid -> CSR read mux -> wb_value -> RF write port
+ //           -> RF same-cycle write-through -> rf_d0 -> forward -> alu_a,
+ // i.e. 5.30 ns of the 19.23 ns routed critical path (plan v19 section 10
+ // segment 2).
+ //
+ // The value must be sampled one cycle before commit *and* `rd` and the
+ // read-modify-write base must be the same sample, so this only works together
+ // with `serial_q` being extended by one cycle (see rv32_top): without that the
+ // next CSR instruction reaches M2 on the very cycle the previous one commits,
+ // and `csrrs x3,mscratch,x0` behind `csrrw x2,mscratch,x1` reads 0 instead of
+ // 0xffffffff (ISA case 6, measured twice).
+ input wire [11:0] addr,     // commit (write) address
+ input wire [11:0] raddr,    // value-read address  (M2)
+ input wire [11:0] iaddr,    // legality-check address (ID)
  input wire write_intent,commit,retire,mret_fire,trap_enter,
  input wire [1:0] retire_count,
  input wire [31:0] write_data,trap_pc,trap_cause,trap_tval,
@@ -30,7 +48,6 @@ module csr_native(
  assign irq_pending=ns[3] && |eligible;
  assign irq_cause=eligible[11] ? 32'h8000000b :
                   eligible[3] ? 32'h80000003 : 32'h80000007;
- reg readonly_csr;
 
  // ---------------------------------------------------------------------------
  // mcycle/minstret are 64 b and mcycle increments on EVERY cycle, so a plain
@@ -68,26 +85,39 @@ module csr_native(
  endfunction
 
  always @(*) begin
-   read_data=0; illegal=0; readonly_csr=0;
-   case(addr)
-    12'h300: read_data=status;
-    12'h301: begin read_data=32'h40001100; readonly_csr=1; end
-    12'h304: read_data=mie;
-    12'h305: read_data=mtvec;
-    12'h340: read_data=mscratch;
-    12'h341: read_data=mepc;
-    12'h342: read_data=mcause;
-    12'h343: read_data=mtval;
-    12'h344: begin read_data=pending; readonly_csr=1; end
-    12'hb00,12'hc00: begin read_data=mcycle[31:0]; readonly_csr=(addr==12'hc00); end
-    12'hb80,12'hc80: begin read_data=mcycle[63:32]; readonly_csr=(addr==12'hc80); end
-    12'hb02,12'hc02: begin read_data=minstret[31:0]; readonly_csr=(addr==12'hc02); end
-    12'hb82,12'hc82: begin read_data=minstret[63:32]; readonly_csr=(addr==12'hc82); end
-    12'hf14: begin read_data=0; readonly_csr=1; end
-    default: illegal=1;
+   read_data=0;
+   case(raddr)
+   12'h300: read_data=status;
+   12'h301: read_data=32'h40001100;
+   12'h304: read_data=mie;
+   12'h305: read_data=mtvec;
+   12'h340: read_data=mscratch;
+   12'h341: read_data=mepc;
+   12'h342: read_data=mcause;
+   12'h343: read_data=mtval;
+   12'h344: read_data=pending;
+   12'hb00,12'hc00: read_data=mcycle[31:0];
+   12'hb80,12'hc80: read_data=mcycle[63:32];
+   12'hb02,12'hc02: read_data=minstret[31:0];
+   12'hb82,12'hc82: read_data=minstret[63:32];
+   12'hf14: read_data=0;
+    default: read_data=0;
    endcase
-   if(write_intent && readonly_csr) illegal=1;
  end
+ // Legality is an ID-stage question: it is registered into `rr_csr_illegal` on
+ // the ID->RR edge, so it decodes `iaddr` and nothing else.  It used to share
+ // the read always block, which is why the read address could not move.
+ wire ro_csr = (iaddr==12'h301) || (iaddr==12'h344) ||
+               (iaddr==12'hc00) || (iaddr==12'hc80) ||
+               (iaddr==12'hc02) || (iaddr==12'hc82) || (iaddr==12'hf14);
+ wire addr_known =
+      (iaddr==12'h300) || (iaddr==12'h301) || (iaddr==12'h304) || (iaddr==12'h305) ||
+      (iaddr==12'h340) || (iaddr==12'h341) || (iaddr==12'h342) || (iaddr==12'h343) ||
+      (iaddr==12'h344) || (iaddr==12'hb00) || (iaddr==12'hc00) || (iaddr==12'hb80) ||
+      (iaddr==12'hc80) || (iaddr==12'hb02) || (iaddr==12'hc02) || (iaddr==12'hb82) ||
+      (iaddr==12'hc82) || (iaddr==12'hf14);
+ always @(*)
+   illegal = !addr_known || (write_intent && ro_csr);
  // This pre-trap state also drives interrupt eligibility and the redirect vector.
  always @(*) begin
    ns=status; ne=mie; nv=mtvec; nsc=mscratch; np=mepc; nc=mcause; nt=mtval;

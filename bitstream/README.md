@@ -19,6 +19,15 @@
 > | 约束文件 | `pango_native_39mhz.fdc`；PLL `27*52/36` | |
 > | 镜像 | `build/native_software/coremark/performance/hw_i2300_39` | |
 >
+> **后续测量（2026-10-23 P21，未改变本交付）**：把 D$ 从 2 KB 加到 4 KB
+> 再加"重定向切断"，仿真分数可到 **5.3834（仅 D$4KB）/ 5.2483（含切断）**，
+> 布线后关键路径从 25.429 ns 降到 **20.613 ns（48.51 MHz）**；
+> 但在 50/45/42 MHz 三个约束下分别差 0.61 / 0.46 / 1.12 ns，
+> 没有任何一个约束能同时满足"收敛 + 满足自身周期"。
+> 两处改动以 `docs/patches/dcache-4kb.patch` 与
+> `docs/patches/apply-redirect-cut.py` 形式保存，**未应用**，
+> 因为仓库必须能复现本文件交付的那一份位流。
+>
 > **已知残留**：hold 有 2 个端点差 7 ps（`WHS −0.007`，慢/快角各 2 个）。
 > 上一版交付 `board36` 同样有 1 个端点的同类残留且上板正常。这一项**不合规**
 > （要求 setup/hold 均无失败端点），正在用 `-fix_hold_violation_threshold 100`

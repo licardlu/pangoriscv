@@ -84,9 +84,35 @@ blocks=309  instructions=3343  mem=696 (20.8%)  ctrl=272 (8.1%)
 
 ---
 
-## 6. 结果
+## 6. 结果（50 MHz 探测：失败，已归档）
 
-（满实现跑完后回填：布线后最差路径、core_clk WNS、是否上板）
+`build/p48r50` 完整实现 1 h 19 m，**详细布线第 707 轮收敛（Unrouted 0）**，但
+
+| 时钟 | WNS | 失败端点 |
+|---|---|---|
+| `core_clk` 50 MHz | **−1.595 ns** | 3,202 / 58,154 |
+| `core_clk_pnr` 52 MHz | −2.365 ns | 8,729 |
+| hold | **+0.009 ns** | **0** |
+
+布线后最差路径 ≈ **21.6 ns**，与 P33a/P37a/P45a/P46a 的"主导摆放吸引子 21.633 ns"一致
+—— 这是第 6 个样本。而且这一轮的最差路径是 **load 数据返回**
+（`rfile → ALU → AGU → ls_req_addr(233) → tag → hit_way(38) → way mux → extend_load`），
+**不是** 48 MHz 那轮的 store 写使能。⇒ 瓶颈在同一条 20 ns 通路上来回漂移，
+单点摘除对下一次摆放无效。
+
+证据：`evidence/records/optimization/p48-freq-probe/`（rtr + 时序摘要 + pnr 日志 + 位流 sha256，
+位流不合规，不发布）。
+
+**结论：50 MHz 放弃。48 MHz 仍是唯一合规点，且它那次摆放是"偶发更优解"，不可复现。**
+
+## 6.1 本轮真正落地的改动
+
+| 项 | 结果 | 判据 |
+|---|---|---|
+| lane0-load → lane1 旁路（`fe8da00`） | `Total ticks` 3,810,700 → **3,784,335**，分数 **5.2850** | CRC `0x4983` 全对 |
+| 中断注入边界补 lane1（同一提交） | ISA 从 19/21 回到 **20/21** | case 21 是基线红 |
+| 面积 | LUT 17,103 / FF 8,693 / LUTRAM 2,274（**Δ 0/0/0**） | `p48r50` device_map |
+| halt/reset 场景 | **5/5 PASS** | `run_halt_reset_tests.py` |
 
 ## 7. 下一轮（不在本轮范围）
 
@@ -97,3 +123,17 @@ blocks=309  instructions=3343  mem=696 (20.8%)  ctrl=272 (8.1%)
   **加宽发射必须同时加宽取指**，这两件事必须一起做；
 - 面积代价：v16 §6 预计 17.1k → 26.6k LUT，40% 利用率下 120 MHz 可布线性是本项目零先例的未知数，
   所以 M5（可布线性）要单独设一次真实实现，失败就先落 100 MHz。
+
+## 8. 上板验证状态（本轮的硬阻塞）
+
+| 时刻 | 动作 | 结果 |
+|---|---|---|
+| 16:31 | `flash_and_capture.ps1` 烧 `board48` | 脚本报 `FAILED to parse the port`（真因是 `Start-Process` 被 `HTTPS_PROXY`/`https_proxy` 重名噎住，见 mistakes-log §79）|
+| 16:49 | 修掉代理变量后只读扫描 JTAG 链 | `configuration_tcl.log` 16:49:57 `cfg_scan_chain failed`；`js2.log` `JtagServer-0306: No devices detected` |
+
+⇒ 下载线（USB Cable II）能枚举、JtagServer 能起、端口 65420 能连，
+但**链上没有器件**。今天 11:24 同一套脚本成功过（`done bit: 1`、ID `0x00602899`），
+14:20 之后一直失败 ⇒ **目标板未上电 / JTAG 排线未接**，这一步本轮无法自行解决。
+
+因此本轮的上板结论只有一条：**交付位流 `board48` 的板测数据（5.2447）仍是唯一实测值**，
+本轮新出的位流只有 `report_timing` 证据，**不报板测**（诚信边界：没测过的不报）。

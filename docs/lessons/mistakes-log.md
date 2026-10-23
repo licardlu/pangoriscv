@@ -2772,3 +2772,38 @@ wire irq_trap = csr_irq_pending && w_valid && w_ctrl && !w_trap && ...;
    "只看 lane0"的条件逐个过一遍**。这份 RTL 里 `ctrl`/`mispred` 两个性能计数器也只统计 lane0
    （放宽后 `ctrl` 从 1,159,899 掉到 934,048，不是行为变了，是计数器漏了 lane1），
    所以**计数器变化不要当成行为回归**，要以 CRC + ISA 为准。
+
+## 79. 上板脚本报 "FAILED to parse the port" —— 真因可能是代理变量重名（2026-10-23，P48）
+
+**现象**：`flash_and_capture.ps1` 在第二步就打印
+
+```
+[2/3] programming ...
+  FAILED to parse the port from ...\jtagserver_run.log -- check that log
+```
+
+而 `jtagserver_run.log` 是**空文件**。直觉会判成"JtagServer 起不来 / 板子没接"。
+
+**查什么（按顺序，别跳）**：
+
+1. 手动跑一次服务，看它到底打不打印端口：
+
+   `cdt_js.exe -work_dir .` → 正常输出 `To connect this JtagServer instance use port : 65420`。
+   能打印 ⇒ 服务没问题，问题在 `Start-Process`。
+2. 若 PowerShell 直接抛
+   `已添加项。字典中的关键字:"HTTPS_PROXY"所添加的关键字:"https_proxy"`
+   ⇒ **`Start-Process` 在构造子进程环境字典时被两个只差大小写的代理变量噎住了**。
+   它在 `run_flash.ps1` 里被 `$ErrorActionPreference='Continue'` 吞掉，只剩"日志空 ⇒ 端口解析失败"这个假象。
+   同样的坑会让 `Get-ChildItem Env:` 直接报错。
+3. 验证：列出环境变量名，出现 `HTTP_PROXY` + `http_proxy` 两份就是它。
+
+**怎么办**：在**同一个** PowerShell 进程里先 `Remove-Item Env:http_proxy` /
+`Remove-Item Env:https_proxy`（大小写不敏感，一次删干净），再 `Start-Process`。
+本工具每次调用都是新进程，所以删除和启动必须写在同一次调用里。
+
+**顺带一条判据顺序**（省一次白等）：先跑**只读**的 `00_scan_chain.tcl`。
+成功打印 `PG2L100H / done bit: 1 / ID 0x00602899`；
+失败是 `JtagServer-0306: No devices detected while scanning the JTAG chain`
+——那才是"板子没上电 / JTAG 排线没接"。
+**别拿 `*.tcl.out.txt` 当判据**：它可能是上一轮的旧文件（本轮就撞上：out 文件里写着成功，
+但 `configuration_tcl.log` 的时间戳和内容都显示这次是 `cfg_scan_chain failed`）。

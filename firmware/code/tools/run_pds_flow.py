@@ -187,11 +187,50 @@ def check_image(bdir: Path) -> bool:
     return good and not bad
 
 
+def pll_check(bdir: Path, freq: str) -> None:
+    """Refuse to implement a build whose PLL does not produce the constrained clock.
+
+    This exists because of a real 2-hour loss (P30): two full implementations were
+    routed with `--freq 45` and `--freq 50` while `pangoriscv_top.v` still held the
+    120.46 MHz ratio (I=1/M=1/F=58/O=13).  The timing verdicts were still valid --
+    the .fdc declares the clock on the PLL output pin, and that declaration is what
+    the analyser uses -- but the resulting bitstreams would have run at 120 MHz, so
+    they were unusable.  Checking is cheap; a wasted route is not.
+
+    Chain: f_out = 27 MHz / I * F / (M * O).
+    """
+    top = bdir / "sources" / "rtl" / "soc" / "pangoriscv_top.sv"
+    txt = top.read_text(encoding="utf-8", errors="ignore")
+    v = {}
+    for key in ("STATIC_RATIOI", "STATIC_RATIOM", "STATIC_RATIOF", "STATIC_RATIO0"):
+        m = re.search(r"\.%s\(\s*([0-9.]+)\s*\)" % key, txt)
+        if m:
+            v[key] = float(m.group(1))
+    if len(v) != 4:
+        raise SystemExit("pll: GTP_PPLL instantiation not found in %s" % top)
+    mhz = 27.0 / v["STATIC_RATIOI"] * v["STATIC_RATIOF"] / (
+        v["STATIC_RATIOM"] * v["STATIC_RATIO0"])
+    want = float(freq)
+    vco = 27.0 / v["STATIC_RATIOI"] * v["STATIC_RATIOF"] / v["STATIC_RATIOM"]
+    print("pll      : I=%g M=%g F=%g O0=%g -> %.4f MHz  (constraint %s MHz, VCO %.1f MHz)"
+          % (v["STATIC_RATIOI"], v["STATIC_RATIOM"], v["STATIC_RATIOF"],
+             v["STATIC_RATIO0"], mhz, freq, vco))
+    if not (1330.0 <= vco <= 2133.0):
+        raise SystemExit("pll: VCO %.1f MHz is outside the legal 1330..2133 MHz" % vco)
+    if abs(mhz - want) > 0.01 * want:
+        raise SystemExit(
+            "pll: the RTL produces %.4f MHz but --freq %s was requested.\n"
+            "     Set the GTP_PPLL ratios in rtl/soc/pangoriscv_top.v for %s MHz first,\n"
+            "     otherwise the analysis is at %s MHz while the bitstream runs at %.4f MHz."
+            % (mhz, freq, freq, freq, mhz))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
     ap.add_argument("--freq", default="126",
-                    choices=["126", "120", "100", "80", "60", "50", "45", "42", "40", "39", "36", "27"])
+                    choices=["126", "120", "100", "80", "60", "55", "52", "50", "48",
+                             "45", "42", "40", "39", "36", "27"])
     ap.add_argument("--mode", default="synth", choices=["synth", "full"])
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--image", default=str(CODE / "build" / "p5_126"))
@@ -206,9 +245,19 @@ def main() -> int:
     ap.add_argument("--plain-pnr", action="store_true",
                     help="omit the hold-fix pnr args (H1 routing test: do they cause "
                          "rip-up thrash that never converges?)")
+    ap.add_argument("--pll-freq", default=None,
+                    help="frequency the PLL must actually produce; defaults to --freq. "
+                         "Set it only for an over-constraint probe: --freq 55 --pll-freq 52 "
+                         "places/routes against 55 MHz while the bitstream runs at 52 MHz. "
+                         "A probe build is NOT deliverable evidence -- its report_timing "
+                         "verdict belongs to 55 MHz.")
     a = ap.parse_args()
 
     bdir = stage(a.tag, Path(a.image))
+    pll_check(bdir, a.pll_freq or a.freq)
+    if a.pll_freq and a.pll_freq != a.freq:
+        print("overconstraint probe: RTL runs at %s MHz, timing is checked at %s MHz"
+              % (a.pll_freq, a.freq))
     fp = Path(a.floorplan).resolve() if a.floorplan else None
     if fp is not None and not fp.is_file():
         raise SystemExit("floorplan file not found: %s" % fp)

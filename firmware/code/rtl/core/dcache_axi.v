@@ -34,7 +34,7 @@
 // so the store framing and its error checks stay in one reviewed place.
 // ---------------------------------------------------------------------------
 module dcache_axi #(
-    parameter integer SETS = 32,
+    parameter integer SETS = 64,
     parameter integer WAYS = 2,
     parameter [31:0]  CACHED_LIMIT = 32'h2000_0000,
     // Data-RAM aperture: 16 KiB at 0x1000_0000 (axi_ram WORDS=4096).
@@ -251,9 +251,31 @@ module dcache_axi #(
     // in tag_mem[_1][set] either way.
     reg [TAGW-1:0] tag_mem   [0:SETS-1];      // way 0
     reg [TAGW-1:0] tag_mem_1 [0:SETS-1];      // way 1
-    reg [31:0] data_mem  [0:SETS*WAYS*LINE_WORDS-1];
+    // P30: the data array is split into FOUR BYTE-LANE arrays.  The old single
+    // 32-bit array forced a byte-granular store to do
+    //     async-read the word -> (old & ~mask) | (new & mask) -> write it back
+    // all inside the accept cycle.  That chain (5 mux levels from the array read
+    // plus the merge) sits on the routed critical path *and* is what makes the
+    // array write enable a fanout-64 net.  With one array per byte lane a store
+    // is simply `if (strb[i]) lane_i[idx] <= data[8i+:8]`: no read, no merge.
+    // Semantics are unchanged -- writing only the strobed lanes IS the merge.
+    reg [7:0] data_mem_b0 [0:SETS*WAYS*LINE_WORDS-1];
+    reg [7:0] data_mem_b1 [0:SETS*WAYS*LINE_WORDS-1];
+    reg [7:0] data_mem_b2 [0:SETS*WAYS*LINE_WORDS-1];
+    reg [7:0] data_mem_b3 [0:SETS*WAYS*LINE_WORDS-1];
     reg        valid_mem [0:SETS*WAYS-1];
     reg        lru_mem   [0:SETS-1];
+    // P30: deferred replacement update.  The LRU bit is a heuristic and nothing
+    // reads it inside the cycle it is written, but the accept-cycle write fed it
+    // from `hit_way`, i.e. from the whole  m_inst -> AGU -> tag-compare  cone.
+    // On the routed netlist that cone was the critical path (P31b @ 50 MHz:
+    // startpoint soc/core/cpu/m_inst[11], endpoint data_cache/lru_mem[30]/I5,
+    // 20.135 ns, with a single fanout-16 net costing 1.63 ns).
+    // Writing it one cycle later from registers removes the cone and leaves the
+    // replacement policy in exactly the same state.
+    reg        lru_pend_q;
+    reg [IDXW-1:0] lru_pend_set_q;
+    reg        lru_pend_way_q;
 
     function integer widx;   // (way, set) -> line slot
         input integer w;
@@ -268,6 +290,13 @@ module dcache_axi #(
         input integer k;
         begin
             didx = (w*SETS + s)*LINE_WORDS + k;
+        end
+    endfunction
+    // One 32-bit read assembled from the four byte lanes.
+    function [31:0] dread;
+        input integer i;
+        begin
+            dread = {data_mem_b3[i], data_mem_b2[i], data_mem_b1[i], data_mem_b0[i]};
         end
     endfunction
 
@@ -440,12 +469,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // answering one here would retire it while ST_WR_REQ still owns the engine.
     wire accept_hit = rst_n && req_valid && req_ready && !req_write &&
                       req_in_cache && hit_any;
-    wire [31:0] accept_word = data_mem[didx(hit_way,req_set,req_addr[4:2])];
+    wire [31:0] accept_word = dread(didx(hit_way,req_set,req_addr[4:2]));
 
     assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP) || accept_hit);
     assign rsp_data  = (state_q==ST_BYP_RESP) ? rdata_q
                      : accept_hit            ? accept_word
-                     : data_mem[didx(hit_q ? hit_way_q : fill_way_q,set_q,word_q)];
+                     : dread(didx(hit_q ? hit_way_q : fill_way_q,set_q,word_q));
     assign rsp_resp  = (state_q==ST_BYP_RESP) ? rresp_q
                      : accept_hit            ? 2'b00 : resp_q;
     assign rsp_last  = 1'b1;
@@ -457,15 +486,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // The write-through merge then has to use the RAW w_data/w_strb, because
     // wdata_q/wstrb_q are only latched on that edge.
     wire early_now = rst_n && (state_q==ST_WR_REQ) && early_q && w_valid && w_ready;
-    wire [31:0] strb_mask_now = {{8{w_strb[3]}},{8{w_strb[2]}},
-                                 {8{w_strb[1]}},{8{w_strb[0]}}};
-    wire [31:0] merged_now = (data_mem[didx(hit_way_q,set_wr_q,word_q)] & ~strb_mask_now) |
-                             (w_data & strb_mask_now);
-
-    wire [31:0] strb_mask_acc = {{8{w_strb[3]}},{8{w_strb[2]}},
-                                 {8{w_strb[1]}},{8{w_strb[0]}}};
-    wire [31:0] merged_accept = (data_mem[didx(hit_way,req_set,req_word)] & ~strb_mask_acc) |
-                                (w_data & strb_mask_acc);
+    // P30: strb_mask_now / merged_now / strb_mask_acc / merged_accept are gone --
+    // the byte lanes make the partial write direct (see the array declaration).
     wire accept_early = rst_n && (state_q==ST_IDLE) && req_valid && req_ready &&
                         req_write && early_req;
     // Enqueue an extra data-RAM store while a write drains (or while the just
@@ -494,10 +516,7 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         !req_write && req_in_cache && !hit_any;
 
     // byte-lane merge for a write hit (write-through: applies after a good B)
-    wire [31:0] strb_mask = {{8{wstrb_q[3]}},{8{wstrb_q[2]}},
-                             {8{wstrb_q[1]}},{8{wstrb_q[0]}}};
-    wire [31:0] merged_word = (data_mem[didx(hit_way_q,set_q,word_q)] & ~strb_mask) |
-                              (wdata_q & strb_mask);
+    // P30: merged_word is gone; the byte lanes take wdata_q/wstrb_q directly.
 
     integer s, w;
     always @(posedge clk) begin
@@ -540,12 +559,20 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             i_req_size_r  <= 3'd0;
             i_req_len_r   <= 8'd0;
             i_req_id_r    <= 4'd0;
+            lru_pend_q     <= 1'b0;
+            lru_pend_set_q <= {IDXW{1'b0}};
+            lru_pend_way_q <= 1'b0;
             for (s=0;s<SETS;s=s+1) begin
                 lru_mem[s] <= 1'b0;
                 for (w=0;w<WAYS;w=w+1) valid_mem[widx(w,s)] <= 1'b0;
             end
         end else begin
             i_req_valid_r <= 1'b0;              // requests are single-cycle
+            // P30 deferred replacement update: one-shot, and placed BEFORE the
+            // FSM's own lru writes so that a state which also updates the bit
+            // (ST_HIT / refill completion) keeps priority with the same value.
+            lru_pend_q <= 1'b0;
+            if (lru_pend_q) lru_mem[lru_pend_set_q] <= ~lru_pend_way_q;
             case (state_q)
                 // ------------------------------------------------------ IDLE
                 ST_IDLE: if (req_valid && req_ready) begin
@@ -572,8 +599,13 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         wdata_q <= w_data;
                         wstrb_q <= w_strb;
                         wreq_q  <= 1'b1;
-                        if (req_in_cache && hit_any)
-                            data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                        if (req_in_cache && hit_any) begin
+                            // P30: only the strobed byte lanes are written.
+                            if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
+                            if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
+                            if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
+                            if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                        end
                         if (early_req) begin
                             resp_q   <= `AXI_RESP_OKAY;
                             drain_q  <= 1'b1;
@@ -596,7 +628,9 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         // as well; ST_HIT keeps its identical update for the
                         // back-pressured path (writing the same value twice is
                         // harmless).
-                        lru_mem[req_set] <= hit_way ? 1'b0 : 1'b1;
+                        lru_pend_q     <= 1'b1;
+                        lru_pend_set_q <= req_set;
+                        lru_pend_way_q <= hit_way;
                         state_q <= rsp_ready ? ST_IDLE : ST_HIT;
                     end else begin
                         // line refill (cacheable) or a single bypass beat (MMIO)
@@ -632,7 +666,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     if (m_rid != ar_id_q) read_protocol_fault_q <= 1'b1;
                     if (m_rresp != 2'b00) rd_err_q <= 1'b1;
                     if (rd_refill_q) begin
-                        data_mem[didx(fill_way_q,set_wr_q,beat_q)] <= m_rdata;
+                        begin : p30_fill
+                            data_mem_b0[didx(fill_way_q,set_wr_q,beat_q)] <= m_rdata[7:0];
+                            data_mem_b1[didx(fill_way_q,set_wr_q,beat_q)] <= m_rdata[15:8];
+                            data_mem_b2[didx(fill_way_q,set_wr_q,beat_q)] <= m_rdata[23:16];
+                            data_mem_b3[didx(fill_way_q,set_wr_q,beat_q)] <= m_rdata[31:24];
+                        end
                         if (m_rlast || beat_q==LINE_WORDS-1) begin
                             if (!rd_err_q && m_rresp==2'b00) begin
                                 valid_mem[widx(fill_way_q,set_wr_q)] <= 1'b1;
@@ -668,8 +707,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                             // P14: the CPU takes the OKAY on this very edge, so
                             // there is nothing left to hold -- apply the merge from
                             // the RAW beat and let the drain finish in background.
-                            if (cached_q && hit_q)
-                                data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_now;
+                            if (cached_q && hit_q) begin
+                                if (w_strb[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= w_data[7:0];
+                                if (w_strb[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= w_data[15:8];
+                                if (w_strb[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= w_data[23:16];
+                                if (w_strb[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= w_data[31:24];
+                            end
                             state_q <= (i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
                         end else begin
                             // CPU not ready: park and keep the registered OKAY
@@ -684,8 +727,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     resp_q <= i_b_resp;
                     if (i_b_resp==2'b00) begin
                         // write-through: the cached copy is merged after a good B
-                        if (cached_q && hit_q)
-                            data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_word;
+                        if (cached_q && hit_q) begin
+                            if (wstrb_q[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[7:0];
+                            if (wstrb_q[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[15:8];
+                            if (wstrb_q[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[23:16];
+                            if (wstrb_q[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[31:24];
+                        end
                     end else begin
                         // a failed store must not leave a usable line behind
                         if (cached_q && hit_q) valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
@@ -696,8 +743,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     if (drain_q) begin
                         // released write: apply the write-through merge, then let
                         // the B handshake finish in the background
-                        if (cached_q && hit_q)
-                            data_mem[didx(hit_way_q,set_wr_q,word_q)] <= merged_word;
+                        if (cached_q && hit_q) begin
+                            if (wstrb_q[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[7:0];
+                            if (wstrb_q[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[15:8];
+                            if (wstrb_q[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[23:16];
+                            if (wstrb_q[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[31:24];
+                        end
                         // B may already have been handed over while the response was
                         // being held; only enter the drain state if it has not.
                         state_q <= (b_seen_q || i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
@@ -711,8 +762,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 // arrives (in program order).
                 ST_WR_DRAIN: begin
                     // merge an accepted posted store on its accept edge
-                    if (accept_post && req_in_cache && hit_any)
-                        data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                    if (accept_post && req_in_cache && hit_any) begin
+                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
+                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
+                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
+                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                    end
                     if (i_b_valid) begin
                         // The old write's line must be invalidated on an error
                         // before cached_q/hit_q are replaced.
@@ -758,8 +813,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     // posted store.  Missing this line was the P34 correctness bug
                     // (queued + answered but never merged, so a following load hit
                     // stale data; CoreMark crcfinal changed, +49% instructions).
-                    if (accept_post && req_in_cache && hit_any)
-                        data_mem[didx(hit_way,req_set,req_word)] <= merged_accept;
+                    if (accept_post && req_in_cache && hit_any) begin
+                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
+                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
+                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
+                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                    end
                     i_req_valid_r <= 1'b1;
                     i_req_write_r <= 1'b1;
                     i_req_addr_r  <= q_addr[q_head_q];

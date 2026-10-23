@@ -1,19 +1,20 @@
 # 120 MHz on the CORE clock -- the constraint the 5.2/120 MHz target actually needs.
 #
-# Why this file exists: `pango_native_100mhz.fdc` puts a 10 ns period on the
-# *board* port and then asks the PLL for x14/3 of it, i.e. 467 MHz on the core.
-# A run against that file says nothing about 100 MHz anywhere.
+# 120 MHz IS reachable (mistakes-log #57).  Older revisions of this file said the
+# opposite because they assumed the PLL output divider had to be a particular
+# value; the output divider O is a free integer on the VCO:
 #
-# Hardware chain (platform/pango_native/README.md, pangoriscv_top.v):
-#   27 MHz oscillator on D18 -> GTP_PPLL (I=1/M=1/F=56/O0=12) -> core clock.
-# The delivered ratio is 27 x 56/12 = 126 MHz, and 126 MHz is the only useful
-# ratio that satisfies the PPLL limits (VCO 1330..2133 MHz, PFD >= 19 MHz):
-#   27 x F/M = 120 needs F/M = 40/9 -> F=40 gives VCO 1080 (too low),
-#   F=80 gives VCO 2160 (too high).  So 120 MHz is a TIMING SPEC here, not a
-#   bitstream frequency: "the RTL closes at a 8.333 ns core period".
+#   27 x 58 / 13 = 120.4615 MHz, VCO = 27 x 58 = 1566 MHz (legal 1330..2133)
+#   PFD = 27 MHz (legal >= 19)
 #
-# The generated clock is declared as a 8.333 ns clock on the PLL output pin so
-# the core is timed at exactly 120 MHz, independent of the board oscillator.
+# so the period written here is 8.3014 ns -- the ACTUAL clock period -- not the
+# 8.3333 ns of a 120.000 MHz clock.  Writing 8.3333 would make "timing closed"
+# 0.4% looser than the hardware, which is the kind of slack that made the old
+# "45 MHz passed" claim wrong (see mistakes-log #54).
+#
+# Hardware chain: 27 MHz on D18 -> GTP_PPLL I=1/M=1/F=58/O0=13 -> core clock.
+# The generated clock is declared on the PLL output pin, so the core is timed at
+# exactly the hardware frequency regardless of what the board oscillator does.
 create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
-create_clock -name core_clk -period 8.333333 -waveform {0 4.1666665} [get_pins {u_core_pll/CLKOUT0}]
+create_clock -name core_clk -period 8.3014 -waveform {0 4.1507} [get_pins {u_core_pll/CLKOUT0}]
 # No multicycle, no false path, no clock-group exception on CPU/cache/AXI paths.

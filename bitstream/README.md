@@ -1,6 +1,45 @@
 # 发布版位流
 
-> ## ✅ 当前交付（2026-10-23）：`pangoriscv_board39_i2300_5p294.sbit`
+> ## ✅ 当前交付（2026-10-23 P30）：`pangoriscv_board48_i2700_5p245.sbit`
+>
+> **板上 CoreMark/MHz = 5.2447 @ 48 MHz / LUT 17,105**（三项指标同出这一份位流）
+>
+> | 项 | 值 | 证据 |
+> |---|---|---|
+> | 板测 `Total ticks` | **514,808,895** | `evidence/records/optimization/p30-dcache-path/board_p35a.txt` |
+> | 板测 `Iterations` | 2700 | 同上 |
+> | 运行时间 | 514,808,895 / 48 MHz = **10.72 s ≥ 10 s** ✓ | 由 ticks 反推 |
+> | 板测五项 CRC | `0xe9f5 / 0xe714 / 0x1fd7 / 0x8e3a / 0xa14c` | 同上，`Correct operation validated` |
+> | **CoreMark/MHz** | **5.2447** | 2700 × 1e6 / 514,808,895 |
+> | 约束频率 / 布线后 | **48.000 MHz** / **48.5885 MHz** | `report_timing.rtr` |
+> | setup | **WNS +0.252 ns，失败端点 0** | 同上（`All Constraints Met`）|
+> | hold | **WHS +0.021 ns，失败端点 0** | 同上 —— 上一版的 −0.007/2 端点残留**已清除** |
+> | 面积（`device_map` `Used`）| **LUT 17,105 / FF 8,693 / LUTRAM 2,274 / DRM 12** | `synthesize_device_map_run.log` |
+> | CoreMark/kLUT | **0.3066** | 5.2447 / 17.105 |
+> | 位流 SHA256 | `331273cb7a9d19be167f4f95183eb3231302352e7d2ba31ac59b5566636c856e` | |
+> | 约束文件 | `pango_native_48mhz.fdc`；PLL `27*64/36 = 48.000 MHz`，VCO 1728 MHz | |
+> | 镜像 | `build/native_software/coremark/performance/hw_i2700_48`（`CPU_FREQ_MHZ=48`）| |
+>
+> **相对上一版 `board39` 的三项指标**：
+>
+> | 指标 | board39 | **board48** | 变化 |
+> |---|---|---|---|
+> | 最高时钟频率 | 39 MHz | **48 MHz** | **+23.1%** |
+> | CoreMark/MHz | 5.2941 | **5.2447** | −0.9% |
+> | CoreMark/kLUT | 0.3311 | 0.3066 | −7.4% |
+>
+> 频率 +23.1%、分数仍 ≥5.2（5.2447）、指标三项中的两项小幅回落（D$ 从 2 KB 加到 4 KB
+> 换来"重定向切断"的周期预算，LUT 由 15,992 增到 17,105）。
+> **若以 CoreMark/kLUT 或纯 CoreMark/MHz 为准，`board39` 仍是更好的选择，两份位流都保留。**
+>
+> 本版 RTL 相对 board39 的四处改动（每处都实测 `Total ticks` 逐位不变或已单独记账）：
+> ① D$ 2→4 KB（−3,070 拍/迭代）② `ifu_axi` 重定向切断（+4,791 拍/迭代）
+> ③ D$ 数据阵列按字节通道拆分（0）④ LRU 替换位延后一拍写（0）。
+> ③④ 是纯物理改动，见 `evidence/records/optimization/p30-dcache-path/measurement.md`。
+>
+> ---
+>
+> ## 历史交付（2026-10-23 P20）：`pangoriscv_board39_i2300_5p294.sbit`
 >
 > **板上 CoreMark/MHz = 5.2941 @ 39 MHz / LUT 15,992**（三项指标同出这一份位流）
 >

@@ -149,8 +149,13 @@ module ifu_axi #(
     // out in the same cycle, which is worth one cycle on every redirect:
     // measured 137,249 redirects per CoreMark run and WIN_STARVE empty=137,250,
     // i.e. one dead cycle each.
-    wire [31:0] fetch_ptr=redirect_valid?redirect_pc:
-                          (transparent?fetch_pc:next_pc_q);
+    // P20 redirect cut: `redirect_valid?redirect_pc:` removed.  Keeping it made
+    // redirect_pc drive, in the SAME cycle, the I$ request address, local_fault
+    // (-> eng_req_valid) and -- through the fetch-queue write enable -- the FIFO
+    // clock enables.  The request now goes out one cycle later through
+    // `transparent`; `next_pc_q` is pre-seeded from redirect_pc for the case
+    // where a stale response still blocks `transparent`.
+    wire [31:0] fetch_ptr=transparent?fetch_pc:next_pc_q;
     assign chain_c=fetch_ptr;
     assign chain_c2=fetch_ptr+32'd4;
     assign flush_lost=lost_q;
@@ -217,8 +222,7 @@ module ifu_axi #(
     wire redir_issue=redirect_valid&&(owed<=3'd1);
     assign eng_req_valid=rst_n&&enable&&!stop_q&&
                          (ocnt_after_pop<2'd2)&&!local_fault&&
-                         (redirect_valid ? redir_issue
-                                         : ((stale_cnt_q==0)&&(reserved<=(DEPTH-2))));
+                         (stale_cnt_q==0)&&(reserved<=(DEPTH-2));
     assign eng_req_addr=fetch_ptr;
     assign eng_req_size=2;
     assign eng_req_len=0;
@@ -332,11 +336,10 @@ module ifu_axi #(
             // stream.  next_pc_q must follow the new chain too: from the next
             // cycle `transparent` is false (one request in flight), so the
             // prefetch pointer would otherwise walk the pre-redirect path.
-            if(redirect_valid&&issue) begin
-                pcf0_q<=redirect_pc; pdf0_q<=chain_next; pdf0_q2<=chain2_next;
-                ocnt_q<=2'd1;
-                next_pc_q<=expect_pair?packet_next:chain_next;
-            end
+            // P20: no request is raised on the flush edge any more, so there is
+            // nothing to register into pcf0_q here.  Seed the prefetch pointer
+            // with the target instead.
+            next_pc_q<=redirect_pc;
         end else if(head_lost) begin
             lost_q<=1; count_q<=0; head_q<=0; tail_q<=0; stop_q<=0;
             ocnt_q<=0; stale_cnt_q<=0; next_pc_q<=fetch_pc;

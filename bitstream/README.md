@@ -1,8 +1,33 @@
 # 发布版位流
 
-> ## ✅ 当前交付（2026-10-23 P30）：`pangoriscv_board48_i2700_5p245.sbit`
+> ## ✅ 当前交付（2026-10-23 P48d）：`pangoriscv_board48_i2700_w148.sbit`
 >
-> **板上 CoreMark/MHz = 5.2447 @ 48 MHz / LUT 17,105**（三项指标同出这一份位流）
+> **48 MHz / CoreMark/MHz 5.2447 / LUT 17,174**（同一份实现，三项指标可互校）
+>
+> | 项 | 值 | 口径 / 证据 |
+> |---|---|---|
+> | 约束频率 | **48.000 MHz**（PLL 27×64/36，VCO 1728）| `platform/pango_native/pango_native_48mhz.fdc` |
+> | `Design Summary` | **All Constraints Met** | `evidence/records/optimization/p48d-board48-w148/` |
+> | setup（`core_clk` 48 MHz）| **WNS +1.478 ns，失败端点 0** | 布线后 **19.355 ns** |
+> | setup（`core_clk_pnr` 50 MHz，鞭子时钟）| +0.645 ns，失败端点 0 | 只用于逼摆放器，**不作为频率声明** |
+> | hold | **WHS +0.010 ns，失败端点 0** | 同上 |
+> | 详细布线 | **0 未布通 @ 115 轮** | `pnr_run.log` |
+> | 面积（`device_map` `Used`）| **LUT 17,174 / FF 8,693 / LUTRAM 2,274 / DRM 12 / APM 10** | `multiseed_summary.csv` |
+> | CoreMark/MHz | **5.2447** | 同 RTL 同镜像 20 迭代仿真 `Total ticks 3,810,700`；板测值沿用 ticks 逐位相同的 `board48` |
+> | CoreMark/kLUT | **0.3054** | 5.2447 / 17.174 |
+> | 镜像 | `hw_i2700_48`（2700 迭代 / `CPU_FREQ_MHZ=48`）→ 10.72 s ≥ 10 s | 同上 |
+> | 位流 SHA256 | `71f64023b8f70ce600c891fc59ce1ef162b072d83d0b8003b54a8f36f5168e4d` | |
+>
+> ⚠️ **本版未上板**：2026-10-23 16:49 起 JTAG 链一直 `No devices detected`（板子未上电/排线未接），
+> 详见 `docs/plan-v17-board50.md` §8。**板测值仍然只有 `board48` 那一份（5.2447）**，
+> 两份位流的 RTL 行为逐位一致（`Total ticks 3,810,700` 相同），差别只是实现质量。
+>
+> 相对 `board48`：**setup 余量 +0.252 → +1.478 ns（×5.9）**、布线 151 → 115 轮、LUT +69
+> （来自 `irq_trap` 的中断边界修复：原来只认 lane0 的控制流，lane1 控制流永远等不到中断边界）。
+
+> ## 历史交付（2026-10-23 P30）：`pangoriscv_board48_i2700_5p245.sbit`
+>
+> **板上 CoreMark/MHz = 5.2447 @ 48 MHz / LUT 17,105**（三项指标同出这一份位流，**唯一有板测的一份**）
 >
 > | 项 | 值 | 证据 |
 > |---|---|---|

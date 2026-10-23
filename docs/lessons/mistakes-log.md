@@ -2873,3 +2873,30 @@ wire irq_trap = csr_irq_pending && w_valid && w_ctrl && !w_trap && ...;
    **低于 19.5 ns 就反作用**。要跨频段用，先跑一次 `--place-only` 看摆放 WNS 有没有变好，
    别直接上满实现。
 3. 这条同时解释历史怪象"50 MHz 摆放 WNS 更好却布不通"（§70）—— 摆放估计不会告诉你拥塞。
+
+## 83. 越界位选不报错，只给你 X —— `vec[AW-1:0]` 是这种坑的标准写法（2026-10-23，P49）
+
+**现象**：16 B 取指改完，CoreMark 在第 2 条指令就 `STALL_DETECT retires=2`。
+I$ 的 AXI 填充完全正常（日志里 16 拍都对），说明取指通路本身在跑。
+
+**查什么**：在 IFU 里加一个 `` `ifdef IFU_DBG `` 的 `$display`，把 `push_cnt / count_q / deq_cnt`
+打出来（**只在仿真编译，不进综合**）：
+
+```
+IFUPUSH n=4 cnt=0  pc=00000000 pf4=1 p2=1 q2=00000008 deq=10
+IFUPUSH n=4 cnt=2  pc=00000010 pf4=1 p2=1 q2=00000018 deq=0x   <-- deq 的 bit0 是 X
+IFUPUSH n=4 cnt=x  pc=00000020 ...                             <-- count 已经变 X
+```
+
+**原因**：`tail_q <= tail_q + push_cnt[AW-1:0]`。`push_cnt` 是 3 bit，队列深度提到 16 后
+`AW=4`，`push_cnt[3]` **越界**。Verilog 对越界位选**不报错、不告警**，直接给 X；
+于是 `tail_q`→X、`count_q`→X、`deq_cnt`→X，整条前端死掉。
+
+**怎么办**：
+1. 往队列指针加一个"可能比指针窄"的量时，**不要写 `x[AW-1:0]`**，直接写
+   `ptr <= ptr + x;`（Verilog 会按赋值左边宽度零扩展），或者显式
+   `{{(AW-3){1'b0}}, push_cnt}`。
+2. 判据：任何计数/指针类信号如果 `%b` 打出 `0x`/`1x`，先怀疑**越界位选或多驱动**，
+   不要先去怀疑 FSM。
+3. 这类 bug **只在仿真里抓得到**，综合会把 X 当 don't-care 优化掉 —— 所以"综合过了"
+   不能证明计数器没问题，必须跑一遍带 CRC 的端到端仿真。

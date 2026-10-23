@@ -78,3 +78,51 @@ python sim/run_icache_tests.py --modelsim "D:/FPGA_Project/Modelism/win64"   # 1
 python tools/run_coremark_sim.py --image build/native_software/coremark/performance/sim20_O2 --tag m1
 # 当前判据：ticks 3,879,898（S1 中间态，负收益 1.8%），CRC 必须 0x4983
 ```
+
+---
+
+## 6. M1-S2 第一次尝试（2026-10-23 21:20）：功能对了，性能不对
+
+**做了什么**：ifu_axi 加 `QUAD` 参数（默认 0，单测台不受影响）：
+`fetch_ptr` 落在 16 B 边界时一次 push 四条（`push4`），预留 4 个槽，队列深度 8→16，
+prefetch 指针按 +16 B 前进；顶层 `ifu_axi #(.DEPTH(16),.QUAD(1))` 打开，I$ 的
+`rsp_data_quad` 接进来。
+
+**结果**：
+
+| 项 | 交付 | S1（只改四 bank）| **S1+S2** |
+|---|---|---|---|
+| `Total ticks` | 3,810,700 | 3,879,898 | **4,545,765（+19%）** |
+| `crcfinal` | 0x4983 | 0x4983 | **0x4983（功能对！）** |
+| `mispred`（20 it）| 46,285 | 46,285 | **140,677（3×）** |
+| IPC | 1.5095 | — | 1.0921 |
+
+**原因（很清楚）**：push 的第 3、4 条只能给"顺序预测"（`q_pred = pc+4`），因为预测器
+只被问了 `fetch_ptr` 与 `fetch_ptr+4` 两个点。于是**落在第 3/4 个字上的条件跳转全部变成误预测**，
+误预测翻三倍，省下的取指周期被重定向吃光还倒亏。
+
+⇒ **S2 必须先把预测器链从 2 个查询点扩到 4 个（`base+0/+4/+8/+12`）**，
+否则 16 B 取指是净亏。这也解释了 `mispred` 为什么是这条路上最敏感的指标：
+它是唯一一个"取指变宽后会被放大"的量。
+
+### 6.1 顺带修掉的一个真实 bug（值得记住）
+
+`tail_q<=tail_q+push_cnt[AW-1:0]`：`push_cnt` 是 3 bit，而 DEPTH=16 时 `AW=4`，
+`push_cnt[3]` **越界取值 = X**，于是 `tail_q`/`count_q` 一路变 X、队列分发出 X、
+`deq_cnt` 变 X，CoreMark 在第 2 条指令就 STALL 死掉（`retires=2`）。
+**Verilog 对越界位选不报错**，只有跑仿真看波形才抓得到 —— 判据是 `%b` 打出 `0x`。
+
+### 6.2 状态
+
+**已回退到 S1**（分支 `exp/wide4` 干净、可编译、CRC 正确），S2 的代码没有留下，
+避免分支上挂着跑不动的东西。下一轮按 §6.3 做。
+
+### 6.3 S2 重做清单（按顺序）
+
+1. `branch_predictor` 加**第 4、5 号查询端口**（`fetch_pc4/fetch_pc5`）。这块是触发器阵列，
+   加端口只是多一组 index/tag 比较，不是多一个 RAM 口（模块头注释里已经这么写过）。
+2. `ifu_axi` 加 `chain_c3/chain_c4` 输出与 `chain_predict_next_pc3/4` 输入，
+   每个 outstanding 请求存 `pdf0_q3/pdf0_q4`（预测点 `base+8` / `base+12`）。
+3. push4 的第 3/4 条用真预测值，并按"第一个被预测跳转"截断；
+   prefetch 指针在截断时跟到那个 target，否则 +16。
+4. 判据不变：`ticks ≤ 3.70 M`、CRC 0x4983、ISA 20/21。

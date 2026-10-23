@@ -348,3 +348,24 @@ store 落地顺序，但**必须实测**（用 CoreMark CRC + ISA 20/21 判）�
 
 **⇒ 下一块的工作顺序改为：② CSR 读口解耦 → 量 `--place-only` → ⑥ D$ 写口打拍 →
 量 `--place-only` → 若 WNS 允许，试 55 / 60 MHz 档位（单时钟、不要鞭子，lesson 82）。**
+
+## 12. 切② 实测关闭（2026-10-23，分支 `exp/csr`）
+
+按 §11 实施后，两处改动**都**被 ISA 归回否掉，原因是两个此前没看到的语义依赖：
+
+| 改动 | 结果 | 原因 |
+|---|---|---|
+| `.addr(id_csr_addr)`（读口只接 ID）| ISA **11/21** | **`csr_native` 的 `.addr()` 同时是写地址**：`commit = w_commit && w_csr`、`write_data = csr_new`，改成 ID 地址后**每条 CSR 写都写到了 ID 那条指令的 CSR 上**。挂 case 6~11/15/19/20 |
+| `wb_value = w_csr ? w_csr_old : w_value` | ISA **19/21**（新挂 case 6）| **WB 重读 CSR 是必需的**：`w_csr_old` 在 ID→RR 沿采样时，`csr_rdata` 的地址被 WB 那一路 mux 过，两者并不等价 |
+
+两次都保持 `ticks 3,810,700 逐位不变`、`crcfinal 0x4983`——**CoreMark 抓不到这类错**（它只在启动时碰 CSR），
+只有 ISA e2e 能抓到。**这条再次证明：`ticks` 不变 + CRC 对 ≠ 功能正确。**
+
+### 12.1 结论与替代
+
+**切② 关闭。** 要走这条路必须先给 `csr_native` 拆出**独立的读地址与写地址**（现在同一个 `addr`），
+那是接口改动而不是"两行"；拆完之后 `wb_value` 才能改成读寄存值。**性价比不明，暂不做。**
+
+⇒ 频率侧只剩 **⑥（D$ 阵列写地址/写使能在 cache 内部打一拍，2.58 ns，零 CPI）** 这一刀是安全的，
+它不涉及 CSR/寄存器堆的任何语义。下一轮从它开始，判据顺序不变：
+`ticks 逐位不变` → **ISA 20/21**（不是 19/21）→ `--place-only` WNS。

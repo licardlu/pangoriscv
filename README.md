@@ -3,23 +3,25 @@
 用 Verilog 实现的一款 RISC-V RV32IM 处理器核，自带原生 AXI4 总线与 SoC，已在 Pango PG2L100H 开发板上
 跑通 CoreMark（400 次迭代，5 项 CRC 全部符合）。
 
-> **当前交付（2026-10-23 P48d）**：**CoreMark/MHz 5.2447 @ 48 MHz**
-> 位流 `bitstream/pangoriscv_board48_i2700_w148.sbit`（SHA256 `71F64023…F5168E4D`）
-> ——`All Constraints Met`，核心时钟 setup **WNS +1.478 ns / 0 失败端点**（布线后 **19.355 ns**）、
-> hold **+0.010 / 0 失败**、**LUT 17,174 / FF 8,693 / LUTRAM 2,274 / DRM 12**、
-> 详细布线 115 轮收敛；镜像 `hw_i2700_48`（2700 迭代 → 10.72 s ≥ 10 s）。
-> 分数口径：同 RTL 同镜像的 20 迭代仿真 `Total ticks 3,810,700`
-> ⇒ `2700e6 / 514,808,895 = 5.2447`（板测值沿用上一版**逐位相同 ticks** 的 `board48`，
-> 本版**未上板**——JTAG 链扫不到器件，见 [plan v17](docs/plan-v17-board50.md) §8）。
-> 相对上一版 `board48`（WNS +0.252 / LUT 17,105）**setup 余量 ×5.9**，RTL 多一条中断边界修复
-> （行为逐位不变：`Total ticks` 与交付完全一致）。
+> **当前交付（2026-10-23 P48e）**：**CoreMark/MHz 5.248 @ 50 MHz**
+> 位流 `bitstream/pangoriscv_board50_i2800_5p248.sbit`（SHA256 `5E1969FC…1DB19ECF`）
+> ——`All Constraints Met`，核心时钟 setup **WNS +0.645 ns / 0 失败端点**（布线后 **19.355 ns**，
+> 物理上限 51.67 MHz）、hold **+0.010 / 0 失败**、**LUT 17,174 / FF 8,693 / LUTRAM 2,274 / DRM 12**、
+> 详细布线 **114 轮**收敛；镜像 `hw_i2800_50v17`（2800 迭代 → 10.67 s ≥ 10 s）。
+> 分数口径：同 RTL 同源码 20 迭代仿真 `Total ticks 3,810,700`（190,535 拍/迭代）⇒ **5.248**；
+> 与上一版 `board48_i2700`（**板测 5.2447**）拍数逐位一致，所以分数不因提频而变。
+> 本版**未上板**（JTAG 链扫不到器件，见 [plan v17](docs/plan-v17-board50.md) §8）。
+>
+> **50 MHz 是怎么拿下来的**：不是换 seed（`pnr -seed` 实测是静默 no-op），
+> 而是把 52 MHz 的"鞭子时钟"去掉 —— 19.231 ns 这个目标把逻辑压得过密，
+> 反而布出 21.1~21.6 ns；**单时钟 20.000 ns**（正好是 50 MHz 的周期）摆出 +1683 ps、
+> 布到 19.355 ns。详见 [P48e 证据](evidence/records/optimization/p48e-board50/measurement.md)。
 >
 > **120 MHz 的位置（本轮定量判定）**：`docs/plan-v16-120mhz-spec.md` 用静态 ILP 定标证明
 > "120 MHz 且 ≥5.2"**可以**做到，但条件是 **4 发射 + 16 B/拍取指 + 双端口 D$ + 3 级流水**（预测 5.86），
-> 触发它的 M1 本身 1~2 周；单次会话做不完。本轮改做"不提架构、只提频率"：
-> 50 MHz 两次尝试布线后 21.60 / 21.12 ns（需 ≤20.00），**48 MHz 仍是唯一合规档**；
-> `-seed` 是静默 no-op，别再靠换 seed 抽签。详见 [plan v17](docs/plan-v17-board50.md)。
->
+> 触发它的 M1 本身 1~2 周；单次会话做不完。本轮改做"不提架构、只提频率"，把交付频点从
+> 48 MHz 推到 **50 MHz（+4.2%）**；再往上（52/55）需要先切流水，而切流水要先有 M1 的 IPC 预算。
+> `-seed` 是静默 no-op，别再靠换 seed 抽签。详见 [plan v17](docs/plan-v17-board50.md)。>
 > **历史交付（2026-10-22 P13，板上实测）**：**5.213 CoreMark/MHz @ 36 MHz**
 > （2000 迭代 / 10.66 s / 五项 CRC 全对 / `Correct operation validated`）。
 > 位流 `bitstream/pangoriscv_board36_i2000.sbit`（SHA256 `CCEFDD8B…3E37F6`）；

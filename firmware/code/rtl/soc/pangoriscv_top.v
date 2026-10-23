@@ -50,13 +50,14 @@ module pangoriscv_top #(
  wire core_clk,pll_locked;
  GTP_PPLL #(
   .CLKIN_FREQ(27.0),.LOCK_MODE(0),
-  // P48: 48 MHz = 27*64/36 (VCO 1728) -- the delivered rung.  This tree builds
-  // `bitstream/pangoriscv_board48_i2700_w148.sbit` exactly (core_clk WNS
-  // +1.478 ns, routed 19.355 ns).  The routed path is short enough for 50 MHz
-  // (20.000 ns), but the 50 MHz-constrained builds route at 21.60 / 21.12 ns
-  // (docs/plan-v17-board50.md), so 48 MHz stays the only compliant claim.
-  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(64),
-  .STATIC_RATIO0(36),.STATIC_DUTY0(36),.STATIC_DUTYF(64),
+  // P48e: 50 MHz = 27*50/27 (VCO 1350).  The 48 MHz build `p48r48d` routed at
+  // 19.355 ns with a 20.000 ns tightest declared clock; the two 50 MHz builds
+  // that asked for 19.231 ns routed at 21.60 / 21.12.  This build therefore
+  // claims 50 MHz with a SINGLE 20.000 ns clock (see pango_native_50mhz.fdc).
+  // 48 MHz (27*64/36) is the fallback and is the frequency of the delivered,
+  // timing-clean `pangoriscv_board48_i2700_w148.sbit`.
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
+  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(50),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

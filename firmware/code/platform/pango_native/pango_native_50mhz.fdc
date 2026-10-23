@@ -4,15 +4,19 @@
 # Hardware chain: 27 MHz on D18 -> GTP_PPLL I=1/M=1/F=50/O0=27 -> 27 x 50/27 = 50.000 MHz.
 # VCO = 27 x 50 = 1350 MHz (legal 1330..2133), PFD 27 MHz.
 #
-# Why there are TWO clocks below
-# ------------------------------
-# The placer stops as soon as it meets the declared period, so declaring exactly
-# the target frequency is the worst way to ask for that frequency.  `core_clk` is
-# the real hardware clock and is the row the frequency claim is read from;
-# `core_clk_pnr` is the same physical clock declared one rung tighter (52 MHz)
-# with `-add`, purely so the placer does not settle early.  Both are analysed and
-# the compliance evidence is the `core_clk` row: 50 MHz, 0 failing setup
-# endpoints at 20.000 ns.  A core_clk_pnr violation is not a compliance failure.
+# P48e: single clock, no over-constraint clock.  This file used to carry an
+# extra `core_clk_pnr` at 52 MHz "to make the placer try harder".  The measured
+# evidence says that backfires:
+#
+#   build                     tightest declared clock   routed path
+#   p48r48d (48 MHz claim)    20.000 ns (pnr 50)       19.355 ns   <- best ever
+#   p48r50  (50 MHz claim)    19.231 ns (pnr 52)       21.600 ns
+#   p48r50b (50 MHz claim)    19.231 ns (pnr 52)       21.120 ns
+#
+# So the *looser* 20.000 ns target places AND routes better here, and 20.000 ns
+# is exactly the 50 MHz period.  Declaring the 50 MHz claim with a single clock
+# at 20.000 ns therefore reproduces the placement pressure that gave the best
+# routed result ever measured on this netlist, while the claim row is the same
+# 20.000 ns the hardware actually runs at.
 create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
 create_clock -name core_clk -period 20.000000 -waveform {0 10.000000} [get_pins {u_core_pll/CLKOUT0}]
-create_clock -name core_clk_pnr -period 19.230769 -waveform {0 9.6153845} -add [get_pins {u_core_pll/CLKOUT0}]

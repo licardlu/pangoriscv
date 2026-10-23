@@ -2348,3 +2348,47 @@ for (i=0; i<iterations; i++) {
 **怎么办**：任何切流水线的方案，**先按 §58 的方法跑 20 迭代读 `Total ticks`**，
 用实测值判断能不能装进 5.2 的预算（每迭代 ≤ 192,307 拍）。估出来的数只配用来
 排优先级，不配用来做交付决定。
+
+## 63. 约束越紧，摆放越好、布线后路径越短（2026-10-23，P21）
+
+**现象**：同一份 RTL（BRAM + BTB64 + D$4KB + 重定向切断），只改约束频率：
+
+| 约束 | 摆放估计 | **布线后路径** | Estimated Fmax |
+|---|---|---|---|
+| 50 MHz（20.0 ns）| — | **20.613 ns** | 48.51 MHz |
+| 45 MHz（22.22 ns）| 20.80 ns | 22.684 ns | 44.08 MHz |
+| 42 MHz（23.81 ns）| — | 24.927 ns | 40.12 MHz |
+
+**越紧的约束给出越短的布线后路径**，与"降频更容易收敛/更容易过"的直觉相反。
+
+**原因**：时序驱动的全局摆放会按 slack 目标聚拢关键逻辑。约束松时它早早"满足"就停手，
+把关键路径摊在器件上；约束紧时它才真正把这个环聚起来。所以
+**降频并不能换来时序通过**——它同时把路径拉长了。
+
+**怎么办**：
+1. 想提高频率，**不要指望"把约束放宽一点就过了"**；要按"约束 = 目标频率"去试，
+   并在很窄的频段里扫（本例 45 MHz 只差 0.46 ns，42 MHz 反而差 1.12 ns）。
+2. 判断某频点行不行，必须看该频点自己的 `.rtr`，不能拿别的频点的路径长度外推。
+3. 曾经有效的 `-plc_decongestion 1` 在低面积网表上反而更差（25.157 ns vs 22.684 ns），
+   **去拥塞档位也要按网表重测**，不要沿用旧结论。
+
+## 64. 已确认被静默忽略的 `pnr` 选项清单（截至 2026-10-23）
+
+以下选项**写了等于没写**，判据是"中间量逐位相同"（摆放 WNS/TNS、布线轨迹）：
+
+| 选项 | 判据 |
+|---|---|
+| `-dc_duplication TRUE` | 摆放 +1462 ps 与基线逐位相同 |
+| `-refineplacement_cluster TRUE` | 同上 |
+| `-logic_optimize_enable TRUE` | 同上 |
+| `-slack_prior_in_global_router TRUE` | 同上 |
+| `-max_ctrl_chain_length 16` | 同上 |
+| `-seed 3` vs `-seed 7` | 摆放与布线轨迹逐位相同 |
+| `-place_worst_slack 4000` | 摆放 WNS 仍 1418 ps，不是 4000 |
+| `-fix_hold_violation*`（含 threshold 50/100、`-max_hold_violated_paths_num 200`、`-check_clk_net_route_by_srb`）| 三个构建的 hold 数值逐 ns 相同 |
+
+**仍有效的**：`-plc_decongestion`（档位要按网表重测）、`-dispose_dram_prior TRUE`、
+`-share_router_control_signal TRUE`、`-place_only`、`-fast_router`（未系统评估）。
+
+⇒ **做选项 A/B 时，先花 8 分钟用 `-place_only` 看中间量是否不同**；相同就直接放弃，
+不要投 50 分钟去布线。

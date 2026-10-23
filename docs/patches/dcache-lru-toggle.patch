@@ -1,0 +1,63 @@
+diff --git a/firmware/code/rtl/core/dcache_axi.v b/firmware/code/rtl/core/dcache_axi.v
+index d3deb50..255174f 100644
+--- a/firmware/code/rtl/core/dcache_axi.v
++++ b/firmware/code/rtl/core/dcache_axi.v
+@@ -265,17 +265,6 @@ module dcache_axi #(
+     reg [7:0] data_mem_b3 [0:SETS*WAYS*LINE_WORDS-1];
+     reg        valid_mem [0:SETS*WAYS-1];
+     reg        lru_mem   [0:SETS-1];
+-    // P30: deferred replacement update.  The LRU bit is a heuristic and nothing
+-    // reads it inside the cycle it is written, but the accept-cycle write fed it
+-    // from `hit_way`, i.e. from the whole  m_inst -> AGU -> tag-compare  cone.
+-    // On the routed netlist that cone was the critical path (P31b @ 50 MHz:
+-    // startpoint soc/core/cpu/m_inst[11], endpoint data_cache/lru_mem[30]/I5,
+-    // 20.135 ns, with a single fanout-16 net costing 1.63 ns).
+-    // Writing it one cycle later from registers removes the cone and leaves the
+-    // replacement policy in exactly the same state.
+-    reg        lru_pend_q;
+-    reg [IDXW-1:0] lru_pend_set_q;
+-    reg        lru_pend_way_q;
+ 
+     function integer widx;   // (way, set) -> line slot
+         input integer w;
+@@ -559,20 +548,12 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+             i_req_size_r  <= 3'd0;
+             i_req_len_r   <= 8'd0;
+             i_req_id_r    <= 4'd0;
+-            lru_pend_q     <= 1'b0;
+-            lru_pend_set_q <= {IDXW{1'b0}};
+-            lru_pend_way_q <= 1'b0;
+             for (s=0;s<SETS;s=s+1) begin
+                 lru_mem[s] <= 1'b0;
+                 for (w=0;w<WAYS;w=w+1) valid_mem[widx(w,s)] <= 1'b0;
+             end
+         end else begin
+             i_req_valid_r <= 1'b0;              // requests are single-cycle
+-            // P30 deferred replacement update: one-shot, and placed BEFORE the
+-            // FSM's own lru writes so that a state which also updates the bit
+-            // (ST_HIT / refill completion) keeps priority with the same value.
+-            lru_pend_q <= 1'b0;
+-            if (lru_pend_q) lru_mem[lru_pend_set_q] <= ~lru_pend_way_q;
+             case (state_q)
+                 // ------------------------------------------------------ IDLE
+                 ST_IDLE: if (req_valid && req_ready) begin
+@@ -628,9 +609,16 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+                         // as well; ST_HIT keeps its identical update for the
+                         // back-pressured path (writing the same value twice is
+                         // harmless).
+-                        lru_pend_q     <= 1'b1;
+-                        lru_pend_set_q <= req_set;
+-                        lru_pend_way_q <= hit_way;
++                        // P38: the victim bit is TOGGLED instead of being set to
++                        // `~hit_way`.  `hit_way` is the tag comparison result, i.e.
++                        // the output of the whole m_inst -> AGU -> tag-compare cone,
++                        // and it was the single worst path on the routed netlist
++                        // (P31b @ 50 MHz: m_inst[11] -> lru_mem[30]/I5, 20.135 ns).
++                        // Toggling reads the bit's own register, so the array data
++                        // input is one inverter away from a flop, and for a 2-way
++                        // cache "alternate the victim" is a standard approximation of
++                        // LRU (it degrades to round-robin, not to random).
++                        lru_mem[req_set] <= ~lru_mem[req_set];
+                         state_q <= rsp_ready ? ST_IDLE : ST_HIT;
+                     end else begin
+                         // line refill (cacheable) or a single bypass beat (MMIO)

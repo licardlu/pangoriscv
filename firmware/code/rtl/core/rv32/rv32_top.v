@@ -246,19 +246,6 @@ module rv32_top(
     wire packet_md_use = (dec_mul || dec_div) && dec_we &&
                          ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
                           (dec_u2_h && (dec_rd == dec_rs2_h)));
-    // P57: the MIRROR case.  Lane 1 multiply/divide reading lane 0's result puts
-    // lane 0's ALU in series with the four-DSP cascade.  Measured on the routed
-    // 55 MHz netlist (p50r55, after cut 2): the worst path is
-    //   rr_inst -> alu_b -> u_alu (4 levels) -> fwd1_h -> u_mul_h 4xAPM
-    //           -> prod[60] -> ex_value_h
-    // 21.852 ns arrival, 8.0 ns of which is the DSP chain.  `packet_md_use`
-    // above only refuses the lane-0-mul -> lane-1-read direction, so this one
-    // survived every previous sweep.  Refusing it costs a pair only when a
-    // multiply immediately follows an ALU op it depends on -- measured before
-    // keeping it (see docs/plan-v21).
-    wire packet_alu_mul_use = dec_mul_h && dec_we &&
-                              ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
-                               (dec_u2_h && (dec_rd == dec_rs2_h)));
     // Intra-pair RAW (lane 1 reading what lane 0 writes this cycle) must stay
     // pair-able: everything between addi/branch and the store data path in the
     // ISA suite is built on it (P37a, tests 17/18/19/20).  Trying to refuse it
@@ -267,7 +254,7 @@ module rv32_top(
     // docs/lessons/mistakes-log.md.  The chain is shortened at the ALU instead.
     wire lane0_mem = dec_load || dec_store;
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
-                   !packet_load_use && !packet_md_use && !packet_alu_mul_use &&
+                   !packet_load_use && !packet_md_use &&
                    !(lane0_mem && lane1_mem) &&
                    !fetch_fault && !fetch_fault_hi;
 
@@ -579,30 +566,8 @@ module rv32_top(
         .op(rr_alu_h), .a(alu_a_h), .b(alu_b_h),
         .y(alu_y_h), .eq(alu_eq_h), .lt(alu_lt_h), .ltu(alu_ltu_h)
     );
-    // P57: lane 1's multiplier takes operands that EXCLUDE the in-packet
-    // `lane0_raw` term.  That term is `alu_y` -- lane 0's combinational ALU
-    // output -- and putting it in front of the four-DSP cascade is exactly the
-    // 21.852 ns path measured on the routed 55 MHz netlist (p50r55):
-    //   rr_inst -> alu_b -> u_alu (4 levels) -> fwd1_h -> u_mul_h 4xAPM -> prod
-    // Refusing the pair in `pair_ok` (packet_alu_mul_use) is not enough on its
-    // own -- synthesis cannot read `pair_ok`, so the cone stays.  It has to be
-    // removed from the LOGIC, and it is safe to do so: a lane-1 multiply that
-    // reads lane 0's result is now never paired, so the stale operand is
-    // unreachable.  Cost: two extra 5:1 operand selects (~130 LUT).
-    wire [31:0] fwd1_hn =
-        (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs1_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs1_h) && (ex_rd != 5'd0)) ? ex_value :
-        (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs1_h) && (m_rd_h != 5'd0)) ? m_value_h :
-        (m_valid && m_we && !m_trap && (m_rd == rr_rs1_h) && (m_rd != 5'd0)) ? m_value :
-        rf_d0_h;
-    wire [31:0] fwd2_hn =
-        (ex_valid && ex_v1 && ex_we_h && (ex_rd_h == rr_rs2_h) && (ex_rd_h != 5'd0)) ? ex_value_h :
-        (ex_valid && ex_we && !ex_trap && (ex_rd == rr_rs2_h) && (ex_rd != 5'd0)) ? ex_value :
-        (m_valid && m_v1 && m_we_h && (m_rd_h == rr_rs2_h) && (m_rd_h != 5'd0)) ? m_value_h :
-        (m_valid && m_we && !m_trap && (m_rd == rr_rs2_h) && (m_rd != 5'd0)) ? m_value :
-        rf_d1_h;
     wire [31:0] mul_y_h;
-    rv32_mul u_mul_h(.op(rr_md_op_h), .a(fwd1_hn), .b(fwd2_hn), .y(mul_y_h));
+    rv32_mul u_mul_h(.op(rr_md_op_h), .a(fwd1_h), .b(fwd2_h), .y(mul_y_h));
     wire [31:0] ex_value_h_w = rr_mul_h ? mul_y_h : alu_y_h;
 
     // A branch or jal in lane 1 resolves here with the same comparator the ALU

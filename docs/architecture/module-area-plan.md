@@ -37,25 +37,35 @@ P17 声称的 +3,610 拍/迭代，被 BTB64→32 的 −2,300 拍抵掉，**净�
 ⇒ 交付口径固定为 `76b98cf` 的配对规则：`pair_ok` 含 `!(lane0_mem && lane1_mem)`，
 不含 `lane0_mem_wait` 门控。面积不变（18,157~18,181 LUT）。
 
-### P48b 变更（2026-10-23）：lane0-load → lane1 旁路（`fe8da00`）
+### P48b 变更（2026-10-23）：lane0-load → lane1 旁路 —— **实测后被摆放否掉，未进树**
 
 `pair_ok` 去掉 `!packet_load_use`，lane1 的 ALU/乘法器改用
-`fwd1_h_alu/fwd2_h_alu = lane0_ld_raw1/2 ? load_value : fwd*_h`。
-`mem_addr_h`/`mem_sdata_h` **仍用原 `fwd1_h/fwd2_h`**，这是为了不闭合
-`address → op_ready/hit → mem_rsp → fwd1_h → mem_addr_h → address`（见文件内长注释）。
+`fwd1_h_alu/fwd2_h_alu = lane0_ld_raw1/2 ? load_value : fwd*_h`；
+`mem_addr_h`/`mem_sdata_h` 仍用原 `fwd1_h/fwd2_h`（否则闭合
+`address → op_ready/hit → mem_rsp → fwd1_h → mem_addr_h → address`）。
 
 | 项 | 值 | 口径 |
 |---|---|---|
-| ΔLUT / ΔFF / ΔLUTRAM | **0 / 0 / 0** | `p48r50` synthesis `device_map`：LUT 17,103 / FF 8,693 / LUTRAM 2,274 |
-| `Total ticks`（20 it） | 3,810,700 → **3,784,335** | −26,365（−1,318 拍/迭代）|
+| ΔLUT / ΔFF / ΔLUTRAM | **0 / 0 / 0** | `p48r50` synthesis `device_map` |
+| `Total ticks`（20 it） | 3,810,700 → **3,784,335** | −1,318 拍/迭代 |
 | 分数 | 5.2484 → **5.2850** | 20e6 / ticks |
-| CoreMark CRC | `crcfinal 0x4983` 全对 | `p48b_final` |
-| ISA e2e | **20/21**（case 21 基线即红） | 修复 `irq_trap` 的 lane0-only 边界后恢复 |
-| 关键路径 | 不变（新 mux 只进 lane1 的 ALU 输入，不进 `mem_addr_h`） | 逻辑论证；等满实现复核 |
+| CRC / ISA / halt-reset | 0x4983 全对 / 20-21 / 5-5 PASS | —— |
+| **摆放 WNS @48 MHz** | **−2,227 ps**（同树去掉它 = +1,683 ps）| `--place-only`，三次对照 |
 
-**顺带修掉的潜伏 bug**：`irq_trap` 原来用 `w_ctrl`（lane 0）做中断注入边界，lane1 的控制流
-永远等不到边界。以前 `lw;beq` 配不成对所以没暴露，放宽配对后 ISA case 15 直接挂。
-判据改为 `w_ctrl_any = w_ctrl || (w_v1 && w_ctrl_h)`。
+⇒ **不进 RTL，存成 `docs/patches/lduse-pair.patch`**（与 `dcache-4kb.patch` 同一处理方式：
+仓库必须能复现交付位流的那一棵树）。判据链见 `docs/lessons/mistakes-log.md` §80。
+
+### P48c 变更（2026-10-23，进树）：`irq_trap` 的中断边界补上 lane 1
+
+```verilog
+wire w_ctrl_any = w_ctrl || (w_v1 && w_ctrl_h);
+wire irq_trap   = csr_irq_pending && w_valid && w_ctrl_any && !w_trap && ...
+```
+
+交付 RTL 允许 `addi; beq`（beq 在 lane1），原来只认 `w_ctrl`（lane0）⇒ 只含 lane1 控制流的
+循环永远等不到中断边界，定时器中断进不来（挂死）。行为判据：`Total ticks 3,810,700`
+与交付**逐位一致**、CRC 全对、ISA 20/21、摆放 +1,683 ps（基线 +1,068 ps，差异在波动内）、面积不变。
+
 
 另：`pnr -seed` 与 `-dc_duplication` / `-refineplacement_cluster` / `-logic_optimize_enable` /
 `-slack_prior_in_global_router` / `-max_ctrl_chain_length` 在 P18 的实测中**全部是空操作**

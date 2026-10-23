@@ -50,6 +50,9 @@ module pangoriscv_top #(
  wire core_clk,pll_locked;
  GTP_PPLL #(
   .CLKIN_FREQ(27.0),.LOCK_MODE(0),
+  // P48: 48 MHz = 27*64/36 (VCO 1728).  The 50 MHz attempt (`p48r50`,
+  // 27*50/27) routed in 707 iterations but reported core_clk WNS -1.595 ns,
+  // so 48 MHz stays the delivered rung; see docs/plan-v17-board50.md.
   .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(64),
   .STATIC_RATIO0(36),.STATIC_DUTY0(36),.STATIC_DUTYF(64),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),

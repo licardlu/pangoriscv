@@ -105,14 +105,41 @@ blocks=309  instructions=3343  mem=696 (20.8%)  ctrl=272 (8.1%)
 
 **结论：50 MHz 放弃。48 MHz 仍是唯一合规点，且它那次摆放是"偶发更优解"，不可复现。**
 
-## 6.1 本轮真正落地的改动
+## 6.1 本轮真正落地的改动：只有一处（中断边界），旁路被摆放否掉
 
-| 项 | 结果 | 判据 |
-|---|---|---|
-| lane0-load → lane1 旁路（`fe8da00`） | `Total ticks` 3,810,700 → **3,784,335**，分数 **5.2850** | CRC `0x4983` 全对 |
-| 中断注入边界补 lane1（同一提交） | ISA 从 19/21 回到 **20/21** | case 21 是基线红 |
-| 面积 | LUT 17,103 / FF 8,693 / LUTRAM 2,274（**Δ 0/0/0**） | `p48r50` device_map |
-| halt/reset 场景 | **5/5 PASS** | `run_halt_reset_tests.py` |
+### (a) 进了树：`irq_trap` 的中断注入边界补上 lane 1
+
+```verilog
+wire w_ctrl_any = w_ctrl || (w_v1 && w_ctrl_h);
+wire irq_trap   = csr_irq_pending && w_valid && w_ctrl_any && !w_trap && ...
+```
+
+这是**真 bug**：交付 RTL 的配对规则允许 `addi; beq`（beq 在 lane1），
+这样一个"控制流只出现在 lane1"的循环永远等不到中断边界 ⇒ 定时器中断进不来（挂死，不是延迟）。
+`w_next_eff` 早就写了 `w_ctrl_h ? w_next_h : ...`，说明 lane1 控制流是正常情况，只有这条条件漏了。
+
+| 判据 | 结果 |
+|---|---|
+| CoreMark `Total ticks`（20 it）| **3,810,700，与交付逐位一致**（性能模式不取中断，行为不变）|
+| CRC | `0x4983` 全对 |
+| ISA e2e | **20/21**（case 21 基线红）|
+| 摆放 WNS @48 MHz | **+1,683 ps**（基线同日复跑 +1,068 ps，差异在 0.6 ns 波动内）|
+| 面积 | 与交付一致 |
+
+### (b) 未进树：lane0-load → lane1 旁路（存为 `docs/patches/lduse-pair.patch`）
+
+仿真收益是真的，但**满实现否掉了它**：
+
+| 项 | 值 |
+|---|---|
+| `Total ticks` | 3,810,700 → **3,784,335**（−1,318 拍/迭代）|
+| 分数 | 5.2484 → **5.2850**（+0.7%）|
+| 面积 | LUT 17,103 / FF 8,693 / LUTRAM 2,274（Δ 0/0/0）|
+| CRC / ISA / halt-reset | 0x4983 全对 / 20-21 / 5-5 PASS |
+| **摆放 WNS @48 MHz** | **−2,227 ps**（对照：同树去掉它 +1,683 ps）⇒ **差 3.9 ns，交付不了** |
+
+⇒ 结论：**收益 <1% 的 RTL 改动必须先用 `place_only`（7 min）筛摆放，再决定要不要占满实现**。
+完整的判据链与门槛（48 MHz 摆放要 ≈+1.8 ns 起才有戏）写进 `docs/lessons/mistakes-log.md` §80。
 
 ## 7. 下一轮（不在本轮范围）
 

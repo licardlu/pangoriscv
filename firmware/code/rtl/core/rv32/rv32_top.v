@@ -114,9 +114,6 @@ module rv32_top(
     wire [31:0] csr_rdata, csr_vector, csr_mepc;
     wire        div_req_ready, div_rsp_valid;
     wire [31:0] div_result;
-    // Declared before the bypass network: the lane-0-load -> lane-1 bypass
-    // (P48b) needs the memory handshake, which is defined much further down.
-    wire        mem_rsp;
     // Same reason: the hazard block asks the execute stage whether it is issuing
     // a memory operation, which is exactly the execute-stage trap/misalign
     // decision further down.
@@ -229,11 +226,8 @@ module rv32_top(
     wire lane1_is_pred    = (fetch_pc_hi == fetch_predicted_next_pc);
     wire lane0_issue_alone = dec_serial || dec_jalr ||
                              ((dec_br || dec_jal) && !lane1_is_pred);
-    // A load in lane 0 feeding lane 1 used to be split here.  It no longer is:
-    // the data does exist in the execute cycle (a cache hit answers on the accept
-    // edge), so the pair is allowed and lane 1 reads `load_value` through
-    // `fwd1_h_alu/fwd2_h_alu` below.  `packet_load_use` survives only as the
-    // debug-trace bucket it always was (WIN_ACCEPT lduse).
+    // A load in lane 0 cannot feed lane 1 in the same cycle (its data only
+    // exists in M2), so such a pair is split rather than stalled in EX.
     wire packet_load_use = dec_load && dec_we &&
                            ((dec_u1_h && (dec_rd == dec_rs1_h)) ||
                             (dec_u2_h && (dec_rd == dec_rs2_h)));
@@ -260,7 +254,7 @@ module rv32_top(
     // docs/lessons/mistakes-log.md.  The chain is shortened at the ALU instead.
     wire lane0_mem = dec_load || dec_store;
     wire pair_ok = fetch_pair && lane1_ok && !lane0_issue_alone &&
-                   !packet_md_use &&
+                   !packet_load_use && !packet_md_use &&
                    !(lane0_mem && lane1_mem) &&
                    !fetch_fault && !fetch_fault_hi;
 
@@ -534,35 +528,6 @@ module rv32_top(
         (m_valid && m_we && !m_trap && (m_rd == rr_rs2_h) && (m_rd != 5'd0)) ? m_value :
         rf_d1_h;
 
-    // ---- P48b: lane 0 load -> lane 1 bypass ---------------------------------
-    // Until now a lane-0 load feeding lane 1 was refused by `pair_ok`
-    // (`packet_load_use`), which costs exactly one cycle per occurrence:
-    // measured 8,029 cycles/iteration (WIN_ACCEPT lduse=160,575 over 20
-    // iterations).  The refusal was never a *timing* rule -- a cache hit answers
-    // on the same cycle the request is accepted (lsu_axi P10), so the data the
-    // pair needs does exist in the execute cycle.
-    //
-    // Why this is not a combinational loop.  Writing the bypass straight into
-    // `fwd1_h/fwd2_h` would close
-    //     address -> op_ready/hit -> mem_rsp -> fwd1_h -> mem_addr_h -> address
-    // because those two nets also build the lane-1 address.  So the bypass is
-    // kept on a SEPARATE copy that feeds only lane 1's ALU/multiplier, while
-    // `mem_addr_h` / `mem_sdata_h` keep using the unmodified `fwd1_h/fwd2_h`.
-    // That is behaviour-identical: lane 1 may be a memory op only when lane 0 is
-    // not (`!(lane0_mem && lane1_mem)` in `pair_ok`), and lane 0 being a load is
-    // what makes this bypass active -- so whenever the address path matters,
-    // `fwd1_h_alu == fwd1_h`.
-    //
-    // Safe when the load misses: `mem_rsp` stays low and `mem_wait` holds RD+EX,
-    // so nothing is captured; the value is only sampled on the cycle the
-    // response lands.  Safe when the load traps (misaligned): no request is
-    // issued, `mem_rsp` stays low, and lane 1 of a trapping packet is squashed
-    // at WB ("commit only the older prefix").
-    wire lane0_ld_raw1 = lane0_raw1 && rr_load && mem_rsp;
-    wire lane0_ld_raw2 = lane0_raw2 && rr_load && mem_rsp;
-    wire [31:0] fwd1_h_alu = lane0_ld_raw1 ? load_value : fwd1_h;
-    wire [31:0] fwd2_h_alu = lane0_ld_raw2 ? load_value : fwd2_h;
-
     // ========================================================= EX datapath
     wire [31:0] alu_a = (rr_asel == 2'd1) ? rr_pc : (rr_asel == 2'd2) ? 32'd0 : fwd1;
     // b_sel 2 is the literal 4 (jal/jalr link value).
@@ -589,8 +554,8 @@ module rv32_top(
     // would put the product in series with lane 1's adder inside one cycle,
     // which is precisely the 26.6 ns path that made `packet_md_use` exist.
     wire [31:0] alu_a_h = (rr_asel_h == 2'd1) ? rr_pc_h :
-                          (rr_asel_h == 2'd2) ? 32'd0 : fwd1_h_alu;
-    wire [31:0] alu_b_h = (rr_bsel_h == 2'd0) ? fwd2_h_alu :
+                          (rr_asel_h == 2'd2) ? 32'd0 : fwd1_h;
+    wire [31:0] alu_b_h = (rr_bsel_h == 2'd0) ? fwd2_h :
                           (rr_bsel_h == 2'd2) ? 32'd4 : rr_imm_h;
     wire [31:0] alu_y_h;
     wire        alu_eq_h, alu_lt_h, alu_ltu_h;
@@ -599,7 +564,7 @@ module rv32_top(
         .y(alu_y_h), .eq(alu_eq_h), .lt(alu_lt_h), .ltu(alu_ltu_h)
     );
     wire [31:0] mul_y_h;
-    rv32_mul u_mul_h(.op(rr_md_op_h), .a(fwd1_h_alu), .b(fwd2_h_alu), .y(mul_y_h));
+    rv32_mul u_mul_h(.op(rr_md_op_h), .a(fwd1_h), .b(fwd2_h), .y(mul_y_h));
     wire [31:0] ex_value_h_w = rr_mul_h ? mul_y_h : alu_y_h;
 
     // A branch or jal in lane 1 resolves here with the same comparator the ALU
@@ -714,13 +679,12 @@ module rv32_top(
     // instruction has committed, and killing the younger ones is what the
     // redirect already does.
     // P48b: the boundary also has to include a control transfer carried by
-    // LANE 1.  `w_ctrl` alone is lane 0's flag, and a pair puts its control in
-    // lane 1 whenever lane 0 is something else.  With the lane-0-load -> lane-1
-    // bypass below, `lw; beq` now issues as one packet, so the interrupt boundary
-    // of ISA case 15 (`spin15: lw x8,0(x4); beq x8,x0,spin15`) sits in lane 1 and
-    // the test stopped taking its timer interrupt (`0 traps observed`).  The old
-    // spelling only ever worked because load-use pairs were refused; `w_next_eff`
-    // below already knew about lane 1.
+    // LANE 1.  `w_ctrl` alone is lane 0's flag, and pairing allows `addi; beq`
+    // (lane 1 = branch) and `jal; <target>` (lane 1 = the first target word), so
+    // a loop whose only control transfer sits in lane 1 never presents a
+    // boundary and the timer interrupt is never taken inside it -- a real hang,
+    // not a latency.  `w_next_eff` below already knew about lane 1; this
+    // condition was the one place that did not.
     wire        w_ctrl_any = w_ctrl || (w_v1 && w_ctrl_h);
     wire        irq_trap   = csr_irq_pending && w_valid && w_ctrl_any && !w_trap &&
                              !w_trap_h && !w_mret && !halted_q;
@@ -953,8 +917,7 @@ module rv32_top(
     // A cache hit can accept the request and answer it in the SAME cycle, so the
     // response belongs to this instruction either way: it was either issued in an
     // earlier cycle (mem_issued_q) or accepted in this one (mem_accept).
-    // (Declared at the top of the module: the bypass network uses it.)
-    assign      mem_rsp    = done_valid && (mem_issued_q || mem_accept);
+    wire        mem_rsp    = done_valid && (mem_issued_q || mem_accept);
     wire        mem_fault  = ex_is_mem && mem_rsp && fault;
     wire        mem_fault_h = ex_is_mem_h && mem_rsp && fault;
     wire [4:0]  mem_cause = rr_store ? 5'd7 : 5'd5;

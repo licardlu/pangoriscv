@@ -63,3 +63,27 @@ JTAG 下载线枚举正常（`USB\VID_3277&PID_00A0`，状态 OK），CP210x 串
 
 ⇒ **交付状态不受影响**：`bitstream/pangoriscv_board48_i2700_5p245.sbit` 已在 11:24
 完成上板实测（5.2447 @ 48 MHz，五项 CRC 全对）。
+
+## 2026-10-23 15:14 第 5 次尝试：仍被硬件阻断
+
+这次改用**已交付的 `board48` 位流**做探测（排除"分析位流本身有问题"的可能）：
+
+```
+[2/3] programming bitstream/pangoriscv_board48_i2700_5p245.sbit
+  W: Configuration-4002: Tcl parameter check failed: The connection is already connected...
+  E: JtagServer-0306: No devices detected while scanning the JTAG chain, failed detecting JTAG device chain.
+  E: Configuration-0008: The command 'Open config cable' execute fail.
+  E: Configuration-0012: Tcl Command: cfg_scan_chain exec failed.
+  [15:14:55] : cfg_scan_chain failed, 1.0
+WARNING: no 'cfg_program succeed' in configuration_tcl.log -- the image may not be loaded.
+串口抓包：全空
+verdict: CRCs 空, Correct operation = NO
+```
+
+注意：脚本在下载失败时**仍会打印 `program OK:` 和 `PROGRAM_ONLY_DONE`**（那是 Tcl 的返回值，
+不是器件状态）。真正的判据是 `configuration_tcl.log` 里有没有 `cfg_program succeed`，
+以及串口是否出现 CoreMark 输出。这一次两者都没有。
+
+⇒ 累计 5 次（14:20 / 14:23 / 14:26 / 15:00 / 15:14），错误完全一致。
+⇒ 同一脚本 **11:24 曾成功**烧录 `board48` 并抓到完整输出（`board_p35a.txt`）。
+⇒ 结论不变：**目标板未上电 / 未释放复位**，属于物理前提，无法在软件侧解决。

@@ -1,0 +1,29 @@
+work dir: D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\firmware\code\.sim_runs\isa-e2e-26eaf8ee
+image check: no compressed instructions
+image: 16200 bytes of 16384
+compile: 0 errors
+case  1 PASS  ALU dependency chains and immediate forms
+case  2 PASS  load-use hazard and load extension
+case  3 PASS  M extension multiply/divide/remainder
+case  4 PASS  branch/jal/jalr and wrong-path suppression
+case  5 PASS  byte/halfword lanes and store->load
+case  6 PASS  CSR read/write rules
+case  7 PASS  mcycle/minstret counters
+case  8 PASS  ECALL trap and MRET return
+case  9 PASS  illegal instruction trap
+case 10 PASS  load access fault trap
+case 11 PASS  store access fault trap
+case 12 PASS  UART TXDATA transmit
+case 13 PASS  GPIO output mode
+case 14 PASS  timer one-shot and W1C
+case 15 PASS  machine timer interrupt and MRET
+case 16 PASS  WAW in one issue pair: the younger lane wins the register
+case 17 PASS  RAW in one issue pair: lane 1 consumes lane 0's result
+case 18 PASS  lane1 memory: address/store-data forwarding and load consumers
+case 19 PASS  lane1 bus faults commit only the older prefix, including load x0
+case 20 PASS  lane1 misalignment traps preserve the older prefix
+case 21 FAIL  predicted branch target pairing and wrong-path suppression on loop exit
+          - predicted target retirement and wrong-path kill must both execute
+SUMMARY 20 / 21 PASS
+failing cases: 21
+ISA_EXIT=1

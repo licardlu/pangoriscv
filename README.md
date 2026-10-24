@@ -10,7 +10,23 @@
 > 详细布线 **114 轮**收敛；镜像 `hw_i2800_50v17`（2800 迭代 → 10.67 s ≥ 10 s）。
 > 分数口径：同 RTL 同源码 20 迭代仿真 `Total ticks 3,810,700`（190,535 拍/迭代）⇒ **5.248**；
 > 与上一版 `board48_i2700`（**板测 5.2447**）拍数逐位一致，所以分数不因提频而变。
-> 本版**未上板**（JTAG 链扫不到器件，见 [plan v17](docs/plan-v17-board50.md) §8）。
+> 本版**未上板**（下载线未枚举，见 [plan v17](docs/plan-v17-board50.md) §8 与
+> [plan v23](docs/plan-v23-area-and-freq.md) §3）。
+>
+> **2026-10-24 P58–P64：52 MHz 攻坚已到底，结论写死**
+> 用"从未用过的四个 pnr 质量选项"（`-dc_duplication` / `-slack_prior_in_global_router` /
+> `-refineplacement_cluster` / `-optimize_routing_recovery`）把 52 MHz 从"布不通 / 20.222 ns"
+> 一路推到 **19.426 ns**，距 19.231 只差 **0.195 ns（12 个端点）**；
+> 但**同一棵网表换四种配方，摆放/布线/时序逐位相同** ⇒ 重跑不可能再前进一丝。
+> 缺口在逻辑（13 级 / 7.938 ns：`RF读mux → ALU 4 级 → 转发 → 4×APM`），
+> 而 P57（把 DSP 级联从 ALU 后面摘出来）实测反而更差（20.252 ns）。
+> 详见 [plan v23](docs/plan-v23-area-and-freq.md) §7 与 `evidence/records/optimization/p58r52/`。
+>
+> **120 MHz 与 5.2 分不可同时成立**（`docs/plan-v23-area-and-freq.md` §1、§4）：
+> 静态 ILP 上界（现场复算）4 发射 + 4 访存端口 = 142,002 拍/迭代（IPC 2.504）⇒ 7.04 分；
+> 每加一级访存流水 **+34,757 拍（实测 `load_use_1`）**；120 MHz 需要 2.41 级 ⇒
+> 即使加宽到 4 发射也只能到 **4.73 分**。这不是调参问题，是基准本身的 ILP 上限。
+
 >
 > **50 MHz 是怎么拿下来的**：不是换 seed（`pnr -seed` 实测是静默 no-op），
 > 而是把 52 MHz 的"鞭子时钟"去掉 —— 19.231 ns 这个目标把逻辑压得过密，

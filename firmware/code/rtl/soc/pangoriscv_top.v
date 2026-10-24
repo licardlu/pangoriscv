@@ -56,11 +56,7 @@ module pangoriscv_top #(
   //   19.608 ns (51 MHz) -> routed 20.815 ns  ✗ (p49r51)
   //   19.231 ns (52 MHz) -> routed 21.120 / 21.600 ns ✗ (p48r50b / p48r50)
   // Tightening the declared period below 20.000 ns degrades the result
-  // monotonically when the router is left on its defaults.
-  // P58: the 52 MHz rung was retried with the placement/route quality options
-  // of plan v22 section 2 and got to 19.426 ns (p58r52) -- 0.195 ns short.
-  // P61: the same netlist + the same options at 51 MHz (19.608 ns), which the
-  // 19.426 ns route already satisfies.  Ratio 27*51/27, VCO 1377.
+  // monotonically, so 50 MHz is the ceiling without a pipeline cut.
   .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
   .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(50),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),

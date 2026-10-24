@@ -440,10 +440,7 @@ module rv32_top(
     // The read is synchronous, so the address is presented while the
     // instruction is still in ID and the data lands when it is in RR.
     wire [31:0] rf_d0, rf_d1;
-    // P50 split 2: the writeback datum of a CSR instruction is the M2 read
-    // (registered one cycle before commit), so `w_valid` and the 12-way CSR
-    // read mux no longer sit at the head of the RF write path.
-    wire [31:0] wb_value = w_csr ? w_csr_old : w_value;
+    wire [31:0] wb_value = w_csr ? csr_rdata : w_value;
     wire        wb_we = w_commit && w_we && (w_rd != 5'd0);
     // Port 2 carries lane 1.  regs writes lane 0 first and lane 1 second, so a
     // same-register WAW inside a packet keeps the younger value.
@@ -716,13 +713,10 @@ module rv32_top(
 
     csr_native u_csr(
         .clk(clk), .rst_n(rst_n),
-        // Value read in M2 (one cycle before commit), commit address is the
-        // instruction's own registered address, legality decodes the ID
-        // address.  See csr_native's port comment for why the read cannot be
-        // any earlier than the previous commit.
-        .addr(w_csr_addr),
-        .raddr(m_csr_addr),
-        .iaddr(id_csr_addr),
+        // The read happens at WB: read_data is pre-edge, so it is exactly the
+        // architectural old value for this instruction, and all older CSR
+        // writes have already landed.
+        .addr(w_valid && w_csr ? w_csr_addr : id_csr_addr),
         .write_intent(w_valid && w_csr ? 1'b1 : rf_write_intent),
         .commit(w_commit && w_csr),
         .retire(w_commit), .retire_count((w_v1 && !w_trap_h) ? 2'd2 : 2'd1),
@@ -1220,8 +1214,7 @@ module rv32_top(
                 w_taken <= m_taken; w_next <= m_next;
                 w_csr <= m_csr; w_mret <= m_mret; w_serial <= m_serial;
                 w_csr_op <= m_csr_op; w_csr_addr <= m_csr_addr;
-                // P50 split 2: architectural old value = the M2 read.
-                w_csr_old <= csr_rdata; w_csr_src <= m_csr_src;
+                w_csr_old <= m_csr_old; w_csr_src <= m_csr_src;
                 w_pc_h <= m_pc_h; w_value_h <= m_value_h;
                 w_rd_h <= m_rd_h; w_we_h <= m_we_h;
                 w_ctrl_h <= m_ctrl_h; w_taken_h <= m_taken_h;
@@ -1241,14 +1234,8 @@ module rv32_top(
         // empty -- otherwise one killed CSR locks the core out of fetching
         // forever, which is exactly the "pipe drains and stops" signature the
         // operand trace showed.
-        // P50 split 2: `dec_serial` (the instruction being accepted) instead of
-        // `id_serial` (the one already in ID) makes serial_q assert on the
-        // accept cycle, so the next instruction cannot slip into ID one cycle
-        // before the barrier rises.  That extra cycle is exactly what lets the
-        // following CSR instruction read its value in M2 and still see the
-        // previous CSR instruction's commit (see csr_native's port comment).
         if (!rst_n) serial_q <= 1'b0;
-        else if (id_accept && (dec_serial || id_serial)) serial_q <= 1'b1;
+        else if (id_accept && id_serial) serial_q <= 1'b1;
         else if ((w_valid && w_serial) || pipe_empty || kill_all) serial_q <= 1'b0;
     end
 

@@ -357,7 +357,7 @@ module rv32i6_top(
     // ---------------------------------------------------------------------
     csr_native u_csr(
         .clk(clk), .rst_n(rst_n),
-        .addr(e_csr ? e_csr_addr : 12'h000), .raddr(e_csr ? e_csr_addr : 12'h000), .iaddr(e_csr ? e_csr_addr : 12'h000),
+        .addr(e_csr ? e_csr_addr : 12'h000),
         .write_intent(e_csr),
         .commit(m_csr_r),
         .retire(m_valid),

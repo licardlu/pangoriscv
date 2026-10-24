@@ -80,7 +80,8 @@ def stage(tag: str, image_from: Path) -> Path:
 def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
               floorplan: Path | None = None, place_only: bool = False,
               pnr_extra: str | None = None, plain_pnr: bool = False,
-              place_db: Path | None = None) -> Path:
+              place_db: Path | None = None,
+              syn_extra: str | None = None) -> Path:
     src = bdir / "sources" / "rtl"
     files = ([src / "core" / (m + ".sv") for m in CORE]
              + [src / "bus" / (m + ".sv") for m in BUS]
@@ -92,7 +93,8 @@ def write_tcl(bdir: Path, freq: str, mode: str, seed: int | None,
     lines += [
         "set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG676",
         "compile -top_module {pangoriscv_top} -include_path {%s}" % (src / "core").as_posix(),
-        "synthesize -ads -selected_syn_tool_opt 2",
+        "synthesize -ads -selected_syn_tool_opt 2"
+        + (" " + syn_extra if syn_extra else ""),
         "dev_map",
     ]
     if mode == "full":
@@ -260,6 +262,13 @@ def main() -> int:
                          "Used for the two-step flow: place under a much tighter "
                          "period than the one being shipped, then route under the "
                          "real period with the real constraint file.")
+    ap.add_argument("--syn-extra", default=None,
+                    help="extra `synthesize` args appended verbatim, e.g. "
+                         "'-retiming -fanout_guide 32'. Retiming moves logic "
+                         "across existing registers (latency preserved) and is "
+                         "the only way to shorten the critical path without "
+                         "spending a pipeline stage; always re-run the CoreMark "
+                         "and ISA simulations before trusting it.")
     ap.add_argument("--plain-pnr", action="store_true",
                     help="omit the hold-fix pnr args (H1 routing test: do they cause "
                          "rip-up thrash that never converges?)")
@@ -284,7 +293,8 @@ def main() -> int:
         raise SystemExit("placement DB not found: %s" % pdb)
     tcl = write_tcl(bdir, a.freq, a.mode, a.seed, floorplan=fp,
                     place_only=a.place_only, pnr_extra=a.pnr_extra,
-                    plain_pnr=a.plain_pnr, place_db=pdb)
+                    plain_pnr=a.plain_pnr, place_db=pdb,
+                    syn_extra=a.syn_extra)
     print("build dir : %s" % bdir)
     print("mode      : %s  freq %s MHz  seed %s" % (a.mode, a.freq, a.seed))
     rc = run(bdir, tcl, "run.log")

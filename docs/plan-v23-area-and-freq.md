@@ -324,7 +324,7 @@ cut-2 省了 153 LUT，但把 `Logic` 从 3.685 ns 顶到 7.938 ns（综合把 A
 cut-2 与 P57 的代码留在 `docs/patches/cut2-csr-read-split.patch`、`docs/patches/cut2-and-p57.patch`，
 等将来真能换到更高频率时再捡回来。
 
-## 8. 第二轮（16:00–17:10）：综合侧的新杠杆，也是死路
+## 8. 第二轮（16:00–16:40）：综合侧的新杠杆，也是死路
 
 结论先写：**综合侧也不能动**。`help synthesize` 暴露的 `-retiming` 是本轮唯一的"新"杠杆，
 它把综合 WNS 做好了 1.485 ns，把布线后做坏了 4.32 ns。详见

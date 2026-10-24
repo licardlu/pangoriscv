@@ -1,6 +1,6 @@
 # p66r52ret —— 综合 retiming 在 52 MHz：综合更好、布线最差
 
-**日期**：2026-10-24 16:00–17:05
+**日期**：2026-10-24 16:00–16:40
 **树**：cut-2（`docs/patches/cut2-csr-read-split.patch`）
 **约束**：52 MHz（19.230769 ns）　**镜像**：`hw_i2900_52b`
 **综合**：`synthesize -ads -selected_syn_tool_opt 2 -retiming`

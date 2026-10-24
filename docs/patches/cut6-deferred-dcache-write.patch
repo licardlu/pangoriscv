@@ -1,88 +1,79 @@
---- dcache_axi.v	2026-10-24 04:00:42.220720100 +0800
-+++ /tmp/dcache_cut6.v	2026-10-24 04:00:41.915134500 +0800
-@@ -121,6 +121,7 @@
-     input  wire [1:0]  m_bresp
- );
-     localparam integer LINE_WORDS = 8;                 // 32 B / 4 B
-+    localparam integer DIDXW = $clog2(SETS*WAYS*LINE_WORDS);  // data-array index width
-     localparam [7:0]   REFILL_LEN = LINE_WORDS - 1;    // ARLEN=7 -> 8 beats
-     // Address slicing derived from SETS so the cache is resized by parameter
-     // alone (optimization plan P2.2). At SETS=32 this reproduces the previous
-@@ -276,6 +277,25 @@
+diff --git a/firmware/code/rtl/core/dcache_axi.v b/firmware/code/rtl/core/dcache_axi.v
+index d3deb50..7b17b22 100644
+--- a/firmware/code/rtl/core/dcache_axi.v
++++ b/firmware/code/rtl/core/dcache_axi.v
+@@ -276,6 +276,22 @@ module dcache_axi #(
      reg        lru_pend_q;
      reg [IDXW-1:0] lru_pend_set_q;
      reg        lru_pend_way_q;
-+    // P50 cut 6: the store-hit array write is deferred one cycle.
-+    //
-+    // The array write used to be
-+    //     if (w_strb[i]) data_mem_bi[didx(hit_way,req_set,req_word)] <= w_data[..]
-+    // i.e. driven by the whole `req_addr -> tag compare -> way select` cone, and
-+    // its least significant index bit fanned out to 256 LUTRAM WADDR pins.  That
-+    // net alone was 2.58 ns and the tail of the routed critical path (plan v19
-+    // section 10 segment 6).  Writing from registers removes the cone from the
-+    // write side entirely.
-+    //
-+    // The price is READ-AFTER-WRITE: a load accepted in the cycle right after a
-+    // store would still see the old byte.  Losing a cycle to block that read is
-+    // not an option (CoreMark stores are ~2e4 per iteration), so the pending
-+    // store is forwarded into the read data instead -- a DIDXW-bit compare and a
-+    // byte mux, both on the read path, which is not the critical one.
-+    reg              sw_we_q;
-+    reg [DIDXW-1:0]  sw_idx_q;
-+    reg [31:0]       sw_data_q;
-+    reg [3:0]        sw_strb_q;
++    // P68b: deferred data-array merge -- same pattern as lru_pend_q above, but for
++    // the array write port.  The store merge used to run on the accept edge with
++    // `didx(hit_way, req_set, req_word)`, i.e. at the end of the tag-compare + FSM
++    // cone, and that address then fans out to 1,024 array primitives: on the
++    // routed 50 MHz netlist the last hop `N4033[0]` alone was 2.500 ns at fanout
++    // 256, and segments 9-11 of the critical path were 4.77 ns in total
++    // (plan v23 section 10).  None of it is needed by the read path.
++    // The one-cycle window (a load accepted on the very next cycle that hits the
++    // same word) is closed on the READ side by `dwr_merge` below -- deliberately
++    // NOT by pulling req_ready low: that signal is a multi-condition merge
++    // (state_q, posted-queue, read ordering) and deasserting it outside ST_IDLE
++    // drops the request instead of stalling it (measured, lesson 102).
++    localparam integer DIDXW = $clog2(SETS*WAYS*LINE_WORDS);
++    reg [DIDXW-1:0] dwr_idx;
++    reg [31:0]      dwr_data;
++    reg [3:0]       dwr_strb;
  
      function integer widx;   // (way, set) -> line slot
          input integer w;
-@@ -469,7 +489,17 @@
+@@ -469,7 +485,18 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
      // answering one here would retire it while ST_WR_REQ still owns the engine.
      wire accept_hit = rst_n && req_valid && req_ready && !req_write &&
                        req_in_cache && hit_any;
 -    wire [31:0] accept_word = dread(didx(hit_way,req_set,req_addr[4:2]));
-+    // P50 cut 6: forward the still-pending array write into the read data.
-+    wire [DIDXW-1:0] rd_didx  = didx(hit_way,req_set,req_addr[4:2]);
-+    wire [31:0]      rd_raw   = dread(rd_didx);
-+    wire             sw_bpass = sw_we_q && (sw_idx_q == rd_didx);
-+    wire [31:0]      rd_word  = sw_bpass
-+        ? { sw_strb_q[3] ? sw_data_q[31:24] : rd_raw[31:24],
-+            sw_strb_q[2] ? sw_data_q[23:16] : rd_raw[23:16],
-+            sw_strb_q[1] ? sw_data_q[15:8]  : rd_raw[15:8],
-+            sw_strb_q[0] ? sw_data_q[7:0]   : rd_raw[7:0] }
-+        : rd_raw;
-+    wire [31:0] accept_word = rd_word;
++    wire [31:0] accept_word_raw = dread(didx(hit_way,req_set,req_addr[4:2]));
++    // P68b: one-cycle store->load bypass.  A load accepted on the very next cycle
++    // after a store can hit the same word before the deferred merge lands; merge
++    // the pending bytes over the array output instead of stalling the request.
++    wire dwr_same = (|dwr_strb) &&
++                    (didx(hit_way,req_set,req_addr[4:2]) == dwr_idx);
++    wire [31:0] accept_word = {
++        (dwr_same && dwr_strb[3]) ? dwr_data[31:24] : accept_word_raw[31:24],
++        (dwr_same && dwr_strb[2]) ? dwr_data[23:16] : accept_word_raw[23:16],
++        (dwr_same && dwr_strb[1]) ? dwr_data[15:8]  : accept_word_raw[15:8],
++        (dwr_same && dwr_strb[0]) ? dwr_data[7:0]   : accept_word_raw[7:0]
++    };
  
      assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP) || accept_hit);
      assign rsp_data  = (state_q==ST_BYP_RESP) ? rdata_q
-@@ -562,6 +592,10 @@
+@@ -560,6 +587,9 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+             i_req_len_r   <= 8'd0;
+             i_req_id_r    <= 4'd0;
              lru_pend_q     <= 1'b0;
++            dwr_idx        <= {DIDXW{1'b0}};
++            dwr_data       <= 32'd0;
++            dwr_strb       <= 4'd0;
              lru_pend_set_q <= {IDXW{1'b0}};
              lru_pend_way_q <= 1'b0;
-+            sw_we_q        <= 1'b0;
-+            sw_idx_q       <= {DIDXW{1'b0}};
-+            sw_data_q      <= 32'd0;
-+            sw_strb_q      <= 4'd0;
              for (s=0;s<SETS;s=s+1) begin
-                 lru_mem[s] <= 1'b0;
-                 for (w=0;w<WAYS;w=w+1) valid_mem[widx(w,s)] <= 1'b0;
-@@ -573,6 +607,17 @@
+@@ -573,6 +603,17 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
              // (ST_HIT / refill completion) keeps priority with the same value.
              lru_pend_q <= 1'b0;
              if (lru_pend_q) lru_mem[lru_pend_set_q] <= ~lru_pend_way_q;
-+            // P50 cut 6: land the deferred store-hit array write from registers.
-+            // Non-blocking, so a store accepted on this same edge registers into
-+            // sw_* for the next cycle while this one still writes the previous
-+            // store -- two back-to-back stores to one word end up newest-last.
-+            sw_we_q <= 1'b0;
-+            if (sw_we_q) begin
-+                if (sw_strb_q[0]) data_mem_b0[sw_idx_q] <= sw_data_q[7:0];
-+                if (sw_strb_q[1]) data_mem_b1[sw_idx_q] <= sw_data_q[15:8];
-+                if (sw_strb_q[2]) data_mem_b2[sw_idx_q] <= sw_data_q[23:16];
-+                if (sw_strb_q[3]) data_mem_b3[sw_idx_q] <= sw_data_q[31:24];
++            // P68b: apply last cycle's store merge.  Address and data both come
++            // from registers, so the 1,024-load address net starts at a flip-flop
++            // instead of at the end of the tag-compare + FSM chain.
++            // `dwr_strb == 0` is the idle marker: nothing to write.
++            if (|dwr_strb) begin
++                if (dwr_strb[0]) data_mem_b0[dwr_idx] <= dwr_data[7:0];
++                if (dwr_strb[1]) data_mem_b1[dwr_idx] <= dwr_data[15:8];
++                if (dwr_strb[2]) data_mem_b2[dwr_idx] <= dwr_data[23:16];
++                if (dwr_strb[3]) data_mem_b3[dwr_idx] <= dwr_data[31:24];
++                dwr_strb <= 4'd0;
 +            end
              case (state_q)
                  // ------------------------------------------------------ IDLE
                  ST_IDLE: if (req_valid && req_ready) begin
-@@ -600,11 +645,11 @@
+@@ -600,11 +641,11 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                          wstrb_q <= w_strb;
                          wreq_q  <= 1'b1;
                          if (req_in_cache && hit_any) begin
@@ -91,11 +82,86 @@
 -                            if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
 -                            if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
 -                            if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
-+                            // P50 cut 6: hand the write to the deferred block above.
-+                            sw_we_q   <= 1'b1;
-+                            sw_idx_q  <= didx(hit_way,req_set,req_word);
-+                            sw_data_q <= w_data;
-+                            sw_strb_q <= w_strb;
++                            // P68b: latch the merge; applied next cycle from
++                            // registers (see the dwr block above).
++                            dwr_idx  <= didx(hit_way,req_set,req_word);
++                            dwr_data <= w_data;
++                            dwr_strb <= w_strb;
                          end
                          if (early_req) begin
                              resp_q   <= `AXI_RESP_OKAY;
+@@ -707,12 +748,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+                             // P14: the CPU takes the OKAY on this very edge, so
+                             // there is nothing left to hold -- apply the merge from
+                             // the RAW beat and let the drain finish in background.
+-                            if (cached_q && hit_q) begin
+-                                if (w_strb[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= w_data[7:0];
+-                                if (w_strb[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= w_data[15:8];
+-                                if (w_strb[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= w_data[23:16];
+-                                if (w_strb[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= w_data[31:24];
+-                            end
++                            // P68b: the merge is already applied one cycle after accept (dwr
++                            // block at the top), so this post-B re-write is redundant.
+                             state_q <= (i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
+                         end else begin
+                             // CPU not ready: park and keep the registered OKAY
+@@ -727,12 +764,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+                     resp_q <= i_b_resp;
+                     if (i_b_resp==2'b00) begin
+                         // write-through: the cached copy is merged after a good B
+-                        if (cached_q && hit_q) begin
+-                            if (wstrb_q[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[7:0];
+-                            if (wstrb_q[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[15:8];
+-                            if (wstrb_q[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[23:16];
+-                            if (wstrb_q[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[31:24];
+-                        end
++                        // P68b: the merge is already applied one cycle after accept (dwr
++                            // block at the top), so this post-B re-write is redundant.
+                     end else begin
+                         // a failed store must not leave a usable line behind
+                         if (cached_q && hit_q) valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
+@@ -743,12 +776,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+                     if (drain_q) begin
+                         // released write: apply the write-through merge, then let
+                         // the B handshake finish in the background
+-                        if (cached_q && hit_q) begin
+-                            if (wstrb_q[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[7:0];
+-                            if (wstrb_q[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[15:8];
+-                            if (wstrb_q[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[23:16];
+-                            if (wstrb_q[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[31:24];
+-                        end
++                        // P68b: the merge is already applied one cycle after accept (dwr
++                            // block at the top), so this post-B re-write is redundant.
+                         // B may already have been handed over while the response was
+                         // being held; only enter the drain state if it has not.
+                         state_q <= (b_seen_q || i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
+@@ -763,10 +792,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+                 ST_WR_DRAIN: begin
+                     // merge an accepted posted store on its accept edge
+                     if (accept_post && req_in_cache && hit_any) begin
+-                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
+-                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
+-                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
+-                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
++                        // P68b: latch; applied next cycle from registers.
++                        dwr_idx  <= didx(hit_way,req_set,req_word);
++                        dwr_data <= w_data;
++                        dwr_strb <= w_strb;
+                     end
+                     if (i_b_valid) begin
+                         // The old write's line must be invalidated on an error
+@@ -814,10 +843,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
+                     // (queued + answered but never merged, so a following load hit
+                     // stale data; CoreMark crcfinal changed, +49% instructions).
+                     if (accept_post && req_in_cache && hit_any) begin
+-                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
+-                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
+-                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
+-                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
++                        // P68b: latch; applied next cycle from registers.
++                        dwr_idx  <= didx(hit_way,req_set,req_word);
++                        dwr_data <= w_data;
++                        dwr_strb <= w_strb;
+                     end
+                     i_req_valid_r <= 1'b1;
+                     i_req_write_r <= 1'b1;

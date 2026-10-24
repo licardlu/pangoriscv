@@ -61,8 +61,8 @@ module pangoriscv_top #(
   // of plan v22 section 2 and got to 19.426 ns (p58r52) -- 0.195 ns short.
   // P61: the same netlist + the same options at 51 MHz (19.608 ns), which the
   // 19.426 ns route already satisfies.  Ratio 27*51/27, VCO 1377.
-  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(51),
-  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(51),
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
+  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(50),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

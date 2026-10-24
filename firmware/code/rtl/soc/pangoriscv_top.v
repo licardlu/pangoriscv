@@ -57,12 +57,12 @@ module pangoriscv_top #(
   //   19.231 ns (52 MHz) -> routed 21.120 / 21.600 ns ✗ (p48r50b / p48r50)
   // Tightening the declared period below 20.000 ns degrades the result
   // monotonically when the router is left on its defaults.
-  // P58 (this build, p58r52): the 52 MHz rung is retried ONCE with the
-  // placement/route quality options of plan v22 section 2 (driver duplication,
-  // slack-prioritised global routing, post-place reclustering, route recovery)
-  // instead of a tighter hold-fix recipe.  Ratio 27*52/27, VCO 1404.
-  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(52),
-  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(52),
+  // P58: the 52 MHz rung was retried with the placement/route quality options
+  // of plan v22 section 2 and got to 19.426 ns (p58r52) -- 0.195 ns short.
+  // P61: the same netlist + the same options at 51 MHz (19.608 ns), which the
+  // 19.426 ns route already satisfies.  Ratio 27*51/27, VCO 1377.
+  .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(51),
+  .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(51),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),
   .STATIC_RATIO2(56),.STATIC_DUTY2(56),
   .STATIC_RATIO3(56),.STATIC_DUTY3(56),

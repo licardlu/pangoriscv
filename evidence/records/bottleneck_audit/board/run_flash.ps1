@@ -34,6 +34,12 @@ param(
   [int]$TimeoutSec = 120
 )
 $ErrorActionPreference = 'Continue'
+# See board_verify.ps1: this machine has both cases of every proxy variable and
+# Start-Process refuses to run when the two spellings collide.
+foreach ($n in 'http_proxy','https_proxy','no_proxy',
+               'HTTP_PROXY','HTTPS_PROXY','NO_PROXY','ALL_PROXY','all_proxy') {
+  [Environment]::SetEnvironmentVariable($n, $null, 'Process')
+}
 $work = $PSScriptRoot
 $js   = Join-Path $PdsBin 'cdt_js.exe'
 $cfg  = Join-Path $PdsBin 'cdt_cfg.exe'

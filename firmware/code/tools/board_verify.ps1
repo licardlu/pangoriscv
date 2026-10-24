@@ -43,6 +43,17 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# This machine carries BOTH the upper- and lower-case spellings of every proxy
+# variable (HTTPS_PROXY and https_proxy, ...).  Windows PowerShell 5.1 keeps
+# them side by side, and Start-Process then dies before it launches anything
+# with "An item with the same key has already been added: HTTPS_PROXY /
+# https_proxy" -- which looks exactly like a broken tool.  Normalise first.
+foreach ($n in 'http_proxy','https_proxy','no_proxy',
+               'HTTP_PROXY','HTTPS_PROXY','NO_PROXY','ALL_PROXY','all_proxy') {
+  [Environment]::SetEnvironmentVariable($n, $null, 'Process')
+}
+
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 $boarddir = Join-Path $repo 'evidence\records\bottleneck_audit\board'
 $pdsbin = 'D:\FPGA_Project\zi_guang_tong_chuang\pds\PDS_2022.2-SP6.1\bin'

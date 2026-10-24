@@ -80,6 +80,19 @@ archive/
 !bitstream/pangoriscv_i1024_p36.sbit
 !bitstream/pangoriscv_i1152_p37.sbit
 !bitstream/pangoriscv_i1152_e2.sbit
+# 2026-10-24：**当前交付位流**（50 MHz / 5.2484 / 17,174 LUT）及其板测前身一并入库。
+# 交付链条是「源码 → 位流 → 上板」，位流不进仓库就无法直接用 `board_verify.ps1` 复现，
+# 所以这 5 份（各 3.79 MB）全部入库：
+#   board50_i2800_5p248  = 当前交付（All Constraints Met，WNS +0.645，布线 19.355 ns）
+#   board48_i2700_5p245  = 唯一有板测记录的一份（实测 5.2447 @ 48 MHz）
+#   board48_i2700_w148   = 4 KB D$ 宽阵列对照
+#   board39_i2300_5p294  = 39 MHz 高分档探针
+#   board36_i2000         = 36 MHz 基线
+!bitstream/pangoriscv_board36_i2000.sbit
+!bitstream/pangoriscv_board39_i2300_5p294.sbit
+!bitstream/pangoriscv_board48_i2700_5p245.sbit
+!bitstream/pangoriscv_board48_i2700_w148.sbit
+!bitstream/pangoriscv_board50_i2800_5p248.sbit
 # PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
 !firmware/code/platform/pango_native/*.pds
 

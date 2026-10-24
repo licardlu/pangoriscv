@@ -748,12 +748,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                             // P14: the CPU takes the OKAY on this very edge, so
                             // there is nothing left to hold -- apply the merge from
                             // the RAW beat and let the drain finish in background.
-                            if (cached_q && hit_q) begin
-                                if (w_strb[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= w_data[7:0];
-                                if (w_strb[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= w_data[15:8];
-                                if (w_strb[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= w_data[23:16];
-                                if (w_strb[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= w_data[31:24];
-                            end
+                            // P68b: the merge is already applied one cycle after accept (dwr
+                            // block at the top), so this post-B re-write is redundant.
                             state_q <= (i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
                         end else begin
                             // CPU not ready: park and keep the registered OKAY
@@ -768,12 +764,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     resp_q <= i_b_resp;
                     if (i_b_resp==2'b00) begin
                         // write-through: the cached copy is merged after a good B
-                        if (cached_q && hit_q) begin
-                            if (wstrb_q[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[7:0];
-                            if (wstrb_q[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[15:8];
-                            if (wstrb_q[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[23:16];
-                            if (wstrb_q[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[31:24];
-                        end
+                        // P68b: the merge is already applied one cycle after accept (dwr
+                            // block at the top), so this post-B re-write is redundant.
                     end else begin
                         // a failed store must not leave a usable line behind
                         if (cached_q && hit_q) valid_mem[widx(hit_way_q,set_wr_q)] <= 1'b0;
@@ -784,12 +776,8 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     if (drain_q) begin
                         // released write: apply the write-through merge, then let
                         // the B handshake finish in the background
-                        if (cached_q && hit_q) begin
-                            if (wstrb_q[0]) data_mem_b0[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[7:0];
-                            if (wstrb_q[1]) data_mem_b1[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[15:8];
-                            if (wstrb_q[2]) data_mem_b2[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[23:16];
-                            if (wstrb_q[3]) data_mem_b3[didx(hit_way_q,set_wr_q,word_q)] <= wdata_q[31:24];
-                        end
+                        // P68b: the merge is already applied one cycle after accept (dwr
+                            // block at the top), so this post-B re-write is redundant.
                         // B may already have been handed over while the response was
                         // being held; only enter the drain state if it has not.
                         state_q <= (b_seen_q || i_b_valid) ? ST_IDLE : ST_WR_DRAIN;
@@ -804,10 +792,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 ST_WR_DRAIN: begin
                     // merge an accepted posted store on its accept edge
                     if (accept_post && req_in_cache && hit_any) begin
-                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
-                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
-                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
-                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                        // P68b: latch; applied next cycle from registers.
+                        dwr_idx  <= didx(hit_way,req_set,req_word);
+                        dwr_data <= w_data;
+                        dwr_strb <= w_strb;
                     end
                     if (i_b_valid) begin
                         // The old write's line must be invalidated on an error
@@ -855,10 +843,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     // (queued + answered but never merged, so a following load hit
                     // stale data; CoreMark crcfinal changed, +49% instructions).
                     if (accept_post && req_in_cache && hit_any) begin
-                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
-                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
-                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
-                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                        // P68b: latch; applied next cycle from registers.
+                        dwr_idx  <= didx(hit_way,req_set,req_word);
+                        dwr_data <= w_data;
+                        dwr_strb <= w_strb;
                     end
                     i_req_valid_r <= 1'b1;
                     i_req_write_r <= 1'b1;

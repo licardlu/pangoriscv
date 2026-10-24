@@ -276,6 +276,30 @@ module dcache_axi #(
     reg        lru_pend_q;
     reg [IDXW-1:0] lru_pend_set_q;
     reg        lru_pend_way_q;
+    // P77 (cut 6, variant E): deferred data-array merge.  The store merge used to
+    // run on the accept edge with `didx(hit_way, req_set, req_word)`, i.e. at the
+    // very end of the tag-compare + FSM cone, and that address then fans out to
+    // 1,024 `ram64x1d/WADDR` pins.  On the routed 50 MHz netlist segments 9-11 of
+    // the critical path were 4.77 ns in total and the last hop `N4033[0]` alone
+    // was 2.500 ns at fanout 256 (plan v23 section 10).  Nothing on the read path
+    // needs it, so the merge is latched here and applied one cycle later.
+    //
+    // THREE constraints learned the hard way (lessons 102/104), all satisfied here:
+    //   * dwr_idx MUST be a register -- with a combinational index the mapper gives
+    //     up LUTRAM inference and builds the 4 KB array out of LUTs
+    //     (measured: LUT 17,027 -> 64,270, LUTRAM 2,274 -> 1,250);
+    //   * the read path must contain exactly ONE `didx()` expression, so the
+    //     accept-edge address is computed once into `rd_idx_acc` and shared by the
+    //     array read and by the bypass comparator (variant C used two separate
+    //     expressions and lost the inference);
+    //   * the one-cycle store->load window is closed on the READ side.  Do NOT
+    //     pull `req_ready` low for it: that signal merges state_q, the posted-queue
+    //     and the read-ordering rule, and deasserting it outside ST_IDLE drops the
+    //     request instead of stalling it (both measured, lesson 102).
+    localparam integer DIDXW = $clog2(SETS*WAYS*LINE_WORDS);
+    reg [DIDXW-1:0] dwr_idx;
+    reg [31:0]      dwr_data;
+    reg [3:0]       dwr_strb;
 
     function integer widx;   // (way, set) -> line slot
         input integer w;
@@ -469,7 +493,21 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
     // answering one here would retire it while ST_WR_REQ still owns the engine.
     wire accept_hit = rst_n && req_valid && req_ready && !req_write &&
                       req_in_cache && hit_any;
-    wire [31:0] accept_word = dread(didx(hit_way,req_set,req_addr[4:2]));
+    // P77: ONE address expression for the accept-edge read, shared by the array
+    // read and by the deferred-merge bypass.  A second `didx()` on this path makes
+    // the mapper drop LUTRAM inference for the whole array (lesson 104).
+    wire [DIDXW-1:0] rd_idx_acc = didx(hit_way,req_set,req_addr[4:2]);
+    wire [31:0] accept_word_raw = dread(rd_idx_acc);
+    // P77: one-cycle store->load bypass.  A load accepted on the cycle right after
+    // a store would read the pre-merge word, because that merge lands on this
+    // edge.  Merge the pending bytes over the array output instead of stalling.
+    wire dwr_same = (|dwr_strb) && (rd_idx_acc == dwr_idx);
+    wire [31:0] accept_word = {
+        (dwr_same && dwr_strb[3]) ? dwr_data[31:24] : accept_word_raw[31:24],
+        (dwr_same && dwr_strb[2]) ? dwr_data[23:16] : accept_word_raw[23:16],
+        (dwr_same && dwr_strb[1]) ? dwr_data[15:8]  : accept_word_raw[15:8],
+        (dwr_same && dwr_strb[0]) ? dwr_data[7:0]   : accept_word_raw[7:0]
+    };
 
     assign rsp_valid = rst_n && ((state_q==ST_HIT) || (state_q==ST_BYP_RESP) || accept_hit);
     assign rsp_data  = (state_q==ST_BYP_RESP) ? rdata_q
@@ -562,6 +600,9 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             lru_pend_q     <= 1'b0;
             lru_pend_set_q <= {IDXW{1'b0}};
             lru_pend_way_q <= 1'b0;
+            dwr_idx        <= {DIDXW{1'b0}};
+            dwr_data       <= 32'd0;
+            dwr_strb       <= 4'd0;
             for (s=0;s<SETS;s=s+1) begin
                 lru_mem[s] <= 1'b0;
                 for (w=0;w<WAYS;w=w+1) valid_mem[widx(w,s)] <= 1'b0;
@@ -573,6 +614,18 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
             // (ST_HIT / refill completion) keeps priority with the same value.
             lru_pend_q <= 1'b0;
             if (lru_pend_q) lru_mem[lru_pend_set_q] <= ~lru_pend_way_q;
+            // P77: apply last cycle's store merge.  Address and data both come from
+            // registers, so the 1,024-load address net starts at a flip-flop instead
+            // of at the end of the tag-compare + FSM chain.  Placed BEFORE the FSM's
+            // own array writes so that a refill (which must win) keeps priority, and
+            // `dwr_strb == 0` is the idle marker.
+            if (|dwr_strb) begin
+                if (dwr_strb[0]) data_mem_b0[dwr_idx] <= dwr_data[7:0];
+                if (dwr_strb[1]) data_mem_b1[dwr_idx] <= dwr_data[15:8];
+                if (dwr_strb[2]) data_mem_b2[dwr_idx] <= dwr_data[23:16];
+                if (dwr_strb[3]) data_mem_b3[dwr_idx] <= dwr_data[31:24];
+                dwr_strb <= 4'd0;
+            end
             case (state_q)
                 // ------------------------------------------------------ IDLE
                 ST_IDLE: if (req_valid && req_ready) begin
@@ -600,11 +653,11 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                         wstrb_q <= w_strb;
                         wreq_q  <= 1'b1;
                         if (req_in_cache && hit_any) begin
-                            // P30: only the strobed byte lanes are written.
-                            if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
-                            if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
-                            if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
-                            if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                            // P77: latch the merge; applied next cycle from registers
+                            // (the dwr block at the top of this clocked block).
+                            dwr_idx  <= didx(hit_way,req_set,req_word);
+                            dwr_data <= w_data;
+                            dwr_strb <= w_strb;
                         end
                         if (early_req) begin
                             resp_q   <= `AXI_RESP_OKAY;
@@ -763,10 +816,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                 ST_WR_DRAIN: begin
                     // merge an accepted posted store on its accept edge
                     if (accept_post && req_in_cache && hit_any) begin
-                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
-                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
-                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
-                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                        // P77: latch; applied next cycle from registers.
+                        dwr_idx  <= didx(hit_way,req_set,req_word);
+                        dwr_data <= w_data;
+                        dwr_strb <= w_strb;
                     end
                     if (i_b_valid) begin
                         // The old write's line must be invalidated on an error
@@ -814,10 +867,10 @@ assign m_arsize  = cached_q ? 3'd2 : i_req_size_r;
                     // (queued + answered but never merged, so a following load hit
                     // stale data; CoreMark crcfinal changed, +49% instructions).
                     if (accept_post && req_in_cache && hit_any) begin
-                        if (w_strb[0]) data_mem_b0[didx(hit_way,req_set,req_word)] <= w_data[7:0];
-                        if (w_strb[1]) data_mem_b1[didx(hit_way,req_set,req_word)] <= w_data[15:8];
-                        if (w_strb[2]) data_mem_b2[didx(hit_way,req_set,req_word)] <= w_data[23:16];
-                        if (w_strb[3]) data_mem_b3[didx(hit_way,req_set,req_word)] <= w_data[31:24];
+                        // P77: latch; applied next cycle from registers.
+                        dwr_idx  <= didx(hit_way,req_set,req_word);
+                        dwr_data <= w_data;
+                        dwr_strb <= w_strb;
                     end
                     i_req_valid_r <= 1'b1;
                     i_req_write_r <= 1'b1;

@@ -244,7 +244,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
     ap.add_argument("--freq", default="126",
-                    choices=["126", "120", "100", "80", "60", "55", "54", "53", "52", "51", "50", "48",
+                    choices=["126", "120", "100", "80", "60", "58", "57", "56", "55", "54", "53", "52", "51", "50", "48",
                              "45", "42", "40", "39", "36", "27"])
     ap.add_argument("--mode", default="synth", choices=["synth", "full"])
     ap.add_argument("--seed", type=int, default=None)

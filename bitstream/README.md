@@ -10,7 +10,7 @@
 > | `Design Summary` | **All Constraints Met** | `evidence/records/optimization/p48e-board50/` |
 > | setup（`core_clk` 50 MHz）| **WNS +0.645 ns，失败端点 0** | 布线后 **19.355 ns**（物理上限 51.67 MHz）|
 > | hold | **WHS +0.010 ns，失败端点 0** | 同上 |
-> | 详细布线 | **0 未布通 @ 114 轮** | `pnr_run.log` |
+> | 详细布线 | **0 未布通 @ 114 轮** | `run.log`（`Unrouted nets 0 at the end of iteration 114/115`）|
 > | 面积（`device_map` `Used`）| **LUT 17,174 / FF 8,693 / LUTRAM 2,274 / DRM 12 / APM 10** | `multiseed_summary.csv` |
 > | CoreMark/MHz | **5.248** | 190,535 拍/迭代（20 迭代仿真 `Total ticks 3,810,700`）|
 > | CoreMark/kLUT | **0.3056** | 5.248 / 17.174 |
@@ -48,7 +48,7 @@
 > | setup（`core_clk` 48 MHz）| **WNS +1.478 ns，失败端点 0** | 布线后 **19.355 ns** |
 > | setup（`core_clk_pnr` 50 MHz，鞭子时钟）| +0.645 ns，失败端点 0 | 只用于逼摆放器，**不作为频率声明** |
 > | hold | **WHS +0.010 ns，失败端点 0** | 同上 |
-> | 详细布线 | **0 未布通 @ 115 轮** | `pnr_run.log` |
+> | 详细布线 | **0 未布通 @ 115 轮** | `run.log`（`Unrouted nets 0 at the end of iteration 115`）|
 > | 面积（`device_map` `Used`）| **LUT 17,174 / FF 8,693 / LUTRAM 2,274 / DRM 12 / APM 10** | `multiseed_summary.csv` |
 > | CoreMark/MHz | **5.2447** | 同 RTL 同镜像 20 迭代仿真 `Total ticks 3,810,700`；板测值沿用 ticks 逐位相同的 `board48` |
 > | CoreMark/kLUT | **0.3054** | 5.2447 / 17.174 |

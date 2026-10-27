@@ -3509,3 +3509,21 @@ retiming 搬动了 182 个寄存器，综合器对路径的估计好了 1.485 ns
 
 **怎么办**：把 60 MHz 当不可达约束处理；要验证 cut-6E 必须换更松的约束（≤50 MHz）先确认它能出位流，
 再谈频率。**任何"卡住"的构建，一律 kill 掉重开新 tag，绝不在同一目录续跑**（lesson 2.1）。
+
+## 109. 这台机器的 ModelSim **没有可用 license** —— 仿真回归在本机跑不了（2026-10-27）
+
+**现象**：`run_coremark_sim.py` 起的 `vsim` 14 秒就退出，`verdict=FAIL rc=12`，
+transcript 末尾是 `Failure to obtain a Verilog simulation license ... 'qhsimvl' or 'msimhdlsim'`
+和 `Invalid host. (E:/donwload/win64/LICENSE.TXT)`。编译本身是过的（只有 port 数告警）。
+
+**查什么**：先看 `.sim_runs/coremark_sim/<tag>/transcript.txt` 的**末尾**，不要只看 `result.json` 的 FAIL——
+`rc=12` + 14 秒退出 = license，不是 RTL 错。
+
+**原因**：`E:/donwload/win64` 的 license 绑在别的主机名/MAC 上。
+
+**怎么办**：
+1. **不要把"仿真 FAIL"当成设计坏了**，先看是否 license。
+2. 本机只能用**上板**作为唯一功能判据：`pangoriscv-verify/measure.ps1` 一次 70 秒出 ticks/CRC。
+   所以 RTL 改动的验证回路是 **改 → 满流程(~25 min) → 烧板 → 串口读 ticks**，不是仿真。
+3. 需要快速回归时，改用 20 迭代镜像（`--iterations 20`）出位流，板上跑完只要 0.3 秒，
+   但**报分必须用 ≥10 s 的镜像**（赛题硬性规则）。

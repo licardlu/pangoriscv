@@ -29,7 +29,8 @@ from pathlib import Path
 CODE = Path(__file__).resolve().parents[1]          # firmware/code
 RTL = CODE / "rtl"
 PLATFORM = CODE / "platform" / "pango_native"
-PDS_BIN = Path(r"D:\FPGA_Project\zi_guang_tong_chuang\pds\PDS_2022.2-SP6.1\bin")
+PDS_BIN = Path(os.environ.get("PDS_BIN_DIR",
+                              r"E:\donwload\PDS_2022.2-SP6.4\PDS_2022.2-SP6.1\bin"))
 
 # Source order matters: leaf modules first, `rv32_top`/`pangoriscv` last.
 CORE = [

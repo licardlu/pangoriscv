@@ -100,18 +100,6 @@ module tb_coremark_uart;
         if (!$value$plusargs("PROG=%s", prog_file)) prog_file="program.hex";
         if (!$value$plusargs("DATA=%s", data_file)) data_file="data.hex";
         if (!$value$plusargs("MAX_CYCLES=%d", max_cycles)) max_cycles=MAX_CYCLES;
-`ifdef IVL_ZERO_INIT
-        // The board powers up with every BRAM word at its init value (0).  A
-        // Verilog `reg` array starts at X instead, so any fetch or load from a
-        // word the hex file does not cover drags X into the pipeline and the
-        // run locks up on `fetch_valid=x`.  Zeroing first makes the simulator
-        // model the FPGA rather than the language default.
-        begin : zero_init
-            integer zi;
-            for (zi=0; zi<8192; zi=zi+1) soc.program_ram.mem[zi] = 32'h0;
-            for (zi=0; zi<4096; zi=zi+1) soc.data_ram.mem[zi] = 32'h0;
-        end
-`endif
         $readmemh(prog_file, soc.program_ram.mem);
         $readmemh(data_file, soc.data_ram.mem);
         $display("CORE_IMAGE prog=%s data=%s max_cycles=%0d", prog_file, data_file, max_cycles);
@@ -1069,46 +1057,4 @@ module tb_coremark_uart;
         $display("TEST_PASS T_COREMARK_BOUNDED retires=%0d traps=%0d cycles=%0d txd_writes=%0d",retired,traps,cycles,txd_writes);
         $finish;
     end
-`ifdef IVL_PROBE
-    integer pr_lo=0, pr_hi=0;
-    initial begin
-        if(!$value$plusargs("PROBE_LO=%d", pr_lo)) pr_lo=7090;
-        if(!$value$plusargs("PROBE_HI=%d", pr_hi)) pr_hi=7200;
-    end
-    always @(posedge clk) if (rst_n && cycles>=pr_lo && cycles<=pr_hi)
-        $display("PROBE c=%0d pc=%08x rr_v=%b hold=%b ser=%b halt=%b div_q=%b memq=%b exmem=%b opv=%b opr=%b fv=%b fr=%b redir=%b wv=%b anext=%08x uctrl=%08x ustat=%08x",
-                 cycles, retire_pc, soc.core.cpu.rr_valid, soc.core.cpu.hold_ex,
-                 soc.core.cpu.serial_q, soc.core.cpu.halted_q, soc.core.cpu.div_issued_q,
-                 soc.core.cpu.mem_issued_q, soc.core.cpu.ex_is_mem, soc.core.cpu.op_valid,
-                 soc.core.cpu.op_ready, soc.core.cpu.fetch_valid, soc.core.cpu.fetch_ready, soc.core.cpu.redirect_any,
-                 soc.core.cpu.w_valid, arch_next_pc, soc.uart_inst.ctrl_q, soc.uart_inst.stat_q);
-    always @(posedge clk) if (rst_n && cycles>=pr_lo && cycles<=pr_hi)
-        $display("P2 c=%0d rr_inst=%08x rr_pred=%08x rr_pred_h=%08x id_pred=%08x id_pred_h=%08x pcq=%08x headpc=%08x stale=%b ocnt=%b cnt=%b redirect_valid=%b trap_go=%b brmiss=%b brmiss_h=%b resume=%b",
-                 cycles, soc.core.cpu.rr_inst, soc.core.cpu.rr_pred, soc.core.cpu.rr_pred_h,
-                 soc.core.cpu.id_pred, soc.core.cpu.id_pred_h, soc.core.cpu.pc_q,
-                 soc.core.ifu.head_pc, soc.core.ifu.stale_cnt_q, soc.core.ifu.ocnt_q,
-                 soc.core.ifu.count_q, soc.core.ifu.redirect_valid, soc.core.cpu.trap_go,
-                 soc.core.cpu.br_miss, soc.core.cpu.br_miss_h, soc.core.cpu.resume);
-    always @(posedge clk) if (rst_n && cycles>=pr_lo && cycles<=pr_hi)
-        $display("P3 c=%0d inst1=%08x addr=%08x exv=%08x mv=%08x wv=%08x wbv=%08x wrd=%0d wwe=%b rfd0=%08x rfd1=%08x f1=%08x f2=%08x",
-                 cycles, soc.core.cpu.rr_inst, soc.core.cpu.mem_addr, soc.core.cpu.ex_value,
-                 soc.core.cpu.m_value, soc.core.cpu.w_value, soc.core.cpu.wb_value,
-                 soc.core.cpu.w_rd, soc.core.cpu.w_we, soc.core.cpu.rf_d0,
-                 soc.core.cpu.rf_d1, soc.core.cpu.fwd1, soc.core.cpu.fwd2);
-    always @(posedge clk) if (rst_n && cycles>=pr_lo && cycles<=pr_hi)
-        $display("P4 c=%0d lv=%08x dv=%b rsp=%b adr=%08x st=%b f=%b lsrsp=%08x lsu_v=%b lsu_r=%b",
-                 cycles, soc.core.load_value, soc.core.done_valid, soc.core.cpu.mem_rsp,
-                 soc.core.address, soc.core.is_store, soc.core.fault, soc.core.ls_rsp_data,
-                 soc.core.cpu.issue_mem, soc.core.op_ready);
-    integer ld_n=0, ld_bad=0, ld_few=0;
-    always @(posedge clk) if (rst_n && soc.core.done_valid && !soc.core.is_store) begin
-        ld_n = ld_n + 1;
-        if ($isunknown(soc.core.load_value)) ld_bad = ld_bad + 1;
-        else if (ld_few < 6) begin
-            ld_few = ld_few + 1;
-            $display("LDOK c=%0d pc=%08x val=%08x", cycles, soc.core.op_pc, soc.core.load_value);
-        end
-    end
-    final $display("LDSTAT loads=%0d x_loads=%0d", ld_n, ld_bad);
-`endif
 endmodule

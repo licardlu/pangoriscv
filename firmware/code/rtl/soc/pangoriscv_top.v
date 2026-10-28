@@ -57,15 +57,6 @@ module pangoriscv_top #(
   //   19.231 ns (52 MHz) -> routed 21.120 / 21.600 ns ✗ (p48r50b / p48r50)
   // Tightening the declared period below 20.000 ns degrades the result
   // monotonically, so 50 MHz is the ceiling without a pipeline cut.
-  //
-  // v27 probe (2026-10-27): the multiplication split (rv32_mul rev 1.3) moved the
-  // 56 MHz placement to +1.105 ns / TNS 0 -- 16.75 ns, the best this design has
-  // ever placed (the delivered netlist only reached 18.32 ns at a *lower*
-  // constraint).  Routing at 56 MHz still stalled: 25,867 unrouted -> 578 at
-  // iteration 479 -> oscillating 700-780 at 548, the congestion wall of
-  // performance-analysis section 6.  So the next rung is 54 MHz (18.518 ns),
-  // where the placer has 1.66 ns more room and therefore packs less densely.
-  // 54.000 = 27*54/27, VCO 1458 (legal).  Delivery setting is F=50/O0=27.
   .STATIC_RATIOI(1),.STATIC_RATIOM(1),.STATIC_RATIOF(50),
   .STATIC_RATIO0(27),.STATIC_DUTY0(27),.STATIC_DUTYF(50),
   .STATIC_RATIO1(56),.STATIC_DUTY1(56),

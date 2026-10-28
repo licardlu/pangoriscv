@@ -96,7 +96,7 @@ def main():
     parser.add_argument("application", choices=["coremark", "timer_int", "simple",
                                                 "gpio", "uart_tx", "uart_rx",
                                                 "spi_master", "led_walk",
-                                                "selftest", "mulh_test", "irq_test",
+                                                "selftest", "irq_test",
                                                 "perf_probe", "gpio_trace"])
     parser.add_argument("--toolchain-bin", type=Path, default=DEFAULT_TOOLS)
     parser.add_argument("--prefix", default="riscv32-unknown-elf-")

@@ -1,0 +1,12 @@
+# 54 MHz on the CORE clock (period 18.5185185 ns).
+#
+# Hardware chain: 27 MHz on D18 -> GTP_PPLL I=1/M=1/F=54/O0=27 -> 27 x 54/27 = 54.000 MHz.
+# VCO = 27 x 54 = 1458 MHz (legal 1330..2133).
+#
+# Ladder position: 50 MHz is the delivered ceiling.  56 MHz places at +1.105 ns
+# (build/v27b_mullo_56, the best placement this netlist family has ever recorded)
+# but its detailed routing stalls at the congestion wall (25,867 unrouted ->
+# 578 at iteration 479 -> oscillating 700-780 at 548), so this rung exists to
+# find out whether the same netlist closes when the placer is given 1.66 ns more.
+create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
+create_clock -name core_clk -period 18.5185185 -waveform {0 9.2592593} [get_pins {u_core_pll/CLKOUT0}]

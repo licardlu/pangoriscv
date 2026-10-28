@@ -1,6 +1,50 @@
 # 发布版位流
 
-> ## ✅ 当前交付（2026-10-23 P48e）：`pangoriscv_board50_i2800_5p248.sbit`
+> ## ✅ 当前交付（2026-10-28 v40）：`pangoriscv_v40_o3_4000_5p26.sbit`
+>
+> **50 MHz / CoreMark/MHz 5.2599 / LUT 17,020**（同一份实现，三项指标可互校）
+>
+> | 项 | 值 | 口径 / 证据 |
+> |---|---|---|
+> | 约束频率 | **50.000 MHz**（PLL 27×50/27，VCO 1350）| `pango_native_50mhz.fdc`（单时钟 20.000 ns）|
+> | `Design Summary` | ⚠️ **Some Constraints Violated（仅 hold，setup 全过）** | `build/v40_g15o3/report_timing/pangoriscv_top.rtr` |
+> | setup（`core_clk` 50 MHz）| **WNS +0.199 ns，失败端点 0** | 布线后 19.801 ns |
+> | hold | ⚠️ **WHS −0.158 ns，失败端点 2** | 路径 `data_cache/tag_di_q[1] → tag_mem_2/ram64x1d/DI`，0 级逻辑、数据 0.264 ns，成因是时钟插入延迟差（launch 2.209 / capture 2.597）|
+> | 综合 WNS | **+1.139 ns（18.861 ns）** | 原交付为 +0.395（19.605 ns）|
+> | 面积（`device_map` `Used`）| **LUT 17,020 / FF 8,645 / LUTRAM 2,274 / DRM 12 / APM 10** | `build/v40_g15o3/multiseed_summary.csv` |
+> | CoreMark/MHz | **5.2599** | 真机 4000 迭代 `Total ticks 760,474,020` = **190,118.5 拍/迭代** |
+> | CoreMark/kLUT | **0.3090** | 5.2599 / 17.020 |
+> | 运行时间 | **15.21 s ≥ 10 s** | 760,474,020 / 50 MHz |
+> | 五项 CRC | `0xe9f5 / 0xe714 / 0x1fd7 / 0x8e3a / **0x65c5**` | 真机 COM13，2026-10-28 12:23 |
+> | 位流 SHA256 | `286e3815cb8523e3a94b32f92369db0c7f76d37fc8ab79404d91aceb3842d548` | |
+>
+> ### 相对 board50（P48e）改了什么
+>
+> 只有一处 RTL 改动 **P33**（`rv32_top.v`，36 行）：CSR 的编译器可见结果直接取
+> `w_csr_old`，不再于 WB 二次读 CSR 阵列；`csr_native` 的读地址固定为 `id_csr_addr`。
+> 其余差异只有镜像：GCC **15.2.0** `-O3`、4000 迭代。
+>
+> | 项 | board50（P48e） | v40 | 判定 |
+> |---|---|---|---|
+> | 综合 WNS | +0.395（19.605 ns）| **+1.139（18.861 ns）** | 关键路径 −0.744 ns |
+> | LUT / FF | 17,174 / 8,693 | **17,020 / 8,645** | −154 / −48 |
+> | 布线 setup | +0.645，0 端点 | +0.199，0 端点 | 都过 |
+> | 布线 hold | +0.010，0 端点 | **−0.158，2 端点** | **未过，待修** |
+> | 板测 ticks（同 `-O2` 镜像）| 533,875,894 | 533,875,894 | **逐位相同** |
+> | 五项 CRC | e9f5/e714/1fd7/8e3a/bd59 | 完全相同 | **逐位相同** |
+> | CoreMark/MHz | 5.2447（真机）| **5.2599**（真机）| +0.29% |
+>
+> **功能等价判据**：同一份 `-O2` 镜像（`g15o2_2800`）分别烧进 board50 与本版，
+> `Total ticks` 与五项 CRC **逐位相同** ⇒ P33 不改变体系结构行为。
+> `-O3` 只换 BRAM 初值、不改网表：两版的综合 WNS、LUT、FF、DRM、APM、
+> 布线弧长（393,503）完全一致。
+>
+> ⚠️ **未完成的一项**：hold −0.158 ns。这条路径 P33 没有触碰，原版能过 hold 是因为
+> 那次布线的时钟树更平衡（同树重布的抽样差可达 2.4 ns）。hold 修复版（`v43`，
+> `-fix_hold_violation_iterations 200`）出流后应替换本文件，届时无需改 RTL、
+> ticks 与 CRC 不变。详见 `docs/v44-final-report.md`。
+
+> ## 历史交付（2026-10-23 P48e）：`pangoriscv_board50_i2800_5p248.sbit`
 >
 > **50 MHz / CoreMark/MHz 5.248 / LUT 17,174**（同一份实现，三项指标可互校）
 >

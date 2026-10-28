@@ -28,6 +28,9 @@ vsim.wlf
 simv
 csrc/
 .sim_runs/
+.ivl/
+# 一次性的流程外层日志（build/v* 的 run.log 才是正式记录）。
+build_v*.log
 build/
 compile/
 pds.prj
@@ -93,6 +96,14 @@ archive/
 !bitstream/pangoriscv_board48_i2700_5p245.sbit
 !bitstream/pangoriscv_board48_i2700_w148.sbit
 !bitstream/pangoriscv_board50_i2800_5p248.sbit
+# 2026-10-28：**当前交付位流**（50 MHz / 5.2599 CoreMark/MHz / 17,020 LUT）。
+# 源码 = 主干 d7cbd6c + 唯一的 RTL 改动 P33（CSR 回读不再二次读 CSR 阵列）+
+# GCC 15.2.0 `-O3` 镜像（4000 迭代）。相对 board50 的改进：
+#   综合关键路径 18.861 ns（原 19.605）、LUT −154、FF −48、分数 +0.29%。
+# 功能等价判据：同一份 `-O2` 镜像下 ticks 与五项 CRC 与 board50 逐位相同。
+# 已知瑕疵：布线 hold −0.158 ns / 2 个失败端点（原版为 +0.013），
+# hold 修复版出流后应替换本文件；详见 docs/v44-final-report.md。
+!bitstream/pangoriscv_v40_o3_4000_5p26.sbit
 # PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
 !firmware/code/platform/pango_native/*.pds
 

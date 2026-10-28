@@ -3527,3 +3527,328 @@ transcript 末尾是 `Failure to obtain a Verilog simulation license ... 'qhsimv
    所以 RTL 改动的验证回路是 **改 → 满流程(~25 min) → 烧板 → 串口读 ticks**，不是仿真。
 3. 需要快速回归时，改用 20 迭代镜像（`--iterations 20`）出位流，板上跑完只要 0.3 秒，
    但**报分必须用 ≥10 s 的镜像**（赛题硬性规则）。
+
+## 110. `--freq 54` 是合法取值，但约束文件不存在 → 流程 7 秒后死在 `Flow-0049`（2026-10-27）
+
+**现象**：`python tools/run_pds_flow.py --tag v28_54 --freq 54 --mode full ...`
+打印了 `pll : I=1 M=1 F=54 O0=27 -> 54.0000 MHz`，随后 `exit : 1  image MISSING`，全程 7 秒。
+`run.log` 末尾：
+
+```
+Executing : add_constraint .../build/v28_54/pango_native_54mhz.fdc
+E: Flow-0049: The file {.../pango_native_54mhz.fdc} is not readable.
+W: Failed to execute the script :
+```
+
+**查什么**：`run_pds_flow.py` 的 `--freq` choices 里有 53/54/57，但
+`platform/pango_native/` 只有 36/39/40/42/45/48/50/51/52/55/56/58/60/80/100/120/126 的 `.fdc`。
+**choices 是参数白名单，不是文件清单**——两者不同步时，失败发生在 `add_constraint` 那一步，
+而且前面已经跑完解析，看起来像"综合刚开始就崩"。
+
+**原因**：新增频点只改了 `--freq` 的白名单，没补 `.fdc`。
+
+**怎么办**：新频点必须同时补三样：`platform/pango_native/pango_native_<N>mhz.fdc`（`create_clock`
+period = 1000/N，waveform 半周期）、`pangoriscv_top.v` 里 `STATIC_RATIOF/DUTYF`（`27*F/O0 = N`，
+VCO 必须落在 1330..2133）、以及 ≥10 s 的镜像。本轮已补齐 53/54 两个频点的 `.fdc`。
+
+## 111. 乘法器"两级化"在 50 MHz 上是净负收益：21.160 ns vs 交付 19.355 ns（2026-10-27）
+
+**现象**：`rv32_mul` 改成 rev 2.0（`mul` 走 32×32 截断、`mulh*` 走两级寄存器化高位），
+配 PC 打标的 `mulh_wait` hazard，50 MHz 满流程（`build/v31_50mul`）：
+
+| | 交付版 | v31 两级乘 |
+|---|---|---|
+| 50 MHz WNS | **+0.645** | **−1.160** |
+| 估算周期 | 19.355 ns | **21.160 ns** |
+| 估算频率 | 51.67 MHz | **47.259 MHz** |
+| 失败端点 | 0 | 559（TNS −110） |
+| LUT | 17,174 | **17,784（+610）** |
+| APM | 8 | **16（+8）** |
+| 布线收敛 | 114 迭代 | 564 迭代 |
+
+**关键事实**：布线是真正收敛的（`Unrouted nets 0` @ 迭代 564），所以这不是"没布通"，
+是**逻辑本身更差**。
+
+**原因**：截断 `mul` 确实让低积从 33×33 级联（2 个 `CPO>>24`）变成 3 个无级联 APM，
+但高位通路要拼出 66 位加树（`ah*bh<<34 + mid<<17 + al_*bl`），换来 +610 LUT / +8 APM。
+在 86% 延迟都是布线的情况下，**面积涨就是延迟涨**——省下的级联延迟被多出来的布线吃光还有余。
+
+**怎么办**：
+1. 面积敏感的设计里，"把一条路径拆成两级"只在**还能收回寄存器/加法器成本**时才划算；
+   这里的 66 位加树收不回来。
+2. 已经回滚到交付版 `rv32_mul.v`（rev 1.3）。两级方案与位精确性证明留在
+   `docs/plan-v27-mul-latency.md` 和 `docs/patches/`，需要时再取。
+3. **不要再用"乘法器是关键路径"作前提做面积扩张**——v31 的时序报告证明关键路径根本不在乘法器上。
+
+## 112. 真正的天花板：一个周期里串了两条 32 位 ALU 链（2026-10-27）
+
+`build/v31_50mul/report_timing/pangoriscv_top.rtr` 的最差路径（23.438 ns）：
+```
+m_valid (fanout 271) -> 旁路选择 -> u_alu (lane 0, slt/y) -> fwd2_h[0]
+  -> alu_b_h[0] (fanout 69, 2.392 ns, CLMA_195 -> CLMS_351 跨 156 列)
+  -> u_alu_h (lane 1) -> ex_value_h[15]
+Logic 2.879 ns (13.8%), Route 17.929 ns (86.2%), 16 级
+```
+即 `lane0 的 ALU 结果` 同拍喂给 `lane1 的 ALU`，**两条 ALU 链 + 一级旁路挤在一个周期**。
+8 ns/ALU ⇒ 两条至少 16 ns + 旁路 4.7 ns ≈ 20.6 ns，**这正是 50 MHz 能收敛、54/56 MHz 永远
+收敛不了的根本原因**（不是布局、不是 seed、不是约束）。
+
+**教训**：`pair_ok` 对综合不可见。所以"在译码级拒绝这个配对"永远不能让路径消失
+（`packet_md_use` 已经踩过一次，见 `rv32_top.v` 里那段注释）。要让路径消失，**必须从 RTL 里
+删掉那条 mux 分支**，然后为了正确性再拒绝配对——顺序不能反。
+
+## 113. 两个 PDS 流程并发会死锁在 license 上，不是卡在布局（2026-10-27）
+
+**现象**：同时跑 `--mode full`（v33_fp50）和 `--mode synth`（v34_syn）验证语法。
+`v33_fp50/device_map/run.log` 停在
+
+```
+Building architecture model.
+Loading device packaging model.
+```
+
+之后 25 分钟没有任何输出，两个 `pds_shell.exe` 都只有 57/80 MB（正常 PnR 是 500 MB~1.8 GB）。
+把第二个流程停掉后，20 秒内 `v33` 立刻恢复并在 2 分钟内完成 dev_map。
+
+**原因**：PDS 是单 seat license。第二个实例不报错、不退出，就静静等着。
+表现为"流程卡住"，容易误判成布局算法挂了。
+
+**怎么办**：**一次只跑一个 PDS**。要并发验证语法就别用 PDS——一个 `--mode synth`
+也要 4~5 分钟且要排 license。真要连跑两个实验就串行排队。
+
+## 114. CSR 被读了两次，第二次在 WB，那一次就是设计的最差路径（2026-10-27）
+
+**现象**：交付版最差路径 19.355 ns 与 v32 综合最差路径 19.666 ns 是同一家族：
+
+```
+w_csr (fanout 77) -> u_csr/read_data_16[3] -> 17 -> 23 -> 27 -> 34   (40 选 1，5 级)
+  -> csr_rdata -> wb_value -> u_regs 写穿透 mux -> 32:1 读 mux
+  -> fwd* -> alu_a -> u_alu
+```
+一个周期里塞了 **CSR 读 + 寄存器写 + 寄存器读 + ALU**，82~86% 是布线。
+
+**根因**：`wb_value = w_csr ? csr_rdata : w_value` 在 WB 拍又读了一次 CSR 文件，
+而这条通路会顺着 `regs` 的写穿透（那是 distance-3 旁路）穿进 EX 的 ALU 操作数。
+
+**关键证据：这次读是多余的**——
+1. `rr_csr_old <= csr_rdata`（ID 预读，地址 `id_csr_addr`）已经把同一个值流水到 WB 的
+   `w_csr_old`；
+2. `csr_new`（写给 CSR 的值）**一直**用的是 `w_csr_old`，从来没第二次读；
+3. `id_bypass` 的表达式里本来就排除了 `dec_csr`，所以 CSR 一定会在 ID 寄存器里停一拍，
+   预读一定被采到；
+4. `rv32_top.v` 自己的注释（"CSR/system instructions are excluded: they read the CSR file
+   from the ID stage (csr_native .addr(id_csr_addr))"）写的就是 ID 读，
+   `.addr(w_valid && w_csr ? w_csr_addr : id_csr_addr)` 反而**违背了自己文档**。
+
+**改动（P33）**：`wb_value` 改用 `w_csr_old`；`.addr` 固定成 `id_csr_addr`；删掉死掉的
+`w_csr_addr` 寄存器。副作用是 `csr_illegal` 不再受 WB 拍指令干扰（它在 ID→RR 被采样，
+本来就不该看 WB）。
+
+**效果（50 MHz，综合）**：18.861 ns / WNS +1.139，比 v32 的 19.666 短 0.8 ns。
+
+**教训**：**同一个寄存器文件被两条流水级各读一次**是最容易被忽略的面积/时序泄漏点。
+先证明第二次读等价于流水复制，再删掉它——比在路径上做任何"切分"都划算
+（`cut-2` 两次尝试都变差，就是因为它只是把路径切开、没有把读删掉）。
+
+## 115. 拒绝"包内 RAW 配对"实测要 10.6% 的分数，只换 2% 的频率（2026-10-27）
+
+**背景**：`packet_l0_use`（lane 1 读 lane 0 本拍要写的寄存器就拆包）是为了删掉
+`fwd*_h` 里 `lane0_raw ? alu_y :` 那条分支。逻辑上必须成对做，否则 lane 1 拿到的是旧值。
+
+**上板实测（`build/v35b_fp50`，50 MHz，P32+P33，2800 迭代）**：
+
+```
+seedcrc  : 0xe9f5        crclist  : 0xe714     crcmatrix : 0x1fd7
+crcstate : 0x8e3a        crcfinal : 0xbd59
+Correct operation validated.
+Total ticks : 590,274,834      (交付版 533,875,894)
+CoreMark/MHz: 4.7436           (交付版 5.2447)
+```
+
+**五个 CRC 与交付版逐位相同** ⇒ P32/P33 语义正确（功能没问题）。
+但**周期涨了 10.56%**，折算分数 −9.55%，而它在综合上只买到 18.861 → 18.420 ns（+2.4% 频率）。
+
+**结论：P32 是坏交易，已回滚。** 只有 P33 留下。
+
+**教训**：
+1. 早先那次"只丢 7 个配对/12 kcycle"的测量**低估了一个数量级**——用 `pair_ok` 的计数推论
+   IPC 成本不可靠，必须上板看 `Total ticks`。CoreMark 里 `addi; sw`、`add; bne` 这类
+   包内依赖非常密（约 10% 的包）。
+2. 双发射的收益是靠"前后相邻指令有依赖也照发"撑起来的；一旦要求无依赖配对，
+   实际 IPC 立刻掉一个档次。
+3. **上板一次 70 秒就能同时验 CRC 和量 IPC**，比任何离线推理都便宜——以后凡是碰配对/流水
+   停顿的改动，先上板量 ticks 再谈 ns。
+
+## 116. 紧凑 floorplan（PAP_REGION 96x146）布局 +2.466 ns，布线倒亏 3.6 ns（2026-10-27）
+
+**现象**：`pango_native_floorplan_compact.fdc`（把 `i:soc.core` 绑进 x10..106 / y15..161）：
+
+| 阶段 | v33_fp50（交付 RTL+布局） | v35b_fp50（P32+P33+布局） | 说明 |
+|---|---|---|---|
+| 布局后 slack | **+1.571 ns** | **+2.466 ns** | 本项目历史最好 |
+| 布线后 | （未跑完） | **−1.156 ns / 21.156 ns** | 布线吃掉 3.62 ns |
+
+同一份 RTL 不开 floorplan 时，综合就能到 18.420 ns，布线一般只再加 0~1 ns。
+**把核心压进 96x146 之后，布局器算出的线长更短，布线器却因为区域内太挤必须绕出去**，
+一进一出净亏 3.6 ns，还多花 320 次迭代。
+
+**教训**：
+1. 本设计 80~86% 的延迟是布线，但"缩短平均线长"不等于"布线更快"——局部拥塞会反过来变成绕线。
+2. **只看布局后 slack 会得出完全错误的结论**（+2.466 看起来像大胜）。必须以布线后的
+   `report_timing` 为准，布局只是中间量。
+3. 区域占用要留够绕线空间：96x146 对 26% 的逻辑偏紧。若再试，应放宽到 ~110x180 或只绑
+   `cpu + 两个 cache`。
+
+## 117. 截断乘法器"去掉级联"反而更慢：APM 内部级联比 LUT 加法树便宜（2026-10-27）
+
+**动机**：`build/v36_50p33` 去掉 CSR 路径后，最差路径变成
+`rr_inst[22] -> ... -> u_alu(lane 0) -> fwd1_h[49] -> u_mul_h`，其中 `u_mul_h` 是
+**四个 APM 串联**：`1.806 + 1.362 + 1.608 + 1.362 = 6.14 ns`（22.081 ns 到达）。
+
+于是只给 `mul` 的低字加一条截断 32×32（`wire [31:0] prod_lo = a * b;`），
+`mulh*` 仍走原来的 33×33，期望把 6.14 ns 换掉。位精确性已验证（40,000 组向量 0 失配，
+模 2^32 下与被减符号无关）。
+
+**结果（50 MHz 综合，`build/v37_syn`）**：
+
+| | P33 | P33+P34 |
+|---|---|---|
+| LUT | 17,1xx | **17,066**（略降） |
+| APM | 8 | **14**（+6） |
+| 综合周期 | 18.861 ns | **20.852 ns（WNS −0.852）** |
+
+**更差 2 ns**。原因：APM 的 `CPO -> CPI` 级联是**器件内部布线**，单级 1.36~1.8 ns；
+而"三级并联 APM + 32 位求和"要用 LUT 进位链把三个 32 位部分积加起来，那一段比被它
+替换掉的级联还慢。PDS 确实生成了 3 个额外的 APM（8→14），所以不是它没优化，是这条路本来
+就不该绕开。
+
+**教训**：
+1. **APM 的 CPO→CPI 级联是免费的高速公路**。凡是"用一个更小的乘法器 + 加法树去换掉级联"，
+   在本器件上都要先算加法树的账。
+2. 乘法器已经被三条路线证伪（rev 2.0 两级化 111、v27 混合、本条 P34）。
+   `rv32_mul.v` **保持交付版 rev 1.2 不动**。
+
+## 118. 分数差 4.6% 不是 RTL，是本机工具链比参考镜像老两个大版本（2026-10-27）
+
+**现象**：P33 网表（只改 CSR 回写来源）上板跑出 558,585,077 ticks，比交付版 533,875,894
+**多 4.6%**。可是 P33 只碰 `csrr*` 的写回值，而 CoreMark 计时循环里一条 CSR 都没有——
+逻辑上不可能影响周期数。
+
+**排查**：把交付位流 `bitstreams/pangoriscv_board50_i2800_5p248.sbit` 在同一台板子上重测：
+`533,875,894` **一位不差**（说明板子/串口/测量链路完全确定性，对比有效）。
+
+再看 CoreMark 自报的编译器版本：
+
+| 位流 | Compiler version |
+|---|---|
+| 交付版 `board50` | **GCC15.2.0** |
+| 本机所有重建镜像（v24_50 等） | **GCC13.2.0** |
+
+本机只有两个工具链：xpack `riscv-none-elf-gcc` **13.2.0**、
+pango openisa `riscv32-unknown-elf-gcc` **7.1.1**。参考镜像用的 GCC 15.2.0 **不在这台机器上**。
+
+**后果（很重要）**：
+1. **本机用 GCC13 重建的任何镜像，分数天花板就是 ~5.01，不可能复现 5.2447**。
+   之前所有"重新烧板分数变低"的观察都被这个 4.6% 污染过，不能归因给 RTL。
+2. `build_native_software.py` 默认工具链路径 `firmware/toolchains/...` 根本不存在，
+   必须显式 `--toolchain-bin`；而且 `.S` 里用了 `csrr`，GCC15 的 binutils 2.45
+   要求 `-march=rv32im_zicsr`，必须用 `--extra-flag=-march=rv32im_zicsr` 补上
+   （老的 GCC13 不要求，所以这个坑以前没暴露）。注意 `--opt`/`--extra-flag` 用等号传参，
+   空格传参会报 `expected one argument`。
+
+**怎么办**：把 GCC 15.2.0 装到 `toolchain/xpack-riscv-none-elf-gcc-15.2.0-1`
+（444 MB，2025-10-23 发布），之后凡是**要和 5.2447 对比**的镜像都必须用它构建，
+并且 `Compiler flags` 一行要与参考镜像逐字一致（这是最便宜的"镜像同一性"检查）。
+
+## 119. 自检镜像的 FAIL_CSR 是既有问题，不是 P33；同镜像双网表对照法（2026-10-28）
+
+**现象**：P33 网表跑 `selftest` 报 `SELFTEST FAIL mask=512`（FAIL_CSR），
+`timer: delta=5000063 expect=5000001`。差值 62 拍看着像陷阱/中断开销，一度怀疑 P33
+破坏了 CSR 回读。
+
+**判据**：把**同一个自检镜像**分别烧进两个网表（其它一切相同）：
+
+| 网表 | 输出 |
+|---|---|
+| 交付版 RTL（`build/v42_selftest_base`） | `delta=5000063`、`timer_csr done fail=512`、`FAIL mask=512` |
+| P33（`build/v41_selftest`） | **逐字符相同** |
+
+⇒ FAIL_CSR 在两个网表上**完全一样**，是 `test_timer_csr()` 里
+`mcause==0 / mepc==0 / mstatus.MIE==0` 这三条针对旧版 `init.c` 的断言已经过时，
+与 RTL 改动无关。`FAIL_TIMER` 没置位，`delta` 在 `[expect, expect+512]` 容差内，
+62 拍是轮询循环退出延迟（函数注释里写明了）。
+
+**方法论**：**同一个软件镜像 + 两个网表 + 逐字符比对串口输出**，是本机没有仿真器时
+最便宜、最强的功能等价性判据。它同时把"既有失败"和"新引入失败"分开，
+比只看"有没有 FAIL"可靠得多。
+
+**顺带一个重要事实**：同一份 RTL 两次布线可以差 **2.4 ns**
+（交付版 RTL 这次布到 22.204 ns / WNS −2.204，交付位流是 19.355 ns）。
+所以**布线后的 ns 不能用来比较单次改动**；能稳定复现的是
+**布局后 slack**（交付版恒 1.571 ns、P33 恒 2.541 ns）和**综合 WNS**。
+
+## 120. 本机没有可用仿真器时，iverilog 能跑起整个 native AXI SoC（2026-10-28）
+
+**背景**：ModelSim 无 license；`docs/lessons/mistakes-log.md` §109 的结论是"只能上板"。
+然而整套 RTL **可以被 Icarus Verilog 原样编译**——`axi_ram.v` 是唯一用 Pango 原语的
+模块，而且它只在 `SYNTHESIS` 下走原语，仿真路径是纯行为级 `reg` 数组，**一个桩件都不需要**。
+
+安装（无需管理员，装到工作区里）：
+
+```
+curl -L -o ivsetup.exe https://bleyer.org/icarus/iverilog-v12-20220611-x64_setup.exe
+ivsetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=<工作区>/toolchain/iverilog /NOICONS
+```
+
+编译与运行（`.ivl/` 是自建的临时目录）：
+
+```
+IVERILOG=.../toolchain/iverilog/bin
+iverilog -g2012 -o .ivl/cm.vvp -I rtl/core -I rtl/soc -I sim -s tb_coremark_uart \
+         -f sim/native_axi_sources.f tb/integration/tb_coremark_uart.sv
+vvp .ivl/cm.vvp +PROG=build/.../program.hex +DATA=build/.../data.hex +MAX_CYCLES=6000000
+```
+
+**实测速度 10.5k 周期/秒**（20 万周期 19 s），20 迭代 CoreMark 约 3.8M 拍 ⇒ **一次 A/B 约 6 分钟**，
+比"综合+布线+上板"（30~40 分钟）快 5 倍以上，而且 TB 自带
+`SCORE_WINDOW / WIN_ISSUE / WIN_ACCEPT / WIN_STARVE / PAIRGAP` 全套归因计数器。
+
+**但是**：CoreMark 镜像在**第 7152 拍**进入 X 锁死（`portable_init` 的 `ret` 处，
+`rr_inst=00008067`、`br_miss=x`、`fetch_valid=x`、`IFU count_q=xxxx`），
+`MAX_CYCLES` 再大也走不动。已排除的原因：
+
+| 怀疑 | 排除方式 |
+|---|---|
+| RAM 未初始化所致（sim 里 `reg` 数组是 X，FPGA 是 0）| TB 里先清零 `program_ram.mem`(8192) / `data_ram.mem`(4096) 再 `$readmemh`，**失败拍号一模一样** |
+| `program.hex` / `data.hex` 覆盖不全 | 两个文件分别是满 8192 / 4096 行，数组全定义 |
+| RAM 延迟参数不一致 | TB 与板上都是 `READ_DELAY=0` |
+| `done_valid`/`op_valid` 出现未知态 | `-DRV32_DEBUG` 的 `TR_XFIRST` 探针**从未触发** |
+| 寄存器堆 x0 | `rv32_regfile.v` 三个读口都显式 `ra==0 ? 0` |
+
+**下一步该查的**：`load_value` 在 `lw ra,12(sp)`（`0x10003f7c`）被接受的当拍是不是 X。
+`ex_value <= (rr_load && mem_rsp) ? load_value : ex_value_w`（`rv32_top.v:1147`），
+探针显示那一拍 `ex_value=xxxxxxxx`，而 `mem_addr` 是对的 ⇒ 嫌疑在 `LSU → load_value` 这段。
+另一个尚未验证的分支：`dcache` 的 store drain（`WIN_REQREF st=[drain=1768/1769]`、
+`DCACHE_PATH byp=0`）——**存进去的数据没走旁路，读回来却命中了未填充的阵列**。
+
+**不要做的事**：不要因为"ModelSim 能跑"就假设 iverilog 的行为等价。这台机器上
+ModelSim 根本跑不了，所以 **iverilog 的结果与历史文档里的仿真数字没有可比性**，
+只有"同一个 iverilog 版本下改前/改后"的对比才成立。
+
+## 121. v39 / v40 两份位流的时序结论是 hold 失败，不是 "WNS +0.645"（2026-10-28）
+
+**数字必须钉在树上**：`19.355 ns / WNS +0.645 / hold +0.021 / 17,174 LUT` 那一组
+属于**交付树 232dfa3（`p48r50e`）**。本轮做的两份位流不是那棵树：
+
+| 位流 | 树 | setup WNS | 失败端点 | hold WHS | hold 失败端点 | 结论 |
+|---|---|---:|---:|---:|---:|---|
+| `v39_g15o2`（5.2447）| P33 + GCC15 -O2 | **+0.199** | 0 | **−0.158** | **2** | Some Constraints Violated |
+| `v40_g15o3`（5.2599）| P33 + GCC15 -O3 | **+0.199** | 0 | **−0.158** | **2** | Some Constraints Violated |
+
+两份的综合 WNS（1.139）、LUT（17,020）、FF（8,645）、DRM（12）、APM（10）、
+分布式 RAM（2,274）、布线弧长（393,503）**完全相同** ⇒ **程序镜像内容不改变网表**，
+-O2 与 -O3 只是换了 BRAM 初值。所以"换镜像"是零时序风险的改分手段。
+
+但两份都带 **2 个 hold 失败端点（−0.158 ns）**，这一项在交付树上是 +0.021。
+板测能跑对（5.2447 / 5.2599，五项 CRC 全对）说明 hold 违例没有实际暴露，
+**但它不该被写成"时序通过"**。要么补 hold 修复再出流，要么在文档里如实标注。

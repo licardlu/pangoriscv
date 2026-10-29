@@ -1,173 +1,91 @@
-# pangoriscv — RV32IM 处理器核 + 原生 AXI4 SoC
+# VexiiRiscv改进版
 
-用 Verilog 实现的一款 RISC-V RV32IM 处理器核，自带原生 AXI4 总线与 SoC，已在 Pango PG2L100H 开发板上
-跑通 CoreMark（400 次迭代，5 项 CRC 全部符合）。
+目标：PG2L100H-6IFBG676开发板，RV32IMC双发射，CoreMark/MHz ≥5.2，CPU ≥120 MHz。
+使用 pangoriscv 的板卡参数，CPU/SoC采用VexiiRiscv，不复用pangoriscv的CPU实现。
 
-> **当前交付（2026-10-23 P48e）**：**CoreMark/MHz 5.248 @ 50 MHz**
-> 位流 `bitstream/pangoriscv_board50_i2800_5p248.sbit`（SHA256 `5E1969FC…1DB19ECF`）
-> ——`All Constraints Met`，核心时钟 setup **WNS +0.645 ns / 0 失败端点**（布线后 **19.355 ns**，
-> 物理上限 51.67 MHz）、hold **+0.010 / 0 失败**、**LUT 17,174 / FF 8,693 / LUTRAM 2,274 / DRM 12**、
-> 详细布线 **114 轮**收敛；镜像 `hw_i2800_50v17`（2800 迭代 → 10.67 s ≥ 10 s）。
-> 分数口径：同 RTL 同源码 20 迭代仿真 `Total ticks 3,810,700`（190,535 拍/迭代）⇒ **5.248**；
-> 与上一版 `board48_i2700`（**板测 5.2447**）拍数逐位一致，所以分数不因提频而变。
-> 本版**未上板**（下载线未枚举，见 [plan v17](docs/plan-v17-board50.md) §8 与
-> [plan v23](docs/plan-v23-area-and-freq.md) §3）。
->
-> **2026-10-24 P58–P64：52 MHz 攻坚已到底，结论写死**
-> 用"从未用过的四个 pnr 质量选项"（`-dc_duplication` / `-slack_prior_in_global_router` /
-> `-refineplacement_cluster` / `-optimize_routing_recovery`）把 52 MHz 从"布不通 / 20.222 ns"
-> 一路推到 **19.426 ns**，距 19.231 只差 **0.195 ns（12 个端点）**；
-> 但**同一棵网表换四种配方，摆放/布线/时序逐位相同** ⇒ 重跑不可能再前进一丝。
-> 缺口在逻辑（13 级 / 7.938 ns：`RF读mux → ALU 4 级 → 转发 → 4×APM`），
-> 而 P57（把 DSP 级联从 ALU 后面摘出来）实测反而更差（20.252 ns）。
-> 详见 [plan v23](docs/plan-v23-area-and-freq.md) §7 与 `evidence/records/optimization/p58r52/`。
->
-> **120 MHz 与 5.2 分不可同时成立**（`docs/plan-v23-area-and-freq.md` §1、§4）：
-> 静态 ILP 上界（现场复算）4 发射 + 4 访存端口 = 142,002 拍/迭代（IPC 2.504）⇒ 7.04 分；
-> 每加一级访存流水 **+34,757 拍（实测 `load_use_1`）**；120 MHz 需要 2.41 级 ⇒
-> 即使加宽到 4 发射也只能到 **4.73 分**。这不是调参问题，是基准本身的 ILP 上限。
+**这是等待完成PDS时序与用户板测的移植版本，不能宣称已经达到最终上板指标。**
+当前PLL配置120.461538 MHz；新配置在PDS编译入口遭遇工具内部错误，
+最小单线模块也复现同一错误。因此本包没有新位流或新配置的时序通过证据。
+最终100次RTL诊断已完成：18,776,958周期，5.325676 CoreMark/MHz，
+已知种子/列表/矩阵/状态CRC相符。运行仅0.155875秒，不属于正式成绩。
 
->
-> **50 MHz 是怎么拿下来的**：不是换 seed（`pnr -seed` 实测是静默 no-op），
-> 而是把 52 MHz 的"鞭子时钟"去掉 —— 19.231 ns 这个目标把逻辑压得过密，
-> 反而布出 21.1~21.6 ns；**单时钟 20.000 ns**（正好是 50 MHz 的周期）摆出 +1683 ps、
-> 布到 19.355 ns。详见 [P48e 证据](evidence/records/optimization/p48e-board50/measurement.md)。
->
-> **120 MHz 的位置（本轮定量判定）**：`docs/plan-v16-120mhz-spec.md` 用静态 ILP 定标证明
-> "120 MHz 且 ≥5.2"**可以**做到，但条件是 **4 发射 + 16 B/拍取指 + 双端口 D$ + 3 级流水**（预测 5.86），
-> 触发它的 M1 本身 1~2 周；单次会话做不完。本轮改做"不提架构、只提频率"，把交付频点从
-> 48 MHz 推到 **50 MHz（+4.2%）**；再往上（52/55）需要先切流水，而切流水要先有 M1 的 IPC 预算。
-> `-seed` 是静默 no-op，别再靠换 seed 抽签。详见 [plan v17](docs/plan-v17-board50.md)。>
-> **历史交付（2026-10-22 P13，板上实测）**：**5.213 CoreMark/MHz @ 36 MHz**
-> （2000 迭代 / 10.66 s / 五项 CRC 全对 / `Correct operation validated`）。
-> 位流 `bitstream/pangoriscv_board36_i2000.sbit`（SHA256 `CCEFDD8B…3E37F6`）；
-> 证据 `evidence/records/optimization/p13-board-verify/`。
-> 分数口径：`Iterations × 1e6 / Total ticks = 2000e6 / 383,673,358`（不用整数截断的秒数）。
-> 频率口径：位流 PLL 实配 36 MHz（27×56/42）；同 RTL 在 **40 MHz 约束下 All Constraints Met**
-> （setup +0.558 / hold +0.033 / 0 失败端点，分析构建 `p13seed7`，估计 fmax 40.56 MHz）。
-> 交付位流 setup +1.200 ns 全过、hold 残留 3 端点 −0.035 ns（data_ram 写地址跨列偏斜，
-> 板上实测不受影响，见 measurement.md"时序遗留"）。
-> **布线配方**（PDS 2022.2-SP6.1，缺省 hold 参数 + `-gplace_seed 3 -plc_decongestion 1
-> -share_router_control_signal TRUE`）——可布性靠 placement seed，详见
-> [docs/plan-score-5.2-120mhz-v8.md](docs/plan-score-5.2-120mhz-v8.md) §8 与
-> [mistakes-log §48](docs/lessons/mistakes-log.md)。
-> 120 MHz 目标：实测路径 24.65 ns（约 40.5 MHz），要到 120 MHz 需 EX 拆级（P14 计划），
-> 会吃约 2.3% 分数——边界与折算已写进 plan v8。
->
-> **P15 结论（2026-10-22 深夜，只动 RTL 不动分数）**：120 MHz **在本微架构上与 5.2 分互斥**，
-> 已从"推断"变成"实测"——① 8.333 ns 约束下工具**摆放上限只有 19.4 ns**（−11.055 ns，TNS −100 M），
-> 差 2.33 倍；② CPI 余量只剩 **608 ticks/iter（0.32%）**，而 +1 拍重定向要 **3,441 ticks/iter（1.8%）**，
-> 分数会掉到 5.12；③ 区域约束三种形状（横带/竖带/紧凑方块）全部负优化，这条方向封死。
-> **更要紧的是派生出的一条**：45 MHz、50 MHz 的**摆放都能过（TNS=0，WNS +1.0~+1.3 ns）**，
-> 但**详细布线不收敛**（Unrouted nets 单调下降到 9k~11k 后斜率衰减到 ~230/轮），
-> 所以短期连 45 MHz 也交付不了，**36 MHz 仍是唯一能出位流的频点**（PLL 已回退 56/42）。
-> 已落地的零 CPI 改动：`br_miss` 摘掉 `!hold_ex`，把 D-cache 请求路径（5 跳 / 4.4 ns）
-> 从"重定向→I$ 读出"的同一周期里移出去；CoreMark 20it `Total ticks 3,833,976`
-> **与交付镜像逐位一致**（`76b98cf`）。详见
-> [plan v10](docs/plan-score-5.2-120mhz-v10.md) §7–9 与
-> [P15 交接](docs/HANDOFF-2026-10-22-p15.md)。
->
-> **历史交付**：`pangoriscv_i1152_e2.sbit`（旧核 3.8557 板测，1152 迭代 / 27 MHz）；
-> 完整问题、验收缺口与修复顺序见 **[docs/verification.md](docs/verification.md)**。
+## 包含内容
 
-> **性能专项（2026-10-21）**：**当前交付 3.8557 CoreMark/MHz**（板上实测，**1152** 迭代 / 11.066 s /
-> 五项 CRC 全对且 `Correct operation validated` / 27 MHz `All Constraints Met`，setup +4.484、
-> hold +0.032、失败端点 0 / **17,534 LUT / 7,153 FF**）。
-> 位流 `bitstream/pangoriscv_i1152_e2.sbit`（同分数、面积 −10.9%）；证据 `evidence/records/optimization/perf-area-lutram/`；
-> 计划与 A/B 见 [docs/plan-perf-3.8.md](docs/plan-perf-3.8.md)。
-> 相对面积专项定版 3.4222：**+12.7% 分数、站点 +0.9%**（CoreMark/kLUT 0.1901 → **0.2103**）。
->
-> **5.2 分 / 126 MHz 专项（2026-10-22，P8：把 9 ns 的乘法摘出 lane1 通路）**
->
-> **先更正两条旧记录**（v2/§19 的结论建立在错误的基线上）：
-> 1. 板测 **3.8557** 是**旧核 `pangoriscv`** 的成绩——`build/perf_p37b` 的 compile 日志里
->    `rv32_top` 出现 0 次。当前工作树默认编译的是**新核 `rv32_top`**。
-> 2. 20 迭代仿真的**总周期**含 1,886,231 周期固定启动开销（占 26%）。分数只能取
->    CoreMark 打印的 `Total ticks`。
->
-> **本轮（P8）的实质进展**：`p7_path40b` 的最差路径 26.647 ns 里，
-> 有 **9.0 ns 是 `u_mul` 的四级 DSP 级联**，而它出现在路径上的唯一理由是
-> "lane0 乘、lane1 同拍读同包结果"这一种包（`fwd1_h = lane0_raw1 ? ex_value_w : ...`）。
-> 拒绝这一种包、并把该旁路输入改成 `alu_y`，**分数零代价**（6,960,622 → 6,960,617 周期），
-> 同时还按 skill §9.7 关掉了交付配置的 `PERF_ENABLE`（它自己也是原路径的终点，4.6 ns）。
->
-> | 指标 | P7 | **P8（当前）** |
-> |---|---:|---:|
-> | CoreMark/MHz（`Total ticks` 5,073,264/20，**仿真**） | 3.942 | **3.942** |
-> | 126 MHz 综合 `Synthesize Setup WNS` | −13.490 ns | **−8.156 ns（−5.33 ns）** |
-> | 40 MHz 满实现（`All Constraints Met`） | 未全过，26.647 ns | **WNS +1.053，23.947 ns** |
-> | LUT / FF（126 MHz `device_map`） | 18,723 / 9,478 | **17,323 / 7,680（−1,400 / −1,798）** |
-> | ISA e2e | 20/21 | **20/21** |
->
-> **还没到目标线，原因已经算清**：
-> - **分数**：5.2 需要 192,307 周期/迭代，当前 253,663。差 1.23 M 周期，
->   而 `load_use = 1,714,576` 周期正是这一块。三轮里三种互锁写法都失败（20/21、16/21、17/21），
->   因为**消费者的执行发生在读寄存器那一拍**（`ex_value/ex_addr` 都是 RR 拍算好再寄存），
->   load 的数据永远晚一拍——**这是结构问题，不是写法问题**（mistakes-log §36）。
->   唯一解：ALU 从 RR 挪到 EX、地址加法器留在 RR，让 load 数据与 ALU 结果同拍落地。
-> - **频率**：100 MHz 约束**布不通**（11,786 条未布线），40 MHz 全过。真实上限在 40~100 MHz 之间。
->   注意 `p8_path40` 的 `Route 19.447 ns (83%)` —— 宽约束下工具提前收敛、不再优化时序，
->   所以 **23.947 ns 不是上限**（mistakes-log §37）。
->
-> 详见 [docs/plan-score-5.2-126mhz-v4.md](docs/plan-score-5.2-126mhz-v4.md) 与
-> [evidence/records/optimization/P8-mul-bypass/measurement.md](evidence/records/optimization/P8-mul-bypass/measurement.md)。
->
-> **面积 / 效率专项（2026-10-21）**：该阶段结论已并入上表，其后不再限制性能改动。
-> 动手前必读 **[docs/architecture/module-area-plan.md](docs/architecture/module-area-plan.md)**
-> （34 个模块的 11 字段面积合同）与 [area-budget.csv](docs/architecture/area-budget.csv)；
-> 门禁脚本 `firmware/code/tools/check_area_budget.py`（非零退出不得提交）。
-> 冻结基线：tag `score-3.4194-1024`，板上 **3.4194**（1024 迭代 / 11.091 s / 五项 CRC 全对），
-> 位流 `bitstream/pangoriscv_i1024.sbit`（SHA256 `8D12C9D1…5FA6A643`）。
+- `project/VexiiRiscv_improved.pds`：可打开的PDS工程。
+- `rtl/generated/MicroSoc.v`及8个`.bin`：已生成的整机RTL和正式7000次固件初始化数据。
+- `rtl/pango_*.sv`：PLL、复位与板级顶层；`platform/`为约束和配置。
+- `upstream/VexiiRiscv/`：固定版本CPU和生成器源码、SpinalHDL与rvls绑定源码。
+- `tools/runtime/`：离线生成器JAR；运行需要Java 17，不需要重新联网下载sbt依赖。
+- `firmware/coremark/`：官方算法；`firmware/port/`：启动、链接、UART、cycle64计时。
+- `build/firmware_100/`、`build/firmware_7000/`：可核查的ELF、反汇编、编译选项与SHA256。
+- `evidence/`：本次原始日志、测量和完整性清单；最终状态见 `docs/verification.md`。
+- `docs/board-test.md`：用户上板步骤。代码与许可证来源见 `THIRD_PARTY_NOTICES.md`。
 
-| 项 | 值 |
-|---|---|
-| 指令集 | RV32IM（32 位整数、乘除） |
-| 流水线 | 四级（取指 / 译码 / 执行 / 写回），输出级独立访存槽 |
-| 总线 | 原生 AXI4，取指与访存双通道，读写引擎各自独立 |
-| 性能 | **1.35 CoreMark/MHz**（官方整数秒口径；按 tick 精确为 1.25） |
-| 板级 | Pango PG2L100H，27 MHz，串口 / LED / 按键 |
+## 直接综合
 
-## 仓库结构
+建议将压缩包解压到纯英文工作路径，例如 `D:/fpga/vexii_improved`。
+打开 `project/VexiiRiscv_improved.pds`，顶层选择 `pango_vexii_top`，
+执行Compile → Synthesize → Device Map → Place & Route → Timing → Generate Bitstream。
+RAM初始化文件已经放在工程目录，不需要先安装Java或重新生成RTL。
+必须先确认8个初始化文件被读入、setup和hold通过，才能使用该次位流。
 
-```
-firmware/code/          作品代码（RTL + 测试台 + 仿真脚本 + 固件工具 + 平台约束）
-docs/
-  design/plans/         方案书与调研
-  design/change-notes/  变更记录：改了什么、为什么改
-  verification.md       验证计划、状态与问题总表（含问题台账）
-  contest/              赛题原文与要求摘录
-  evidence/
-  logs/                 仿真运行日志（按用例归档）
-  records/              上板记录、时序报告、ISA 合规日志、基线证据
-bitstream/              发布版位流（见其中 README.md）
-scripts/                仓库级辅助脚本
-```
+本版UART为约115200/8N1，27 MHz输入位于D18，KEY0复位位于C22。
+完整管脚合同与架构修改见 `docs/architecture.md`。
 
-代码包内的构建方法、性能数据与横向定位见 [firmware/code/README.md](firmware/code/README.md)。
+## 重新生成与构建
 
-## 快速开始
+Python 3.10+，Java 17，RISC-V GCC，ModelSim，PDS 2022.2-SP6.1。
+工具路径保存在 `tools/local-tools.json`，可运行下列命令生成本机配置：
 
 ```powershell
-git clone <repo-url>
-cd <repo>
-
-# 1) RTL 自包含编译检查（需要 ModelSim；work 库不入库）
-cd firmware/code
-vlog -sv -work work +incdir+rtl/core -f sim/native_axi_sources.f
-
-# 2) 构建固件（--toolchain-bin 指向本机 riscv32-unknown-elf 工具链）
-python tools/build_native_software.py led_walk --toolchain-bin "<toolchain>\riscv32-unknown-elf-gcc\bin"
-
-# 3) 跑一套仿真
-python sim/run_icache_tests.py --modelsim "<ModelSim 目录>"
+./scripts/configure-tools.ps1 -Java 'C:/path/to/jdk17/bin/java.exe'
+python scripts/build.py firmware --iterations 7000
+python scripts/build.py generate --iterations 7000 --name my_release
+python scripts/verify_image.py build/firmware_7000/coremark.elf rtl/generated
+python scripts/build.py implement --name my_release
 ```
 
-## 协作
+同名生成/实现目录禁止覆盖；每次换一个`--name`，保留对应证据。
+`generate`更新`rtl/generated`；命令行`implement`直接使用这里的文件。
+若重新生成后改用GUI打开已有`project`工程，还需将`rtl/generated`中的8个`.bin`
+同步复制到`project`目录，再核对ELF与该目录初始化文件，避免使用旧镜像。
+若修改CPU源码，需要使用上游sbt构建产生新的生成器，而不能继续使用旧JAR。
+可临时移走`tools/runtime/classpath.json`并在local-tools.json中删除classpath字段，
+让生成脚本改用sbt；参考上游build.sbt，重新编译修改后的SpinalHDL/VexiiRiscv。
 
-两人都可以直接推 `main`。提交信息格式、改动前先 `pull --rebase`、同一份文件避免同时改等约定见
-`docs/verification.md`（问题台账）与 `docs/lessons/rules.md`（动手清单）。
+## 仿真与单元检查
 
-## 入库范围
+```powershell
+python -m unittest discover -s tb -p 'test_*.py' -v
+python scripts/check-board-rtl.py
+python scripts/build.py firmware --iterations 100
+python scripts/build.py generate --iterations 100 --name short_check
+python scripts/build.py simulate --name short_check --cycles 60000000
+python scripts/assess_result.py build/sim_short_check/simulate.log --source simulation
+```
 
-仓库只收**作品代码、设计文档、验证证据**（约 5 MB）。位流、仿真波形、EDA 构建产物、历史工作树、
-原始备份与聊天记录不入库；可再生产物不得入库的规则见 skill `pango-riscv-contest` 的「仓库放置与清理约定」与 `docs/lessons/rules.md`。
+100次为短跑诊断，官方CoreMark会正确提示运行不足10秒，它不是正式成绩。
+正式镜像为7000次，运行时间应由实际 `TICKS_HI/LO` 验证，不以迭代次数本身保证。
+短跑后需重新生成7000次镜像或还原交付初始化文件，再综合用于正式上板。
+用户若需要完整7000次RTL仿真，可使用 `--cycles 2000000000`，该运行耗时很长。
+
+## 交付文件校验
+
+解压后在包根目录执行以下PowerShell命令，所有文件应显示匹配：
+
+```powershell
+$bad = @(Get-Content -LiteralPath './SHA256SUMS.txt' | ForEach-Object {
+  $expected, $name = $_ -split '  ', 2
+  if ((Get-FileHash -Algorithm SHA256 -LiteralPath $name).Hash.ToLower() -ne $expected) { $name }
+})
+if ($bad.Count) { throw ($bad -join ', ') } else { 'SHA256 verified' }
+```
+
+验证完成后可用 `python scripts/package_release.py --output output/new_release` 重新打包；
+新包不含ModelSim工作库、下载缓存或商业工具。
+
+## 上板验收
+
+本包不自动连接或操作板卡。由用户按 `docs/board-test.md` 下载并保存原始UART日志。
+最终验收需同时满足：正确CRC及官方验证、实际运行≥10秒、≥5.2 CoreMark/MHz、
+同一份实现的CPU≥120 MHz且STA通过。本次不把目标值、PLL模型或短仿真当作板测结果。

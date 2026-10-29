@@ -1,8 +1,0 @@
-# 60 MHz on the CORE clock (period 16.667 ns): fmax-sweep point for the P13
-# modular-floorplanning A/B.  Same style as pango_native_50mhz.fdc -- the
-# constraint is the timing spec, not the board oscillator.  Not a delivered
-# constraint.  Used to find the highest frequency at which the implementation
-# fully routes and reports 0 failing endpoints (the only fmax that may be
-# reported, see docs/lessons/mistakes-log.md section 37).
-create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
-create_clock -name core_clk -period 16.666667 -waveform {0 8.3333335} [get_pins {u_core_pll/CLKOUT0}]

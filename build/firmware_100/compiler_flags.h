@@ -1,0 +1,1 @@
+#define COMPILER_FLAGS "-O2 -fno-common -funroll-loops -finline-functions -funroll-all-loops -falign-functions=8 -falign-jumps=8 -falign-loops=8 -finline-limit=1000 -mtune=sifive-7-series -ffast-math -fno-tree-loop-distribute-patterns --param=fsm-scale-path-stmts=3 -march=rv32imc_zicsr_zifencei -mabi=ilp32 -fno-builtin"

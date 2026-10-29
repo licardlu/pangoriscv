@@ -1,0 +1,604 @@
+// SPDX-FileCopyrightText: 2023 "Everybody"
+//
+// SPDX-License-Identifier: MIT
+
+package vexiiriscv.execute
+
+import spinal.core._
+import spinal.lib._
+import spinal.lib.misc.pipeline._
+import spinal.lib.misc.plugin.FiberPlugin
+import vexiiriscv.riscv._
+import vexiiriscv.riscv.Riscv
+import vexiiriscv.ExtensionManager
+
+import scala.collection.mutable.ArrayBuffer
+
+object ZbPlugin {
+  def make(layer: LaneLayer,
+           exts: ExtensionManager,
+           xlen: Int,
+           executeAt: Int,
+           formatAt: Int) = {
+    val plugins = ArrayBuffer[FiberPlugin]()
+
+    if(exts.withZba) plugins ++= List(
+      new ZbaPlugin(layer, executeAt, formatAt)
+    )
+
+    if(exts.withZbb || exts.withZbkb) plugins ++= List(
+      new ZbbLogicPlugin(layer, executeAt, formatAt),
+      new ZbbRotatePlugin(layer, executeAt, formatAt),
+      new ZbbByteReversePlugin(layer, formatAt),
+    )
+
+    if(exts.withZbb) plugins ++= List(
+      new ZbbCountPlugin(layer, executeAt, formatAt),
+      new ZbbMinMaxPlugin(layer, executeAt, formatAt),
+      new ZbbOrPlugin(layer, executeAt, formatAt),
+      new ZbbExtendPlugin(layer, formatAt)
+    )
+
+    if(exts.withZbc) plugins ++= List(
+      new ZbcPlugin(layer, executeAt, formatAt),
+    )
+
+    if(exts.withZbs) plugins ++= List(
+      new ZbsPlugin(layer, executeAt, executeAt, formatAt)
+    )
+
+    if(exts.withZbkb) plugins ++= List(
+      new ZbkbPackPlugin(layer, executeAt, formatAt),
+      new ZbkbBitReversePlugin(layer, formatAt),
+    )
+
+    if(exts.withZbkb && xlen == 32) plugins += new ZbkbInterleavePlugin(layer, formatAt)
+
+    if(exts.withZbkx) plugins ++= List(
+      new ZbkxPlugin(layer, executeAt, formatAt),
+    )
+
+    plugins
+  }
+}
+
+object ZbaPlugin {
+  val MUX = Payload(Bits(4 bit))
+  val UW = Payload(Bool())
+}
+
+// TODO check whether MUX bit 0 is optimized out on 32 bit platforms
+class ZbaPlugin(val layer: LaneLayer,
+                val executeAt: Int = 0,
+                val formatAt: Int = 0)  extends ExecutionUnitElementSimple(layer) {
+  val RESULT = Payload(SInt(Riscv.XLEN bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+    import ZbaPlugin._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.SH1ADD).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"0010", UW -> False)
+    add(RvZbx.SH2ADD).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"0100", UW -> False)
+    add(RvZbx.SH3ADD).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"1000", UW -> False)
+
+    if(Riscv.XLEN.get == 64) {
+      add(RvZbx.SH1ADD_UW).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"0010", UW -> True)
+      add(RvZbx.SH2ADD_UW).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"0100", UW -> True)
+      add(RvZbx.SH3ADD_UW).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"1000", UW -> True)
+      add(RvZbx.ADD_UW).srcs(SRC1.RF, SRC2.RF).decode(MUX -> B"0001", UW -> True)
+    }
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      val rs1 = up(el(IntRegFile, RS1)).asSInt
+      if (Riscv.XLEN.get == 64) {
+        when(UW) {
+          rs1(63 downto 32) := 0
+        }
+      }
+
+      val sh1 = rs1 |<< 1
+      val sh2 = rs1 |<< 2
+      val sh3 = rs1 |<< 3
+      val sh = MuxOH(MUX, Seq(rs1, sh1, sh2, sh3))
+      RESULT := up(el(IntRegFile, RS2)).asSInt + sh
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := RESULT.asBits
+    }
+  }
+}
+
+object ZbbLogicPlugin {
+  val OP = Payload(Bits(2 bit))
+}
+
+class ZbbLogicPlugin(val layer: LaneLayer,
+                     val executeAt: Int = 0,
+                     val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  import ZbbLogicPlugin._
+  val RESULT = Payload(Bits(Riscv.XLEN bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.ANDN).srcs(SRC1.RF, SRC2.RF).decode(OP -> B"00")
+    add(RvZbx.ORN).srcs(SRC1.RF, SRC2.RF).decode(OP -> B"01")
+    add(RvZbx.XNOR).srcs(SRC1.RF, SRC2.RF).decode(OP -> B"10")
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      val rs1 = up(el(IntRegFile, RS1)).asBits
+      val rs2 = up(el(IntRegFile, RS2)).asBits
+
+      RESULT := OP.muxDc(
+        0 -> (rs1 & ~rs2),
+        1 -> (rs1 | ~rs2),
+        2 -> (rs1 ^ ~rs2)
+      )
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := RESULT
+    }
+  }
+}
+
+object ZbbCountPlugin extends AreaObject {
+  val FLIP = Payload(Bool())
+  val MASK = Payload(Bool())
+  val WORD = Payload(Bool())
+}
+
+class ZbbCountPlugin(val layer: LaneLayer,
+                     val executeAt: Int = 0,
+                     val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+
+  import ZbbCountPlugin._
+  val COUNT = Payload(UInt(log2Up(Riscv.XLEN.get + 1) bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.CLZ).srcs(SRC1.RF).decode(MASK -> True, FLIP -> False, WORD -> False)
+    add(RvZbx.CTZ).srcs(SRC1.RF).decode(MASK -> True, FLIP -> True, WORD -> False)
+    add(RvZbx.CPOP).srcs(SRC1.RF).decode(MASK -> False, FLIP -> False, WORD -> False)
+    if(Riscv.XLEN.get == 64) {
+      add(RvZbx.CLZW).srcs(SRC1.RF).decode(MASK -> True, FLIP -> False, WORD -> True)
+      add(RvZbx.CTZW).srcs(SRC1.RF).decode(MASK -> True, FLIP -> True, WORD -> True)
+      add(RvZbx.CPOPW).srcs(SRC1.RF).decode(MASK -> False, FLIP -> False, WORD -> True)
+    }
+
+    uopRetainer.release()
+
+    val count = new el.Execute(executeAt) {
+      val rs1 = up(el(IntRegFile, RS1)).asBits
+      val countWidth = log2Up(Riscv.XLEN.get + 1)
+      
+      val clzFull = CountLeadingZeroes(rs1)
+      val ctzFull = CountTrailingZeroes(rs1)
+      val popFull = CountOne(rs1)
+      val zeroFull = FLIP.mux(ctzFull, clzFull)
+      val resultFull = MASK.mux(zeroFull, popFull)
+
+      if (Riscv.XLEN.get == 64) {
+        val word = rs1(31 downto 0)
+        val clzWord = CountLeadingZeroes(word)
+        val ctzWord = CountTrailingZeroes(word)
+        val popWord = CountOne(word)
+        val zeroWord = FLIP.mux(ctzWord, clzWord)
+        val resultWord = MASK.mux(zeroWord, popWord).resize(countWidth)
+
+        COUNT := WORD.mux(resultWord, resultFull)
+      } else {
+        COUNT := resultFull
+      }
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := COUNT.asBits.resized
+    }
+  }
+}
+
+object ZbbMinMaxPlugin {
+  val MIN = Payload(Bool())
+}
+
+class ZbbMinMaxPlugin(val layer: LaneLayer,
+                      val executeAt: Int = 0,
+                      val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  import ZbbMinMaxPlugin._
+  val RESULT = Payload(SInt(Riscv.XLEN bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.MAX).srcs(SRC1.RF, SRC2.RF, Op.LESS).decode(MIN -> False)
+    add(RvZbx.MIN).srcs(SRC1.RF, SRC2.RF, Op.LESS).decode(MIN -> True)
+    add(RvZbx.MAXU).srcs(SRC1.RF, SRC2.RF, Op.LESS_U).decode(MIN -> False)
+    add(RvZbx.MINU).srcs(SRC1.RF, SRC2.RF, Op.LESS_U).decode(MIN -> True)
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      RESULT := (srcp.LESS ^ MIN).mux(this(srcp.SRC2), this(srcp.SRC1))
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := RESULT.asBits
+    }
+  }
+}
+
+object ZbbRotatePlugin {
+  val LEFT = Payload(Bool())
+  val IS_W = Payload(Bool())
+}
+
+// TODO add option to also generate shift instructions? most of the hardware is a duplicate
+class ZbbRotatePlugin(val layer: LaneLayer,
+                      val executeAt: Int = 0,
+                      val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  import ZbbRotatePlugin._
+  val RESULT = Payload(Bits(Riscv.XLEN bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.ROL).srcs(SRC1.RF, SRC2.RF).decode(LEFT -> True, IS_W -> False)
+    add(RvZbx.ROR).srcs(SRC1.RF, SRC2.RF).decode(LEFT -> False, IS_W -> False)
+    add(RvZbx.RORI).srcs(SRC1.RF, SRC2.I).decode(LEFT -> False, IS_W -> False)
+    if(Riscv.XLEN.get == 64) {
+      add(RvZbx.ROLW).srcs(SRC1.RF, SRC2.RF).decode(LEFT -> True, IS_W -> True)
+      add(RvZbx.RORIW).srcs(SRC1.RF, SRC2.I).decode(LEFT -> False, IS_W -> True)
+      add(RvZbx.RORW).srcs(SRC1.RF, SRC2.RF).decode(LEFT -> False, IS_W -> True)
+      for(op <- Seq(RvZbx.ROLW, RvZbx.RORIW, RvZbx.RORW)) {
+        ifp.signExtend(wb, layer(op), 32)
+      }
+    }
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      val src1 = this(srcp.SRC1).asBits
+      if(Riscv.XLEN.get == 64)
+        when(IS_W) {
+          src1(63 downto 32) := 0
+        }
+
+      val amplitude = srcp.SRC2(log2Up(Riscv.XLEN.get) - 1 downto 0).asUInt
+      val reversed = LEFT ? src1.reversed | src1
+      val shifted = reversed.rotateRight(amplitude)
+      val patched = LEFT ? shifted.reversed | shifted
+
+      RESULT := patched
+      if (Riscv.XLEN.get == 64) {
+        when(IS_W) {
+          RESULT(31 downto 0) := patched(31 downto 0) | patched(63 downto 32)
+        }
+      }
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := RESULT
+    }
+  }
+}
+
+class ZbbOrPlugin(val layer: LaneLayer,
+                  val executeAt: Int = 0,
+                  val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val RESULT = Payload(Bits(Riscv.XLEN/8 bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.ORC_B).srcs(SRC1.RF)
+
+    uopRetainer.release()
+
+    val combine = new el.Execute(executeAt) {
+      val bits = Cat(up(el(IntRegFile, RS1)).subdivideIn(8 bit).map(_.orR))
+      RESULT := bits
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := Cat(RESULT.asBools.map(_ #* 8))
+    }
+  }
+}
+
+class ZbbByteReversePlugin(val layer: LaneLayer,
+                           val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(if(Riscv.XLEN.get == 32) RvZbx.REV8_32 else RvZbx.REV8_64).srcs(SRC1.RF)
+    uopRetainer.release()
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := Cat(up(el(IntRegFile, RS1)).subdivideIn(8 bit).reverse)
+    }
+  }
+}
+
+class ZbbExtendPlugin(val layer: LaneLayer,
+                      val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.SEXTB).srcs(SRC1.RF)
+    ifp.signExtend(wb, layer(RvZbx.SEXTB), 8)
+    add(RvZbx.SEXTH).srcs(SRC1.RF)
+    ifp.signExtend(wb, layer(RvZbx.SEXTH), 16)
+
+    val zeroExtend = if(Riscv.XLEN.get == 32) { RvZbx.ZEXTH_32 } else { RvZbx.ZEXTH_64 }
+    add(zeroExtend).srcs(SRC1.RF)
+    ifp.zeroExtend(wb, layer(zeroExtend), 16)
+    uopRetainer.release()
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := up(el(IntRegFile, RS1))(15 downto 0).resized
+    }
+  }
+}
+
+object ZbcPlugin {
+  val FLIP = Payload(Bool())
+  val SHIFT_RS2 = Payload(Bool())
+  val MASK_RS2 = Payload(Bool())
+}
+
+// Use common CLMUL HW by modifying inputs:
+// CLMUL as spec
+// CLMULH reversed rs1, rs2, output, rs2 shifted << 1
+// CLMULR reversed rs1, rs2, output, rs2 LSB masked
+class ZbcPlugin(val layer: LaneLayer,
+                val executeAt: Int = 0,
+                val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  import ZbcPlugin._
+  val RESULT = Payload(Bits(Riscv.XLEN.get bit))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.CLMUL).srcs(SRC1.RF, SRC2.RF).decode(FLIP -> False, SHIFT_RS2 -> False, MASK_RS2 -> False)
+    add(RvZbx.CLMULH).srcs(SRC1.RF, SRC2.RF).decode(FLIP -> True, SHIFT_RS2 -> True, MASK_RS2 -> False)
+    add(RvZbx.CLMULR).srcs(SRC1.RF, SRC2.RF).decode(FLIP -> True, SHIFT_RS2 -> False, MASK_RS2 -> True)
+
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      val rs1 = up(el(IntRegFile, RS1))
+      val rs2 = up(el(IntRegFile, RS2))
+      val multiplicand = FLIP ? rs1.reversed | rs1
+      val rs2_flipped = up(el(IntRegFile, RS2)).reversed
+      val multiplier = (this(SHIFT_RS2) ## this(MASK_RS2)).muxDc(
+        0 -> rs2,
+        1 -> rs2_flipped,
+        2 -> (rs2_flipped |<< 1),
+      )
+
+      val masked = Vec.tabulate(Riscv.XLEN.get) { i =>
+        multiplier(i) ? (multiplicand |<< i) | (B"0").resized
+      }
+      RESULT := masked.reduceBalancedTree(_ ^ _)
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := FLIP ? RESULT.reversed | RESULT
+    }
+  }
+}
+
+class ZbkbPackPlugin(val layer: LaneLayer,
+                     val executeAt: Int = 0,
+                     val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val SIZE = Payload(UInt(2 bit))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.PACKH).srcs(SRC1.RF, SRC2.RF).decode(SIZE -> U(0, 2 bits))
+    if (Riscv.XLEN.get == 64) {
+      add(RvZbx.PACKW).srcs(SRC1.RF, SRC2.RF).decode(SIZE -> U(1, 2 bits))
+      ifp.signExtend(wb, layer(RvZbx.PACKW), 32)
+    }
+    add(RvZbx.PACK).srcs(SRC1.RF, SRC2.RF).decode(SIZE -> U(log2Up(Riscv.XLEN / 8) - 1, 2 bits))
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      val src1 = this(srcp.SRC1).asBits
+      val src2 = this(srcp.SRC2).asBits
+
+      val result = B(0, Riscv.XLEN bits)
+      switch(this(SIZE)) {
+        for (i <- 0 until log2Up(Riscv.XLEN / 8)) is(i) {
+          val size = (1 << i) * 8
+          result(size - 1 downto 0) := src1.resized
+          result(2 * size - 1 downto size) := src2.resized
+        }
+      }
+      val RESULT = insert(result)
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := execute.RESULT
+    }
+  }
+}
+
+class ZbkbInterleavePlugin(val layer: LaneLayer,
+                           val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val UNZIP = Payload(Bool())
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.ZIP).srcs(SRC1.RF).decode(UNZIP -> False)
+    add(RvZbx.UNZIP).srcs(SRC1.RF).decode(UNZIP -> True)
+    uopRetainer.release()
+
+    val halfXlen = Riscv.XLEN.get / 2
+    val zipArray = (0 until halfXlen).flatMap(i => Seq(i, i + halfXlen))
+    val unzipArray =
+      (0 until halfXlen).map(_ * 2) ++
+      (0 until halfXlen).map(_ * 2 + 1)
+
+    val format = new el.Execute(formatAt) {
+      val rs1 = up(el(IntRegFile, RS1))
+      val zip = Cat(zipArray.map(rs1(_)))
+      val unzip = Cat(unzipArray.map(rs1(_)))
+
+      wb.valid := SEL
+      wb.payload := UNZIP ? unzip | zip
+    }
+  }
+}
+
+class ZbkbBitReversePlugin(val layer: LaneLayer,
+                           val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.BREV8).srcs(SRC1.RF)
+    uopRetainer.release()
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := Cat(up(el(IntRegFile, RS1)).subdivideIn(8 bit).map(_.reversed))
+    }
+  }
+}
+
+class ZbkxPlugin(val layer: LaneLayer,
+                 val executeAt: Int = 0,
+                 val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  val X8 = Payload(Bool())
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+    add(RvZbx.XPERM4).srcs(SRC1.RF, SRC2.RF).decode(X8 -> False)
+    add(RvZbx.XPERM8).srcs(SRC1.RF, SRC2.RF).decode(X8 -> True)
+    uopRetainer.release()
+
+    val execute = new el.Execute(executeAt) {
+      val rs1 = up(el(IntRegFile, RS1))
+      val rs2 = up(el(IntRegFile, RS2))
+
+      def xperm(size: Int): Bits = {
+        val slices = rs1.subdivideIn(size bits)
+        val indexs = rs2.subdivideIn(size bits)
+
+        val count = Riscv.XLEN.get / size
+        val oobPos = log2Up(count)
+        val oobSize = size - oobPos
+
+        indexs.map{ index =>
+          val selector = (oobSize == 0).mux(False, index(oobPos, oobSize bits).orR)
+          val mux = index(oobPos - 1 downto 0).asUInt
+          slices.read(mux).andMask(!selector)
+        }.asBits
+      }
+
+      val XPERM4 = insert(xperm(4))
+      val XPERM8 = insert(xperm(8))
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := X8 ? this(execute.XPERM8) | this(execute.XPERM4)
+    }
+  }
+}
+
+object ZbsPlugin {
+  val INSTRUCTION = Payload(Bits(2 bit))
+}
+
+class ZbsPlugin(val layer: LaneLayer,
+                val decodeAt: Int = 0,
+                val executeAt: Int = 0,
+                val formatAt: Int = 0) extends ExecutionUnitElementSimple(layer) {
+  import ZbsPlugin._
+  val MASK = Payload(Bits(Riscv.XLEN bits))
+  val RESULT = Payload(Bits(Riscv.XLEN bits))
+
+  val logic = during setup new Logic {
+    awaitBuild()
+    import SrcKeys._
+
+    val wb = newWriteback(ifp, formatAt)
+
+    add(RvZbx.BCLR).srcs(SRC1.RF, SRC2.RF).decode(INSTRUCTION -> B"00")
+    add(RvZbx.BEXT).srcs(SRC1.RF, SRC2.RF).decode(INSTRUCTION -> B"01")
+    add(RvZbx.BINV).srcs(SRC1.RF, SRC2.RF).decode(INSTRUCTION -> B"10")
+    add(RvZbx.BSET).srcs(SRC1.RF, SRC2.RF).decode(INSTRUCTION -> B"11")
+
+    add(RvZbx.BCLRI).srcs(SRC1.RF, SRC2.I).decode(INSTRUCTION -> B"00")
+    add(RvZbx.BEXTI).srcs(SRC1.RF, SRC2.I).decode(INSTRUCTION -> B"01")
+    add(RvZbx.BINVI).srcs(SRC1.RF, SRC2.I).decode(INSTRUCTION -> B"10")
+    add(RvZbx.BSETI).srcs(SRC1.RF, SRC2.I).decode(INSTRUCTION -> B"11")
+
+    uopRetainer.release()
+
+    val decode = new el.Execute(decodeAt) {
+      val mask = B(0, Riscv.XLEN bits)
+      val bit = srcp.SRC2.resize(log2Up(Riscv.XLEN) bit).asUInt
+      mask(bit) := True
+      MASK := mask
+    }
+
+    val execute = new el.Execute(executeAt) {
+      val rs1 = CombInit(up(el(IntRegFile, RS1)))
+      RESULT := INSTRUCTION.mux(
+        0 -> (rs1 & ~MASK),
+        1 -> B(0, Riscv.XLEN-1 bit) ## (rs1 & MASK).orR,
+        2 -> (rs1 ^ MASK),
+        3 -> (rs1 | MASK)
+      )
+    }
+
+    val format = new el.Execute(formatAt) {
+      wb.valid := SEL
+      wb.payload := RESULT
+    }
+  }
+}

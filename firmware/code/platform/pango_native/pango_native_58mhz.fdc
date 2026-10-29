@@ -1,9 +1,0 @@
-# 58 MHz on the CORE clock (period 17.241379 ns).
-#
-# Hardware chain: 27 MHz on D18 -> GTP_PPLL I=1/M=1/F=58/O0=27 -> 27 x 58/27 = 58.000 MHz.
-# VCO = 27 x 58 = 1566 MHz (legal 1330..2133).
-#
-# Ladder position: the rung above 56 MHz, used only if the cut-6 netlist routes
-# with slack to spare at 17.857 ns.
-create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
-create_clock -name core_clk -period 17.241379 -waveform {0 8.6206895} [get_pins {u_core_pll/CLKOUT0}]

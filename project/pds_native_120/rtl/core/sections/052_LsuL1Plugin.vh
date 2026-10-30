@@ -1848,21 +1848,24 @@
   replica_late0_shifter u_late0_shifter(
     .execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane0(execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane0),
     .execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane0(execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane0),
-    .execute_ctrl4_down_late0_SrcPlugin_SRC1_lane0(execute_ctrl4_down_late0_SrcPlugin_SRC1_lane0),
+    // RV32I shifts use rs1; bypass the generic RS1/U-immediate mux on the late0 path.
+    .execute_ctrl4_down_late0_SrcPlugin_SRC1_lane0(execute_ctrl4_up_integer_RS1_lane0),
     .execute_ctrl4_down_late0_SrcPlugin_SRC2_lane0(execute_ctrl4_down_late0_SrcPlugin_SRC2_lane0),
     .execute_ctrl4_down_late0_BarrelShifterPlugin_SHIFT_RESULT_lane0(execute_ctrl4_down_late0_BarrelShifterPlugin_SHIFT_RESULT_lane0)
   );
   replica_early1_shifter u_early1_shifter(
     .execute_ctrl2_down_BarrelShifterPlugin_LEFT_lane1(execute_ctrl2_down_BarrelShifterPlugin_LEFT_lane1),
     .execute_ctrl2_down_BarrelShifterPlugin_SIGNED_lane1(execute_ctrl2_down_BarrelShifterPlugin_SIGNED_lane1),
-    .execute_ctrl2_down_early1_SrcPlugin_SRC1_lane1(execute_ctrl2_down_early1_SrcPlugin_SRC1_lane1),
+    // RV32I shifts use rs1; bypass the generic RS1/U-immediate mux on the early lane.
+    .execute_ctrl2_down_early1_SrcPlugin_SRC1_lane1(execute_ctrl2_up_integer_RS1_lane1),
     .execute_ctrl2_down_early1_SrcPlugin_SRC2_lane1(execute_ctrl2_down_early1_SrcPlugin_SRC2_lane1),
     .execute_ctrl2_down_early1_BarrelShifterPlugin_SHIFT_RESULT_lane1(execute_ctrl2_down_early1_BarrelShifterPlugin_SHIFT_RESULT_lane1)
   );
   replica_late1_shifter u_late1_shifter(
     .execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane1(execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane1),
     .execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane1(execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane1),
-    .execute_ctrl4_down_late1_SrcPlugin_SRC1_lane1(execute_ctrl4_down_late1_SrcPlugin_SRC1_lane1),
+    // RV32I shifts always use rs1; bypass the generic RS1/U-immediate mux on this critical path.
+    .execute_ctrl4_down_late1_SrcPlugin_SRC1_lane1(execute_ctrl4_up_integer_RS1_lane1),
     .execute_ctrl4_down_late1_SrcPlugin_SRC2_lane1(execute_ctrl4_down_late1_SrcPlugin_SRC2_lane1),
     .execute_ctrl4_down_late1_BarrelShifterPlugin_SHIFT_RESULT_lane1(execute_ctrl4_down_late1_BarrelShifterPlugin_SHIFT_RESULT_lane1)
   );

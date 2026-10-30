@@ -1,0 +1,1778 @@
+# vsim -c -quiet work.tb_soc_dbg -do "run -all; quit -f" "+maxchars=1400" "+maxcycles=25000000" "+watch=99" "+fastuart" "+trace=trace_on.txt" "+trace_n=3000000" 
+# Start time: 11:02:25 on Oct 30,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# ** Warning: (vsim-PLI-3691) ../../tb/core_replica/tb_soc_dbg.v(65): Expected a system task, not a system function '$value$plusargs'.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_soc_dbg File: ../../tb/core_replica/tb_soc_dbg.v
+# ** Warning: (vsim-PLI-3691) ../../tb/core_replica/tb_soc_dbg.v(66): Expected a system task, not a system function '$value$plusargs'.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_soc_dbg File: ../../tb/core_replica/tb_soc_dbg.v
+# ** Warning: (vsim-PLI-3691) ../../tb/core_replica/tb_soc_dbg.v(67): Expected a system task, not a system function '$value$plusargs'.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_soc_dbg File: ../../tb/core_replica/tb_soc_dbg.v
+# run -all
+# [TRACE] fastuart: uart status 被钉死, 打印不再限速
+# [TRACE] -> trace_on.txt
+# [W0] c=7 pc=80000000 data=80006000 old=00000000
+# [W0] c=8 pc=80000004 data=80006698 old=80006000
+# [BUPD] c=14 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=16 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=16 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=21 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=23 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=23 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=28 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=30 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=30 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=35 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=37 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=37 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=42 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=44 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=44 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=49 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=51 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=51 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=56 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=58 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=58 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [BUPD] c=63 pc=80000030 tk=0 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=65 pc0=8000003a bad0=0 ok0=0 tk0=1 pc1=8000003c bad1=0 -> 80000030
+# [BUPD] c=65 pc=8000003a tk=1 tgt=80000030 call=0 ret=0 link=8000003c
+# [RDIR] c=70 pc0=80000030 bad0=0 ok0=0 tk0=1 pc1=80000034 bad1=0 -> 8000003c
+# [BUPD] c=70 pc=80000030 tk=1 tgt=8000003c call=0 ret=0 link=80000034
+# [RDIR] c=75 pc0=80000040 bad0=0 ok0=0 tk0=1 pc1=80000044 bad1=0 -> 80000d50
+# [BUPD] c=75 pc=80000040 tk=1 tgt=80000d50 call=1 ret=0 link=80000044
+# [RDIR] c=101 pc0=80000d7e bad0=0 ok0=0 tk0=0 pc1=80000d80 bad1=0 -> 80003868
+# [BUPD] c=101 pc=80000d80 tk=1 tgt=80003868 call=1 ret=0 link=80000d84
+# [RDIR] c=120 pc0=800038a8 bad0=0 ok0=0 tk0=1 pc1=800038aa bad1=0 -> 80003e58
+# [BUPD] c=120 pc=800038a8 tk=1 tgt=80003e58 call=1 ret=0 link=800038aa
+# [BUPD] c=143 pc=80003e92 tk=0 tgt=80004cec call=0 ret=0 link=80003e96
+# [BUPD] c=155 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [RDIR] c=159 pc0=80003ed4 bad0=0 ok0=0 tk0=1 pc1=80003ed8 bad1=0 -> 80003ec4
+# [BUPD] c=159 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=163 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=167 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=170 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=174 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=177 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=181 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=184 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=188 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=191 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=195 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=198 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=202 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=205 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=209 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=212 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [BUPD] c=216 pc=80003ed4 tk=1 tgt=80003ec4 call=0 ret=0 link=80003ed8
+# [BUPD] c=219 pc=80003ec4 tk=0 tgt=80003f24 call=0 ret=0 link=80003ec8
+# [PRED] c=304 pc=80003ed4 -> 80003ec4
+# [PRED] c=311 pc=80003ed4 -> 80003ec4
+# [PRED] c=318 pc=80003ed4 -> 80003ec4
+# [RDIR] c=324 pc0=80003ec4 bad0=0 ok0=0 tk0=1 pc1=00000000 bad1=0 -> 80003f24
+# [RDIR] c=333 pc0=80003f36 bad0=0 ok0=0 tk0=1 pc1=80003f3a bad1=0 -> 80003f46
+# [RDIR] c=345 pc0=80003f6a bad0=0 ok0=0 tk0=1 pc1=80003f6e bad1=0 -> 80003fe0
+# [RDIR] c=357 pc0=80004004 bad0=0 ok0=0 tk0=1 pc1=80004006 bad1=0 -> 80004092
+# [RDIR] c=362 pc0=80004096 bad0=0 ok0=0 tk0=1 pc1=80004098 bad1=0 -> 8000407c
+# [RDIR] c=367 pc0=80004080 bad0=0 ok0=0 tk0=0 pc1=80004082 bad1=0 -> 80003930
+# [RDIR] c=383 pc0=80003966 bad0=0 ok0=0 tk0=1 pc1=8000396a bad1=0 -> 80003a8e
+# [RDIR] c=388 pc0=80003a90 bad0=0 ok0=0 tk0=1 pc1=80003a92 bad1=0 -> 80003982
+# [RDIR] c=392 pc0=80003982 bad0=0 ok0=0 tk0=1 pc1=80003986 bad1=0 -> 8000399c
+# [RDIR] c=396 pc0=8000399c bad0=0 ok0=0 tk0=1 pc1=00000000 bad1=0 -> 80003d78
+# [CFPROBE] c=475 L1 pc=80003d9a f3=7 s1=072e18e2 s2=0000000a tk=1 tgt=80003d7e pred=0 ptgt=0000
+# [RDIR] c=475 pc0=80003d96 bad0=0 ok0=0 tk0=0 pc1=80003d9a bad1=0 -> 80003d7e
+# [CFPROBE] c=555 L1 pc=80003d9a f3=7 s1=00b7cf49 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=630 L1 pc=80003d9a f3=7 s1=00126187 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=705 L1 pc=80003d9a f3=7 s1=0001d68d s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=780 L1 pc=80003d9a f3=7 s1=00002f0e s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=855 L1 pc=80003d9a f3=7 s1=000004b4 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=930 L1 pc=80003d9a f3=7 s1=00000078 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=1005 L1 pc=80003d9a f3=7 s1=0000000c s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [WIN] n=396 c=1006 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1007 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1008 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1009 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1010 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1011 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1012 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1013 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1014 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1015 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1016 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1017 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1018 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1019 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1020 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1021 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1022 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1023 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1024 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1025 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1026 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1027 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1028 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1029 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1030 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1031 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1032 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1033 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1034 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1035 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1036 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1037 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1038 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=396 c=1039 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=397 c=1040 pc0=80003d7e v0=1 tk0=0 br0=0 | pc1=80003d82 v1=1 tk1=0 br1=0 s1=00000000 s2=00000008 | red=0 rpc=80003d84
+# [WIN] n=397 c=1041 pc0=80003d84 v0=1 tk0=0 br0=0 | pc1=80003d86 v1=0 tk1=0 br1=0 s1=8000f2ac s2=00000008 | red=0 rpc=80003d8a
+# [WIN] n=401 c=1042 pc0=80003d86 v0=1 tk0=0 br0=0 | pc1=80003d8a v1=1 tk1=0 br1=0 s1=00000000 s2=00000001 | red=0 rpc=80003d8c
+# [WIN] n=401 c=1043 pc0=80003d8c v0=1 tk0=0 br0=0 | pc1=80003d8e v1=0 tk1=0 br1=0 s1=00000001 s2=00000000 | red=0 rpc=80003d92
+# [ALN] c=1044 pcq=80003d7e ptk=0 ptgt=80000000 out_n=0 dbc=3 q0=80003d92 q1=80003d96 pred=0
+# [WIN] n=404 c=1044 pc0=80003d8e v0=1 tk0=0 br0=0 | pc1=80003d92 v1=0 tk1=0 br1=0 s1=00000001 s2=0000000a | red=0 rpc=80003d96
+# [ALN] c=1045 pcq=80003d7e ptk=0 ptgt=80000000 out_n=0 dbc=2 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1045 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1046 pcq=80003d7e ptk=0 ptgt=80000000 out_n=0 dbc=2 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1046 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1047 pcq=80003d7e ptk=0 ptgt=80000000 out_n=0 dbc=2 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1047 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1048 pcq=80003d7e ptk=0 ptgt=80000000 out_n=2 dbc=2 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1048 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1049 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1049 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1050 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1050 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1051 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1051 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1052 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1052 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1053 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1053 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1054 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1054 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1055 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1055 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1056 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1056 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1057 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1057 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1058 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1058 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1059 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1059 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1060 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1060 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1061 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1061 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1062 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1062 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1063 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1063 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1064 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1064 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1065 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1065 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1066 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1066 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1067 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1067 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1068 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1068 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1069 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1069 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1070 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1070 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1071 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1071 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1072 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1072 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1073 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1073 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1074 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1074 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1075 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1075 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1076 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1076 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1077 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1077 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1078 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1078 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [ALN] c=1079 pcq=80003d84 ptk=0 ptgt=80000000 out_n=0 dbc=4 q0=80003d96 q1=80003d9a pred=0
+# [WIN] n=404 c=1079 pc0=80003d92 v0=1 tk0=0 br0=0 | pc1=80003d96 v1=0 tk1=0 br1=0 s1=8000f2b5 s2=80005889 | red=0 rpc=80003d9a
+# [BAD] c=1080 pc0=80003d96 rvc0=0 ptgt0=0000 -> 80003d9a | pc1=80003d9a rvc1=0 ptgt1=3d7e
+# [CFPROBE] c=1080 L1 pc=80003d9a f3=7 s1=00000001 s2=0000000a tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [ALN] c=1080 pcq=80003d84 ptk=0 ptgt=80000000 out_n=2 dbc=2 q0=80003d7e q1=80003d82 pred=0
+# [WIN] n=406 c=1080 pc0=80003d96 v0=1 tk0=0 br0=0 | pc1=80003d9a v1=1 tk1=0 br1=1 s1=00000001 s2=0000000a | red=1 rpc=80003d9e
+# [RDIR] c=1080 pc0=80003d96 bad0=0 ok0=0 tk0=0 pc1=80003d9a bad1=1 -> 80003d9e
+# [ALN] c=1081 pcq=80003d9e ptk=0 ptgt=80003d78 out_n=0 dbc=0 q0=00000000 q1=00000000 pred=0
+# [WIN] n=406 c=1081 pc0=80003d7e v0=0 tk0=0 br0=0 | pc1=80003d82 v1=0 tk1=0 br1=0 s1=00000000 s2=00000009 | red=0 rpc=80003d84
+# [WIN] n=409 c=1082 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=409 c=1083 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=409 c=1084 pc0=80003d9e v0=1 tk0=1 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=1 rpc=800039b0
+# [RDIR] c=1084 pc0=80003d9e bad0=0 ok0=0 tk0=1 pc1=00000000 bad1=0 -> 800039b0
+# [WIN] n=409 c=1085 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=410 c=1086 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=410 c=1087 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=410 c=1088 pc0=800039b0 v0=1 tk0=0 br0=0 | pc1=800039b2 v1=1 tk1=1 br1=1 s1=00000009 s2=ffffffff | red=1 rpc=800039b8
+# [RDIR] c=1088 pc0=800039b0 bad0=0 ok0=0 tk0=0 pc1=800039b2 bad1=0 -> 800039b8
+# [WIN] n=410 c=1089 pc0=800039b6 v0=0 tk0=0 br0=0 | pc1=800039b8 v1=0 tk1=0 br1=0 s1=ffffffff s2=00000009 | red=0 rpc=800039bc
+# [WIN] n=412 c=1090 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=412 c=1091 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=412 c=1092 pc0=800039b8 v0=1 tk0=0 br0=0 | pc1=800039bc v1=1 tk1=0 br1=1 s1=00000000 s2=00000000 | red=0 rpc=800039be
+# [WIN] n=412 c=1093 pc0=800039be v0=1 tk0=0 br0=0 | pc1=800039c2 v1=1 tk1=0 br1=0 s1=00000000 s2=8000f348 | red=0 rpc=800039c4
+# [WIN] n=414 c=1094 pc0=800039c4 v0=1 tk0=1 br0=1 | pc1=800039c8 v1=0 tk1=0 br1=0 s1=8000f33e s2=8000f348 | red=1 rpc=80003a92
+# [RDIR] c=1094 pc0=800039c4 bad0=0 ok0=0 tk0=1 pc1=800039c8 bad1=0 -> 80003a92
+# [WIN] n=414 c=1095 pc0=800039c8 v0=0 tk0=0 br0=0 | pc1=800039cc v1=0 tk1=0 br1=0 s1=8000f348 s2=00000000 | red=0 rpc=800039d0
+# [WIN] n=417 c=1096 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=417 c=1097 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=417 c=1098 pc0=80003a92 v0=1 tk0=0 br0=0 | pc1=80003a94 v1=1 tk1=1 br1=1 s1=00000000 s2=00000000 | red=1 rpc=80003a9c
+# [RDIR] c=1098 pc0=80003a92 bad0=0 ok0=0 tk0=0 pc1=80003a94 bad1=0 -> 80003a9c
+# [WIN] n=417 c=1099 pc0=80003a96 v0=0 tk0=0 br0=0 | pc1=80003a9a v1=0 tk1=0 br1=0 s1=8000f348 s2=80004084 | red=0 rpc=80003a9c
+# [WIN] n=419 c=1100 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=419 c=1101 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=419 c=1102 pc0=80003a9c v0=1 tk0=1 br0=1 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=1 rpc=80003aac
+# [RDIR] c=1102 pc0=80003a9c bad0=0 ok0=0 tk0=1 pc1=00000000 bad1=0 -> 80003aac
+# [WIN] n=419 c=1103 pc0=80003aa0 v0=0 tk0=0 br0=0 | pc1=80003aa2 v1=0 tk1=0 br1=1 s1=0000000a s2=8000f33e | red=0 rpc=80003aa6
+# [WIN] n=420 c=1104 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=420 c=1105 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=420 c=1106 pc0=80003aac v0=1 tk0=0 br0=1 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=420 c=1107 pc0=80003ab0 v0=1 tk0=0 br0=0 | pc1=80003ab4 v1=1 tk1=0 br1=0 s1=00000000 s2=8000f348 | red=0 rpc=80003ab6
+# [WIN] n=421 c=1108 pc0=80003ab6 v0=1 tk0=1 br0=1 | pc1=80003aba v1=0 tk1=0 br1=0 s1=8000f33d s2=8000f348 | red=1 rpc=80003e52
+# [WIN] n=421 c=1109 pc0=80003aba v0=0 tk0=0 br0=0 | pc1=80003abe v1=0 tk1=0 br1=0 s1=8000f348 s2=00000000 | red=0 rpc=80003ac2
+# [WIN] n=424 c=1110 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=424 c=1111 pc0=00000000 v0=0 tk0=0 br0=0 | pc1=00000000 v1=0 tk1=0 br1=0 s1=00000000 s2=00000000 | red=0 rpc=00000004
+# [WIN] n=424 c=1112 pc0=80003e52 v0=1 tk0=0 br0=0 | pc1=80003e54 v1=1 tk1=1 br1=0 s1=8000f2ac s2=00000000 | red=1 rpc=80003b3a
+# [WIN] n=424 c=1113 pc0=80003e56 v0=0 tk0=0 br0=0 | pc1=80003e58 v1=0 tk1=0 br1=0 s1=8000f2a0 s2=00000031 | red=0 rpc=80003e5c
+# [CFPROBE] c=1407 L1 pc=80003d9a f3=7 s1=00000014 s2=0000000a tk=1 tgt=80003d7e pred=0 ptgt=3d7e
+# [BAD] c=1487 pc0=80003d96 rvc0=0 ptgt0=0000 -> 80003d9a | pc1=80003d9a rvc1=0 ptgt1=3d7e
+# [CFPROBE] c=1487 L1 pc=80003d9a f3=7 s1=00000002 s2=0000000a tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [BAD] c=1532 pc0=80003c12 rvc0=1 ptgt0=0000 -> 80003c14 | pc1=80003c14 rvc1=0 ptgt1=3c72
+# [BAD] c=1533 pc0=80003c14 rvc0=0 ptgt0=3c72 -> 80003c18 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=1574 pc0=80003ed4 rvc0=0 ptgt0=3ec4 -> 80003ed8 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=2690 pc0=80003f04 rvc0=1 ptgt0=3ef8 -> 80003f06 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5310 pc0=800002f2 rvc0=0 ptgt0=0000 -> 800002f6 | pc1=800002f6 rvc1=0 ptgt1=0354
+# [BAD] c=5311 pc0=800002f2 rvc0=0 ptgt0=0000 -> 800002f6 | pc1=800002f6 rvc1=0 ptgt1=0354
+# [BAD] c=5312 pc0=800002f6 rvc0=0 ptgt0=0354 -> 800002fa | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5338 pc0=800003ee rvc0=0 ptgt0=0550 -> 800003f2 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5445 pc0=8000041c rvc0=0 ptgt0=0438 -> 80000420 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5533 pc0=8000045e rvc0=1 ptgt0=046a -> 80000460 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5618 pc0=8000041c rvc0=0 ptgt0=0438 -> 80000420 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5788 pc0=8000041c rvc0=0 ptgt0=0438 -> 80000420 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=5997 pc0=800003d6 rvc0=0 ptgt0=03c0 -> 800003da | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=6159 pc0=800003d6 rvc0=0 ptgt0=03c0 -> 800003da | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=6176 pc0=8000041c rvc0=0 ptgt0=0438 -> 80000420 | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=6385 pc0=800003d6 rvc0=0 ptgt0=03c0 -> 800003da | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=6547 pc0=800003d6 rvc0=0 ptgt0=03c0 -> 800003da | pc1=00000000 rvc1=0 ptgt1=0000
+# [BAD] c=6564 pc0=8000041c rvc0=0 ptgt0=0438 -> 80000420 | pc1=00000000 rvc1=0 ptgt1=0000
+# [UART 11560] V
+# [UARTST] c=20000 pc=800006ce st=00010000 cnt=31 busy=1 div=129 bitidx=7 clkc=715 push=33 pop=2
+# [UART 21961] E
+# [UART 32362] X
+# [UARTST] c=40000 pc=800006b8 st=00010000 cnt=29 busy=1 div=129 bitidx=6 clkc=953 push=33 pop=4
+# [UART 42763] I
+# [UART 53164] I
+# [UARTST] c=60000 pc=800006bc st=00010000 cnt=27 busy=1 div=129 bitidx=6 clkc=151 push=33 pop=6
+# [UART 63565] _
+# [UART 73966] P
+# [UARTST] c=80000 pc=8000239a st=00010000 cnt=25 busy=1 div=129 bitidx=5 clkc=389 push=33 pop=8
+# [UART 84367] A
+# [UART 94768] N
+# [UARTST] c=100000 pc=80001de4 st=00010000 cnt=23 busy=1 div=129 bitidx=4 clkc=627 push=33 pop=10
+# [UART 105169] G
+# [UART 115570] O
+# [UARTST] c=120000 pc=80001e18 st=00010000 cnt=21 busy=1 div=129 bitidx=3 clkc=865 push=33 pop=12
+# [UART 125971] _
+# [UART 136372] B
+# [UARTST] c=140000 pc=80001cd0 st=00010000 cnt=19 busy=1 div=129 bitidx=3 clkc=63 push=33 pop=14
+# [UART 146773] O
+# [UART 157174] O
+# [UARTST] c=160000 pc=80002b46 st=00010000 cnt=17 busy=1 div=129 bitidx=2 clkc=301 push=33 pop=16
+# [UART 167575] T
+# [UART 177976] 
+# 
+# [UARTST] c=180000 pc=00000000 st=00010000 cnt=15 busy=1 div=129 bitidx=1 clkc=539 push=33 pop=18
+# [UART 188377] 
+# 
+# [UART 198778] C
+# [UARTST] c=200000 pc=80002d88 st=00010000 cnt=13 busy=1 div=129 bitidx=0 clkc=777 push=33 pop=20
+# [SNAP] c=200000 pc=80002d82 instr=008e8f33
+# [UART 209179] P
+# [UART 219580] U
+# [UARTST] c=220000 pc=00000000 st=00010000 cnt=12 busy=1 div=129 bitidx=9 clkc=1016 push=33 pop=21
+# [UART 229981] _
+# [UARTST] c=240000 pc=80002dca st=00010000 cnt=10 busy=1 div=129 bitidx=9 clkc=214 push=33 pop=23
+# [UART 240382] H
+# [UART 250783] Z
+# [UARTST] c=260000 pc=80001ea2 st=00010000 cnt=8 busy=1 div=129 bitidx=8 clkc=452 push=33 pop=25
+# [UART 261184] =
+# [UART 271585] 1
+# [UARTST] c=280000 pc=80002c86 st=00010000 cnt=6 busy=1 div=129 bitidx=7 clkc=690 push=33 pop=27
+# [UART 281986] 2
+# [UART 292387] 0
+# [UARTST] c=300000 pc=00000000 st=00010000 cnt=4 busy=1 div=129 bitidx=6 clkc=928 push=33 pop=29
+# [UART 302788] 4
+# [UART 313189] 6
+# [UARTST] c=320000 pc=80003706 st=00010000 cnt=2 busy=1 div=129 bitidx=6 clkc=126 push=33 pop=31
+# [UART 323590] 1
+# [UART 333991] 5
+# [UARTST] c=340000 pc=80000766 st=00010000 cnt=0 busy=1 div=129 bitidx=5 clkc=364 push=33 pop=33
+# [UART 344392] 3
+# [UARTST] c=360000 pc=8000075e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=380000 pc=800036be st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=400000 pc=800006ca st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=400000 pc=00000000 instr=00000000
+# [UARTST] c=420000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=440000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=460000 pc=80001d6e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=480000 pc=80002512 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=500000 pc=80001cb4 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=520000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=540000 pc=80002c84 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=560000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=580000 pc=80002c78 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=600000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=600000 pc=80002a9e instr=02f86763
+# [UARTST] c=620000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=640000 pc=80002ba2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=660000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=680000 pc=8000009a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=700000 pc=8000075c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=720000 pc=800006c8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=740000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=760000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=780000 pc=800006bc st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=800000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=800000 pc=800006bc instr=00271803
+# [UARTST] c=820000 pc=80001e74 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=840000 pc=80001cc8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=860000 pc=800001a8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=880000 pc=80001dec st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=900000 pc=80002aa2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=920000 pc=80002b28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=940000 pc=80002b4e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=960000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=980000 pc=80001ce8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1000000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=1000000 pc=800036c6 instr=004f1e13
+# [UARTST] c=1020000 pc=80002a84 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1040000 pc=8000360e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1060000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1080000 pc=800006ca st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1100000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1120000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1140000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1160000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1180000 pc=80001cd0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1200000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=1200000 pc=80002144 instr=00000e85
+# [UARTST] c=1220000 pc=80001e62 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1240000 pc=80001e28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1260000 pc=80002afa st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1280000 pc=800032f8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1300000 pc=80002b74 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1320000 pc=80002b52 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1340000 pc=80001ffc st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1360000 pc=80001e00 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1380000 pc=80002b46 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1400000 pc=800003f6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=1400000 pc=800003ee instr=160c8163
+# [UARTST] c=1420000 pc=8000075a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1440000 pc=800006ca st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1460000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1480000 pc=800006c8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1500000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1520000 pc=800006b8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1540000 pc=800021fe st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1560000 pc=80001e7a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1580000 pc=80001e30 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1600000 pc=80001b9e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=1600000 pc=80001b98 instr=0a090663
+# [UARTST] c=1620000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1640000 pc=80002b4e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1660000 pc=80002d8c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1680000 pc=80002b74 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1700000 pc=80002c48 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1720000 pc=80001e18 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1740000 pc=80002c5e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1760000 pc=800002e6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1780000 pc=8000370e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1800000 pc=800006ce st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=1800000 pc=800006c8 instr=00008416
+# [UARTST] c=1820000 pc=80000766 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1840000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1860000 pc=800006d6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1880000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1900000 pc=800006b8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1920000 pc=80001e82 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1940000 pc=80001cc0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1960000 pc=8000238e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=1980000 pc=80001ddc st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2000000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=2000000 pc=80002d9a instr=02c00693
+# [UARTST] c=2020000 pc=80002ac8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2040000 pc=80003430 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2060000 pc=80002a88 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2080000 pc=80001cc8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2100000 pc=80002c48 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2120000 pc=80002b02 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2140000 pc=80000550 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2160000 pc=800006ce st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2180000 pc=800006ce st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2200000 pc=800036c6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=2200000 pc=800036be instr=00469593
+# [UARTST] c=2220000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2240000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2260000 pc=800006c8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2280000 pc=80001cd0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2300000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2320000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2340000 pc=80001e5e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2360000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2380000 pc=80002c9e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2400000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=2400000 pc=80002c28 instr=00000705
+# [UARTST] c=2420000 pc=80002bb4 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2440000 pc=800023b2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2460000 pc=80001e74 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2480000 pc=80002d7c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2500000 pc=800007ea st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2520000 pc=8000075c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2540000 pc=8000075a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2560000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2580000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2600000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=2600000 pc=800006bc instr=00271803
+# [UARTST] c=2620000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2640000 pc=80001cd0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2660000 pc=80001e82 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2680000 pc=80001e8a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2700000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2720000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2740000 pc=80002c9e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2760000 pc=80002d86 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2780000 pc=80002d3c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2800000 pc=80003524 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=2800000 pc=8000351c instr=00f74fb3
+# [UARTST] c=2820000 pc=80001e28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2840000 pc=80002c5a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2860000 pc=800001ac st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2880000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2900000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2920000 pc=8000075c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2940000 pc=800035d6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2960000 pc=800006c4 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=2980000 pc=800006b6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3000000 pc=80002f76 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=3000000 pc=80002f6e instr=0f030293
+# [UARTST] c=3020000 pc=80001e62 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3040000 pc=80001e6a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3060000 pc=80001c80 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3080000 pc=80002ce4 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3100000 pc=80002af6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3120000 pc=80002a92 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3140000 pc=80002c62 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3160000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3180000 pc=80001e00 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3200000 pc=80002d32 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=3200000 pc=00000000 instr=00000000
+# [UARTST] c=3220000 pc=80003176 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3240000 pc=80000060 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3260000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3280000 pc=800006ca st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3300000 pc=800000a6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3320000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3340000 pc=800006d6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3360000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3380000 pc=80001e28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3400000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=3400000 pc=00000000 instr=00000000
+# [UARTST] c=3420000 pc=800020c6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3440000 pc=80001e7a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3460000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3480000 pc=80002b5a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3500000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3520000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3540000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3560000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3580000 pc=80002b1c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3600000 pc=800003e6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=3600000 pc=00000000 instr=00000000
+# [UARTST] c=3620000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3640000 pc=8000075e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3660000 pc=80003774 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3680000 pc=8000070e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3700000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3720000 pc=800006ce st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3740000 pc=80001c3a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3760000 pc=80002228 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3780000 pc=80001e28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3800000 pc=80001e74 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=3800000 pc=80001e6a instr=00008615
+# [UARTST] c=3820000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3840000 pc=80002cd6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3860000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3880000 pc=80002ab2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3900000 pc=8000213c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3920000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3940000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3960000 pc=80000392 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=3980000 pc=800006ce st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4000000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=4000000 pc=8000075c instr=0000c785
+# [UARTST] c=4020000 pc=8000075a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4040000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4060000 pc=800006ba st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4080000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4100000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4120000 pc=80001e18 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4140000 pc=80001d74 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4160000 pc=80001cd8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4180000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4200000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=4200000 pc=80002b02 instr=0fff7f93
+# [UARTST] c=4220000 pc=80002b40 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4240000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4260000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4280000 pc=80001e4e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4300000 pc=80002a80 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4320000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4340000 pc=8000372e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4360000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4380000 pc=80000766 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4400000 pc=8000007e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=4400000 pc=80000072 instr=01079693
+# [UARTST] c=4420000 pc=800006c4 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4440000 pc=800006b6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4460000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4480000 pc=80001e92 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4500000 pc=80001cd8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4520000 pc=800035de st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4540000 pc=80001dfa st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4560000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4580000 pc=80002b4a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4600000 pc=80002a88 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=4600000 pc=80002a84 instr=00074783
+# [UARTST] c=4620000 pc=80002a9e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4640000 pc=80001cf8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4660000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4680000 pc=80002d90 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4700000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4720000 pc=800006c8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4740000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4760000 pc=80000406 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4780000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4800000 pc=800006c8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=4800000 pc=00000000 instr=00000000
+# [UARTST] c=4820000 pc=800006bc st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4840000 pc=80001c94 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4860000 pc=80001c70 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4880000 pc=80001e34 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4900000 pc=80001dd6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4920000 pc=80002b34 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4940000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4960000 pc=80002b86 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=4980000 pc=80002d86 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5000000 pc=80003712 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=5000000 pc=80003706 instr=00155713
+# [UARTST] c=5020000 pc=80001e0c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5040000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5060000 pc=800007f6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5080000 pc=80000774 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5100000 pc=80000766 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5120000 pc=80000766 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5140000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5160000 pc=800006b8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5180000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5200000 pc=80001cc0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=5200000 pc=80001cb4 instr=00000741
+# [UARTST] c=5220000 pc=80001e4e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5240000 pc=80001e56 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5260000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5280000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5300000 pc=80003264 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5320000 pc=80002d82 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5340000 pc=80002b40 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5360000 pc=80003274 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5380000 pc=80001dd6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5400000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=5400000 pc=80002b52 instr=0dfe7893
+# [UARTST] c=5420000 pc=800001ac st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5440000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5460000 pc=800006ca st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5480000 pc=8000075a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5500000 pc=8000369a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5520000 pc=800006b8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5540000 pc=800006bc st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5560000 pc=800000e8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5580000 pc=80001e28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5600000 pc=80001e3a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=5600000 pc=80001e30 instr=4059d993
+# [UARTST] c=5620000 pc=80001b9c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5640000 pc=80002c02 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5660000 pc=80002a80 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5680000 pc=80002d32 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5700000 pc=80002b02 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5720000 pc=80002ac2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5740000 pc=80001dd8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5760000 pc=80002be0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5780000 pc=800032f8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5800000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=5800000 pc=00000000 instr=00000000
+# [UARTST] c=5820000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5840000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5860000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5880000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5900000 pc=800006ba st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5920000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5940000 pc=80001e28 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5960000 pc=80001c3a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=5980000 pc=80002128 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6000000 pc=80001e82 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=6000000 pc=80001e74 instr=032a0a33
+# [UARTST] c=6020000 pc=80002d86 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6040000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6060000 pc=80003310 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6080000 pc=80002a9e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6100000 pc=80001c54 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6120000 pc=80002a92 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6140000 pc=80002a96 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6160000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6180000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6200000 pc=8000075c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=6200000 pc=8000075a instr=0000439c
+# [UARTST] c=6220000 pc=80003646 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6240000 pc=800006c8 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6260000 pc=800006bc st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6280000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6300000 pc=80001cc0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6320000 pc=800036e6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6340000 pc=80001e82 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6360000 pc=80001e3a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6380000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6400000 pc=80002c0c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=6400000 pc=80002c02 instr=fd0e0813
+# [UARTST] c=6420000 pc=80002b08 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6440000 pc=80002a9a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6460000 pc=800021f0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6480000 pc=80001e18 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6500000 pc=80002d90 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6520000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6540000 pc=8000075a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6560000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6580000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6600000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=6600000 pc=800006bc instr=00271803
+# [UARTST] c=6620000 pc=800006b6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6640000 pc=800006ba st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6660000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6680000 pc=80001e18 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6700000 pc=80001e18 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6720000 pc=80001cd0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6740000 pc=80002d34 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6760000 pc=80002bc6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6780000 pc=80002b20 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6800000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=6800000 pc=80002ac8 instr=0000c218
+# [UARTST] c=6820000 pc=8000316c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6840000 pc=80001d5c st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6860000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6880000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6900000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6920000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6940000 pc=80000762 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6960000 pc=80000408 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=6980000 pc=800006c0 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7000000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=7000000 pc=800006c0 instr=fed81be3
+# [UARTST] c=7020000 pc=800006d2 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7040000 pc=80001e3a st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7060000 pc=80001c58 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7080000 pc=80001c58 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7100000 pc=80001e5e st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7120000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7140000 pc=80002afa st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7160000 pc=80002d38 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7180000 pc=80002c52 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7200000 pc=80001c88 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [SNAP] c=7200000 pc=80001c80 instr=036d09b3
+# [UARTST] c=7220000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7240000 pc=80002ad6 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7260000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7280000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7300000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [UARTST] c=7320000 pc=00000000 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=33 pop=33
+# [PUSH] c=7330185 n=41 wd=0000006f pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330207 n=42 wd=00000072 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330229 n=43 wd=0000006d pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330251 n=44 wd=00000061 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330273 n=45 wd=0000006e pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330295 n=46 wd=00000063 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330317 n=47 wd=00000065 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330339 n=48 wd=00000020 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330361 n=49 wd=00000072 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330383 n=50 wd=00000075 pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [PUSH] c=7330405 n=51 wd=0000006e pc0=00000000 pc1=00000000 em_pc=800037ba em_wr=1 v0=1 mem_stall=0
+# [CFPROBE] c=7331405 L1 pc=80003d9a f3=7 s1=0000029a s2=0000000a tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7331485 L1 pc=80003d9a f3=7 s1=00000042 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7331560 L1 pc=80003d9a f3=7 s1=00000006 s2=0000000a tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7332515 L1 pc=80003d9a f3=7 s1=006f943b s2=0000000a tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7332595 L1 pc=80003d9a f3=7 s1=000b286c s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7332670 L1 pc=80003d9a f3=7 s1=00011da4 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7332745 L1 pc=80003d9a f3=7 s1=00001c90 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7332820 L1 pc=80003d9a f3=7 s1=000002db s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7332895 L1 pc=80003d9a f3=7 s1=00000049 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7332970 L1 pc=80003d9a f3=7 s1=00000007 s2=0000000a tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7337341 L1 pc=80003d9a f3=7 s1=00000014 s2=0000000a tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7337421 L1 pc=80003d9a f3=7 s1=00000002 s2=0000000a tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [UART 7339986] 2
+# [UARTST] c=7340000 pc=8000421a st=00010000 cnt=32 busy=1 div=129 bitidx=9 clkc=610 push=66 pop=34
+# [CFPROBE] c=7349619 L1 pc=80003d9a f3=7 s1=0000e9f5 s2=00000010 tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7349699 L1 pc=80003d9a f3=7 s1=00000e9f s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7349774 L1 pc=80003d9a f3=7 s1=000000e9 s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7349849 L1 pc=80003d9a f3=7 s1=0000000e s2=00000010 tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [UART 7350387] K
+# [CFPROBE] c=7351077 L1 pc=80003d9a f3=7 s1=0000e714 s2=00000010 tk=1 tgt=80003d7e pred=0 ptgt=3e58
+# [CFPROBE] c=7351157 L1 pc=80003d9a f3=7 s1=00000e71 s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7351232 L1 pc=80003d9a f3=7 s1=000000e7 s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7351307 L1 pc=80003d9a f3=7 s1=0000000e s2=00000010 tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7352538 L1 pc=80003d9a f3=7 s1=00001fd7 s2=00000010 tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7352618 L1 pc=80003d9a f3=7 s1=000001fd s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7352693 L1 pc=80003d9a f3=7 s1=0000001f s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7352768 L1 pc=80003d9a f3=7 s1=00000001 s2=00000010 tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7353994 L1 pc=80003d9a f3=7 s1=00008e3a s2=00000010 tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7354074 L1 pc=80003d9a f3=7 s1=000008e3 s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7354149 L1 pc=80003d9a f3=7 s1=0000008e s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7354224 L1 pc=80003d9a f3=7 s1=00000008 s2=00000010 tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7355444 L1 pc=80003d9a f3=7 s1=00004983 s2=00000010 tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7355524 L1 pc=80003d9a f3=7 s1=00000498 s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7355599 L1 pc=80003d9a f3=7 s1=00000049 s2=00000010 tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7355674 L1 pc=80003d9a f3=7 s1=00000004 s2=00000010 tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7357392 L1 pc=80003d9a f3=7 s1=006f943b s2=0000000a tk=1 tgt=80003d7e pred=0 ptgt=37c0
+# [CFPROBE] c=7357472 L1 pc=80003d9a f3=7 s1=000b286c s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7357547 L1 pc=80003d9a f3=7 s1=00011da4 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7357622 L1 pc=80003d9a f3=7 s1=00001c90 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7357697 L1 pc=80003d9a f3=7 s1=000002db s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7357772 L1 pc=80003d9a f3=7 s1=00000049 s2=0000000a tk=1 tgt=80003d7e pred=1 ptgt=3d7e
+# [CFPROBE] c=7357847 L1 pc=80003d9a f3=7 s1=00000007 s2=0000000a tk=0 tgt=80003d7e pred=1 ptgt=3d7e
+# [UARTST] c=7360000 pc=80000044 st=00010000 cnt=32 busy=1 div=129 bitidx=8 clkc=848 push=68 pop=36
+# [UART 7360788]  
+# [UART 7371189] p
+# [UARTST] c=7380000 pc=80000044 st=00010000 cnt=30 busy=1 div=129 bitidx=8 clkc=46 push=68 pop=38
+# [UART 7381590] e
+# [UART 7391991] r
+# [UARTST] c=7400000 pc=80000044 st=00010000 cnt=28 busy=1 div=129 bitidx=7 clkc=284 push=68 pop=40
+# [SNAP] c=7400000 pc=80000044 instr=0000a001
+# [UART 7402392] f
+# [UART 7412793] o
+# [UARTST] c=7420000 pc=80000044 st=00010000 cnt=26 busy=1 div=129 bitidx=6 clkc=522 push=68 pop=42
+# [UART 7423194] r
+# [UART 7433595] m
+# [UARTST] c=7440000 pc=80000044 st=00010000 cnt=24 busy=1 div=129 bitidx=5 clkc=760 push=68 pop=44
+# [UART 7443996] a
+# [UART 7454397] n
+# [UARTST] c=7460000 pc=80000044 st=00010000 cnt=22 busy=1 div=129 bitidx=4 clkc=998 push=68 pop=46
+# [UART 7464798] c
+# [UART 7475199] e
+# [UARTST] c=7480000 pc=80000044 st=00010000 cnt=20 busy=1 div=129 bitidx=4 clkc=196 push=68 pop=48
+# [UART 7485600]  
+# [UART 7496001] r
+# [UARTST] c=7500000 pc=80000044 st=00010000 cnt=18 busy=1 div=129 bitidx=3 clkc=434 push=68 pop=50
+# [UART 7506402] u
+# [UART 7516803] n
+# [UARTST] c=7520000 pc=80000044 st=00010000 cnt=16 busy=1 div=129 bitidx=2 clkc=672 push=68 pop=52
+# [UART 7527204]  
+# [UART 7537605] p
+# [UARTST] c=7540000 pc=80000044 st=00010000 cnt=14 busy=1 div=129 bitidx=1 clkc=910 push=68 pop=54
+# [UART 7548006] a
+# [UART 7558407] r
+# [UARTST] c=7560000 pc=80000044 st=00010000 cnt=12 busy=1 div=129 bitidx=1 clkc=108 push=68 pop=56
+# [UART 7568808] a
+# [UART 7579209] m
+# [UARTST] c=7580000 pc=80000044 st=00010000 cnt=10 busy=1 div=129 bitidx=0 clkc=346 push=68 pop=58
+# [UART 7589610] e
+# [UARTST] c=7600000 pc=80000044 st=00010000 cnt=9 busy=1 div=129 bitidx=9 clkc=585 push=68 pop=59
+# [SNAP] c=7600000 pc=80000044 instr=0000a001
+# [UART 7600011] t
+# [UART 7610412] e
+# [UARTST] c=7620000 pc=80000044 st=00010000 cnt=7 busy=1 div=129 bitidx=8 clkc=823 push=68 pop=61
+# [UART 7620813] r
+# [UART 7631214] s
+# [UARTST] c=7640000 pc=80000044 st=00010000 cnt=5 busy=1 div=129 bitidx=8 clkc=21 push=68 pop=63
+# [UART 7641615]  
+# [UART 7652016] f
+# [UARTST] c=7660000 pc=80000044 st=00010000 cnt=3 busy=1 div=129 bitidx=7 clkc=259 push=68 pop=65
+# [UART 7662417] o
+# [UART 7672818] r
+# [UARTST] c=7680000 pc=80000044 st=00010000 cnt=1 busy=1 div=129 bitidx=6 clkc=497 push=68 pop=67
+# [UART 7683219] C
+# [UART 7693620] [
+# [UARTST] c=7700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=7800000 pc=80000044 instr=0000a001
+# [UARTST] c=7820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=7980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=8000000 pc=80000044 instr=0000a001
+# [UARTST] c=8020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=8200000 pc=80000044 instr=0000a001
+# [UARTST] c=8220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=8400000 pc=80000044 instr=0000a001
+# [UARTST] c=8420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=8600000 pc=80000044 instr=0000a001
+# [UARTST] c=8620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=8800000 pc=80000044 instr=0000a001
+# [UARTST] c=8820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=8980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=9000000 pc=80000044 instr=0000a001
+# [UARTST] c=9020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=9200000 pc=80000044 instr=0000a001
+# [UARTST] c=9220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=9400000 pc=80000044 instr=0000a001
+# [UARTST] c=9420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=9600000 pc=80000044 instr=0000a001
+# [UARTST] c=9620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=9800000 pc=80000044 instr=0000a001
+# [UARTST] c=9820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=9980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=10000000 pc=80000044 instr=0000a001
+# [UARTST] c=10020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=10200000 pc=80000044 instr=0000a001
+# [UARTST] c=10220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=10400000 pc=80000044 instr=0000a001
+# [UARTST] c=10420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=10600000 pc=80000044 instr=0000a001
+# [UARTST] c=10620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=10800000 pc=80000044 instr=0000a001
+# [UARTST] c=10820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=10980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=11000000 pc=80000044 instr=0000a001
+# [UARTST] c=11020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=11200000 pc=80000044 instr=0000a001
+# [UARTST] c=11220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=11400000 pc=80000044 instr=0000a001
+# [UARTST] c=11420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=11600000 pc=80000044 instr=0000a001
+# [UARTST] c=11620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=11800000 pc=80000044 instr=0000a001
+# [UARTST] c=11820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=11980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=12000000 pc=80000044 instr=0000a001
+# [UARTST] c=12020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=12200000 pc=80000044 instr=0000a001
+# [UARTST] c=12220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=12400000 pc=80000044 instr=0000a001
+# [UARTST] c=12420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=12600000 pc=80000044 instr=0000a001
+# [UARTST] c=12620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=12800000 pc=80000044 instr=0000a001
+# [UARTST] c=12820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=12980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=13000000 pc=80000044 instr=0000a001
+# [UARTST] c=13020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=13200000 pc=80000044 instr=0000a001
+# [UARTST] c=13220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=13400000 pc=80000044 instr=0000a001
+# [UARTST] c=13420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=13600000 pc=80000044 instr=0000a001
+# [UARTST] c=13620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=13800000 pc=80000044 instr=0000a001
+# [UARTST] c=13820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=13980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=14000000 pc=80000044 instr=0000a001
+# [UARTST] c=14020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=14200000 pc=80000044 instr=0000a001
+# [UARTST] c=14220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=14400000 pc=80000044 instr=0000a001
+# [UARTST] c=14420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=14600000 pc=80000044 instr=0000a001
+# [UARTST] c=14620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=14800000 pc=80000044 instr=0000a001
+# [UARTST] c=14820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=14980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=15000000 pc=80000044 instr=0000a001
+# [UARTST] c=15020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=15200000 pc=80000044 instr=0000a001
+# [UARTST] c=15220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=15400000 pc=80000044 instr=0000a001
+# [UARTST] c=15420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=15600000 pc=80000044 instr=0000a001
+# [UARTST] c=15620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=15800000 pc=80000044 instr=0000a001
+# [UARTST] c=15820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=15980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=16000000 pc=80000044 instr=0000a001
+# [UARTST] c=16020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=16200000 pc=80000044 instr=0000a001
+# [UARTST] c=16220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=16400000 pc=80000044 instr=0000a001
+# [UARTST] c=16420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=16600000 pc=80000044 instr=0000a001
+# [UARTST] c=16620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=16800000 pc=80000044 instr=0000a001
+# [UARTST] c=16820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=16980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=17000000 pc=80000044 instr=0000a001
+# [UARTST] c=17020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=17200000 pc=80000044 instr=0000a001
+# [UARTST] c=17220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=17400000 pc=80000044 instr=0000a001
+# [UARTST] c=17420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=17600000 pc=80000044 instr=0000a001
+# [UARTST] c=17620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=17800000 pc=80000044 instr=0000a001
+# [UARTST] c=17820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=17980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=18000000 pc=80000044 instr=0000a001
+# [UARTST] c=18020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=18200000 pc=80000044 instr=0000a001
+# [UARTST] c=18220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=18400000 pc=80000044 instr=0000a001
+# [UARTST] c=18420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=18600000 pc=80000044 instr=0000a001
+# [UARTST] c=18620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=18800000 pc=80000044 instr=0000a001
+# [UARTST] c=18820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=18980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=19000000 pc=80000044 instr=0000a001
+# [UARTST] c=19020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=19200000 pc=80000044 instr=0000a001
+# [UARTST] c=19220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=19400000 pc=80000044 instr=0000a001
+# [UARTST] c=19420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=19600000 pc=80000044 instr=0000a001
+# [UARTST] c=19620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=19800000 pc=80000044 instr=0000a001
+# [UARTST] c=19820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=19980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=20000000 pc=80000044 instr=0000a001
+# [UARTST] c=20020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=20200000 pc=80000044 instr=0000a001
+# [UARTST] c=20220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=20400000 pc=80000044 instr=0000a001
+# [UARTST] c=20420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=20600000 pc=80000044 instr=0000a001
+# [UARTST] c=20620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=20800000 pc=80000044 instr=0000a001
+# [UARTST] c=20820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=20980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=21000000 pc=80000044 instr=0000a001
+# [UARTST] c=21020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=21200000 pc=80000044 instr=0000a001
+# [UARTST] c=21220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=21400000 pc=80000044 instr=0000a001
+# [UARTST] c=21420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=21600000 pc=80000044 instr=0000a001
+# [UARTST] c=21620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=21800000 pc=80000044 instr=0000a001
+# [UARTST] c=21820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=21980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=22000000 pc=80000044 instr=0000a001
+# [UARTST] c=22020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=22200000 pc=80000044 instr=0000a001
+# [UARTST] c=22220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=22400000 pc=80000044 instr=0000a001
+# [UARTST] c=22420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=22600000 pc=80000044 instr=0000a001
+# [UARTST] c=22620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=22800000 pc=80000044 instr=0000a001
+# [UARTST] c=22820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=22980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=23000000 pc=80000044 instr=0000a001
+# [UARTST] c=23020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=23200000 pc=80000044 instr=0000a001
+# [UARTST] c=23220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=23400000 pc=80000044 instr=0000a001
+# [UARTST] c=23420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=23600000 pc=80000044 instr=0000a001
+# [UARTST] c=23620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=23800000 pc=80000044 instr=0000a001
+# [UARTST] c=23820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=23980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=24000000 pc=80000044 instr=0000a001
+# [UARTST] c=24020000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24040000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24060000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24080000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24100000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24120000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24140000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24160000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24180000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24200000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=24200000 pc=80000044 instr=0000a001
+# [UARTST] c=24220000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24240000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24260000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24280000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24300000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24320000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24340000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24360000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24380000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24400000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=24400000 pc=80000044 instr=0000a001
+# [UARTST] c=24420000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24440000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24460000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24480000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24500000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24520000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24540000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24560000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24580000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24600000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=24600000 pc=80000044 instr=0000a001
+# [UARTST] c=24620000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24640000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24660000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24680000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24700000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24720000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24740000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24760000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24780000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24800000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=24800000 pc=80000044 instr=0000a001
+# [UARTST] c=24820000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24840000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24860000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24880000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24900000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24920000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24940000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24960000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=24980000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [UARTST] c=25000000 pc=80000044 st=00010000 cnt=0 busy=0 div=129 bitidx=9 clkc=0 push=68 pop=68
+# [SNAP] c=25000000 pc=80000044 instr=0000a001
+# 
+# [TB] cycles=25000001 commit=21067923 pcmiss=0 issue=21067926 pair=1412054 stall=516289 freeze=755934 chars=68 uart_errors=0 timeout=1
+# ** Note: $finish    : ../../tb/core_replica/tb_soc_dbg.v(410)
+#    Time: 250000205 ns  Iteration: 1  Instance: /tb_soc_dbg
+# End time: 11:05:50 on Oct 30,2026, Elapsed time: 0:03:25
+# Errors: 0, Warnings: 3

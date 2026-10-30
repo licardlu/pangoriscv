@@ -1,0 +1,58 @@
+{
+  "stage": "P08",
+  "run": "board-run-001",
+  "date": "2026-10-30",
+  "board": "MES2L676-100HP V1.2 (PG2L100H-6IFBG676)",
+  "design": {
+    "variant": "V2 (dual issue, 64-bit fetch, 4-entry dispatch buffer)",
+    "core_clock_mhz": 90.0,
+    "pll": "27 MHz x 30 / 9 = 90.000 MHz, VCO 810 MHz (pango_pll_90m.sv)",
+    "fdc": "pango_cpu_90.fdc",
+    "pds_run": "run-009",
+    "timing": "All Constraints Met, WNS +0.390 ns, implied 93.3 MHz",
+    "resources": { "LUT": 7540, "FF": 3510 },
+    "bitstream": {
+      "path": "build/replica_pds/run-009/generate_bitstream/pango_cpu_top.sbit",
+      "sha256": "9876fd42dd3e44a0807281b55e38dd1a08fae8ea0b4acd3bb573081fcfb522ca"
+    }
+  },
+  "download": {
+    "method": "SRAM download via cdt_js + cdt_cfg (JTAG USB Cable II, VID_0403)",
+    "device_id": "0x00602899",
+    "program_ok": true
+  },
+  "firmware": {
+    "image": "build/firmware_v2_7000_90m/firmware.hex",
+    "iterations": 7000,
+    "cpu_hz_reported": 90000000,
+    "uart_divisor": "CPU_HZ/(115200*8)-1 = 96"
+  },
+  "measurement": {
+    "total_ticks": 2678824983,
+    "ticks_per_iteration": 382689.28,
+    "seconds": 29.76,
+    "coremark_per_mhz": 2.6131,
+    "coremark_at_90mhz": 235.2,
+    "valid": true,
+    "crc": {
+      "seedcrc": "0xe9f5",
+      "crclist": "0xe714",
+      "crcmatrix": "0x1fd7",
+      "crcstate": "0x8e3a",
+      "crcfinal": "0x25b5"
+    },
+    "official_validation_text": "Correct operation validated."
+  },
+  "cross_check": {
+    "sim_ticks_per_iteration": 382707.70,
+    "board_vs_sim": "-0.0048% (board slightly faster, same magnitude as V1's -0.0045%)",
+    "crcfinal_matches_v1_7000": true
+  },
+  "notes": [
+    "这是 V2 双发射核第一次上板。五项 CRC 全对 + 官方验证文本齐全, 运行 29.76 s >= 10 s。",
+    "90 MHz 不是交付目标档。V2 在 120 MHz 下 WNS -1.853 ns, 过不了。",
+    "同口径对比: V1 = 2.1040 @ 120.46 MHz = 253.4 分; V2 = 2.6131 @ 90 MHz = 235.2 分。",
+    "V2 的每 MHz 效率比 V1 高 24%, 但频率上限低 25%, 所以交付分反而低 7%。",
+    "频率仍是 PLL + 收敛推算, 没有实测 (无示波器/ILA)。"
+  ]
+}

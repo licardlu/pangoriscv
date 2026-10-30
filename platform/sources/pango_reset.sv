@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 // Assert on loss of lock or KEY0. Release only after four CPU rising edges.
 module pango_reset(input wire clk, input wire rst_n, input wire locked,
                    output wire reset);

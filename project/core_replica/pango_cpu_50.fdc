@@ -1,0 +1,6 @@
+# pango_cpu_50.fdc -- 50 MHz 诊断模式约束 (非交付目标)
+# 使用前必须把 project/core_replica/pango_pll_50m.sv 复制覆盖 rtl/pango_pll.sv,
+# 否则 RTL 里 PLL 仍是 120.46 MHz, 约束与实际时钟不一致。
+# 27 MHz 晶振; GTP_PPLL 27 x 50 / 27 = 50.000 MHz, VCO 1350 MHz
+create_clock -name board_clk -period 37.037037037 -waveform {0 18.518518519} [get_ports clk]
+create_clock -name core_clk  -period 20.000000000   -waveform {0 10.000000000}  [get_pins u_core_pll/u_ppll/CLKOUT0]

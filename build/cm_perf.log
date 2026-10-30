@@ -1,0 +1,66 @@
++ D:\FPGA_Project\zi_guang_tong_chuang\toolchains\xpack-riscv-none-elf-gcc-15.2.0-1\bin\riscv-none-elf-gcc -march=rv32imc_zicsr_zifencei -mabi=ilp32 -O2 -nostdlib -nostartfiles -ffreestanding -fno-builtin -fno-common -I firmware/coremark -I firmware/port -DITERATIONS=20 -DPERFORMANCE_RUN=1 -DTOTAL_DATA_SIZE=2000 -funroll-loops -finline-functions -falign-functions=8 -T firmware/port/link.ld firmware/port/start.S firmware/coremark/core_list_join.c firmware/coremark/core_main.c firmware/coremark/core_matrix.c firmware/coremark/core_state.c firmware/coremark/core_util.c firmware/port/core_portme.c firmware/port/ee_printf.c -lgcc -o D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\replica_coremark_v2\coremark.elf
++ D:\FPGA_Project\zi_guang_tong_chuang\toolchains\xpack-riscv-none-elf-gcc-15.2.0-1\bin\riscv-none-elf-objcopy -O binary D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\replica_coremark_v2\coremark.elf D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\replica_coremark_v2\coremark.bin
++ C:\Users\Twinkle Nebula\.workbuddy\binaries\python\versions\3.13.12\python.exe tools/core_replica/elf2hex64.py D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\replica_coremark_v2\coremark.bin D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\replica_coremark_v2\firmware.hex
++ vlog -quiet +incdir+D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl\core -work work D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/execute/alu.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/execute/shifter.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/execute/branch_unit.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/execute/multiplier.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/execute/divider.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/execute/operand_select.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/regfile/integer_regfile.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/lsu/load_store_unit.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/control/csr_file.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/decode/rvc_decoder.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/decode/decoder.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/decode/dispatch_buffer.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/frontend/instruction_aligner.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/core/pango_cpu.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/soc/ram_tdp.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/perips/uart_tx.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\rtl/soc/pango_soc.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\tb/core_replica/tb_soc_v2.v
++ vsim -c -quiet work.tb_soc -do run -all; quit -f +maxchars=1100 +maxcycles=20000000
+Exception in thread Thread-1 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\Twinkle Nebula\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\Twinkle Nebula\.workbuddy\binaries\python\versions\3.13.12\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Twinkle Nebula\.workbuddy\binaries\python\versions\3.13.12\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "<frozen codecs>", line 325, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa8 in position 186028: invalid start byte
+
+------------------------------------------------------------
+VEXII_PANGO_BOOT
+
+CPU_HZ=120461538
+
+ITERATIONS=20
+
+2K performance run parameters for coremark.
+
+CoreMark Size    : 666
+
+Total ticks      : 7654154
+
+Total time (secs): 0
+
+ERROR! Must execute for at least 10 secs for a valid result!
+
+Iterations       : 20
+
+Compiler version : GCC15.2.0
+
+Compiler flags   : -O2 -fno-common -funroll-loops -finline-functions -funroll-all-loops -falign-functions=8 -falign-jumps=8 -falign-loops=8 -finline-limit=1000 -mtune=sifive-7-series -ffast-math -fno-tree-loop-distribute-patterns --param=fsm-scale-path-stmts=3 -march=rv32imc_zicsr_zifencei -mabi=ilp32 -fno-builtin
+
+Memory location  : STACK
+
+seedcrc          : 0xe9f5
+
+[0]crclist       : 0xe714
+
+[0]crcmatrix     : 0x1fd7
+
+[0]crcstate      : 0x8e3a
+
+[0]crcfinal      : 0x4983
+
+Errors detected
+
+TICKS_HI=0
+
+TICKS_LO=7654154
+
+BENCH_DONE
+------------------------------------------------------------
+FAIL: uart framing errors = -1
+TOTAL_TICKS=7654154  TICKS_PER_ITER=382707.70  CoreMark/MHz=2.6130
+EVIDENCE: 功能证据 (短跑, 不足 10 s; 不作为正式成绩)
+RESULT: FAIL

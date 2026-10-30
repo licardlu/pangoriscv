@@ -1,0 +1,59 @@
+{
+  "record": "replica/P14",
+  "run": "run-002",
+  "date": "2026-10-30",
+  "flow": "compile -> synthesize -> dev_map -> pnr -> report_timing -> gen_bit_stream",
+  "result": "BUILD_FLOW_COMPLETE",
+  "sta": {
+    "summary": "All Constraints Met",
+    "setup_wns_ns": 0.295,
+    "setup_tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "setup_total_endpoints": 12115,
+    "hold_whs_ns": 0.026,
+    "core_period_ns": 8.301,
+    "core_freq_mhz": 120.461538
+  },
+  "resources": {
+    "LUT": 3937,
+    "FF": 2805,
+    "DRM": 32,
+    "APM": 4,
+    "distributed_ram": 42,
+    "IO": 11
+  },
+  "firmware": {
+    "iterations": 20,
+    "bin_sha256": "871c0926dc07f04fc82d782eda7c073e77c6afb89b78c5e8edd5e41313cc1444"
+  },
+  "coremark": {
+    "total_ticks": 9506237,
+    "ticks_per_iter": 475311.85,
+    "per_mhz": 2.1039,
+    "score_at_120MHz": 253.4,
+    "per_lut": 0.064373,
+    "crc": {
+      "seedcrc": "0xe9f5",
+      "crclist": "0xe714",
+      "crcmatrix": "0x1fd7",
+      "crcstate": "0x8e3a",
+      "crcfinal": "0x4983"
+    }
+  },
+  "bitstream": {
+    "path": "build/replica_pds/run-002/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "0aac997792b79e39143a5a65b4f7012f2ec0fc526f9dd44a0db0b739731b3b1e",
+    "bytes": 3791112
+  },
+  "reference": {
+    "LUT": 8749,
+    "FF": 6658,
+    "DRM": 34,
+    "APM": 5,
+    "per_mhz": 5.3462,
+    "score_at_120MHz": 644.0,
+    "per_lut": 0.073608,
+    "setup_wns_ns": -1.509
+  },
+  "board": "未做: FTDI 下载线不在 USB 总线上"
+}

@@ -1,4 +1,3 @@
-"""Reproducible firmware, Vexii generation, RTL simulation and PDS build.
 
 No command in this script programs or probes a physical board.
 """

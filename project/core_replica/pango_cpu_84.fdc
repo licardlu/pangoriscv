@@ -1,0 +1,6 @@
+# pango_cpu_84.fdc -- 84.375 MHz 档 (27 x 50 / 16 = 84.375 MHz, VCO 1350 MHz)
+# 用 REPLICA_PLL=pango_pll_84m.sv 一起传, 不要手工覆盖 rtl/pango_pll.sv。
+# 为什么是这一档: run-015 的最差路径 11.671 ns, 折算 85.7 MHz, 120 MHz 过不了;
+# 84.375 的周期 11.852 ns 刚好留 0.18 ns 余量, 且 VCO 与已验证的 50 MHz 档一致。
+create_clock -name board_clk -period 37.037037037 -waveform {0 18.518518519} [get_ports clk]
+create_clock -name core_clk  -period 11.851851852 -waveform {0 5.925925926}  [get_pins u_core_pll/u_ppll/CLKOUT0]

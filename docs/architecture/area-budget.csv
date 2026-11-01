@@ -1,2 +1,15 @@
 implementation,device,clock_mhz,lut,ff,dram,lutram,lut_ff_lutram_total,acceptance
-baseline-implementation-standalone-001,PG2L100H-6IFBG676,120.4674,8875,6658,34,72,15605,"reference only; candidate total must not increase; aim LUT <= 8841"
+baseline-implementation-standalone-001,PG2L100H-6IFBG676,120.4674,8875,6658,34,72,15605,reference only; candidate total must not increase; aim LUT <= 8841
+positive007_branch_retime,PG2L100H-6IFBG676,120.467414,8836,6660,34,72,15568,area pass; WNS=-1.394; setup failing=898
+positive008_ads_retiming,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=-0.258; setup failing=11
+positive009_route_refine,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=-0.057; setup failing=6
+positive010_seed3,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=-0.621; setup failing=99
+positive011_guard125,PG2L100H-6IFBG676,125.0,8974,7109,34,72,16155,area fail; timing-priority experiment; WNS=-0.99; setup failing=729
+positive012_no_prepack,PG2L100H-6IFBG676,120.467414,10179,7237,34,72,17488,area fail; timing-priority experiment; WNS=-0.618; setup failing=95
+positive013_slack_router,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=-0.258; setup failing=11
+positive014_route12,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=0.036; setup failing=0
+positive015_left_fanout,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=-0.057; setup failing=6
+positive016_prior_guidance,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; timing-priority experiment; WNS=0.023; setup failing=0
+positive017_parallel_shift,PG2L100H-6IFBG676,120.467414,9026,7060,34,72,16158,area fail; timing-priority experiment; WNS=-0.621; setup failing=24
+positive020_route20,PG2L100H-6IFBG676,120.467414,8907,7237,34,72,16216,area fail; WNS=0.145; min hold=0.012; not board verified
+board021_gshare10_route20,PG2L100H-6IFBG676,120.467414,9016,6799,34,72,15887,area fail +282; WNS=0.148; min hold=0.028; unproven long-run speedup; not board verified

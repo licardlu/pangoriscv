@@ -1,0 +1,30 @@
+{
+  "scope": "Actual RTL snapshots and identical firmware used by the 100-iteration comparison; no performance claim before completed logs",
+  "changed_rtl": [
+    {
+      "path": "rtl/core/sections/030_FetchL1Plugin.vh",
+      "baseline_sha256": "566ce403020e9debf6d92d9230fec757ce41a477bf5da226146bac6951512c71",
+      "candidate_sha256": "f1b9c551acdd80a475091a8bae1d85e937dbd86f61a17b7dbffde431b0627715"
+    },
+    {
+      "path": "rtl/core/sections/036_BtbPlugin.vh",
+      "baseline_sha256": "7cee93944e491f6b3f29f36d5f09311cb3cc8809ce7e579972460c940ace1571",
+      "candidate_sha256": "134da1a7cc478f7dd9ffd2961e4835f3f3eb9a9f8af8f5d26de6bd9c6bcdbed5"
+    }
+  ],
+  "identical_image": {
+    "iterations": 100,
+    "text_sha256": "8fdd2d51eda122dcd7fec687b4bfef20f70c11d5a697a7c1fd3cd9efb21971d1",
+    "source_elf_sha256": "5c4ecd094efd2fea33f08d9f5ac8e79118584e85588a7bf18189bf37da0c270b",
+    "patched_data_address": "0x80008e54",
+    "image": {
+      "checked_bytes": 36444,
+      "ram_bytes": 65536,
+      "elf_sha256": "e02aa3d9f941867f5510ecbc3c39a28f24a6dfb8164812a663a1951bd69a1df4",
+      "ram_sha256": "11f4c9b6973fe7b27c40baf2340a9c4b9c0c382386bd74d44a1e969d4eaa330b"
+    }
+  },
+  "baseline_kind": "benchmark",
+  "candidate_kind": "profile",
+  "authoritative_counter": "firmware mcycle ticks; profile does not modify synthesized RTL"
+}

@@ -1,0 +1,45 @@
+{
+  "status": "sta_pass",
+  "wall_seconds": 1758.2000949382782,
+  "independent_sources": true,
+  "bitstream": "build/board021_gshare10_route20/generate_bitstream/pango_vexii_top.sbit",
+  "sha256": "a418de18369ed75e878a025d454f42622566dd5d7019c2da5485a65ad2386c24",
+  "loaded_memory_lanes": 8,
+  "same_bitstream_as_board_proven_baseline": false,
+  "final_timing": [
+    "build/board021_gshare10_route20/report_timing/pango_vexii_top.rtr"
+  ],
+  "board_verified": false,
+  "sta_closed": true,
+  "area_budget_passed": false,
+  "area": {
+    "status": "FAIL",
+    "mode": "strict",
+    "module": "baseline-implementation-standalone-001",
+    "source_csv": "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\pangoriscv_boardopt_20261101\\build\\board021_gshare10_route20\\multiseed_summary.csv",
+    "budget": {
+      "LUT": 8875,
+      "FF": 6658,
+      "Distributed RAM": 72
+    },
+    "actual": {
+      "LUT": 9016,
+      "FF": 6799,
+      "Distributed RAM": 72
+    },
+    "delta": 282,
+    "delta_percent": 1.807113104774111,
+    "allowed_delta": 0,
+    "exact_area_neutral": false,
+    "baseline_tolerance_percent": 0,
+    "metric": "LUT+FF+Distributed RAM; not LUT-only"
+  },
+  "firmware": {
+    "checked_bytes": 36444,
+    "ram_bytes": 65536,
+    "elf_sha256": "5c4ecd094efd2fea33f08d9f5ac8e79118584e85588a7bf18189bf37da0c270b",
+    "ram_sha256": "c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d"
+  },
+  "frozen_coremark_image": true,
+  "note": "A routed bitstream is not board validation. Rejected timing is never a release."
+}

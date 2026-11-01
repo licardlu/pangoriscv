@@ -1,0 +1,58 @@
+# vsim -c work.tb_profile "+MAX_CYCLES=14000000" "+PROFILE_START=80005d90" "+PROFILE_STOP=80005e1c" -do "onbreak {quit -code 1}; onerror {quit -code 1}; run -all; quit -code 0" 
+# Start time: 18:37:55 on Nov 01,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_profile(fast)
+# onbreak {quit -code 1}
+#  Warning: onbreak command for use within macro
+#  onerror {quit -code 1}
+#  Warning: onerror command for use within macro
+#  run -all
+# UART: VEXII_PANGO_BOOT
+# PROFILE_START pc=80005d90 mcycle_read
+# UART: CPU_HZ=120461538
+# UART: ITERATIONS=20
+# RETIRE_DIGEST count=4888104 pc_uop=9db092547147ca2e
+# PROFILE_WINDOW cycles=3801279 lsu_freeze=0 csr_freeze=24 div_freeze=0 frontend_stall=193048 backend_stall=494511
+# PROFILE_CANDIDATES zero=193048 one=111961 two=2200392 three=1295878 fire0=1145793 fire1=2654086 fire2=1368216 any_fire=3113720 multi_fire=2054375
+# PROFILE_BLOCKS rs=494453 reservation=0 flush=25 fence=37 pair=288514 no_lane=494464
+# PROFILE_MEMORY icache_miss=243 icache_wait=1425 dcache_load_miss=8 lsu_wait=72
+# PROFILE_BRANCH miss=62121 count=932793
+# PROFILE_LSU_FREEZE too_early=0 wait_rsp=0 cmd_sent=0 do_it=0 ram_addr=0 other_addr=0 cache_miss=0 load=0 store=0 hazard=0
+# PROFILE_STOP pc=80005e1c mcycle_read
+# UART: 2K performance run parameters for coremark.
+# UART: CoreMark Size    : 666
+# UART: Total ticks      : 3801279
+# UART: Total time (secs): 0
+# UART: ERROR! Must execute for at least 10 secs for a valid result!
+# UART: Iterations       : 20
+# UART: Compiler version : GCC15.2.0
+# UART: Compiler flags   : -O2 -fno-common -funroll-loops -finline-functions -funroll-all-loops -falign-functions=8 -falign-jumps=8 -falign-loops=8 -finline-limit=1000 -mtune=sifive-7-series -ffast-math -fno-tree-loop-distribute-patterns --param=fsm-scale-path-stmts=3 -march=rv32imc_zicsr_zifencei -mabi=ilp32 -fno-builtin
+# UART: Memory location  : STACK
+# UART: seedcrc          : 0xe9f5
+# UART: [0]crclist       : 0xe714
+# UART: [0]crcmatrix     : 0x1fd7
+# UART: [0]crcstate      : 0x8e3a
+# UART: [0]crcfinal      : 0x4983
+# UART: Errors detected
+# UART: TICKS_HI=0
+# UART: TICKS_LO=3801279
+# UART: BENCH_DONE
+# TEST_PASS profile_window
+# ** Note: $finish    : tb.sv(160)
+#    Time: 100424781863 ps  Iteration: 1  Instance: /tb_profile
+# End time: 18:46:13 on Nov 01,2026, Elapsed time: 0:08:18
+# Errors: 0, Warnings: 0

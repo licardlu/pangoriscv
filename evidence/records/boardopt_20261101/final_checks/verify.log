@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "design_sources": 44,
+  "hdl_files_with_includes": 97,
+  "modules": 44,
+  "external_source_dependencies": 0,
+  "memory_lanes": 8,
+  "image": {
+    "checked_bytes": 36444,
+    "ram_bytes": 65536,
+    "elf_sha256": "5c4ecd094efd2fea33f08d9f5ac8e79118584e85588a7bf18189bf37da0c270b",
+    "ram_sha256": "c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d"
+  },
+  "selected_implementation": {
+    "binding_valid": true,
+    "tag": "board021_gshare10_route20",
+    "bitstream": "bitstream/current/pango_vexii_top.sbit",
+    "sta_closed": true,
+    "setup_wns_ns": 0.148,
+    "minimum_hold_ns": 0.028,
+    "area": {
+      "status": "FAIL",
+      "mode": "strict",
+      "module": "baseline-implementation-standalone-001",
+      "source_csv": "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\pangoriscv_boardopt_20261101\\evidence\\records\\boardopt_20261101\\board021_gshare10_route20\\multiseed_summary.csv",
+      "budget": {
+        "LUT": 8875,
+        "FF": 6658,
+        "Distributed RAM": 72
+      },
+      "actual": {
+        "LUT": 9016,
+        "FF": 6799,
+        "Distributed RAM": 72
+      },
+      "delta": 282,
+      "delta_percent": 1.807113104774111,
+      "allowed_delta": 0,
+      "exact_area_neutral": false,
+      "baseline_tolerance_percent": 0,
+      "metric": "LUT+FF+Distributed RAM; not LUT-only"
+    },
+    "board_verified": false,
+    "performance_target_verified": false,
+    "note": "Binding/STA pass does not waive the area budget or establish hardware stability."
+  },
+  "board_parameters": {
+    "status": "PASS",
+    "board": "MES2L676-100HP V1.2 / PG2L100H-6IFBG676",
+    "pins_checked": 13,
+    "input_mhz": 27.0,
+    "pfd_mhz": 27.0,
+    "vco_mhz": 1566.0,
+    "cpu_mhz": 120.46153846153847,
+    "board_verified": false,
+    "scope": "Checked integration parameters; not a board measurement, oscillator tolerance characterization or signal-integrity proof"
+  },
+  "scope": "release hashes, include closure, local data and frozen firmware; selected-artifact checks are reported separately; not area acceptance or formal equivalence"
+}

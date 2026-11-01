@@ -1,0 +1,425 @@
+  assign execute_ctrl1_down_late1_IntAluPlugin_ALU_ADD_SUB_lane1 = _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_ADD_SUB_lane1_1[0];
+  assign execute_ctrl1_down_late1_IntAluPlugin_ALU_SLTX_lane1 = _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_SLTX_lane1_1[0];
+  assign _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_3 = {(|{_zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_1,_zz_execute_ctrl1_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1,_zz_execute_ctrl1_down_BarrelShifterPlugin_LEFT_lane1}),(|{_zz_execute_ctrl1_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1,_zz_execute_ctrl1_down_BarrelShifterPlugin_LEFT_lane1,_zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1})};
+  assign _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_2 = _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_3;
+  assign _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_4 = _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_2;
+  assign execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1 = _zz_execute_ctrl1_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1_4;
+  assign execute_ctrl1_down_late1_SrcPlugin_logic_SRC1_CTRL_lane1 = (|_zz_execute_ctrl1_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1);
+  assign execute_ctrl1_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1 = {(|_zz_execute_ctrl1_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1),(|_zz_execute_ctrl1_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1_1)};
+  assign when_ExecuteLanePlugin_l306_5 = (|{(late1_BranchPlugin_logic_flushPort_valid && 1'b1),(early1_BranchPlugin_logic_flushPort_valid && 1'b1),(late0_BranchPlugin_logic_flushPort_valid && 1'b1),(early0_EnvPlugin_logic_flushPort_valid && 1'b1),(CsrAccessPlugin_logic_flushPort_valid && 1'b1),(early0_BranchPlugin_logic_flushPort_valid && 1'b1),(LsuPlugin_logic_flushPort_valid && 1'b1)});
+  assign execute_lane1_ctrls_0_downIsCancel = 1'b0;
+  assign execute_lane1_ctrls_0_upIsCancel = when_ExecuteLanePlugin_l306_5;
+  assign when_ExecuteLanePlugin_l306_6 = (|{(late1_BranchPlugin_logic_flushPort_valid && 1'b1),(early1_BranchPlugin_logic_flushPort_valid && 1'b1),(late0_BranchPlugin_logic_flushPort_valid && 1'b1),(early0_EnvPlugin_logic_flushPort_valid && 1'b1),(CsrAccessPlugin_logic_flushPort_valid && 1'b1),(early0_BranchPlugin_logic_flushPort_valid && 1'b1),(LsuPlugin_logic_flushPort_valid && 1'b1)});
+  assign execute_lane1_ctrls_1_downIsCancel = 1'b0;
+  assign execute_lane1_ctrls_1_upIsCancel = when_ExecuteLanePlugin_l306_6;
+  assign when_ExecuteLanePlugin_l306_7 = (|{(late1_BranchPlugin_logic_flushPort_valid && 1'b1),((early1_BranchPlugin_logic_flushPort_valid && 1'b1) && ((early1_BranchPlugin_logic_flushPort_payload_laneAge < execute_ctrl2_down_LANE_AGE_lane1) || ((early1_BranchPlugin_logic_flushPort_payload_laneAge == execute_ctrl2_down_LANE_AGE_lane1) && early1_BranchPlugin_logic_flushPort_payload_self))),(late0_BranchPlugin_logic_flushPort_valid && 1'b1),((early0_EnvPlugin_logic_flushPort_valid && _zz_when_ExecuteLanePlugin_l306_7) && (_zz_when_ExecuteLanePlugin_l306_7_1 || _zz_when_ExecuteLanePlugin_l306_7_2)),(_zz_when_ExecuteLanePlugin_l306_7_3 && _zz_when_ExecuteLanePlugin_l306_7_4),_zz_when_ExecuteLanePlugin_l306_7_5,_zz_when_ExecuteLanePlugin_l306_7_6});
+  assign execute_lane1_ctrls_2_downIsCancel = 1'b0;
+  assign execute_lane1_ctrls_2_upIsCancel = when_ExecuteLanePlugin_l306_7;
+  assign when_ExecuteLanePlugin_l306_8 = (|{(late1_BranchPlugin_logic_flushPort_valid && 1'b1),(late0_BranchPlugin_logic_flushPort_valid && 1'b1),(LsuPlugin_logic_flushPort_valid && 1'b1)});
+  assign execute_lane1_ctrls_3_downIsCancel = 1'b0;
+  assign execute_lane1_ctrls_3_upIsCancel = when_ExecuteLanePlugin_l306_8;
+  assign when_ExecuteLanePlugin_l306_9 = (|{((late1_BranchPlugin_logic_flushPort_valid && 1'b1) && ((late1_BranchPlugin_logic_flushPort_payload_laneAge < execute_ctrl4_down_LANE_AGE_lane1) || ((late1_BranchPlugin_logic_flushPort_payload_laneAge == execute_ctrl4_down_LANE_AGE_lane1) && late1_BranchPlugin_logic_flushPort_payload_self))),((late0_BranchPlugin_logic_flushPort_valid && 1'b1) && ((late0_BranchPlugin_logic_flushPort_payload_laneAge < execute_ctrl4_down_LANE_AGE_lane1) || (_zz_when_ExecuteLanePlugin_l306_9 && late0_BranchPlugin_logic_flushPort_payload_self))),((LsuPlugin_logic_flushPort_valid && 1'b1) && ((LsuPlugin_logic_flushPort_payload_laneAge < execute_ctrl4_down_LANE_AGE_lane1) || (_zz_when_ExecuteLanePlugin_l306_9_1 && LsuPlugin_logic_flushPort_payload_self)))});
+  assign execute_lane1_ctrls_4_downIsCancel = 1'b0;
+  assign execute_lane1_ctrls_4_upIsCancel = when_ExecuteLanePlugin_l306_9;
+  assign execute_lane1_ctrls_5_downIsCancel = 1'b0;
+  assign execute_lane1_ctrls_5_upIsCancel = 1'b0;
+  assign execute_lane1_logic_trapPending[0] = (|{((execute_ctrl4_up_LANE_SEL_lane1 && 1'b1) && execute_ctrl4_down_TRAP_lane1),((execute_ctrl3_up_LANE_SEL_lane1 && 1'b1) && execute_ctrl3_down_TRAP_lane1),((execute_ctrl2_up_LANE_SEL_lane1 && 1'b1) && execute_ctrl2_down_TRAP_lane1),((execute_ctrl1_up_LANE_SEL_lane1 && 1'b1) && execute_ctrl1_down_TRAP_lane1)});
+  assign execute_ctrl2_up_COMMIT_lane1 = (! execute_ctrl2_up_TRAP_lane1);
+  assign integer_RegFilePlugin_logic_writeMerges_0_bus_valid = (|lane0_integer_WriteBackPlugin_logic_write_port_valid);
+  assign integer_RegFilePlugin_logic_writeMerges_0_bus_address = lane0_integer_WriteBackPlugin_logic_write_port_address;
+  assign integer_RegFilePlugin_logic_writeMerges_0_bus_data = lane0_integer_WriteBackPlugin_logic_write_port_data;
+  assign integer_RegFilePlugin_logic_writeMerges_0_bus_uopId = lane0_integer_WriteBackPlugin_logic_write_port_uopId;
+  assign integer_RegFilePlugin_logic_writeMerges_1_bus_valid = (|lane1_integer_WriteBackPlugin_logic_write_port_valid);
+  assign integer_RegFilePlugin_logic_writeMerges_1_bus_address = lane1_integer_WriteBackPlugin_logic_write_port_address;
+  assign integer_RegFilePlugin_logic_writeMerges_1_bus_data = lane1_integer_WriteBackPlugin_logic_write_port_data;
+  assign integer_RegFilePlugin_logic_writeMerges_1_bus_uopId = lane1_integer_WriteBackPlugin_logic_write_port_uopId;
+  assign execute_lane1_bypasser_integer_RS1_port_data = integer_RegFilePlugin_logic_regfile_fpga_io_reads_0_data;
+  assign execute_lane0_bypasser_integer_RS1_port_data = integer_RegFilePlugin_logic_regfile_fpga_io_reads_1_data;
+  assign execute_lane0_bypasser_integer_RS2_port_data = integer_RegFilePlugin_logic_regfile_fpga_io_reads_2_data;
+  assign execute_lane1_bypasser_integer_RS2_port_data = integer_RegFilePlugin_logic_regfile_fpga_io_reads_3_data;
+  always @(*) begin
+    integer_RegFilePlugin_logic_regfile_fpga_io_writes_0_valid = integer_RegFilePlugin_logic_writeMerges_0_bus_valid;
+    if(when_RegFilePlugin_l149) begin
+      integer_RegFilePlugin_logic_regfile_fpga_io_writes_0_valid = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    integer_RegFilePlugin_logic_regfile_fpga_io_writes_0_address = integer_RegFilePlugin_logic_writeMerges_0_bus_address;
+    if(when_RegFilePlugin_l149) begin
+      integer_RegFilePlugin_logic_regfile_fpga_io_writes_0_address = integer_RegFilePlugin_logic_initalizer_counter[4:0];
+    end
+  end
+
+  always @(*) begin
+    integer_RegFilePlugin_logic_regfile_fpga_io_writes_0_data = integer_RegFilePlugin_logic_writeMerges_0_bus_data;
+    if(when_RegFilePlugin_l149) begin
+      integer_RegFilePlugin_logic_regfile_fpga_io_writes_0_data = 32'h0;
+    end
+  end
+
+  assign integer_RegFilePlugin_logic_initalizer_done = integer_RegFilePlugin_logic_initalizer_counter[5];
+  assign when_RegFilePlugin_l149 = (! integer_RegFilePlugin_logic_initalizer_done);
+  assign integer_write_0_valid = integer_RegFilePlugin_logic_writeMerges_0_bus_valid;
+  assign integer_write_0_address = integer_RegFilePlugin_logic_writeMerges_0_bus_address;
+  assign integer_write_0_data = integer_RegFilePlugin_logic_writeMerges_0_bus_data;
+  assign integer_write_0_uopId = integer_RegFilePlugin_logic_writeMerges_0_bus_uopId;
+  assign integer_write_1_valid = integer_RegFilePlugin_logic_writeMerges_1_bus_valid;
+  assign integer_write_1_address = integer_RegFilePlugin_logic_writeMerges_1_bus_address;
+  assign integer_write_1_data = integer_RegFilePlugin_logic_writeMerges_1_bus_data;
+  assign integer_write_1_uopId = integer_RegFilePlugin_logic_writeMerges_1_bus_uopId;
+  assign execute_freeze_valid = (|{LsuPlugin_logic_onCtrl_io_freezeIt,CsrAccessPlugin_logic_fsm_inject_freeze,early0_DivPlugin_logic_processing_freeze});
+  assign execute_ctrl5_down_ready = (! execute_freeze_valid);
+  assign TrapPlugin_logic_initHold = (|{(! CsrRamPlugin_logic_flush_done),PrefetcherRptPlugin_logic_initializer_busy,((! LsuL1Plugin_logic_initializer_done) || LsuL1Plugin_logic_initializerMem_busy),(! integer_RegFilePlugin_logic_initalizer_done),(FetchL1Plugin_logic_invalidate_firstEver || FetchL1Plugin_logic_initializer_busy),GSharePlugin_logic_initializer_busy,BtbPlugin_logic_initializer_busy});
+  assign when_CtrlLaneApi_l50_10 = (execute_ctrl2_down_isReady || execute_lane0_ctrls_2_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_0_fire = (execute_ctrl2_down_LANE_SEL_lane0 && (! execute_ctrl2_down_LANE_SEL_lane0_regNext));
+  assign WhiteboxerPlugin_logic_executes_0_microOpId = execute_ctrl2_down_Decode_UOP_ID_lane0;
+  assign when_CtrlLaneApi_l50_11 = (execute_ctrl3_down_isReady || execute_lane0_ctrls_3_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_1_fire = (execute_ctrl3_down_LANE_SEL_lane0 && (! execute_ctrl3_down_LANE_SEL_lane0_regNext));
+  assign WhiteboxerPlugin_logic_executes_1_microOpId = execute_ctrl3_down_Decode_UOP_ID_lane0;
+  assign when_CtrlLaneApi_l50_12 = (execute_ctrl4_down_isReady || execute_lane0_ctrls_4_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_2_fire = (execute_ctrl4_down_LANE_SEL_lane0 && (! execute_ctrl4_down_LANE_SEL_lane0_regNext));
+  assign WhiteboxerPlugin_logic_executes_2_microOpId = execute_ctrl4_down_Decode_UOP_ID_lane0;
+  assign when_CtrlLaneApi_l50_13 = (execute_ctrl5_down_isReady || execute_lane0_ctrls_5_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_3_fire = (execute_ctrl5_down_LANE_SEL_lane0 && (! execute_ctrl5_down_LANE_SEL_lane0_regNext));
+  assign WhiteboxerPlugin_logic_executes_3_microOpId = execute_ctrl5_down_Decode_UOP_ID_lane0;
+  assign when_CtrlLaneApi_l50_14 = (execute_ctrl2_down_isReady || execute_lane1_ctrls_2_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_4_fire = (execute_ctrl2_down_LANE_SEL_lane1 && (! execute_ctrl2_down_LANE_SEL_lane1_regNext));
+  assign WhiteboxerPlugin_logic_executes_4_microOpId = execute_ctrl2_down_Decode_UOP_ID_lane1;
+  assign when_CtrlLaneApi_l50_15 = (execute_ctrl3_down_isReady || execute_lane1_ctrls_3_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_5_fire = (execute_ctrl3_down_LANE_SEL_lane1 && (! execute_ctrl3_down_LANE_SEL_lane1_regNext));
+  assign WhiteboxerPlugin_logic_executes_5_microOpId = execute_ctrl3_down_Decode_UOP_ID_lane1;
+  assign when_CtrlLaneApi_l50_16 = (execute_ctrl4_down_isReady || execute_lane1_ctrls_4_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_6_fire = (execute_ctrl4_down_LANE_SEL_lane1 && (! execute_ctrl4_down_LANE_SEL_lane1_regNext));
+  assign WhiteboxerPlugin_logic_executes_6_microOpId = execute_ctrl4_down_Decode_UOP_ID_lane1;
+  assign when_CtrlLaneApi_l50_17 = (execute_ctrl5_down_isReady || execute_lane1_ctrls_5_downIsCancel);
+  assign WhiteboxerPlugin_logic_executes_7_fire = (execute_ctrl5_down_LANE_SEL_lane1 && (! execute_ctrl5_down_LANE_SEL_lane1_regNext));
+  assign WhiteboxerPlugin_logic_executes_7_microOpId = execute_ctrl5_down_Decode_UOP_ID_lane1;
+  assign WhiteboxerPlugin_logic_csr_access_valid = CsrAccessPlugin_logic_fsm_interface_fire;
+  assign WhiteboxerPlugin_logic_csr_access_payload_uopId = CsrAccessPlugin_logic_fsm_interface_uopId;
+  assign WhiteboxerPlugin_logic_csr_access_payload_address = _zz_WhiteboxerPlugin_logic_csr_access_payload_address[31 : 20];
+  assign WhiteboxerPlugin_logic_csr_access_payload_write = CsrAccessPlugin_logic_fsm_interface_onWriteBits;
+  assign WhiteboxerPlugin_logic_csr_access_payload_read = CsrAccessPlugin_logic_fsm_interface_csrValue;
+  assign WhiteboxerPlugin_logic_csr_access_payload_writeDone = CsrAccessPlugin_logic_fsm_interface_write;
+  assign WhiteboxerPlugin_logic_csr_access_payload_readDone = CsrAccessPlugin_logic_fsm_interface_read;
+  assign WhiteboxerPlugin_logic_csr_port_valid = WhiteboxerPlugin_logic_csr_access_valid;
+  assign WhiteboxerPlugin_logic_csr_port_payload_uopId = WhiteboxerPlugin_logic_csr_access_payload_uopId;
+  assign WhiteboxerPlugin_logic_csr_port_payload_address = WhiteboxerPlugin_logic_csr_access_payload_address;
+  assign WhiteboxerPlugin_logic_csr_port_payload_write = WhiteboxerPlugin_logic_csr_access_payload_write;
+  assign WhiteboxerPlugin_logic_csr_port_payload_read = WhiteboxerPlugin_logic_csr_access_payload_read;
+  assign WhiteboxerPlugin_logic_csr_port_payload_writeDone = WhiteboxerPlugin_logic_csr_access_payload_writeDone;
+  assign WhiteboxerPlugin_logic_csr_port_payload_readDone = WhiteboxerPlugin_logic_csr_access_payload_readDone;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_0_valid = lane0_integer_WriteBackPlugin_logic_stages_0_write_valid;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_0_payload_uopId = lane0_integer_WriteBackPlugin_logic_stages_0_write_payload_uopId;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_0_payload_data = lane0_integer_WriteBackPlugin_logic_stages_0_write_payload_data;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_1_valid = lane0_integer_WriteBackPlugin_logic_stages_1_write_valid;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_1_payload_uopId = lane0_integer_WriteBackPlugin_logic_stages_1_write_payload_uopId;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_1_payload_data = lane0_integer_WriteBackPlugin_logic_stages_1_write_payload_data;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_2_valid = lane0_integer_WriteBackPlugin_logic_stages_2_write_valid;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_2_payload_uopId = lane0_integer_WriteBackPlugin_logic_stages_2_write_payload_uopId;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_2_payload_data = lane0_integer_WriteBackPlugin_logic_stages_2_write_payload_data;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_3_valid = lane1_integer_WriteBackPlugin_logic_stages_0_write_valid;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_3_payload_uopId = lane1_integer_WriteBackPlugin_logic_stages_0_write_payload_uopId;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_3_payload_data = lane1_integer_WriteBackPlugin_logic_stages_0_write_payload_data;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_4_valid = lane1_integer_WriteBackPlugin_logic_stages_1_write_valid;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_4_payload_uopId = lane1_integer_WriteBackPlugin_logic_stages_1_write_payload_uopId;
+  assign WhiteboxerPlugin_logic_rfWrites_ports_4_payload_data = lane1_integer_WriteBackPlugin_logic_stages_1_write_payload_data;
+  assign WhiteboxerPlugin_logic_completions_ports_0_valid = DecoderPlugin_logic_laneLogic_0_completionPort_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_0_payload_uopId = DecoderPlugin_logic_laneLogic_0_completionPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_0_payload_trap = DecoderPlugin_logic_laneLogic_0_completionPort_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_0_payload_commit = DecoderPlugin_logic_laneLogic_0_completionPort_payload_commit;
+  assign WhiteboxerPlugin_logic_completions_ports_1_valid = DecoderPlugin_logic_laneLogic_1_completionPort_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_1_payload_uopId = DecoderPlugin_logic_laneLogic_1_completionPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_1_payload_trap = DecoderPlugin_logic_laneLogic_1_completionPort_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_1_payload_commit = DecoderPlugin_logic_laneLogic_1_completionPort_payload_commit;
+  assign WhiteboxerPlugin_logic_completions_ports_2_valid = execute_lane0_logic_completions_onCtrl_0_port_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_2_payload_uopId = execute_lane0_logic_completions_onCtrl_0_port_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_2_payload_trap = execute_lane0_logic_completions_onCtrl_0_port_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_2_payload_commit = execute_lane0_logic_completions_onCtrl_0_port_payload_commit;
+  assign WhiteboxerPlugin_logic_completions_ports_3_valid = execute_lane0_logic_completions_onCtrl_1_port_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_3_payload_uopId = execute_lane0_logic_completions_onCtrl_1_port_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_3_payload_trap = execute_lane0_logic_completions_onCtrl_1_port_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_3_payload_commit = execute_lane0_logic_completions_onCtrl_1_port_payload_commit;
+  assign WhiteboxerPlugin_logic_completions_ports_4_valid = execute_lane0_logic_completions_onCtrl_2_port_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_4_payload_uopId = execute_lane0_logic_completions_onCtrl_2_port_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_4_payload_trap = execute_lane0_logic_completions_onCtrl_2_port_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_4_payload_commit = execute_lane0_logic_completions_onCtrl_2_port_payload_commit;
+  assign WhiteboxerPlugin_logic_completions_ports_5_valid = execute_lane1_logic_completions_onCtrl_0_port_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_5_payload_uopId = execute_lane1_logic_completions_onCtrl_0_port_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_5_payload_trap = execute_lane1_logic_completions_onCtrl_0_port_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_5_payload_commit = execute_lane1_logic_completions_onCtrl_0_port_payload_commit;
+  assign WhiteboxerPlugin_logic_completions_ports_6_valid = execute_lane1_logic_completions_onCtrl_1_port_valid;
+  assign WhiteboxerPlugin_logic_completions_ports_6_payload_uopId = execute_lane1_logic_completions_onCtrl_1_port_payload_uopId;
+  assign WhiteboxerPlugin_logic_completions_ports_6_payload_trap = execute_lane1_logic_completions_onCtrl_1_port_payload_trap;
+  assign WhiteboxerPlugin_logic_completions_ports_6_payload_commit = execute_lane1_logic_completions_onCtrl_1_port_payload_commit;
+  assign WhiteboxerPlugin_logic_commits_ports_0_oh_0 = ((((execute_ctrl4_down_LANE_SEL_lane0 && execute_ctrl4_down_isReady) && (! execute_lane0_ctrls_4_downIsCancel)) && execute_ctrl4_down_COMMIT_lane0) && (execute_ctrl4_down_LANE_AGE_lane0 == 1'b0));
+  assign WhiteboxerPlugin_logic_commits_ports_0_oh_1 = ((((execute_ctrl4_down_LANE_SEL_lane1 && execute_ctrl4_down_isReady) && (! execute_lane1_ctrls_4_downIsCancel)) && execute_ctrl4_down_COMMIT_lane1) && (execute_ctrl4_down_LANE_AGE_lane1 == 1'b0));
+  assign WhiteboxerPlugin_logic_commits_ports_0_valid = (|{WhiteboxerPlugin_logic_commits_ports_0_oh_1,WhiteboxerPlugin_logic_commits_ports_0_oh_0});
+  assign WhiteboxerPlugin_logic_commits_ports_0_pc = ((WhiteboxerPlugin_logic_commits_ports_0_oh_0 ? execute_ctrl4_down_PC_lane0 : 32'h0) | (WhiteboxerPlugin_logic_commits_ports_0_oh_1 ? execute_ctrl4_down_PC_lane1 : 32'h0));
+  assign WhiteboxerPlugin_logic_commits_ports_0_uop = ((WhiteboxerPlugin_logic_commits_ports_0_oh_0 ? execute_ctrl4_down_Decode_UOP_lane0 : 32'h0) | (WhiteboxerPlugin_logic_commits_ports_0_oh_1 ? execute_ctrl4_down_Decode_UOP_lane1 : 32'h0));
+  assign WhiteboxerPlugin_logic_commits_ports_1_oh_0 = ((((execute_ctrl4_down_LANE_SEL_lane0 && execute_ctrl4_down_isReady) && (! execute_lane0_ctrls_4_downIsCancel)) && execute_ctrl4_down_COMMIT_lane0) && (execute_ctrl4_down_LANE_AGE_lane0 == 1'b1));
+  assign WhiteboxerPlugin_logic_commits_ports_1_oh_1 = ((((execute_ctrl4_down_LANE_SEL_lane1 && execute_ctrl4_down_isReady) && (! execute_lane1_ctrls_4_downIsCancel)) && execute_ctrl4_down_COMMIT_lane1) && (execute_ctrl4_down_LANE_AGE_lane1 == 1'b1));
+  assign WhiteboxerPlugin_logic_commits_ports_1_valid = (|{WhiteboxerPlugin_logic_commits_ports_1_oh_1,WhiteboxerPlugin_logic_commits_ports_1_oh_0});
+  assign WhiteboxerPlugin_logic_commits_ports_1_pc = ((WhiteboxerPlugin_logic_commits_ports_1_oh_0 ? execute_ctrl4_down_PC_lane0 : 32'h0) | (WhiteboxerPlugin_logic_commits_ports_1_oh_1 ? execute_ctrl4_down_PC_lane1 : 32'h0));
+  assign WhiteboxerPlugin_logic_commits_ports_1_uop = ((WhiteboxerPlugin_logic_commits_ports_1_oh_0 ? execute_ctrl4_down_Decode_UOP_lane0 : 32'h0) | (WhiteboxerPlugin_logic_commits_ports_1_oh_1 ? execute_ctrl4_down_Decode_UOP_lane1 : 32'h0));
+  assign WhiteboxerPlugin_logic_reschedules_flushes_0_valid = BtbPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_0_payload_self = BtbPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_1_valid = LsuPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_1_payload_uopId = LsuPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_1_payload_laneAge = LsuPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_1_payload_self = LsuPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_2_valid = early0_BranchPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_2_payload_uopId = early0_BranchPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_2_payload_laneAge = early0_BranchPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_2_payload_self = early0_BranchPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_3_valid = CsrAccessPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_3_payload_uopId = CsrAccessPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_3_payload_laneAge = CsrAccessPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_3_payload_self = CsrAccessPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_4_valid = early0_EnvPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_4_payload_uopId = early0_EnvPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_4_payload_laneAge = early0_EnvPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_4_payload_self = early0_EnvPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_5_valid = late0_BranchPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_5_payload_uopId = late0_BranchPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_5_payload_laneAge = late0_BranchPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_5_payload_self = late0_BranchPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_6_valid = early1_BranchPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_6_payload_uopId = early1_BranchPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_6_payload_laneAge = early1_BranchPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_6_payload_self = early1_BranchPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_7_valid = late1_BranchPlugin_logic_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_7_payload_uopId = late1_BranchPlugin_logic_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_7_payload_laneAge = late1_BranchPlugin_logic_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_7_payload_self = late1_BranchPlugin_logic_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_8_valid = DecoderPlugin_logic_laneLogic_0_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_8_payload_uopId = DecoderPlugin_logic_laneLogic_0_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_8_payload_laneAge = DecoderPlugin_logic_laneLogic_0_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_8_payload_self = DecoderPlugin_logic_laneLogic_0_flushPort_payload_self;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_9_valid = DecoderPlugin_logic_laneLogic_1_flushPort_valid;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_9_payload_uopId = DecoderPlugin_logic_laneLogic_1_flushPort_payload_uopId;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_9_payload_laneAge = DecoderPlugin_logic_laneLogic_1_flushPort_payload_laneAge;
+  assign WhiteboxerPlugin_logic_reschedules_flushes_9_payload_self = DecoderPlugin_logic_laneLogic_1_flushPort_payload_self;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_valid = late0_BranchPlugin_logic_jumpLogic_learn_valid;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcOnLastSlice = late0_BranchPlugin_logic_jumpLogic_learn_payload_pcOnLastSlice;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcTarget = late0_BranchPlugin_logic_jumpLogic_learn_payload_pcTarget;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_taken = late0_BranchPlugin_logic_jumpLogic_learn_payload_taken;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isBranch = late0_BranchPlugin_logic_jumpLogic_learn_payload_isBranch;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPush = late0_BranchPlugin_logic_jumpLogic_learn_payload_isPush;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPop = late0_BranchPlugin_logic_jumpLogic_learn_payload_isPop;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_wasWrong = late0_BranchPlugin_logic_jumpLogic_learn_payload_wasWrong;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_badPredictedTarget = late0_BranchPlugin_logic_jumpLogic_learn_payload_badPredictedTarget;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_history = late0_BranchPlugin_logic_jumpLogic_learn_payload_history;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_uopId = late0_BranchPlugin_logic_jumpLogic_learn_payload_uopId;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_0 = late0_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_0;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_1 = late0_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_1;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_2 = late0_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_2;
+  assign late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_3 = late0_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_3;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_valid = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_valid;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_pcOnLastSlice = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcOnLastSlice;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_pcTarget = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcTarget;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_taken = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_taken;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_isBranch = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isBranch;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_isPush = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPush;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_isPop = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPop;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_wasWrong = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_wasWrong;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_badPredictedTarget = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_badPredictedTarget;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_history = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_history;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_uopId = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_uopId;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_ctx_GSharePlugin_GSHARE_COUNTER_0 = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_0;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_ctx_GSharePlugin_GSHARE_COUNTER_1 = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_1;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_ctx_GSharePlugin_GSHARE_COUNTER_2 = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_2;
+  assign WhiteboxerPlugin_logic_prediction_learns_0_payload_ctx_GSharePlugin_GSHARE_COUNTER_3 = late0_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_3;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_valid = late1_BranchPlugin_logic_jumpLogic_learn_valid;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcOnLastSlice = late1_BranchPlugin_logic_jumpLogic_learn_payload_pcOnLastSlice;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcTarget = late1_BranchPlugin_logic_jumpLogic_learn_payload_pcTarget;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_taken = late1_BranchPlugin_logic_jumpLogic_learn_payload_taken;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isBranch = late1_BranchPlugin_logic_jumpLogic_learn_payload_isBranch;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPush = late1_BranchPlugin_logic_jumpLogic_learn_payload_isPush;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPop = late1_BranchPlugin_logic_jumpLogic_learn_payload_isPop;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_wasWrong = late1_BranchPlugin_logic_jumpLogic_learn_payload_wasWrong;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_badPredictedTarget = late1_BranchPlugin_logic_jumpLogic_learn_payload_badPredictedTarget;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_history = late1_BranchPlugin_logic_jumpLogic_learn_payload_history;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_uopId = late1_BranchPlugin_logic_jumpLogic_learn_payload_uopId;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_0 = late1_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_0;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_1 = late1_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_1;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_2 = late1_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_2;
+  assign late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_3 = late1_BranchPlugin_logic_jumpLogic_learn_payload_ctx_GSharePlugin_GSHARE_COUNTER_3;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_valid = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_valid;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_pcOnLastSlice = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcOnLastSlice;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_pcTarget = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_pcTarget;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_taken = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_taken;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_isBranch = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isBranch;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_isPush = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPush;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_isPop = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_isPop;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_wasWrong = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_wasWrong;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_badPredictedTarget = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_badPredictedTarget;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_history = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_history;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_uopId = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_uopId;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_ctx_GSharePlugin_GSHARE_COUNTER_0 = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_0;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_ctx_GSharePlugin_GSHARE_COUNTER_1 = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_1;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_ctx_GSharePlugin_GSHARE_COUNTER_2 = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_2;
+  assign WhiteboxerPlugin_logic_prediction_learns_1_payload_ctx_GSharePlugin_GSHARE_COUNTER_3 = late1_BranchPlugin_logic_jumpLogic_learn_asFlow_payload_ctx_GSharePlugin_GSHARE_COUNTER_3;
+  assign WhiteboxerPlugin_logic_loadExecute_fire = (((((((execute_ctrl4_down_LANE_SEL_lane0 && execute_ctrl4_down_isReady) && (! execute_lane0_ctrls_4_downIsCancel)) && execute_ctrl4_down_AguPlugin_SEL_lane0) && (execute_ctrl4_down_AguPlugin_LOAD_lane0 || execute_ctrl4_down_AguPlugin_EXECUTE_lane0)) && (! execute_ctrl4_down_LsuPlugin_logic_LSU_PREFETCH_lane0)) && (! execute_ctrl4_down_TRAP_lane0)) && (! execute_ctrl4_down_LsuPlugin_logic_onPma_IO_lane0));
+  assign WhiteboxerPlugin_logic_loadExecute_uopId = execute_ctrl4_down_Decode_UOP_ID_lane0;
+  assign WhiteboxerPlugin_logic_loadExecute_size = execute_ctrl4_down_AguPlugin_SIZE_lane0;
+  assign WhiteboxerPlugin_logic_loadExecute_address = execute_ctrl4_down_LsuL1_PHYSICAL_ADDRESS_lane0;
+  assign WhiteboxerPlugin_logic_loadExecute_data = lane0_IntFormatPlugin_logic_stages_1_wb_payload;
+  assign WhiteboxerPlugin_logic_storeCommit_fire = LsuPlugin_logic_onWb_storeFire;
+  assign WhiteboxerPlugin_logic_storeCommit_uopId = execute_ctrl4_down_Decode_UOP_ID_lane0;
+  assign WhiteboxerPlugin_logic_storeCommit_size = execute_ctrl4_down_AguPlugin_SIZE_lane0;
+  assign WhiteboxerPlugin_logic_storeCommit_address = execute_ctrl4_down_LsuL1_PHYSICAL_ADDRESS_lane0;
+  assign WhiteboxerPlugin_logic_storeCommit_data = execute_ctrl4_down_LsuL1_WRITE_DATA_lane0;
+  assign WhiteboxerPlugin_logic_storeCommit_storeId = execute_ctrl4_down_Decode_STORE_ID_lane0;
+  assign WhiteboxerPlugin_logic_storeCommit_amo = 1'b0;
+  assign WhiteboxerPlugin_logic_storeConditional_fire = (((((execute_ctrl4_down_LANE_SEL_lane0 && execute_ctrl4_down_isReady) && (! execute_lane0_ctrls_4_downIsCancel)) && execute_ctrl4_down_AguPlugin_SEL_lane0) && (execute_ctrl4_down_AguPlugin_ATOMIC_lane0 && (! (execute_ctrl4_down_AguPlugin_LOAD_lane0 || execute_ctrl4_down_AguPlugin_EXECUTE_lane0)))) && (! execute_ctrl4_down_TRAP_lane0));
+  assign WhiteboxerPlugin_logic_storeConditional_uopId = execute_ctrl4_down_Decode_UOP_ID_lane0;
+  assign WhiteboxerPlugin_logic_storeConditional_miss = execute_ctrl4_down_LsuPlugin_logic_onCtrl_SC_MISS_lane0;
+  assign WhiteboxerPlugin_logic_storeBroadcast_fire = LsuPlugin_logic_onWb_storeBroadcast;
+  assign WhiteboxerPlugin_logic_storeBroadcast_storeId = execute_ctrl4_down_Decode_STORE_ID_lane0;
+  assign WhiteboxerPlugin_logic_wfi = TrapPlugin_logic_harts_0_trap_fsm_wfi;
+  assign WhiteboxerPlugin_logic_perf_executeFreezed = execute_freeze_valid;
+  assign WhiteboxerPlugin_logic_perf_dispatchHazards = (|{(DispatchPlugin_logic_candidates_2_ctx_valid && (! DispatchPlugin_logic_candidates_2_fire)),(DispatchPlugin_logic_candidates_1_ctx_valid && (! DispatchPlugin_logic_candidates_1_fire)),(DispatchPlugin_logic_candidates_0_ctx_valid && (! DispatchPlugin_logic_candidates_0_fire))});
+  assign WhiteboxerPlugin_logic_perf_candidatesCount = _zz_WhiteboxerPlugin_logic_perf_candidatesCount;
+  assign WhiteboxerPlugin_logic_perf_dispatchFeedCount = _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCount;
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter = 1'b0;
+    if(WhiteboxerPlugin_logic_perf_executeFreezed) begin
+      _zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter_1 = (_zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter_2 + _zz__zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_executeFreezedCounter = _zz_WhiteboxerPlugin_logic_perf_executeFreezedCounter_2;
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter = 1'b0;
+    if(WhiteboxerPlugin_logic_perf_dispatchHazards) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter_1 = (_zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter_2 + _zz__zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_dispatchHazardsCounter = _zz_WhiteboxerPlugin_logic_perf_dispatchHazardsCounter_2;
+  assign when_Counter_l254 = (WhiteboxerPlugin_logic_perf_candidatesCount == 2'b00);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0 = 1'b0;
+    if(when_Counter_l254) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0_1 = (_zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0_2 + _zz__zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_candidatesCountCounters_0 = _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_0_2;
+  assign when_Counter_l254_1 = (WhiteboxerPlugin_logic_perf_candidatesCount == 2'b01);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1 = 1'b0;
+    if(when_Counter_l254_1) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1_1 = (_zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1_2 + _zz__zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_candidatesCountCounters_1 = _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_1_2;
+  assign when_Counter_l254_2 = (WhiteboxerPlugin_logic_perf_candidatesCount == 2'b10);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2 = 1'b0;
+    if(when_Counter_l254_2) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2_1 = (_zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2_2 + _zz__zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_candidatesCountCounters_2 = _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_2_2;
+  assign when_Counter_l254_3 = (WhiteboxerPlugin_logic_perf_candidatesCount == 2'b11);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3 = 1'b0;
+    if(when_Counter_l254_3) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3_1 = (_zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3_2 + _zz__zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_candidatesCountCounters_3 = _zz_WhiteboxerPlugin_logic_perf_candidatesCountCounters_3_2;
+  assign when_Counter_l254_4 = (WhiteboxerPlugin_logic_perf_dispatchFeedCount == 2'b00);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0 = 1'b0;
+    if(when_Counter_l254_4) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0_1 = (_zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0_2 + _zz__zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0 = _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_0_2;
+  assign when_Counter_l254_5 = (WhiteboxerPlugin_logic_perf_dispatchFeedCount == 2'b01);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1 = 1'b0;
+    if(when_Counter_l254_5) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1_1 = (_zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1_2 + _zz__zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1_1 = 60'h0;
+    end
+  end
+
+  assign WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1 = _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_1_2;
+  assign when_Counter_l254_6 = (WhiteboxerPlugin_logic_perf_dispatchFeedCount == 2'b10);
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_2 = 1'b0;
+    if(when_Counter_l254_6) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_2 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_2_1 = (_zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_2_2 + _zz__zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_2_1);
+    if(1'b0) begin
+      _zz_WhiteboxerPlugin_logic_perf_dispatchFeedCounters_2_1 = 60'h0;
+    end
+  end
+

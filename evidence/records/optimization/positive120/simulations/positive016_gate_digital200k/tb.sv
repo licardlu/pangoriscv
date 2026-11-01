@@ -1,0 +1,39 @@
+`timescale 1ns/1ps
+module tb_gate_smoke;
+  reg clk=0, reset=1,board_clk=0;
+  reg grs_n=0;
+  always #4.1507024265 clk=~clk;
+  always #18.5185185185 board_clk=~board_clk;
+  initial begin #100;grs_n=1;repeat(20)@(negedge clk);reset=0;end
+  GTP_GRS GRS_INST(.GRS_N(grs_n));
+  wire reference_tx,replica_tx;
+  wire [7:0] reference_led,replica_led;
+  // Synthesis moves logic across internal hierarchy; verify the complete top.
+  pango_vexii_top reference_dut(.clk(board_clk),.rst_n(!reset),.key(1'b1),.uart_rx(1'b1),.uart_tx(reference_tx),.led(reference_led));
+  pango_vexii_top replica_dut(.clk(board_clk),.rst_n(!reset),.key(1'b1),.uart_rx(1'b1),.uart_tx(replica_tx),.led(replica_led));
+  initial begin
+    // Functional comparison only: align the PLL outputs, not PLL verification.
+    force reference_dut.core_clk=clk;force replica_dut.core_clk=clk;
+    force reference_dut.locked=1'b1;force replica_dut.locked=1'b1;
+  end
+  integer cycles=0,edges=0,max_cycles=200000;
+  initial if($value$plusargs("MAX_CYCLES=%d",max_cycles))begin end
+  always @(negedge replica_tx)edges=edges+1;
+  always @(negedge clk)begin
+    cycles=cycles+1;
+    if(cycles>100 && {reference_tx,reference_led} !== {replica_tx,replica_led})
+      $fatal(1,"post-synthesis SoC output mismatch cycle=%d reference=%h got=%h",cycles,{reference_tx,reference_led},{replica_tx,replica_led});
+    if(cycles%50000==0)$display("GATE_PROGRESS cycles=%d uart_edges=%d",cycles,edges);
+    if(cycles==max_cycles)begin
+      if(edges<10)$fatal(1,"No UART activity from synthesized netlist");
+      $display("TEST_PASS gate_external_lockstep cycles=%d uart_edges=%d",cycles,edges);
+      $finish;
+    end
+  end
+endmodule
+config gate_smoke_config;
+  design work.tb_gate_smoke;
+  default liblist work pango;
+  instance tb_gate_smoke.reference_dut liblist reference;
+  instance tb_gate_smoke.replica_dut liblist gate pango;
+endconfig

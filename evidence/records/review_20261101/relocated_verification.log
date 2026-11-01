@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "verification": {
+    "status": "PASS",
+    "design_sources": 44,
+    "hdl_files_with_includes": 97,
+    "modules": 44,
+    "external_source_dependencies": 0,
+    "memory_lanes": 8,
+    "image": {
+      "checked_bytes": 36444,
+      "ram_bytes": 65536,
+      "elf_sha256": "5c4ecd094efd2fea33f08d9f5ac8e79118584e85588a7bf18189bf37da0c270b",
+      "ram_sha256": "c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d"
+    },
+    "selected_implementation": {
+      "binding_valid": true,
+      "tag": "positive020_route20",
+      "bitstream": "bitstream/current/pango_vexii_top.sbit",
+      "sta_closed": true,
+      "setup_wns_ns": 0.145,
+      "minimum_hold_ns": 0.012,
+      "area": {
+        "status": "FAIL",
+        "mode": "strict",
+        "module": "baseline-implementation-standalone-001",
+        "source_csv": "C:\\Users\\21962\\AppData\\Local\\Temp\\pango standalone probe lrkq0_34\\evidence\\records\\optimization\\positive120\\positive020_route20\\multiseed_summary.csv",
+        "budget": {
+          "LUT": 8875,
+          "FF": 6658,
+          "Distributed RAM": 72
+        },
+        "actual": {
+          "LUT": 8907,
+          "FF": 7237,
+          "Distributed RAM": 72
+        },
+        "delta": 611,
+        "delta_percent": 3.9154117270105737,
+        "allowed_delta": 0,
+        "exact_area_neutral": false,
+        "baseline_tolerance_percent": 0,
+        "metric": "LUT+FF+Distributed RAM; not LUT-only"
+      },
+      "board_verified": false,
+      "performance_target_verified": false,
+      "note": "Binding/STA pass does not waive the area budget or establish hardware stability."
+    },
+    "scope": "release hashes, include closure, local data and frozen firmware; selected-artifact checks are reported separately; not area acceptance or formal equivalence"
+  },
+  "source_tree_reads_denied": "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\project\\pds_native_120",
+  "local_files_opened": 384,
+  "relocated_copy": "C:\\Users\\21962\\AppData\\Local\\Temp\\pango standalone probe lrkq0_34",
+  "scope": "relocated source/image/selected-artifact verification under old-tree read guard; does not rerun PDS",
+  "original_files_deleted": 0,
+  "temporary_copy_removed": false
+}

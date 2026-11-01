@@ -1,0 +1,7 @@
+dbg_connect -ip 127.0.0.1 -port 65420
+dbg_scan_chain
+dbg_program -device 0 -file E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/ila_debug/src/build/pango_native/generate_bitstream/pangoriscv_top.sbit
+dbg_open_project -file E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/logs/ila_capture_encA3/ila_capture.dprj
+dbg_set_unit -unit 0 -func "==" -value XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXXX_XXX1_0000_0000_0000_0000_0001_0000_0111_1000 -radix 2
+dbg_save_project -file E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/logs/ila_setunit_probe3/probe_result.dprj
+dbg_close

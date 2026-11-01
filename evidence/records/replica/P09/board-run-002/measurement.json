@@ -1,0 +1,75 @@
+{
+  "tag": "P09/board-run-002",
+  "date": "2026-10-30",
+  "note": "乘法器流水从 3 级改为 3 级合并(停顿 3->2 拍) + 用 -gplace_seed 2 取得收敛摆放。当前最高有效成绩。",
+  "changes": [
+    "core_multiplier.v: S2/S3 合并, busy 3->2 拍 (mul_busy 564,069 -> 376,046)",
+    "project/core_replica/build.tcl: pnr 选项与参考工程逐字对齐 (删掉多出的两条)",
+    "新发现: -gplace_seed 是真正会换摆放的随机种子 (-seed 才是 no-op)"
+  ],
+  "bitstream": {
+    "path": "build/replica_pds/run-022/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "30705690407ae833a06b0c5b5a927c005164617bb5dbf0a9ec6f90dc5e82ef49",
+    "pll": "27 MHz * 50 / 16 = 84.375 MHz, VCO 1350 MHz",
+    "constraint": "project/core_replica/pango_cpu_84.fdc (11.851 ns)",
+    "sta": "All Constraints Met",
+    "setup_wns_ns": 0.323,
+    "critical_path_ns": 11.528,
+    "achieved_mhz": 86.75,
+    "placement_seed": 2,
+    "resources": {
+      "LUT": 8086,
+      "FF": 3548,
+      "DRAM": 200,
+      "DRM": 32,
+      "APM": 4
+    }
+  },
+  "firmware": {
+    "iterations": 7000,
+    "cpu_hz": 84375000,
+    "uart_div": 91
+  },
+  "measurement": {
+    "total_ticks": 2148336570,
+    "ticks_per_iteration": 306905.22,
+    "coremark_per_mhz": 3.2583,
+    "runtime_secs": 25.46,
+    "runtime_valid": true,
+    "official_text": "Correct operation validated. See README.md for run and reporting rules.",
+    "crc": {
+      "seedcrc": "0xe9f5",
+      "crclist": "0xe714",
+      "crcmatrix": "0x1fd7",
+      "crcstate": "0x8e3a",
+      "crcfinal": "0x25b5"
+    },
+    "score_at_this_frequency": 274.9
+  },
+  "cross_checks": {
+    "sim_ticks_per_iteration": 306931.4,
+    "sim_vs_board_pct": 0.0085,
+    "note": "板上比仿真快 0.0085%，与历史 0.005~0.008% 同量级；crcfinal 0x25b5 与前几次一致。"
+  },
+  "comparison": {
+    "v1_board_120_46MHz": {
+      "coremark_per_mhz": 2.104,
+      "score": 253.4
+    },
+    "v2_prev_shipped": {
+      "coremark_per_mhz": 3.1615,
+      "score": 266.8
+    },
+    "now": {
+      "coremark_per_mhz": 3.2583,
+      "score": 274.9
+    },
+    "delta_vs_prev_pct": 3.0,
+    "delta_vs_v1_pct": 8.5
+  },
+  "device": {
+    "part": "PG2L100H",
+    "jtag_id": "0x00602899",
+    "program_ok": true
+  }
+}

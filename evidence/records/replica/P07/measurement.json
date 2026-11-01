@@ -1,0 +1,35 @@
+{
+  "record": "replica/P07",
+  "kind": "simulation",
+  "date": "2026-10-30",
+  "core": "rtl/core (V1, RV32IMC+Zicsr+Zifencei, 单发射, 无 Cache, 无预测器)",
+  "firmware": {
+    "iterations": 20,
+    "sha256": "871c0926dc07f04fc82d782eda7c073e77c6afb89b78c5e8edd5e41313cc1444",
+    "elf_sha256": "0165269875801bbcc8297bb5ed00ddb8a8d06f7970b6bf9bcbe711c770beee63"
+  },
+  "sim": {
+    "total_ticks": 8946077,
+    "ticks_per_iter": 447303.85,
+    "seconds_at_target_hz": 0.074265,
+    "coremark_per_mhz": 2.2356,
+    "coremark_score_at_target_hz": 269.3,
+    "note": "仿真时钟 100 MHz, 但 CoreMark/MHz 只依赖 ticks, 与时钟无关"
+  },
+  "crc": {
+    "seedcrc": "0xe9f5",
+    "crclist": "0xe714",
+    "crcmatrix": "0x1fd7",
+    "crcstate": "0x8e3a",
+    "crcfinal": "0x4983",
+    "all_official_match": true
+  },
+  "validity": "Total time (secs) 被 HAS_FLOAT=0 截断为 0, 不足 10 s, 因此官方拒绝给分; 这是短跑功能证据, 不作为正式成绩",
+  "reference": {
+    "total_ticks": 1309328358,
+    "iterations": 7000,
+    "ticks_per_iter": 187046.9,
+    "coremark_per_mhz": 5.3462
+  },
+  "ratio_vs_reference": 0.4182
+}

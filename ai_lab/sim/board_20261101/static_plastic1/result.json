@@ -1,0 +1,55 @@
+{
+  "board_test": true,
+  "full_acceptance": false,
+  "port": "COM13",
+  "image": "data\\images\\testset\\plastic__plastic1.jpg",
+  "stages": {
+    "model_crc": {
+      "seconds": 2.9540000000270084,
+      "passed": true
+    },
+    "input_upload": {
+      "seconds": 82.10900000005495,
+      "passed": true
+    },
+    "image_geometry": {
+      "seconds": 0.0,
+      "passed": true
+    },
+    "inference": {
+      "seconds": 42.21899999992456,
+      "passed": true
+    },
+    "software_reference": {
+      "seconds": 25.094000000040978,
+      "passed": true
+    }
+  },
+  "detections": [
+    {
+      "category": "plastic",
+      "score": 0.5371918082237244,
+      "box": [
+        137.04953002929688,
+        104.65925598144531,
+        431.8719787597656,
+        282.3699035644531
+      ]
+    }
+  ],
+  "expected": [
+    {
+      "category": "plastic",
+      "score": 0.5371917246473583,
+      "box": [
+        137.04952604281803,
+        104.65923343617119,
+        431.8719746018502,
+        282.3698955733367
+      ]
+    }
+  ],
+  "reference_match": true,
+  "passed": true,
+  "wall_seconds": 219.75
+}

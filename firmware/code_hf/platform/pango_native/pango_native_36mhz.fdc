@@ -1,0 +1,10 @@
+# 36 MHz on the CORE clock (period 27.777778 ns): the DELIVERY board frequency.
+# The PLL is set to 27 * 56 / 42 = 36 MHz (pangoriscv_top.v, GTP_PPLL
+# STATIC_RATIO0=42), matching this constraint exactly -- board image built with
+# --cpu-mhz 36 so the UART divisor and the seconds conversion agree.
+# The P13 routed implementation (evidence p13-board-verify) closes at 24.65 ns,
+# so this constraint keeps >3 ns of margin; the 40 MHz analysis build
+# (pango_native_40mhz.fdc, All Constraints Met, WNS +0.558) is the frequency
+# experiment, this file is what the board runs.
+create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
+create_clock -name core_clk -period 27.777778 -waveform {0 13.888889} [get_pins {u_core_pll/CLKOUT0}]

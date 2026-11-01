@@ -1,0 +1,159 @@
+[assistant]
+Good. Top port clock is `clk`; net name in netlist likely `clk`. Also soc hierarchy for internal AXI nets: inside pangoriscv_axi_soc, e.g. `soc/lsu_axi...`. We can list.
+
+Now run listnets script in background (it may take a while parsing adf + printing huge list → ins.log big). Also grep afterwards.
+
+Simultaneously check board/regression progress.
+
+Run listnets bg job.
+
+[assistant • pwsh]
+{"command":"$A='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit'\n$ila=\"$A\\contest_final\\ila\"\n$ins='E:\\donwload\\PDS_2022.2-SP6.4\\PDS_2022.2-SP6.1\\bin\\cdt_ins.exe'\n$tclf = ($ila -replace '\\\\','/') + '/listnets.tcl'\nSet-Location $ila\n& $ins -device PG2L100H -package FBG676 -speedgrade '-6' -file $tclf 2>&1 | Out-Null\nWrite-Host \"EXIT=$LASTEXITCODE\"\n$log=\"$ila\\log\\ins.log\"\nWrite-Host ('ins.log bytes=' + (Get-Item $log).Length)\nWrite-Host ('net lines=' + (Select-String -Path $log -Pattern '^\\s*\\d+\\s+' -ErrorAction SilentlyContinue).Count)","description":"List nets from synthesized adf via cdt_ins","run_in_background":true}
+
+[tool • pwsh]
+started background job pwsh-6931303d6bf34405
+
+[user]
+<acp tokens="561" type="text">m04700</acp>
+background job pwsh-8f7cf94fbdc54485 (pwsh: $A='E:\file\pango\project\evidence\records\bottleneck_audit'
+$B="$A\board"
+$cur=$PID
+function Do-Run([string]$tag,[string]$sbit){
+  Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" | Where-Object { $_.ProcessId -ne $cur -and $_.CommandLine -like '*capture_uart.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+  Start-Sleep -Seconds 2
+  $out="$B\phase2\$tag.txt"
+  if (Test-Path $out) { Remove-Item $out -Force }
+  $flog="$B\phase2\${tag}_flash.log"
+  $cap = Start-Process powershell -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File',"$B\capture_uart.ps1",'-Port','COM13','-Seconds','75','-Out',$out -PassThru -WindowStyle Hidden
+  Start-Sleep -Seconds 5
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$B\run_flash.ps1" -Sbit $sbit -Script 01b_program_only.tcl -TimeoutSec 120 *> $flog
+  $null = $cap.WaitForExit(150000)
+  Copy-Item "$B\jtagserver_run.log" "$B\phase2\${tag}_jtagserver_run.log" -Force -ErrorAction SilentlyContinue
+  Copy-Item "$B\configuration_tcl.log" "$B\phase2\${tag}_configuration_tcl.log" -Force -ErrorAction SilentlyContinue
+  $txt = Get-Content $out -Raw -ErrorAction SilentlyContinue
+  $ticks = if ($txt -match 'Total ticks\s*:\s*(\d+)') { $Matches[1] } else { '?' }
+  $secs  = if ($txt -match 'Total time \(secs\):\s*(\d+)') { $Matches[1] } else { '?' }
+  $crc   = if ($txt -match 'crcfinal\s*:\s*(0x[0-9a-f]+)') { $Matches[1] } else { '?' }
+  $res   = if ($txt -match 'Correct operation validated') { 'VALID' } elseif ($txt -match 'Errors detected') { 'ERRORS' } else { 'INCOMPLETE' }
+  $sha = (Get-FileHash $out -Algorithm SHA256).Hash
+  Write-Host ("[$tag] bytes=$((Get-Item $out).Length) ticks=$ticks secs=$secs crcfinal=$crc $res sha=$sha")
+}
+Do-Run 'val_cand_run2' "$A\contest_final\src\build\pango_native-val600\generate_bitstream\pangoriscv_top.sbit"
+Do-Run 'val_b0_run1' "$A\baseline_build\src\build\pango_native-val600\generate_bitstream\pangoriscv_top.sbit"
+Do-Run 'val_b0_run2' "$A\baseline_build\src\build\pango_native-val600\generate_bitstream\pangoriscv_top.sbit"
+Write-Host 'BOARD_VAL_DONE') finished [status: completed, exit code: 0]. Read its output with job_output.
+
+[assistant]
+Board val job finished. Read output. Also check listnets job and regression job.
+
+[assistant • job_output]
+{"job_id":"pwsh-8f7cf94fbdc54485"}
+
+[assistant • job_output]
+{"job_id":"pwsh-6931303d6bf34405"}
+
+[tool • job_output]
+[val_b0_run2] bytes=705 ticks=481756431 secs=17 crcfinal=0xb8a0 VALID sha=02CD4127D66E619E280F9F8EEC9FF36D6D933F8FDE1EC693202E9A0FCB21D4A4
+BOARD_VAL_DONE
+[status: completed, exit code: 0]
+
+[tool • job_output]
+(no new output)
+[status: running]
+
+[assistant]
+Board val600 complete: all 4 runs VALID, identical hashes per version:
+- cand val: ticks 340,038,594 (12 s), sha 3512D7A6… ×2
+- b0 val: ticks 481,756,431 (17 s), sha 02CD4127… ×2
+Interesting b0 val ticks (481,756,431) differs slightly from b0 perf (481,086,155) — validation image seeds differ, expected.
+
+Metrics for val: cand iterations/sec = 600*27e6/340,038,594 = 47.64; b0 = 600*27e6/481,756,431 = 33.63. Ratio ticks 1.41643 same as perf (481086155/339639071 = 1.41643?) compute: 481086155/339639071=1.41643; val: 481756431/340038594=1.41677. Hmm slightly different because UART print timing? Ticks differ due to seed data? CoreMark validation vs performance differ in data generation path — both do same number of iterations but performance run skips validation of results (checks removed?) Actually PERFORMANCE_RUN skips checks → fewer cycles. Fine.
+
+Also need to compute val ratios later for records.
+
+Now: listnets still running (parsing + printing huge list). Wait; meanwhile check regression job and val job details (per-run logs).
+
+Also need to update status records later.
+
+Next steps:
+1. ILA fic creation (listnets → parse obs nets → build core → debug PDS build) — main remaining heavy work.
+2. Board ILA capture.
+3. Rebuild records/status docs, results table, identity list, REBUILD file.
+4. Merge to production tree firmware/code? Prompt: merge candidate to unique production tree after success; also update repo docs (contest reconciliation table) and commit.
+5. Final report.
+
+Also verify macro-OFF regression completes.
+
+Wait for listnets. Check job output with wait maybe. Let me wait_agent? No. Just poll job_output with wait true 60s.
+
+[assistant • job_output]
+{"job_id":"pwsh-6931303d6bf34405","wait":true,"timeout_ms":180000}
+
+[tool • job_output]
+EXIT=0
+ins.log bytes=3003285
+net lines=24608
+[status: completed, exit code: 0]
+
+[user]
+<acp tokens="63" type="text">m04709</acp>
+Time sampled while preparing turn 83, step 157: 2026-10-18T17:56:22+08:00[Asia/Shanghai]
+Browser time zone for this request: Asia/Shanghai. Interpret otherwise-unqualified dates and times in this zone.
+Elapsed since the preceding step context: 10m 21s.
+
+[assistant]
+ins.log 3MB, 24,608 net lines. Now grep for the obs_* nets and other useful nets (clk, soc internal AXI/cache).
+
+Extract lines containing 'obs_' with their index. Also find clk net, and useful internal: 'lsu', 'axi', 'cache', 'redirect', 'ifu'. Print counts + first examples to design mapping.
+
+Command: parse ins.log lines with regex `^\s*(\d+)\s+(\S+)` and filter names. Show obs ones fully, and 30 samples of others.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\n$nets = Select-String -Path $log -Pattern '^\\s*(\\d+)\\s+(\\S+)' -AllMatches | ForEach-Object { $m=$_.Matches[0]; [pscustomobject]@{ idx=[int]$m.Groups[1].Value; name=$m.Groups[2].Value } }\nWrite-Host ('parsed nets=' + $nets.Count)\nWrite-Host '=== obs_* ==='\n$nets | Where-Object { $_.name -match 'obs_' } | ForEach-Object { '{0,6}  {1}' -f $_.idx,$_.name }\nWrite-Host '=== clk / rst candidates ==='\n$nets | Where-Object { $_.name -match '(^|/)(clk|rst_n|soc_rst_n)$' } | ForEach-Object { '{0,6}  {1}' -f $_.idx,$_.name }\nWrite-Host '=== sample lsu/axi/cache/branch nets ==='\n$nets | Where-Object { $_.name -match 'lsu|axi|cache|branch|redirect' } | Select-Object -First 40 | ForEach-Object { '{0,6}  {1}' -f $_.idx,$_.name }\n$nets | Export-Csv 'E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\nets.csv' -NoTypeInformation -Encoding UTF8\nWrite-Host 'nets.csv written'","description":"Parse ILA net list for obs and internal nets","timeoutMs":120000}
+
+[tool • pwsh]
+parsed nets=24608
+=== obs_* ===
+=== clk / rst candidates ===
+=== sample lsu/axi/cache/branch nets ===
+nets.csv written
+
+
+[assistant]
+24,608 parsed but no obs_ matches?? Maybe net names in list have different format (e.g., with hierarchy prefix and backslash, or the printed lines have columns like "index  net_name  width"?). Let me inspect first 30 raw lines containing matches and the format around "obs". grep raw for 'obs' and show first lines with context.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\nWrite-Host '=== raw sample lines around first \"obs\" hit ==='\n$hits = Select-String -Path $log -Pattern 'obs_' | Select-Object -First 6\nforeach ($h in $hits) { Write-Host (\"L{0}: {1}\" -f $h.LineNumber, $h.Line) }\nWrite-Host '=== raw around net list header ==='\n$h2 = Select-String -Path $log -Pattern 'Net List|net list|Net list|netlist' | Select-Object -First 4\nforeach ($h in $h2) { Write-Host (\"L{0}: {1}\" -f $h.LineNumber, $h.Line) }\nWrite-Host '=== lines 800-815 of ins.log ==='\nGet-Content $log | Select-Object -Skip 800 -First 16\nWrite-Host '=== first 5 parsed-ish lines ==='\nSelect-String -Path $log -Pattern '^\\s*\\d+\\s+' | Select-Object -First 5 | ForEach-Object { Write-Host (\"L{0}: {1}\" -f $_.LineNumber, $_.Line) }","description":"Inspect raw net list format in ins.log","timeoutMs":120000}
+
+[tool • pwsh]
+=== raw sample lines around first "obs" hit ===
+L263: 75 :                                   obs_retire_count[3]                     GTP_DFF_RE                              
+L307: 118 :                                  obs_retire_count[20]                    GTP_DFF_RE                              
+L1384: 1174 :                                 obs_trap_count[28]                      GTP_DFF_RE                              
+L1698: 1482 :                                 obs_retire_count[0]_inv                 GTP_LUT1                                
+L1954: 1733 :                                 obs_retire_count[5]                     GTP_DFF_RE                              
+L2293: 2065 :                                 obs_retire_count[2]                     GTP_DFF_RE                              
+=== raw around net list header ===
+=== lines 800-815 of ins.log ===
+602 :                                  soc/core/ifu/_N25878                    GTP_LUT6                                
+603 :                                  soc/perf_inst/_N12154                   GTP_LUT6CARRY                           
+604 :                                  soc/core/ifu/N40.co[18]                 GTP_LUT6CARRY                           
+605 :                                  soc/core/cpu/u_ex/_N4660                GTP_LUT6CARRY                           
+606 :                                  soc/data_ram/_N8580                     GTP_RAM64X1DP                           
+607 :                                  soc/irq_inst/endpoint/rleft[5]          GTP_DFF_RE                              
+608 :                                  soc/perf_inst/_N11658                   GTP_LUT6CARRY                           
+609 :                                  soc/perf_inst/N342[24]                  GTP_LUT6CARRY                           
+610 :                                  soc/core/cpu/u_branch_predictor/target_q[28][29]pangoriscv                              
+611 :                                  soc/data_ram/ar_addr[0]                 GTP_DFF_RE                              
+612 :                                  soc/core/instruction_cache/tag_mem[11][1]GTP_DFF_RE                              
+613 :                                  soc/core/cpu/u_branch_predictor/target_q[14][11]pangoriscv                              
+614 :                                  soc/core/cpu/dj1[17]                    id                                      
+615 :                                  soc/core/cpu/u_ex/_N29181               GTP_LUT6                                
+616 :                                  soc/data_ram/_N9064                     GTP_RAM64X1DP                           
+617 :                                  soc/core/data_cache/N6789               GTP_LUT6D                               
+=== first 5 parsed-ish lines ===
+L187: 0 :                                    soc/s_rdata[97]                         axi_uart                                
+L188: 1 :                                    soc/core/lsu/value_q[24]                GTP_DFF_RE                              
+L189: 2 :                                    soc/core/cpu/u_branch_predictor/tag_q[6][7]GTP_DFF_RE                              
+L190: 3 :                                    soc/fabric/N203[9]                      GTP_LUT6D                               
+L191: 4 :                                    soc/data_ram/_N8641                     GTP_RAM64X1DP                           

@@ -1,0 +1,4 @@
+dbg_open_project -file E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/logs/ila_capture_encA3/ila_capture.dprj
+dbg_set_unit -unit 0 -func "==" -value XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX100000000000000000001000001111000 -radix 2
+dbg_save_project -file E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/logs/ila_capture_encA3/probe_setunit2.dprj
+dbg_close

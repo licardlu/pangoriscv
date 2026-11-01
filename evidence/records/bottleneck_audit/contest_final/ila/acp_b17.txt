@@ -1,0 +1,2191 @@
+[assistant]
+Now continue: parse nets with correct regex, find obs_* and internal nets (clk, axi, cache, lsu).
+
+The net list format: `75 :    obs_retire_count[3]    GTP_DFF_RE`. Also names are top-level? Sample from L263: `obs_retire_count[3]` with whitespace prefix. But grep for 'obs_' earlier raw found them. My parse regex should be `^\s*(\d+)\s*:\s+(\S+)` — but note trailing GTP type may be glued to name in some lines (e.g., `target_q[28][29]pangoriscv`). Fine.
+
+However obs_* signals at top: obs are `obs_retire_fire` (1 bit, maybe single net), obs_retire_order[63:0] is a bus naming? In netlist, obs_retire_order might be split into individual bits or width>1 nets. The nets list shows `<GTP_TYPE>` with column alignment: `obs_retire_count[3] GTP_DFF_RE` — for multi-bit, maybe a width column? Actually original ins.log column widths fixed 40: name column then type. For buses, likely the bus net `obs_retire_order[63:0]` appears as a net with width and type. Let me now parse and list all obs_* names (they may be `obs_retire_order[63:0]` style) and clk/rst candidates.
+
+Run improved parse.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\n$lines = Get-Content $log -ErrorAction Stop\n$nets = foreach ($ln in $lines) {\n  if ($ln -match '^\\s*(\\d+)\\s*:\\s+(\\S+)') { [pscustomobject]@{ idx=[int]$Matches[1]; name=$Matches[2] } }\n}\nWrite-Host ('parsed nets=' + $nets.Count)\nWrite-Host '=== obs_* (unique names) ==='\n$nets | Where-Object { $_.name -match 'obs_' } | Sort-Object name -Unique | ForEach-Object { '{0,6}  {1}' -f $_.idx,$_.name }\nWrite-Host '=== clk/rst candidates ==='\n$nets | Where-Object { $_.name -match '(^|/)(clk|rst_n|soc_rst_n|sys_clk|clk_27m)(\\[|$)' } | Select-Object -First 20 | ForEach-Object { '{0,6}  {1}' -f $_.idx,$_.name }\n$nets | Export-Csv 'E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\nets.csv' -NoTypeInformation -Encoding UTF8\nWrite-Host ('nets.csv rows=' + $nets.Count)","description":"Reparse net list with corrected regex","timeoutMs":120000}
+
+[tool • pwsh]
+parsed nets=24608
+=== obs_* (unique names) ===
+ 16262  obs_retire_count[0]
+  1482  obs_retire_count[0]_inv
+ 15085  obs_retire_count[1]
+ 24385  obs_retire_count[10]
+ 19608  obs_retire_count[11]
+  7990  obs_retire_count[12]
+ 15877  obs_retire_count[13]
+  7147  obs_retire_count[14]
+ 22998  obs_retire_count[15]
+  6830  obs_retire_count[16]
+ 18752  obs_retire_count[17]
+  5966  obs_retire_count[18]
+ 17697  obs_retire_count[19]
+  2065  obs_retire_count[2]
+   118  obs_retire_count[20]
+ 20506  obs_retire_count[21]
+ 12088  obs_retire_count[22]
+ 13269  obs_retire_count[23]
+ 19664  obs_retire_count[24]
+ 11726  obs_retire_count[25]
+ 23298  obs_retire_count[26]
+  3383  obs_retire_count[27]
+ 10252  obs_retire_count[28]
+ 15249  obs_retire_count[29]
+    75  obs_retire_count[3]
+ 17023  obs_retire_count[30]
+  8114  obs_retire_count[31]
+ 18770  obs_retire_count[4]
+  1733  obs_retire_count[5]
+ 17874  obs_retire_count[6]
+  7249  obs_retire_count[7]
+  5980  obs_retire_count[8]
+ 20277  obs_retire_count[9]
+ 16962  obs_retire_fire
+ 11705  obs_retire_inst[12]
+ 19623  obs_retire_inst[13]
+ 13888  obs_retire_inst[14]
+ 11188  obs_retire_inst[15]
+ 22758  obs_retire_inst[16]
+ 22401  obs_retire_inst[17]
+ 15703  obs_retire_inst[18]
+ 15196  obs_retire_inst[19]
+  8011  obs_trap_count[0]
+  5520  obs_trap_count[0]_inv
+ 15905  obs_trap_count[1]
+  7444  obs_trap_count[10]
+ 18069  obs_trap_count[11]
+  9244  obs_trap_count[12]
+ 20214  obs_trap_count[13]
+  2206  obs_trap_count[14]
+ 21064  obs_trap_count[15]
+  8273  obs_trap_count[16]
+ 11025  obs_trap_count[17]
+ 13567  obs_trap_count[18]
+ 16091  obs_trap_count[19]
+ 24441  obs_trap_count[2]
+ 15543  obs_trap_count[20]
+  8121  obs_trap_count[21]
+ 21598  obs_trap_count[22]
+  7323  obs_trap_count[23]
+ 23132  obs_trap_count[24]
+ 24440  obs_trap_count[25]
+  7892  obs_trap_count[26]
+  9740  obs_trap_count[27]
+  1174  obs_trap_count[28]
+  3065  obs_trap_count[29]
+ 19651  obs_trap_count[3]
+ 17312  obs_trap_count[30]
+ 11528  obs_trap_count[31]
+ 23094  obs_trap_count[4]
+  2640  obs_trap_count[5]
+ 15675  obs_trap_count[6]
+ 14520  obs_trap_count[7]
+ 22749  obs_trap_count[8]
+ 21740  obs_trap_count[9]
+ 11008  obs_trap_fire
+ 14739  obs_uart_tx[0]
+=== clk/rst candidates ===
+nets.csv rows=24608
+
+
+[assistant]
+Problem: the net list output is truncated/unique'd weirdly: obs_retire_order, obs_retire_pc, obs_wdata, obs_rd etc. not shown? Because many obs nets are buses and the listing shows only some bits? Wait output shows obs_retire_count bits, obs_retire_fire, obs_retire_inst[12..19], obs_trap_count bits, obs_trap_fire, obs_uart_tx[0]. Missing: retire_order, retire_pc, rd_valid, rd, wdata, trap_cause, trap_pc, trap_tval, halted, arch_next_pc, protocol_fault, csr_mtvec. Why? Because those signals were optimized or renamed? Or listing truncated at some index? Hmm obs list includes indirection: maybe many nets named `obs_retire_pc[31:0]` weren't found due to name-column truncation: lines like `soc/core/cpu/u_branch_predictor/target_q[28][29]pangoriscv` show the type column glued when name long — my regex `(\S+)` grabs full token up to whitespace; fine.
+
+Wait perhaps the obs nets are aliases on wires that got inlined; only some have names kept. But syn_keep/syn_preserve should keep all. Hmm but maybe the adf net names for those are like `obs_retire_pc[31:0]` shown differently? Let me directly grep raw ins.log for each expected name: obs_retire_pc, obs_retire_order, obs_wdata, obs_halted, obs_arch_next_pc, obs_trap_cause. Also grep 'obs_' count raw.
+
+Also clk candidate empty: clock net might be `soc/clk` or `clk_27m`? The obs top module port `clk` maybe net name `clk`. My regex required (^|/) before clk and no suffix; net `clk` should match. Empty means no `clk` net line? Maybe clock net named `sys_clk` or `soc/clk27m`. Let me grep raw for 'clk' lines.
+
+Also net index count 24,608; list printed seems maybe only first N nets? Actually count matched 24608 lines exactly, so full list. Let's grep raw.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\nforeach ($pat in 'obs_retire_pc','obs_retire_order','obs_wdata','obs_halted','obs_arch_next_pc','obs_trap_cause','obs_trap_pc','obs_trap_tval','obs_protocol_fault','obs_csr_mtvec','obs_rd_valid') {\n  $n = (Select-String -Path $log -Pattern ([regex]::Escape($pat)) -ErrorAction SilentlyContinue | Measure-Object).Count\n  Write-Host (\"{0,-22} hits={1}\" -f $pat, $n)\n}\nWrite-Host '=== raw obs lines that are NOT count/inst/uart_tx/fire ==='\nSelect-String -Path $log -Pattern 'obs_' | Where-Object { $_.Line -notmatch 'obs_retire_count|obs_retire_inst|obs_trap_count|obs_uart_tx|obs_retire_fire|obs_trap_fire' } | Select-Object -First 25 | ForEach-Object { Write-Host (\"L{0}: {1}\" -f $_.LineNumber,$_.Line.Trim()) }\nWrite-Host '=== clk-ish raw lines ==='\nSelect-String -Path $log -Pattern '(^|[\\s/])clk[\\s\\[/]|clk_|_clk' | Select-Object -First 15 | ForEach-Object { Write-Host (\"L{0}: {1}\" -f $_.LineNumber,$_.Line.Trim()) }","description":"Grep raw ins.log for obs nets and clock","timeoutMs":120000}
+
+[tool • pwsh]
+obs_retire_pc          hits=0
+obs_retire_order       hits=0
+obs_wdata              hits=0
+obs_halted             hits=0
+obs_arch_next_pc       hits=0
+obs_trap_cause         hits=0
+obs_trap_pc            hits=0
+obs_trap_tval          hits=0
+obs_protocol_fault     hits=0
+obs_csr_mtvec          hits=0
+obs_rd_valid           hits=0
+=== raw obs lines that are NOT count/inst/uart_tx/fire ===
+=== clk-ish raw lines ===
+L12355: 11930 :                                nt_clk                                  GTP_INBUF
+
+
+[assistant]
+Hmm — the net list is truncated? ins_list_nets output may be paginated or limited? Count 24,608 lines parsed; the tot net count maybe much larger (all nets). Let me check total nets in design: ins_list_nets may print "Total net number: ..." line. Also why only some obs? Possibly `ins_list_nets` lists only nets that are candidates (combinational/logic nets) — but obs_retire_pc is a register output bus (GTP_DFF_RE to GTP_DFF_RE via wire) — hmm.
+
+Wait: maybe ins_list_nets output is line-buffered and got truncated in ins.log? ins.log 3MB; 24,608 lines × ~120 chars ≈ 3MB — full.
+
+Maybe the obs_* signals were optimized away / renamed because syn_keep preserved them but ADS synthesis renamed to e.g. `obs_retire_pc[31:0]`? hits=0 means those names absent entirely. But obs_retire_count etc. present. Why some kept, some not?
+
+Hypothesis: ins_list_nets lists **nets** (wires), not register outputs; nets whose driver is a register output pin and load register D may be absorbed; the ones listed are nets with GTP_DFF_RE type = register instances. Hmm.
+
+Alternative: the adf I copied is from `pango_native-perf600/synthesize/pangoriscv_top_syn.adf` — maybe it's the *mapped* netlist from an earlier stage? No, synthesize step.
+
+Wait: maybe the netlist names are like `obs_retire_pc[31:0]` but across lines the name got truncated with `*`? Let me grep 'retire_pc' generic and 'retire_' list all names containing retire. Also list all nets count and check for `obs_` raw total count.
+
+Actually earlier grep 'obs_' hits: lines L263, L307, L1384, L1698, L1954, L2293 → many. My where-object filter with '^\s*\d+\s+:' parsed 24,608 but the un-filtered raw obs count might be e.g. 500+.
+
+Why obs_retire_pc absent but obs_retire_count present? In RTL, obs_retire_count and obs_trap_count are registers in pangoriscv_top itself; obs_retire_pc etc. are outputs of internal cpu module (`cpu_retire_pc`?) driven through top-level wire. ADS may propagate/optimize: since obs_retire_pc is a wire without syn_keep? Check pangoriscv_top.v lines 55-110: b12 said all obs_* have syn_keep/syn_preserve pragmas. But maybe the pragma applies differently, and ADS renamed obs_retire_pc to `cpu/retire_pc`? Hmm.
+
+Key insight: ins_list_nets may list only "nets" (wires), not all hierarchical pins; and buses connected directly to module ports may be represented as port connections rather than nets. Counts and fires are used inside top module (registered → net). obs_retire_pc is a straight wire from soc output to top output? Actually top has outputs? obs_* are internal wires with syn_keep; if they only feed nothing (dangling debug), synthesis may remove them! But syn_keep should prevent. Unless pragma syntax `/* synthesis syn_keep=1 */` on wire declaration gets respected... b12 says "18-19 obs_* 探针在 pangoriscv_top.v:59-108 定义，含 syn_keep/syn_preserve 注释 pragma，PDS 会按内部网名插核"。But apparently only some survived ADS.
+
+Let me check the RTL file to see pragma style and whether all 18 are there. Read pangoriscv_top.v lines 40-130.
+
+Also grep adf? It's binary-ish? adf is netlist (maybe text?). Check first bytes.
+
+Then decide: maybe regenerate fic from **pre-synthesis RTL-level** netlist (Inserter can use RTL? ins_set_file -input design.adf — adf is after synthesis). PDS Inserter flow inserts after Synthesize (post-synth netlist). If ADS removed wires, they don't exist.
+
+Option: modify RTL to make obs_* real registers (register the probes: obs_retire_pc_q <= retire_pc etc.) so they survive; then redo PDS synth/perf600-bitstream? For ILA debug build we need a *separate* PDS build anyway (ILA debug build based on frozen candidate). The prompt says ILA debug build independent; resource/timing recorded separately. So we can create debug tree = candidate tree + ILA probe registers + fic, rebuild PDS, board capture. But careful: rerunning full PDS synth/map/pnr costs time (~30-60 min) — acceptable.
+
+But first confirm what nets exist. Check all names containing 'retire'/'trap'/'uart'.
+
+Also find clock net: `nt_clk` GTP_INBUF — top input clk_27m? Let me grep 'nt_clk' nearby and top module ports. Actually top port `clk` connects to internal `nt_clk`? Interesting.
+
+Let's inspect: grep lines with 'nt_' and 'uart' and 'reset'.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\nWrite-Host '=== all names containing retire (unique) ==='\n(Get-Content $log) | Where-Object { $_ -match '\\S*retire\\S*' } | ForEach-Object { if ($_ -match ':\\s+(\\S+)') { $Matches[1] } } | Sort-Object -Unique | Select-Object -First 60\nWrite-Host '=== all names containing trap (unique) ==='\n(Get-Content $log) | Where-Object { $_ -match '\\S*trap\\S*' } | ForEach-Object { if ($_ -match ':\\s+(\\S+)') { $Matches[1] } } | Sort-Object -Unique | Select-Object -First 40\nWrite-Host '=== raw total obs lines ==='\n(Select-String -Path $log -Pattern 'obs_' | Measure-Object).Count","description":"List all retire/trap nets and count obs lines","timeoutMs":120000}
+
+[tool • pwsh]
+=== all names containing retire (unique) ===
+obs_retire_count[0]
+obs_retire_count[0]_inv
+obs_retire_count[1]
+obs_retire_count[10]
+obs_retire_count[11]
+obs_retire_count[12]
+obs_retire_count[13]
+obs_retire_count[14]
+obs_retire_count[15]
+obs_retire_count[16]
+obs_retire_count[17]
+obs_retire_count[18]
+obs_retire_count[19]
+obs_retire_count[2]
+obs_retire_count[20]
+obs_retire_count[21]
+obs_retire_count[22]
+obs_retire_count[23]
+obs_retire_count[24]
+obs_retire_count[25]
+obs_retire_count[26]
+obs_retire_count[27]
+obs_retire_count[28]
+obs_retire_count[29]
+obs_retire_count[3]
+obs_retire_count[30]
+obs_retire_count[31]
+obs_retire_count[4]
+obs_retire_count[5]
+obs_retire_count[6]
+obs_retire_count[7]
+obs_retire_count[8]
+obs_retire_count[9]
+obs_retire_fire
+obs_retire_inst[12]
+obs_retire_inst[13]
+obs_retire_inst[14]
+obs_retire_inst[15]
+obs_retire_inst[16]
+obs_retire_inst[17]
+obs_retire_inst[18]
+obs_retire_inst[19]
+soc/core/cpu/_N58791
+soc/core/cpu/u_retire_ctrl/_N11819
+soc/core/cpu/u_retire_ctrl/_N11820
+soc/core/cpu/u_retire_ctrl/_N11821
+soc/core/cpu/u_retire_ctrl/_N11822
+soc/core/cpu/u_retire_ctrl/_N11823
+soc/core/cpu/u_retire_ctrl/_N11824
+soc/core/cpu/u_retire_ctrl/_N11825
+soc/core/cpu/u_retire_ctrl/_N11826
+soc/core/cpu/u_retire_ctrl/_N11827
+soc/core/cpu/u_retire_ctrl/_N11828
+soc/core/cpu/u_retire_ctrl/_N11829
+soc/core/cpu/u_retire_ctrl/_N11830
+soc/core/cpu/u_retire_ctrl/_N11831
+soc/core/cpu/u_retire_ctrl/_N11832
+soc/core/cpu/u_retire_ctrl/_N11833
+soc/core/cpu/u_retire_ctrl/_N11834
+soc/core/cpu/u_retire_ctrl/_N11835
+=== all names containing trap (unique) ===
+obs_trap_count[0]
+obs_trap_count[0]_inv
+obs_trap_count[1]
+obs_trap_count[10]
+obs_trap_count[11]
+obs_trap_count[12]
+obs_trap_count[13]
+obs_trap_count[14]
+obs_trap_count[15]
+obs_trap_count[16]
+obs_trap_count[17]
+obs_trap_count[18]
+obs_trap_count[19]
+obs_trap_count[2]
+obs_trap_count[20]
+obs_trap_count[21]
+obs_trap_count[22]
+obs_trap_count[23]
+obs_trap_count[24]
+obs_trap_count[25]
+obs_trap_count[26]
+obs_trap_count[27]
+obs_trap_count[28]
+obs_trap_count[29]
+obs_trap_count[3]
+obs_trap_count[30]
+obs_trap_count[31]
+obs_trap_count[4]
+obs_trap_count[5]
+obs_trap_count[6]
+obs_trap_count[7]
+obs_trap_count[8]
+obs_trap_count[9]
+obs_trap_fire
+soc/core/cpu/synchronous_trap
+=== raw total obs lines ===
+77
+
+
+[assistant]
+Only 77 obs lines: obs_retire_count 32 + inv 1, obs_trap_count 32+inv1, obs_retire_fire, obs_trap_fire, obs_uart_tx[0] = 77. So ADS synthesis pruned the wide debug wires (retire_pc/inst/order/rd/wdata/trap_cause/pc/tval/halted/mtvec/protocol_fault) — probably because these are wires with no load and pragma didn't survive? Yet count/fire/uart_tx are registers (retire_count) & uart_tx real signal.
+
+Wait pragma syn_keep on wires: ADS may not support syn_keep on wire; but b12 says README documented that attribute form rejected and comment pragma used. Apparently not fully effective for non-register wires.
+
+Options:
+A. Debug tree: modify pangoriscv_top.v to make all obs_* real registers (sample on clk): `always @(posedge clk) begin obs_retire_pc_q[31:0] <= retire_pc; ... end` and use obs_* names as registers. Since they'd be actual flip-flops with syn_preserve maybe, they persist as nets; but if register outputs only feed nothing, ADS may still remove? With `/* synthesis syn_preserve = 1 */` on registers, PDS keeps. Alternatively use `(* keep *)`? README said attribute form rejected. But syn_preserve pragma on reg declarations in ADS... The count registers survived (they're used as debug counters? they feed nothing too but kept because syn_keep worked?). obs_retire_count survived → so pragma DOES work for regs. And obs_uart_tx survived because it drives actual output. Hmm obs_retire_fire/trap_fire: are they regs or wires? In RTL likely `wire obs_retire_fire = retire_fire;` — survived because consumed by counters. obs_retire_inst[12..19] survived weirdly (8 bits only) — those probably feed something (instruction bits used in counters? no...). Odd.
+
+Actually maybe obs_retire_inst is a *reg* [31:0]? Hmm only bits 12-19 present — perhaps those bits survived because they connect to count logic? Not clear.
+
+B. Instead of using top-level obs_* wires, connect ILA data channels to **internal nets** that are real registers (e.g., `soc/core/cpu/u_ex/pc_q[31:0]`, lsu signals, AXI nets). Bypasses RTL changes entirely; uses existing adf + net indices. This is attractive: no RTL/bitstream change for capture — but ILA insertion requires a NEW PDS build with fic (debug build). We can pick internal nets by name from netlist: find good ones:
+- PC: some pipeline register `pc_q` in ex/id.
+- retire: `soc/core/cpu/u_retire_ctrl/...`
+- redirect: `soc/core/ifu/...`
+- AXI: `soc/...` master interface signals.
+
+But mapping internal names requires exploring the netlist. Feasible: grep for names containing 'pc_q','redirect','axi','awvalid','wvalid','lsu'.
+
+C. Register probes in RTL then rebuild debug PDS: cleaner semantics, probe names known, but need RTL edit in debug tree only + rebuild.
+
+For competition ILA deliverable: "抓取 CoreMark 关键算法运行时的 PC/退休/重定向/队列/缓存/LSU/AXI 信号". Internal-net approach satisfies. But C gives explicit controllable probes; cost: extra PDS build (~25 min) which we need anyway for ILA debug bitstream (fic insertion requires new Map). Actually fic insertion itself requires new PDS build: add fic → Map auto-inserts → place/route → new bitstream. So debug build required regardless. RTL probe changes are cheap within that build.
+
+Decision: Make debug tree from candidate (`contest_final/src` copy → `contest_final/ila_debug/src`), modify pangoriscv_top.v to register all obs probes (so they survive), rebuild PDS with fic in project. But hold on: the Inserter flow with fic: PDS dev_map needs fic added to project (`add_fic` command per PDS guide). Need to test whether `add_fic` before/after synthesize. From Inserter guide flow: RTL markers → synthesize with ADS → open Inserter (auto connects) → save fic → run Map → Inserter inserts. In batch TCL: presumably `add_fic <file.fic>` after compile/synthesize before dev_map. PDS guide chapter 9.3 `add_fic` — b12 says found the command. Let me extract its doc text later.
+
+Alternative path: generate fic **offline** from post-synth adf via cdt_ins (we're doing), then in PDS build.tcl add fic into project. Does PDS accept fic generated offline? Yes: Inserter can open adf + fic; debugger imports fic. Should work.
+
+So next steps:
+1. Verify add_fic command usage in PDS user guide txt (grep).
+2. Explore netlist for good internal nets (for data channels + clock + reset).
+3. Build fic: 1 core, data port with e.g. 16 channels, trigger port with maybe 38 channels (retire_fire + retire_pc[31:0] + trap_fire...). But wait: obs_retire_pc not in netlist. Internal pc register: search names.
+
+Let me first explore netlist candidates:
+- grep net names for: 'pc_q', 'redirect', 'retire', 'axi_', 'awvalid', 'wvalid', 'lsu', 'cache', 'branch'.
+Print first ~200 hits.
+
+Also find clock net: top input `clk` probably net `soc/clk_27m`? We saw `nt_clk` GTP_INBUF (index 11930). Let's grep 'clk' broadly.
+
+Also need reset net: 'rst_n' etc.
+
+Then design fic. Also inspect add_fic doc.
+
+Run parallel: one pwsh grep command; one pwsh grep of PDS guide for add_fic/fic text.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\n$netlines = Select-String -Path $log -Pattern '^\\s*(\\d+)\\s*:\\s+(\\S+)' \nWrite-Host ('net lines=' + $netlines.Count)\nWrite-Host '=== clk candidates ==='\n$netlines | Where-Object { $_.Line -match '[cC]lk' } | Select-Object -First 12 | ForEach-Object { Write-Host $_.Line.Trim() }\nWrite-Host '=== rst candidates ==='\n$netlines | Where-Object { $_.Line -match 'rst' } | Select-Object -First 12 | ForEach-Object { Write-Host $_.Line.Trim() }\nWrite-Host '=== pc/redirect/branch candidates ==='\n$netlines | Where-Object { $_.Line -match 'redirect|pc_q|branch' } | Select-Object -First 25 | ForEach-Object { Write-Host $_.Line.Trim() }\nWrite-Host '=== axi / lsu candidates ==='\n$netlines | Where-Object { $_.Line -match 'axi_|_axi|lsu|awvalid|wvalid|arvalid' } | Select-Object -First 30 | ForEach-Object { Write-Host $_.Line.Trim() }","description":"Explore netlist for clock, reset, pc, axi nets","timeoutMs":120000}
+
+[assistant • pwsh]
+{"command":"$g='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\docs\\pds_ref\\Pango_Design_Suite_User_Guide.txt'\nWrite-Host '=== add_fic context ==='\nSelect-String -Path $g -Pattern 'add_fic' -Context 3,6 | Select-Object -First 6 | ForEach-Object { Write-Host ('L' + $_.LineNumber + ': ' + $_.Line.Trim()); $_.Context.PreContext | ForEach-Object { Write-Host ('  > ' + $_.Trim()) }; $_.Context.PostContext | ForEach-Object { Write-Host ('  ' + $_.Trim()) }; Write-Host '---' }\nWrite-Host '=== fic / debug core in PDS guide ==='\nSelect-String -Path $g -Pattern 'Fabric Inserter|debug core|\\.fic' | Select-Object -First 12 | ForEach-Object { Write-Host ('L' + $_.LineNumber + ': ' + $_.Line.Trim()) }","description":"Extract add_fic documentation from PDS guide","timeoutMs":120000}
+
+[tool • pwsh]
+net lines=24608
+=== clk candidates ===
+11930 :                                nt_clk                                  GTP_INBUF
+=== rst candidates ===
+1344 :                                 soc/fabric/burst[0]                     axi_interconnect
+6157 :                                 nt_rst_n                                GTP_INBUF
+12571 :                                soc/data_ram/aw_burst[0]                GTP_DFF_RE
+17791 :                                soc/data_ram/ar_burst[0]                GTP_DFF_RE
+23658 :                                soc/program_ram/ar_burst[0]             GTP_DFF_RE
+=== pc/redirect/branch candidates ===
+2 :                                    soc/core/cpu/u_branch_predictor/tag_q[6][7]GTP_DFF_RE
+5 :                                    soc/core/cpu/u_branch_predictor/N11.co[2]GTP_LUT6CARRY
+11 :                                   soc/core/cpu/u_branch_predictor/_N17324 GTP_LUT6
+20 :                                   soc/core/cpu/u_branch_predictor/target_q[10][4]pangoriscv
+23 :                                   soc/core/cpu/u_branch_predictor/tag_q[8][4]GTP_DFF_RE
+33 :                                   soc/core/cpu/u_branch_predictor/target_q[18][22]pangoriscv
+48 :                                   soc/core/cpu/u_branch_predictor/target_q[11][6]pangoriscv
+50 :                                   soc/core/cpu/u_branch_predictor/tag_q[4][23]GTP_DFF_RE
+51 :                                   soc/core/cpu/u_branch_predictor/_N19017 GTP_LUT6
+55 :                                   soc/core/cpu/u_branch_predictor/N379    GTP_LUT6D
+62 :                                   soc/core/cpu/u_branch_predictor/target_q[5][1]pangoriscv
+63 :                                   soc/core/cpu/u_branch_predictor/tag_q[20][13]GTP_DFF_RE
+73 :                                   soc/core/cpu/u_branch_predictor/target_q[1][30]pangoriscv
+82 :                                   soc/core/cpu/u_branch_predictor/target_q[12][2]pangoriscv
+86 :                                   soc/core/cpu/u_branch_predictor/target_q[10][24]pangoriscv
+96 :                                   soc/core/cpu/u_branch_predictor/tag_q[10][19]GTP_DFF_RE
+97 :                                   soc/core/cpu/u_branch_predictor/target_q[20][5]pangoriscv
+98 :                                   soc/core/cpu/u_branch_predictor/tag_q[30][21]GTP_DFF_RE
+102 :                                  soc/core/cpu/u_branch_predictor/_N17773 GTP_LUT6
+114 :                                  soc/core/cpu/u_branch_predictor/tag_q[29][23]GTP_DFF_RE
+116 :                                  soc/core/cpu/u_branch_predictor/_N16887 GTP_LUT6
+122 :                                  soc/core/cpu/u_branch_predictor/tag_q[14][10]GTP_DFF_RE
+123 :                                  soc/core/cpu/u_branch_predictor/target_q[24][27]pangoriscv
+137 :                                  soc/core/cpu/u_branch_predictor/_N18113 GTP_MUX2LUT7
+156 :                                  soc/core/cpu/u_branch_predictor/_N18911 GTP_LUT6
+=== axi / lsu candidates ===
+0 :                                    soc/s_rdata[97]                         axi_uart
+1 :                                    soc/core/lsu/value_q[24]                GTP_DFF_RE
+21 :                                   soc/uart_inst/port0/awaddr[30]          axi_reg_slave_1
+28 :                                   soc/perf_i_miss                         pangoriscv_axi_top
+35 :                                   soc/m_araddr[56]                        pangoriscv_axi_top
+54 :                                   soc/spi_inst/wr_data[17]                axi_reg_slave_3
+58 :                                   soc/s_rdata[188]                        axi_spi
+77 :                                   soc/core/instruction_cache/state_reg[2] pangoriscv_axi_top
+88 :                                   soc/_N58774                             pangoriscv_axi_top
+90 :                                   soc/fabric/N1523                        axi_interconnect
+93 :                                   soc/_N58984                             axi_ram_1
+111 :                                  soc/s_awaddr[242]                       axi_interconnect
+121 :                                  soc/m_araddr[36]                        pangoriscv_axi_top
+127 :                                  soc/irq_inst/wo[28]                     axi_reg_slave_4
+131 :                                  soc/s_bresp[11]                         axi_spi
+135 :                                  soc/s_awaddr[131]                       axi_interconnect
+147 :                                  soc/core/ls_req_addr[17]                lsu_axi
+163 :                                  soc/fabric/N5555                        pangoriscv_axi_top
+169 :                                  soc/core/lsu/size_q[1]                  lsu_axi
+193 :                                  soc/core/ls_rsp_data[7]                 dcache_axi
+194 :                                  soc/core/cpu/er1[15]                    pangoriscv_axi_soc
+201 :                                  _N20512                                 pangoriscv_axi_soc
+205 :                                  soc/core/lsu/nb18[17]                   GTP_LUT5
+229 :                                  soc/fabric/N1835                        axi_interconnect
+258 :                                  soc/core/fetch_inst[16]                 ifu_axi
+272 :                                  soc/m_wdata[37]                         pangoriscv_axi_top
+308 :                                  soc/s_awaddr[117]                       axi_interconnect
+312 :                                  soc/core/ls_req_addr[8]                 lsu_axi
+319 :                                  soc/core/if_rsp_data[12]                icache_axi
+324 :                                  soc/program_ram/aw_saved                axi_ram
+
+
+[tool • pwsh]
+=== add_fic context ===
+L214: 9.3 ADD_FIC 指定约束文件 .......................................................................................... 247
+  > 9 常用命令列表 ................................................................................................................. 247
+  > 9.1 ADD_CONSTRAINT 指定约束文件 ........................................................................... 247
+  > 9.2 ADD_DESIGN 指定设计文件 ................................................................................... 247
+  9.4 ADD_SIMULATION 指定仿真文件 ........................................................................... 247
+  9.5 ADD_SOURCES 指定文件夹 ..................................................................................... 248
+  9.6 CLEAN 清除 ACTION 状态 ....................................................................................... 248
+  9.7 SET_ARCH 指定器件信息 ....................................................................................... 248
+  9.8 COMPILE 编译用户设计 .......................................................................................... 249
+  9.9 DEV_MAP 映射设计到架构..................................................................................... 249
+---
+L562: 表 9-3 add_fic ........................................................................................................................ 247
+  > 表 3-2 其他功能支持情况 .................................................................................................... 159
+  > 表 9-1 add_constraint ............................................................................................................. 247
+  > 表 9-2 add_designt ................................................................................................................. 247
+  表 9-4 add_simulation ............................................................................................................ 248
+  表 9-5 add_sources ................................................................................................................. 248
+  表 9-6 clean ............................................................................................................................ 248
+  表 9-7 set_arch ....................................................................................................................... 249
+  表 9-8 compile ........................................................................................................................ 249
+  表 9-9 dev_map ...................................................................................................................... 249
+---
+L5536: 9.3 add_fic 指定约束文件
+  > 参数
+  > input_filename 指定一个输入文件名
+  > 表 9-2 add_designt
+  选项
+  -help 打印帮助消息
+  -copy 拷贝指定的文件到本工程
+  
+  参数
+  input_filename 指定一个输入文件名
+---
+L5543: 表 9-3 add_fic
+  > 
+  > 参数
+  > input_filename 指定一个输入文件名
+  9.4 add_simulation 指定仿真文件
+  选项
+  -help 打印帮助消息
+  -library 指定逻辑库的名字. 默认为 work
+  -define 定义编译宏
+  === PAGE 249 ===
+---
+=== fic / debug core in PDS guide ===
+L97: 4.7 FABRIC INSERTER ..................................................................................................... 161
+L3582: 4.7 Fabric Inserter
+L3583: Fabric Inserter 具体用法请查《Fabric_Inserter_User_Guide》。
+
+
+[assistant]
+Netlist naming discovered: net list format is `<index> : <netname> <type>` but the "type" column here is actually instance name of driver (e.g., `pangoriscv_axi_top`, `lsu_axi`, `dcache_axi`) — these are the driving module/instance names. And `nt_clk` GTP_INBUF / `nt_rst_n` GTP_INBUF are clock/reset input buffers from top pads (`nt_` = net from pad?).
+
+Also net names reveal hierarchy: `soc/core/lsu/...`, `soc/core/cpu/...`, `soc/m_araddr[56]`, `soc/s_rdata[...]`, `soc/core/ls_req_addr[17]`, `soc/core/if_rsp_data[12]`, `soc/core/fetch_inst[16]`, `soc/fabric/...`.
+
+Key: ins_list_nets apparently lists nets with **driver info** ("GTP_DFF_RE" or module name). The netlist is post-synth (before mapping? GTP_ cells = mapped to GTP primitives? Actually GTP_DFF_RE are Pango primitive names, so adf might be post-map? Wait synthesize -ads produces netlist with GTP_ cells? Hmm "pangoriscv_top_syn.adf" from synthesize — PDS ADS synthesis outputs GTP primitives? Possibly fine).
+
+Clock: `nt_clk` (index 11930) is input buffer output = internal clock net. Reset: `nt_rst_n` (6157).
+
+Data candidates:
+- PC: search `soc/core/pc` or `soc/core/cpu/pc`. Our grep matched branch predictor only. Try patterns: `pc_reg`, `/pc[`, `next_pc`, `redirect`.
+- retire: `soc/core/cpu/...retire...` only internal _N. Hmm retire signals may be named `retire` in core: earlier grep 'retire' showed only obs_* and u_retire_ctrl _N nets. So retire_fire internal name maybe `soc/core/cpu/retire` (grep 'retire' would catch it... it didn't appear besides obs and _N). Interesting: maybe core module `pangoriscv` has flat ports like `retire_fire` connected via top `obs_retire_fire`? obs_retire_fire survived because it drives counters, named.
+
+Given complexity, better approach: modify RTL debug tree with **explicit ILA probe registers** preserving all required signals, then rebuild. This gives clean, documented probes and matches "探针 PC/退休/重定向/队列/缓存/LSU/AXI".
+
+But that requires knowing internal signal names in RTL (they're in pangoriscv_axi_soc / pangoriscv modules). We have RTL source. Read pangoriscv_top.v and soc top to find internal wires for: retire (pc/inst/valid), redirect (from id/ex), ifu/cache/LSU/AXI handshake signals at soc level (`m_araddr`, `m_awaddr`, `m_wdata` etc.), queue occupancy (maybe pipeline valid bits), cache hit/miss (`perf_i_miss`, `perf_d_miss`?).
+
+Plan for debug tree:
+- Copy candidate tree to `$A\contest_final\ila_debug\src` (clean, without build).
+- Edit `rtl/soc/pangoriscv_top.v`: add ILA probe registers (or wires) for chosen signals with syn_preserve pragmas; connect top-level `obs_*` wires too.
+- Better: expose probes as top-level **outputs**? No pins available.
+- Add `/* synthesis syn_preserve = 1 */` on each probe wire/reg. For ADS, accepted pragma on wire declarations? The surviving obs things were reg counters; obs_retire_fire wire survived via load. For wide buses, ADS pruned. Perhaps use registers: `reg [31:0] dbg_pc_q; always @(posedge clk) dbg_pc_q <= dbg_pc;` then ADS keeps reg because syn_preserve. But if output unused, ADS may still optimize; syn_preserve should prevent.
+
+Alternatively connect probes to ILA via fic net names; but fic connects BEFORE map (post synth) — the nets must exist post-synth. If pruned, gone.
+
+Hmm, but maybe simpler: use RTL markers PAP_MARK_DEBUG with ADS synthesis. Inserter guide says in RTL mark nets with `/* synthesis PAP_MARK_DEBUG="true" */`; with PDS ADS synthesis, after Synthesize open Inserter → auto-connect marked nets. The marks survive synthesis (ADS preserves marked nets!). That's the designed mechanism — better than syn_keep. Then Inserter auto-builds fic with markers. But we need it automated via batch: PDS batch build.tcl runs compile → synthesize; then Inserter auto-insertion might not happen in batch unless fic known. The guide: "打开 Inserter 可自动连接 RTL 标记；保存 fic 后跑 Map 自动插核". In batch we could: run compile+synthesize (build.tcl modified to stop?), but we can't stop mid-flow in one pds_shell invocation... Actually build.tcl is just a Tcl script: we control it! We can write custom build.tcl for debug build:
+1. set_arch, add_design/sources, add_constraint, compile
+2. synthesize
+3. Now RTL markers have created marked nets; we need Inserter to read project's synthesizer output and produce fic. But Inserter is a separate GUI/CLI that opens the project .pds? cdt_ins CLI has -netlist option: takes adf. If we extract the post-synth adf from debug build (same as we did from perf600), then run cdt_ins on THAT adf (with markers preserved?) — markers are synthesis-time directives that force net preservation; they don't add names. So if marked nets survive in adf, cdt_ins can connect them (names like the marked net name).
+
+Simplest robust path may be: connect to a manageable subset of nets that definitely exist:
+1. `nt_clk` clock.
+2. `nt_rst_n` reset.
+3. PC bits: find register nets: `soc/core/cpu/pc_q[...]`? need search. Let me search net names for `pc` generally (limited).
+4. AXI: `soc/m_araddr[..]`, `soc/m_awaddr[..]`, `soc/m_wdata[..]`, `soc/m_wvalid`, `soc/m_arvalid`, `soc/m_rready`, `soc/m_awvalid`, `soc/m_bready`, `soc/m_rlast`, `soc/m_wlast`, plus `soc/m_rdata`.
+5. LSU: `soc/core/ls_req_addr[..]`, `soc/core/ls_req_valid`? search `ls_req`.
+6. Cache: `soc/core/instruction_cache/state_reg`, `soc/perf_i_miss`, `soc/perf_d_miss`? search perf_/miss/hit.
+7. Queue: pipeline valid bits: `soc/core/cpu/u_ex/valid`? search valid.
+8. Redirect: search 'redirect' gave none in top list (grep matched only branch predictor due to 'branch'). Let me search 'jump','flush','redirect','taken'.
+
+But choosing arbitrary internal nets is fragile semantically. Yet competition ILA just needs plausible waveform evidence of CPU running CoreMark (PC sequence through coremark functions). PC + AXI transactions + cache hit/miss + LSU would be sufficient and explainable.
+
+Need a trigger: PC == entry addr of a CoreMark function. Find address from map: e.g., `core_list_find` or `matrix_test` function. Use trigger unit: pc bits + maybe valid.
+
+Trigger port width = number of connected channels. Connect pc[31:0] (32 ch) — value = addr. Plus maybe `retire`? If PC register drives fetch pc (next pc), equality occurs.
+
+So: data channels ~64 bits: pc[31:0], inst? (fetch_inst), AXI addr/valid, lsu addr/valid, cache hit/miss, retire? Keep ≤64.
+
+Depth: 512 samples default; enough.
+
+Now next concrete action: search netlist for candidate nets: pc, fetch, inst, valid, hit, miss, req, redirect, jump, taken, axi handshake. Print unique matches limited to `soc/` level-2/3 shallow names.
+
+Let me grep raw for specific patterns and print unique first 40 each, and also check clock/reset nets and their net names, e.g. `nt_clk`.
+
+Also check that fic can reference nets by exact name — ins_set_net uses index. So we'll map names→indices from CSV.
+
+Run exploration.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\n$nl = Select-String -Path $log -Pattern '^\\s*(\\d+)\\s*:\\s+(\\S+)'\nfunction Show($pat, $n) {\n  Write-Host (\"=== $pat ===\")\n  $nl | Where-Object { $_.Line -match $pat } | Select-Object -First $n | ForEach-Object { Write-Host $_.Line.Trim() }\n}\nShow 'soc/core/(if_pc|pc_|fetch|inst)' 20\nShow 'perf_|hit|miss' 20\nShow 'ls_req|ls_rsp' 15\nShow 'valid|ready' 20\nShow 'redirect|taken|jump|flush' 15\nShow 'soc/m_(ar|aw|w|r|b)' 30\nWrite-Host '=== nt_ nets ==='\n$nl | Where-Object { $_.Line -match 'nt_' } | Select-Object -First 15 | ForEach-Object { Write-Host $_.Line.Trim() }","description":"Search netlist candidates for ILA probes","timeoutMs":120000}
+
+[tool • pwsh]
+=== soc/core/(if_pc|pc_|fetch|inst) ===
+7 :                                    soc/core/instruction_cache/_N6754       GTP_RAM64X1DP
+34 :                                   soc/core/instruction_cache/_N28931      GTP_LUT6
+44 :                                   soc/core/instruction_cache/N11538       GTP_LUT6
+45 :                                   soc/core/instruction_cache/_N56886      GTP_LUT6D
+72 :                                   soc/core/instruction_cache/valid_mem[41]GTP_DFF_R
+77 :                                   soc/core/instruction_cache/state_reg[2] pangoriscv_axi_top
+105 :                                  soc/core/instruction_cache/tag_mem[52][0]GTP_DFF_RE
+106 :                                  soc/core/instruction_cache/N11033       GTP_LUT6
+165 :                                  soc/core/instruction_cache/N7668        GTP_LUT6D
+168 :                                  soc/core/instruction_cache/_N67304      GTP_LUT6
+180 :                                  soc/core/instruction_cache/_N57353      GTP_LUT6D
+185 :                                  soc/core/instruction_cache/N8274        GTP_LUT6D
+188 :                                  soc/core/instruction_cache/_N28829      GTP_LUT6
+198 :                                  soc/core/instruction_cache/_N28834      GTP_LUT6
+227 :                                  soc/core/instruction_cache/valid_mem[27]GTP_DFF_R
+228 :                                  soc/core/instruction_cache/N663[2]      GTP_DRM18K_E1
+258 :                                  soc/core/fetch_inst[16]                 ifu_axi
+297 :                                  soc/core/instruction_cache/N7395        GTP_LUT6
+302 :                                  soc/core/instruction_cache/_N6853       GTP_RAM64X1DP
+304 :                                  soc/core/instruction_cache/_N67369      GTP_LUT6
+=== perf_|hit|miss ===
+9 :                                    soc/perf_inst/ext[7][16]                GTP_DFF_RE
+14 :                                   soc/perf_inst/N321[7]                   GTP_LUT6CARRY
+26 :                                   soc/perf_inst/cnt[1][6]                 GTP_DFF_RE
+27 :                                   soc/perf_inst/esnap[6][29]              GTP_DFF_RE
+28 :                                   soc/perf_i_miss                         pangoriscv_axi_top
+32 :                                   soc/perf_inst/N386[14]                  GTP_LUT6CARRY
+38 :                                   soc/perf_inst/endpoint/_N68898          GTP_LUT6
+43 :                                   soc/perf_inst/endpoint/_N69672          GTP_LUT6
+49 :                                   soc/perf_inst/endpoint/_N11339          GTP_LUT6CARRY
+59 :                                   soc/perf_inst/cnt[4][12]                GTP_DFF_RE
+60 :                                   soc/perf_inst/_N10197                   GTP_LUT6CARRY
+78 :                                   soc/perf_inst/_N10302                   GTP_LUT6CARRY
+81 :                                   soc/perf_inst/N342[14]                  GTP_LUT6CARRY
+83 :                                   soc/perf_inst/snap[3][26]               GTP_DFF_RE
+85 :                                   soc/perf_inst/cnt[3][30]                GTP_DFF_RE
+95 :                                   soc/perf_inst/cnt[4][53]                GTP_DFF_RE
+101 :                                  soc/perf_inst/_N11577                   GTP_LUT6CARRY
+107 :                                  soc/perf_inst/endpoint/_N69788          GTP_LUT6
+125 :                                  soc/perf_inst/snap[3][52]               GTP_DFF_RE
+128 :                                  soc/perf_inst/ext[10][9]                GTP_DFF_RE
+=== ls_req|ls_rsp ===
+147 :                                  soc/core/ls_req_addr[17]                lsu_axi
+193 :                                  soc/core/ls_rsp_data[7]                 dcache_axi
+312 :                                  soc/core/ls_req_addr[8]                 lsu_axi
+1027 :                                 soc/core/ls_req_addr[6]                 lsu_axi
+1046 :                                 soc/core/ls_req_addr[11]                lsu_axi
+1124 :                                 soc/core/ls_rsp_data[19]                dcache_axi
+2648 :                                 soc/core/ls_req_write                   lsu_axi
+2701 :                                 soc/core/ls_rsp_data[0]                 dcache_axi
+3214 :                                 soc/core/ls_req_addr[0]                 lsu_axi
+3812 :                                 soc/core/ls_req_addr[16]                lsu_axi
+3902 :                                 soc/core/ls_req_addr[25]                lsu_axi
+4421 :                                 soc/core/ls_req_addr[2]                 lsu_axi
+5222 :                                 soc/core/ls_req_addr[13]                lsu_axi
+5294 :                                 soc/core/ls_req_addr[21]                lsu_axi
+5434 :                                 soc/core/ls_req_addr[23]                lsu_axi
+=== valid|ready ===
+72 :                                   soc/core/instruction_cache/valid_mem[41]GTP_DFF_R
+155 :                                  soc/core/data_cache/valid_mem[3]        GTP_DFF_R
+227 :                                  soc/core/instruction_cache/valid_mem[27]GTP_DFF_R
+303 :                                  soc/fabric/target_bvalid                GTP_MUX2LUT8
+342 :                                  soc/core/data_cache/valid_mem[52]       GTP_DFF_R
+428 :                                  soc/core/data_cache/valid_mem[6]        GTP_DFF_R
+449 :                                  soc/core/data_cache/valid_mem[13]       GTP_DFF_R
+629 :                                  soc/core/fetch_valid                    ifu_axi
+851 :                                  soc/core/data_cache/valid_mem[12]       GTP_DFF_R
+964 :                                  soc/core/instruction_cache/valid_mem[19]GTP_DFF_R
+1048 :                                 soc/core/cpu/u_branch_predictor/valid_q[10]GTP_DFF_RE
+1396 :                                 soc/core/instruction_cache/valid_mem[60]GTP_DFF_R
+1439 :                                 soc/core/data_cache/valid_mem[44]       GTP_DFF_R
+1610 :                                 soc/core/data_cache/valid_mem[63]       GTP_DFF_R
+1630 :                                 soc/core/instruction_cache/valid_mem[1] GTP_DFF_R
+1649 :                                 soc/core/instruction_cache/valid_mem[30]GTP_DFF_R
+1737 :                                 soc/perf_inst/endpoint/bvalid_rnmt      pangoriscv_axi_soc
+1771 :                                 soc/core/data_cache/valid_mem[34]       GTP_DFF_R
+1902 :                                 soc/core/cpu/u_branch_predictor/valid_q[16]GTP_DFF_RE
+1925 :                                 soc/perf_inst/snap_valid                GTP_DFF_RE
+=== redirect|taken|jump|flush ===
+389 :                                  soc/core/cpu/redirect_pc[4]             GTP_LUT5
+895 :                                  soc/core/cpu/redirect_pc[13]            GTP_LUT5
+1341 :                                 soc/core/cpu/redirect_pc[2]             GTP_LUT5
+3069 :                                 soc/core/cpu/redirect_pc[18]            GTP_LUT5
+3292 :                                 soc/core/cpu/redirect_pc[8]             GTP_LUT5
+4798 :                                 soc/core/cpu/redirect_pc[5]             GTP_LUT5
+5680 :                                 soc/core/cpu/redirect_pc[29]            GTP_LUT5
+6725 :                                 soc/core/cpu/redirect_pc[27]            GTP_LUT5
+7524 :                                 soc/core/cpu/redirect_pc[30]            GTP_LUT5
+7939 :                                 soc/core/cpu/redirect_pc[15]            GTP_LUT5
+8282 :                                 soc/core/cpu/redirect_pc[25]            GTP_LUT5
+8753 :                                 soc/core/cpu/redirect_pc[7]             GTP_LUT5
+8993 :                                 soc/core/cpu/redirect_pc[10]            GTP_LUT5
+9285 :                                 soc/core/cpu/redirect_pc[0]             GTP_LUT6D
+9345 :                                 soc/core/cpu/redirect_pc[17]            GTP_LUT5
+=== soc/m_(ar|aw|w|r|b) ===
+35 :                                   soc/m_araddr[56]                        pangoriscv_axi_top
+121 :                                  soc/m_araddr[36]                        pangoriscv_axi_top
+272 :                                  soc/m_wdata[37]                         pangoriscv_axi_top
+509 :                                  soc/m_rdata[23]                         axi_interconnect
+583 :                                  soc/m_araddr[51]                        pangoriscv_axi_top
+1158 :                                 soc/m_rdata[4]                          axi_interconnect
+1327 :                                 soc/m_awaddr[59]                        pangoriscv_axi_top
+1562 :                                 soc/m_awaddr[45]                        pangoriscv_axi_top
+1602 :                                 soc/m_awid[4]                           pangoriscv_axi_top
+1679 :                                 soc/m_araddr[41]                        pangoriscv_axi_top
+1809 :                                 soc/m_wdata[50]                         pangoriscv_axi_top
+1982 :                                 soc/m_awaddr[49]                        pangoriscv_axi_top
+2300 :                                 soc/m_wdata[62]                         pangoriscv_axi_top
+2371 :                                 soc/m_wdata[51]                         pangoriscv_axi_top
+2539 :                                 soc/m_wdata[45]                         pangoriscv_axi_top
+2578 :                                 soc/m_awaddr[37]                        pangoriscv_axi_top
+2594 :                                 soc/m_wdata[56]                         pangoriscv_axi_top
+2679 :                                 soc/m_araddr[7]                         pangoriscv_axi_top
+2811 :                                 soc/m_rdata[14]                         axi_interconnect
+2941 :                                 soc/m_araddr[49]                        pangoriscv_axi_top
+3096 :                                 soc/m_awaddr[39]                        pangoriscv_axi_top
+3176 :                                 soc/m_awaddr[44]                        pangoriscv_axi_top
+3196 :                                 soc/m_rdata[24]                         axi_interconnect
+3348 :                                 soc/m_araddr[9]                         pangoriscv_axi_top
+3672 :                                 soc/m_rdata[12]                         axi_interconnect
+3718 :                                 soc/m_awaddr[43]                        pangoriscv_axi_top
+3821 :                                 soc/m_araddr[45]                        pangoriscv_axi_top
+4084 :                                 soc/m_rdata[10]                         axi_interconnect
+4738 :                                 soc/m_araddr[43]                        pangoriscv_axi_top
+4922 :                                 soc/m_awaddr[33]                        pangoriscv_axi_top
+=== nt_ nets ===
+144 :                                  soc/uart_inst/rx_count_q[7]             GTP_DFF_R
+246 :                                  soc/core/cpu/u_branch_predictor/count_q[9][0]GTP_DFF_RE
+477 :                                  soc/core/cpu/u_branch_predictor/count_q[2][1]GTP_DFF_RE
+1186 :                                 soc/uart_inst/rx_count_q[8]             GTP_DFF_R
+2095 :                                 soc/core/cpu/u_branch_predictor/count_q[10][1]GTP_DFF_RE
+2294 :                                 soc/core/cpu/u_branch_predictor/count_q[4][0]GTP_DFF_RE
+3159 :                                 soc/uart_inst/rx_count_q[2]             GTP_DFF_R
+3172 :                                 soc/core/cpu/u_branch_predictor/count_q[17][1]GTP_DFF_RE
+3377 :                                 soc/core/cpu/u_branch_predictor/count_q[10][0]GTP_DFF_RE
+3385 :                                 soc/core/cpu/u_branch_predictor/count_q[18][0]GTP_DFF_RE
+3548 :                                 soc/core/cpu/u_branch_predictor/count_q[6][1]GTP_DFF_RE
+3873 :                                 soc/uart_inst/rx_count_q[15:0]_or       GTP_LUT3
+4250 :                                 soc/core/cpu/u_branch_predictor/count_q[14][1]GTP_DFF_RE
+4604 :                                 soc/uart_inst/rx_count_q[14]            GTP_DFF_R
+4647 :                                 nt_led[3]                               GTP_LUT4
+
+
+[user]
+<acp tokens="223" type="text">m04734</acp>
+background job pwsh-638dea0ab6d34fed (pwsh: $A='E:\file\pango\project\evidence\records\bottleneck_audit'
+$B="$A\board"
+$off="$A\contest_final\logs\regression_off"
+if (Test-Path "$off\summary.txt") { Copy-Item "$off\summary.txt" "$off\summary_bom_fail_attempt.txt" -Force }
+if (Test-Path "$A\contest_final\logs\regression_off_console.log") { Copy-Item "$A\contest_final\logs\regression_off_console.log" "$A\contest_final\logs\regression_off_console_bom_fail_attempt.log" -Force }
+$CL="$A\contest_final\clean\src"
+$ps='C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+Set-Location $CL
+& $ps -NoProfile -ExecutionPolicy Bypass -File "$CL\tools\run_regression.ps1" -OutDir "$off" 2>&1 | Tee-Object -FilePath "$A\contest_final\logs\regression_off_console.log"
+Write-Host "REGRESSION_OFF_EXIT=$LASTEXITCODE") finished [status: completed, exit code: 0]. Read its output with job_output.
+
+[assistant]
+Read regression-off results. Also continue ILA probes exploration.
+
+Note discovered: `soc/core/cpu/redirect_pc[...]` and likely `soc/core/cpu/pc_q`? Let me search more specifically for PC reg nets and retire nets. Also 'fetch_valid', 'fetch_inst'.
+
+First read job output.
+
+[assistant • job_output]
+{"job_id":"pwsh-638dea0ab6d34fed"}
+
+[tool • job_output]
+RESULT ifu_engine exit=0 77.5s :: PASS IFU_REAL_ENGINE seed=19 | PASS IFU_REAL_ENGINE seed=20 | SUMMARY 20/20 PASS
+=== dcache : sim/run_dcache_tests.py ===
+RESULT dcache exit=0 4.9s :: PASS dcache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\dcache-po0k7cha\dcache.log
+=== icache : sim/run_icache_tests.py ===
+RESULT icache exit=0 5s :: PASS icache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\icache-fq76v0bb\icache.log
+=== interconnect : sim/run_interconnect_tests.py ===
+RESULT interconnect exit=0 77.7s :: PASS 19 | PASS 20 | SUMMARY 20 / 20 PASS
+=== predictor : sim/run_predictor_tests.py ===
+RESULT predictor exit=0 4.8s :: PASS branch_predictor | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\predict-anofag9b\predict.log
+=== pipeline : sim/run_pipeline_tests.py ===
+RESULT pipeline exit=0 5.3s :: RUN_DIR E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\pipeline-gy0loxhw | PASS N03_PIPELINE
+=== ram : sim/run_ram_tests.py ===
+RESULT ram exit=0 156.7s :: PASS lsu seed=19 | PASS lsu seed=20 | SUMMARY 40/40 PASS
+=== gpio_trace : sim/run_gpio_trace_tests.py ===
+RESULT gpio_trace exit=0 15s :: PASS gpio_trace | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\gpio-trace-smsfmwh6\gpio_trace.log
+=== perf : sim/run_perf_tests.py ===
+RESULT perf exit=0 5s :: PASS perf_regs | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\perf-xov345e5\perf.log
+=== isa_e2e : tools/run_isa_e2e.py ===
+RESULT isa_e2e exit=0 62.6s :: case 15 PASS  machine timer interrupt and MRET | case 16 PASS  counter write/increment/wrap/retire semantics | SUMMARY 16 / 16 PASS
+=== halt_reset : tools/run_halt_reset_tests.py ===
+RESULT halt_reset exit=0 18.9s ::   scenario 4: PASS - reset during an in-flight data write |   scenario 5: PASS - reset while the bus is idle | SUMMARY 5 / 5 PASS
+
+suite        exit status seconds tail                                                                                                                                                                     log                                                                                                       
+-----        ---- ------ ------- ----                                                                                                                                                                     ---                                                                                                       
+unit            0 PASS      28.9 RUN_DIR E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\unit-w_contract-3uw3kucs | PASS w_contract | SUMMARY 6 / 6 PASS        E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\unit.log        
+engine          0 PASS     248.1 PASS data seed=1 fault=7 hardware=True | PASS data seed=1 fault=8 hardware=True | SUMMARY 64/64 PASS                                                                     E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\engine.log      
+ifu_engine      0 PASS      77.5 PASS IFU_REAL_ENGINE seed=19 | PASS IFU_REAL_ENGINE seed=20 | SUMMARY 20/20 PASS                                                                                         E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\ifu_engine.log  
+dcache          0 PASS       4.9 PASS dcache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\dcache-po0k7cha\dcache.log         E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\dcache.log      
+icache          0 PASS         5 PASS icache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\icache-fq76v0bb\icache.log         E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\icache.log      
+interconnect    0 PASS      77.7 PASS 19 | PASS 20 | SUMMARY 20 / 20 PASS                                                                                                                                 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\interconnect.log
+predictor       0 PASS       4.8 PASS branch_predictor | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\predict-anofag9b\predict.log E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\predictor.log   
+pipeline        0 PASS       5.3 RUN_DIR E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\pipeline-gy0loxhw | PASS N03_PIPELINE                                  E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\pipeline.log    
+ram             0 PASS     156.7 PASS lsu seed=19 | PASS lsu seed=20 | SUMMARY 40/40 PASS                                                                                                                 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\ram.log         
+gpio_trace      0 PASS        15 PASS gpio_trace | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\gpio-trace-smsfmwh6\gpio_trace.log E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\gpio_trace.log  
+perf            0 PASS         5 PASS perf_regs | SUMMARY 1/1 PASS |   log: E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\clean\src\.sim_runs\perf-xov345e5\perf.log              E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\perf.log        
+isa_e2e         0 PASS      62.6 case 15 PASS  machine timer interrupt and MRET | case 16 PASS  counter write/increment/wrap/retire semantics | SUMMARY 16 / 16 PASS                                      E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\isa_e2e.log     
+halt_reset      0 PASS      18.9   scenario 4: PASS - reset during an in-flight data write |   scenario 5: PASS - reset while the bus is idle | SUMMARY 5 / 5 PASS                                        E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off\halt_reset.log  
+
+
+
+REGRESSION PASS: 13/13 suites passed, dir E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_off
+REGRESSION_OFF_EXIT=0
+[status: completed, exit code: 0]
+
+[assistant]
+Macro-OFF regression: 13/13 PASS. Macro-ON: 13/13 PASS (from b14). Both configs pass.
+
+Now ILA. Need to find good probe nets. Let me look at RTL top/soc to understand signal names, then choose.
+
+Read `rtl/soc/pangoriscv_top.v` fully (109 lines) and grep soc module for interesting wires. Candidate tree path: `$A\contest_final\src\rtl\soc\pangoriscv_top.v`.
+
+Actually let me read pangoriscv_top.v and pangoriscv_axi_soc.v (or similar names).
+
+Use glob to list rtl/soc.
+
+[assistant • pwsh]
+{"command":"$S='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\src'\nGet-ChildItem \"$S\\rtl\\soc\" -Filter *.v | Select-Object Name,Length | Format-Table -AutoSize\nWrite-Host '=== rtl dirs ==='\nGet-ChildItem \"$S\\rtl\" -Directory | Select-Object Name | Format-Table -AutoSize\nWrite-Host '=== grep top module ports/obs ==='\nGet-Content \"$S\\rtl\\soc\\pangoriscv_top.v\" | Select-Object -First 60","description":"List rtl/soc files and top module head"}
+
+[tool • pwsh]
+
+Name                 Length
+----                 ------
+pangoriscv_axi_soc.v   5640
+pangoriscv_top.v       5496
+
+
+=== rtl dirs ===
+
+Name  
+----  
+bus   
+core  
+perips
+soc   
+
+
+=== grep top module ports/obs ===
+//=============================================================================
+// pangoriscv - RV32IM processor core + native AXI4 SoC (Pango PG2L100H @ 27 MHz)
+// Module : pangoriscv_top         File : rtl/soc/pangoriscv_top.v
+// Rev    : 1.0                    Date : 2026-10-13
+// Author : pango_lpenghan
+// Brief  : FPGA top level: clock, reset, pins, BRAM init, ILA observation points
+//=============================================================================
+
+module pangoriscv_top #(
+ parameter PROGRAM_INIT_FILE="program.hex",
+ parameter DATA_INIT_FILE="data.hex"
+)(
+ input wire clk,
+ input wire rst_n,
+ input wire key,
+ input wire uart_rx,
+ output wire uart_tx,
+ output wire [7:0] led
+);
+ // KEY0 asserts reset asynchronously. Every endpoint sees the same release.
+ // Hold KEY0 during initial board bring-up; no power-on value is assumed.
+ // The Synopsys/Pango attribute ASYNC_REG is not a legal attribute for Pango
+ // ADS (compile log: "W: Sdm-2008: The attribute named ASYNC_REG is not legal,
+ // then it has no effect, ignore its value"), and this board wrapper has a
+ // single clock domain, so the synchronizer is kept structural instead:
+ // syn_preserve is a documented Pango directive that stops sequential
+ // optimization from folding the constant-1 stage away.
+ reg [1:0] reset_sync /* synthesis syn_preserve = 1 */;
+ always @(posedge clk or negedge rst_n) begin
+  if (!rst_n) reset_sync<=2'b00;
+  else reset_sync<={reset_sync[0],1'b1};
+ end
+ wire soc_rst_n=reset_sync[1];
+ wire [31:0] gpio_ctrl,gpio_data;
+ genvar i;
+ generate for (i=0;i<8;i=i+1) begin : board_led
+  assign led[i]=soc_rst_n && gpio_ctrl[2*i+:2]==2'b01 && gpio_data[i];
+ end endgenerate
+
+ // ---------------------------------------------------------------------
+ // On-chip logic analyzer observation points.
+ //
+ // The board pinout is fixed, so the architecture-internal events needed for
+ // the contest's "ILA waveform of CoreMark key algorithms" evidence are kept
+ // as named internal nets instead of new top-level pins. PDS instruments
+ // internal nets by name, so the nets must survive optimization.
+ //
+ // Do NOT use the attribute form `(* keep = "true" *)` here. Pango ADS
+ // translates it to PAP_KEEP and then rejects the value (compile log:
+ // "I: Convert attribute name from keep to PAP_KEEP" followed by
+ // "W: The value of attribute PAP_KEEP is invalid, ignore it"), and a first
+ // implementation with that form dropped every net except 4 of them from
+ // synthesize/pangoriscv_top_syn.vm. The documented Synplify directives are
+ // the comment pragmas below (see syn/doc/fpga_attribute_reference.pdf):
+ //   syn_keep      - preserves a combinational net as a keep buffer
+ //   syn_preserve  - prevents sequential optimization of a register
+ // The probe list and the trigger recipe are in platform/pango_native/README.md.
+ // ---------------------------------------------------------------------
+ wire        obs_retire_fire      /* synthesis syn_keep = 1 */;
+ wire [63:0] obs_retire_order     /* synthesis syn_keep = 1 */;
+
+
+[assistant]
+Continue reading; then check README ILA probe list; then decide approach. The comment says nets must survive; syn_keep preserves combinational net as keep buffer. Yet only 77 obs nets survived — maybe because wide buses got partially optimized; count registers survived.
+
+Hmm wait: maybe those missing buses are in the netlist but NOT printed by ins_list_nets because it lists only nets with certain property? Let me check: 24,608 nets — design has more likely (many). Total nets in design probably ~40k. Maybe ins_list_nets lists only nets that are "visible" / connectable? Inserter's list may filter nets with >1 fanout? Hmm.
+
+Alternative check: search the synthesized netlist file `pangoriscv_top_syn.vm` (9.6MB) for obs_ names. That file is the post-synth Verilog netlist. grep it for obs_retire_pc. If present, then they exist post-synth and ins_list_nets just doesn't list them (maybe filtered). If absent, ADS pruned.
+
+Check `$S/build` doesn't have; archived perf600 run: `$A\contest_final\src\build\pango_native-perf600\synthesize\pangoriscv_top_syn.vm`. grep.
+
+[assistant • pwsh]
+{"command":"$dir='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\src\\build\\pango_native-perf600\\synthesize'\nGet-ChildItem $dir | Select-Object Name,Length | Format-Table -AutoSize\n$vm=\"$dir\\pangoriscv_top_syn.vm\"\nif (Test-Path $vm) {\n  foreach ($p in 'obs_retire_pc','obs_retire_order','obs_wdata','obs_halted','obs_arch_next_pc','obs_trap_cause','obs_trap_pc','obs_trap_tval','obs_protocol_fault','obs_csr_mtvec','obs_rd_valid','obs_retire_fire','obs_retire_inst','obs_uart_tx','obs_trap_fire') {\n    $n = (Select-String -Path $vm -Pattern ([regex]::Escape($p)) -ErrorAction SilentlyContinue | Measure-Object).Count\n    Write-Host (\"{0,-20} hits={1}\" -f $p, $n)\n  }\n} else { Write-Host 'vm missing' }","description":"Grep post-synth netlist for obs probes","timeoutMs":120000}
+
+[tool • pwsh]
+
+Name                            Length
+----                            ------
+add_sub_carrychain.log           18090
+apm_drm_lutram_utilization.log   12744
+formal.pvf                      123820
+pangoriscv_top.snr               94051
+pangoriscv_top_controlsets.txt   41040
+pangoriscv_top_syn.adf         2937210
+pangoriscv_top_syn.vm          9669417
+run.log                         449044
+snr.db                         3367327
+
+
+obs_retire_pc        hits=2
+obs_retire_order     hits=2
+obs_wdata            hits=2
+obs_halted           hits=1
+obs_arch_next_pc     hits=2
+obs_trap_cause       hits=3
+obs_trap_pc          hits=2
+obs_trap_tval        hits=2
+obs_protocol_fault   hits=2
+obs_csr_mtvec        hits=2
+obs_rd_valid         hits=2
+obs_retire_fire      hits=34
+obs_retire_inst      hits=103
+obs_uart_tx          hits=3
+obs_trap_fire        hits=34
+
+
+[assistant]
+Interesting! obs_* nets ARE in post-synth netlist (vm), just few hits (declaration + usage). So they exist in the adf too, but `ins_list_nets` didn't list them?? Maybe ins_list_nets only lists nets whose name matches something, or maybe the listing columns are `index : name TYPE` where name might contain `[31:0]` etc; my regex `^\s*(\d+)\s*:\s+(\S+)` should find. But hits=0 for obs_retire_pc in ins.log raw. So ins_list_nets output excluded them. Why? Possibly because ins_list_nets lists only nets **within the current core's connection scope** and filters "debuggable" nets: it might exclude nets with fanout to more than N? Or it lists only *top-level module ports + register outputs*? Hmm but obs_retire_count bits listed (registers). obs_retire_pc is a wire (combinational, LUT output) — maybe ins_list_nets lists only nets with certain driver types? It listed many LUT nets though (GTP_LUT6 etc.), e.g. `soc/core/cpu/_N58791` (GTP_LUT5?).
+
+Maybe the filter: nets with **fanout > 1**? obs_retire_pc wire likely has fanout to nothing except maybe... Hmm no.
+
+Wait maybe list was truncated/paginated: ins_list_nets might print in chunks or only first N? 24,608 lines could be a cap (e.g., max listed = 24608?). Hmm suspicious number.
+
+Let me check the beginning/end of net listing in ins.log: find lines around "ins_list_nets" execution and see if there's a message "Total net number". Grep 'ins_list_nets' context lines and look for "Net number" / "total".
+
+Alternative: use ins_list_nets with a pattern option? Check ins doc: `ins_list_nets` options maybe -pattern. From b8 notes: "ins_list_nets（打印 net 序号；ins_set_net 只接受序号参数）". Perhaps there's an argument-filter form. Let me check Inserter guide text around ins_list_nets.
+
+Better: find the .adf textual content? adf is binary? 2.9MB. Actually ".adf" = Astro/Data Format? Let me check first bytes strings for "obs_retire_pc": if adf contains names, maybe use a different command e.g. `ins_set_net -connect <name>`? b8 says ins_set_net only accepts indices (net 序号). Hmm.
+
+Maybe there are multiple pages: ins_list_nets may have option `-page`. Let me grep the Inserter guide txt for "list_nets".
+
+Also possibly the net list output in ins.log is *only the first 24608* and it's cut by log limit? ins.log 3,003,285 bytes; 24,608 lines avg ~122 = exactly 3MB. If list had more, log would be bigger. So cap maybe 3MB? Suspicious: exactly 3,003,285 B ≈ 3MB. Likely log rotation/size cap at 3,000,000 bytes? Hmm.
+
+Check Inserter guide for `ins_list_nets` options.
+
+[assistant • pwsh]
+{"command":"$g='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\docs\\pds_ref\\Fabric_Inserter_User_Guide.txt'\nSelect-String -Path $g -Pattern 'list_nets|list nets|List Nets' -Context 2,10 | Select-Object -First 8 | ForEach-Object {\n  Write-Host ('L' + $_.LineNumber + ': ' + $_.Line.Trim())\n  $_.Context.PreContext | ForEach-Object { Write-Host ('  > ' + $_.Trim()) }\n  $_.Context.PostContext | ForEach-Object { Write-Host ('  ' + $_.Trim()) }\n  Write-Host '---'\n}","description":"Extract ins_list_nets documentation","timeoutMs":60000}
+
+[tool • pwsh]
+L110: 14. Ins_list_nets ........................................................................................................................................................................ 43
+  > 12. Ins_set_condition ................................................................................................................................................................ 42
+  > 13. Ins_set_capture ................................................................................................................................................................... 43
+  15. Ins_set_net .......................................................................................................................................................................... 43
+  16. Ins_core_info ....................................................................................................................................................................... 44
+  免责声明 ............................................................................................................................................................................................ 45
+  
+  
+  
+  
+  
+  
+  
+---
+L898: ins_list_nets
+  > ins_set_condition
+  > ins_set_capture
+  ins_set _net
+  ins_core_info
+  5.2 Inserter TCL Command 详细介绍
+  1. Help
+  Help 命令用于打印 Inserter 支持的 TCL 命令列表，该命令无参数。
+  2. Ins_new
+  该命令用于新建工程文件， 可接受一个文件名参数， 输入的文件名必须包含绝对路径， 也可不输
+  入任何参数，不输入参数时工程名为 Untitled。
+  例如：ins_new d:/project.fic。
+  === PAGE 44 ===
+---
+L1019: 14. Ins_list_nets
+  > 量，即 GUI 中的 Samples per Trigger。
+  > 该命令允许同时操作多个 debug core。
+  该命令用于将用户设计中可以连接至 debug core 的 net 打印至 console 窗口中，该命令没有参数。
+  由于用于配置连线的 TCL 命令 ins_set_net 在连接 net 时， 不接受net 名为参数 （由于某些net 的名称
+  中含有特殊字符，TCL 进行解析时会出现混乱， 并且net 名称过长不便输入） ， 而是接收net 在 net list
+  中的序号为参数，所以如果想准确的进行连接，就需要先使用 list_nets 命令将 net list 打印。
+  15. Ins_set_net
+  该命令用于配置 debug core 的连线，共有 10 个 option 和一个参数：
+  -core ：对应一个参数，用于声明操作的 debug core 的序号，如过不声明，则使用 ins_operate 声
+  明的缺省对象，一次仅允许操作一个 debug core。
+  -trig ： 对应一个参数， 用于声明操作的trigger port 的序号， 允许同时操作多个trigger port， 不可
+  与-all 同时声明。
+---
+L1023: 中的序号为参数，所以如果想准确的进行连接，就需要先使用 list_nets 命令将 net list 打印。
+  > 由于用于配置连线的 TCL 命令 ins_set_net 在连接 net 时， 不接受net 名为参数 （由于某些net 的名称
+  > 中含有特殊字符，TCL 进行解析时会出现混乱， 并且net 名称过长不便输入） ， 而是接收net 在 net list
+  15. Ins_set_net
+  该命令用于配置 debug core 的连线，共有 10 个 option 和一个参数：
+  -core ：对应一个参数，用于声明操作的 debug core 的序号，如过不声明，则使用 ins_operate 声
+  明的缺省对象，一次仅允许操作一个 debug core。
+  -trig ： 对应一个参数， 用于声明操作的trigger port 的序号， 允许同时操作多个trigger port， 不可
+  与-all 同时声明。
+  -all ：无参数，声明该 option，命令会将 debug core 中的所有 trigger port 作为操作对象，同时处
+  理。
+  -data ：无参数，声明该 option，命令会将 debug core 中的 data port 作为操作对象。
+  -clock ：无参数，声明该 option，命令会将 debug core 的 clock port 作为操作对象。
+---
+
+
+[assistant]
+ins_list_nets "prints the nets in user design that **can be connected to debug core**" — so it's already filtered for connectable nets. Why are obs_retire_pc not connectable? Possibly because those nets are **dangling / drive nothing** post-synth: Inserter may filter nets with no fanout (can't be probed? actually ILA data input doesn't need fanout). Hmm but connectability likely means net physically routable from debug core site; nets that connect only to unused outputs still routable.
+
+Maybe the filter excludes nets that were optimized into constants or have fanout 0. Let me check how obs_retire_pc appears in vm netlist: grep context lines.
+
+Also maybe list output is capped: ins.log exactly ~3MB... Let me grep 'Total' or "nets listed" messages, and the tail of the net list region.
+
+Check raw context in vm.
+
+[assistant • pwsh]
+{"command":"$vm='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\src\\build\\pango_native-perf600\\synthesize\\pangoriscv_top_syn.vm'\nWrite-Host '=== obs_retire_pc context ==='\nSelect-String -Path $vm -Pattern 'obs_retire_pc' -Context 2,2 | Select-Object -First 3 | ForEach-Object { $_.Context.PreContext + $_.Line + $_.Context.PostContext | ForEach-Object { Write-Host $_ } ; Write-Host '---' }\nWrite-Host '=== obs_retire_order context ==='\nSelect-String -Path $vm -Pattern 'obs_retire_order' -Context 2,2 | Select-Object -First 2 | ForEach-Object { $_.Context.PreContext + $_.Line + $_.Context.PostContext | ForEach-Object { Write-Host $_ } ; Write-Host '---' }\nWrite-Host '=== obs_retire_inst context ==='\nSelect-String -Path $vm -Pattern 'obs_retire_inst' -Context 2,2 | Select-Object -First 2 | ForEach-Object { $_.Context.PreContext + $_.Line + $_.Context.PostContext | ForEach-Object { Write-Host $_ } ; Write-Host '---' }","description":"Inspect obs probe connections in post-synth netlist","timeoutMs":60000}
+
+[tool • pwsh]
+=== obs_retire_pc context ===
+    wire [31:0] obs_retire_inst;
+    wire [63:0] obs_retire_order;
+    wire [31:0] obs_retire_pc;
+    wire [31:0] obs_trap_cause;
+    wire [31:0] obs_trap_count;
+---
+            .\core/cpu/csr_old  ({\soc_core/cpu/csr_old[31]_floating , \soc/core/cpu/csr_old [30] , \soc_core/cpu/csr_old[29]_floating , \soc_core/cpu/csr_old[28]_floating , \soc_core/cpu/csr_old[27]_floating , \soc_core/cpu/csr_old[26]_floating , \soc_core/cpu/csr_old[25]_floating , \soc_core/cpu/csr_old[24]_floating , \soc_core/cpu/csr_old[23]_floating , \soc_core/cpu/csr_old[22]_floating , \soc_core/cpu/csr_old[21]_floating , \soc_core/cpu/csr_old[20]_floating , \soc_core/cpu/csr_old[19]_floating , \soc_core/cpu/csr_old[18]_floating , \soc_core/cpu/csr_old[17]_floating , \soc_core/cpu/csr_old[16]_floating , \soc_core/cpu/csr_old[15]_floating , \soc_core/cpu/csr_old[14]_floating , \soc_core/cpu/csr_old[13]_floating , \soc/core/cpu/csr_old [12] , \soc/core/cpu/csr_old [11] , \soc_core/cpu/csr_old[10]_floating , \soc_core/cpu/csr_old[9]_floating , \soc/core/cpu/csr_old [8] , \soc/core/cpu/csr_old [7] , \soc_core/cpu/csr_old[6]_floating , \soc_core/cpu/csr_old[5]_floating , \soc/core/cpu/csr_old [4] , \soc/core/cpu/csr_old [3] , \soc/core/cpu/csr_old [2] , \soc/core/cpu/csr_old [1] , \soc/core/cpu/csr_old [0] }),
+            .\core/cpu/er1  ({\soc/core/cpu/er1 [31] , \soc/core/cpu/er1 [30] , \soc/core/cpu/er1 [29] , \soc/core/cpu/er1 [28] , \soc/core/cpu/er1 [27] , \soc/core/cpu/er1 [26] , \soc/core/cpu/er1 [25] , \soc/core/cpu/er1 [24] , \soc/core/cpu/er1 [23] , \soc/core/cpu/er1 [22] , \soc/core/cpu/er1 [21] , \soc/core/cpu/er1 [20] , \soc/core/cpu/er1 [19] , \soc/core/cpu/er1 [18] , \soc/core/cpu/er1 [17] , \soc/core/cpu/er1 [16] , \soc/core/cpu/er1 [15] , \soc/core/cpu/er1 [14] , \soc/core/cpu/er1 [13] , \soc/core/cpu/er1 [12] , \soc/core/cpu/er1 [11] , \soc/core/cpu/er1 [10] , \soc/core/cpu/er1 [9] , \soc/core/cpu/er1 [8] , \soc/core/cpu/er1 [7] , \soc/core/cpu/er1 [6] , \soc/core/cpu/er1 [5] , \soc/core/cpu/er1 [4] , \soc/core/cpu/er1 [3] , \soc/core/cpu/er1 [2] , \soc/core/cpu/er1 [1] , \soc/core/cpu/er1 [0] }),
+            .\core/cpu/et  (obs_retire_pc),
+            .csr_mtvec ({obs_csr_mtvec[31], obs_csr_mtvec[30], obs_csr_mtvec[29], obs_csr_mtvec[28], obs_csr_mtvec[27], obs_csr_mtvec[26], obs_csr_mtvec[25], obs_csr_mtvec[24], obs_csr_mtvec[23], obs_csr_mtvec[22], obs_csr_mtvec[21], obs_csr_mtvec[20], obs_csr_mtvec[19], obs_csr_mtvec[18], obs_csr_mtvec[17], obs_csr_mtvec[16], obs_csr_mtvec[15], obs_csr_mtvec[14], obs_csr_mtvec[13], obs_csr_mtvec[12], obs_csr_mtvec[11], obs_csr_mtvec[10], obs_csr_mtvec[9], obs_csr_mtvec[8], obs_csr_mtvec[7], obs_csr_mtvec[6], obs_csr_mtvec[5], obs_csr_mtvec[4], obs_csr_mtvec[3], obs_csr_mtvec[2], \soc_csr_mtvec[1]_floating , \soc_csr_mtvec[0]_floating }),
+            .gpio_ctrl ({\soc_gpio_ctrl[31]_floating , \soc_gpio_ctrl[30]_floating , \soc_gpio_ctrl[29]_floating , \soc_gpio_ctrl[28]_floating , \soc_gpio_ctrl[27]_floating , \soc_gpio_ctrl[26]_floating , \soc_gpio_ctrl[25]_floating , \soc_gpio_ctrl[24]_floating , \soc_gpio_ctrl[23]_floating , \soc_gpio_ctrl[22]_floating , \soc_gpio_ctrl[21]_floating , \soc_gpio_ctrl[20]_floating , \soc_gpio_ctrl[19]_floating , \soc_gpio_ctrl[18]_floating , \soc_gpio_ctrl[17]_floating , \soc_gpio_ctrl[16]_floating , gpio_ctrl[15], gpio_ctrl[14], gpio_ctrl[13], gpio_ctrl[12], gpio_ctrl[11], gpio_ctrl[10], gpio_ctrl[9], gpio_ctrl[8], gpio_ctrl[7], gpio_ctrl[6], gpio_ctrl[5], gpio_ctrl[4], gpio_ctrl[3], gpio_ctrl[2], gpio_ctrl[1], gpio_ctrl[0]}),
+---
+=== obs_retire_order context ===
+(* PAP_KEEP="TRUE" *)    wire obs_retire_fire;
+    wire [31:0] obs_retire_inst;
+    wire [63:0] obs_retire_order;
+    wire [31:0] obs_retire_pc;
+    wire [31:0] obs_trap_cause;
+---
+            .rd (obs_rd),
+            .retire_inst (obs_retire_inst),
+            .retire_order (obs_retire_order),
+            .trap_cause ({\soc_trap_cause[31]_floating , \soc_trap_cause[30]_floating , \soc_trap_cause[29]_floating , \soc_trap_cause[28]_floating , \soc_trap_cause[27]_floating , \soc_trap_cause[26]_floating , \soc_trap_cause[25]_floating , \soc_trap_cause[24]_floating , \soc_trap_cause[23]_floating , \soc_trap_cause[22]_floating , \soc_trap_cause[21]_floating , \soc_trap_cause[20]_floating , \soc_trap_cause[19]_floating , \soc_trap_cause[18]_floating , \soc_trap_cause[17]_floating , \soc_trap_cause[16]_floating , \soc_trap_cause[15]_floating , \soc_trap_cause[14]_floating , \soc_trap_cause[13]_floating , \soc_trap_cause[12]_floating , \soc_trap_cause[11]_floating , \soc_trap_cause[10]_floating , \soc_trap_cause[9]_floating , \soc_trap_cause[8]_floating , \soc_trap_cause[7]_floating , \soc_trap_cause[6]_floating , \soc_trap_cause[5]_floating , \soc_trap_cause[4]_floating , obs_trap_cause[3], obs_trap_cause[2], obs_trap_cause[1], obs_trap_cause[0]}),
+            .trap_pc (obs_trap_pc),
+---
+=== obs_retire_inst context ===
+    wire \obs_retire_count[0]_inv ;
+(* PAP_KEEP="TRUE" *)    wire obs_retire_fire;
+    wire [31:0] obs_retire_inst;
+    wire [63:0] obs_retire_order;
+    wire [31:0] obs_retire_pc;
+---
+        _N65582_1_inv (
+            .Z (\soc/core/cpu/csr_write [0] ),
+            .I0 (obs_retire_inst[12]),
+            .I1 (obs_retire_inst[13]),
+            .I2 (obs_retire_inst[14]),
+---
+
+
+[assistant]
+Key discovery: after synthesis, nets connected to **module output ports** like obs_retire_pc (`.et (obs_retire_pc)`) remain as declarations but many bits become "floating"/optimized. For wide buses, ADS keeps only bits used elsewhere? No wait obs_retire_pc is entirely a wire driven by soc's `.et` output port. It survives as a name (declared + connected to module port). So why not listed by ins_list_nets?
+
+Maybe Inserter can only connect nets that are *not* module ports? The listed nets included `soc/core/cpu/_N...` etc. Hmm.
+
+Wait maybe ins_list_nets listing got truncated to a fixed number of nets (e.g., first 24,608 printed then console stops). Since obs_retire_count bits appear at indices up to 24,441 (`obs_trap_count[2]` index 24441) — near the end of 24,608. obs_retire_pc would be some index maybe >24608? Not necessarily; net list order by index; index 24441 is obs_trap_count[2]. The indices in list go up to maybe 30000? The last parsed index? Let me check max index and count mismatch: parsed 24,608 rows with indices; if indices are contiguous 0..24607, then list printed only 24,608 of more nets. Check max idx and whether count == max+1.
+
+Actually likely ins.log got truncated by some size limit (3MB) mid-list. Check tail of ins.log: last lines and whether "INS_LIST_DONE" appears (my puts markers). If INS_LIST_DONE absent → truncated!
+
+Let me check.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\nWrite-Host ('bytes=' + (Get-Item $log).Length)\nWrite-Host '=== has markers? ==='\nSelect-String -Path $log -Pattern 'INS_LIST_START|INS_LIST_DONE|ins_list_nets|Executing' | Select-Object -Last 8 | ForEach-Object { Write-Host ('L' + $_.LineNumber + ': ' + $_.Line.Trim()) }\nWrite-Host '=== last 5 raw lines ==='\nGet-Content $log -Tail 5 | ForEach-Object { Write-Host ('> ' + $_) }\nWrite-Host '=== parsed index range ==='\n$idxs = Select-String -Path $log -Pattern '^\\s*(\\d+)\\s*:\\s' | ForEach-Object { [int]$_.Matches[0].Groups[1].Value }\nWrite-Host ('count=' + $idxs.Count + ' min=' + ($idxs | Measure-Object -Minimum).Minimum + ' max=' + ($idxs | Measure-Object -Maximum).Maximum)\nWrite-Host '=== does any line after idx 24607 exist? ==='\n$tail = Get-Content $log -Tail 3\n$tail | ForEach-Object { Write-Host $_ }","description":"Check ins.log truncation and index range","timeoutMs":120000}
+
+[tool • pwsh]
+bytes=3003285
+=== has markers? ===
+L114: Executing : ins_new E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/ila/listnets.fic
+L116: Executing : ins_new E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/ila/listnets.fic successfully.
+L117: Executing : ins_set_file -input E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/ila/pangoriscv_top_syn.adf
+L180: Executing : ins_set_file -input E:/file/pango/project/evidence/records/bottleneck_audit/contest_final/ila/pangoriscv_top_syn.adf successfully.
+L181: Executing : ins_add_core 1
+L183: Executing : ins_add_core 1 successfully.
+L184: Executing : ins_list_nets
+L25287: Executing : ins_list_nets successfully.
+=== last 5 raw lines ===
+> 24604 :                                soc/perf_inst/cnt[6][25]                GTP_DFF_RE                              
+> 24605 :                                soc/core/cpu/_N5030                     ex                                      
+> 24606 :                                soc/uart_inst/bit_q[3]                  GTP_DFF_RE                              
+> 24607 :                                soc/core/cpu/u_retire_ctrl/N26[57]      GTP_LUT6CARRY                           
+> Executing : ins_list_nets successfully.
+=== parsed index range ===
+count=24608 min=0 max=24607
+=== does any line after idx 24607 exist? ===
+24606 :                                soc/uart_inst/bit_q[3]                  GTP_DFF_RE                              
+24607 :                                soc/core/cpu/u_retire_ctrl/N26[57]      GTP_LUT6CARRY                           
+Executing : ins_list_nets successfully.
+
+
+[assistant]
+Full list = 24,608 nets, indices 0..24607. So obs_retire_pc genuinely not in connectable list. Hmm why? Look at net type column: for obs nets listed: `obs_retire_count[0]` driver type `GTP_DFF_RE`; for obs_retire_pc connection `.et (obs_retire_pc)` — it's a port connection net driven by module output pin. Maybe nets that are **ports of instances** are not listed? But list includes `soc/core/ls_req_addr[17]` driven by `lsu_axi` module output — that's a port net and it IS listed! Type column shows "lsu_axi" = driver instance name.
+
+So why obs_retire_pc not listed? Perhaps because after synthesis the wire is actually *floating* except bits used: `.et (obs_retire_pc)` connects whole bus to port; but the bus top-level declaration `wire [31:0] obs_retire_pc;` remains; Inserter may exclude nets whose loads are only "floating" nets / unused outputs? Hmm.
+
+Wait: maybe most bits got renamed to `_floating` variants like `\soc_csr_mtvec[1]_floating` (escaped names starting with `\`). In vm, `.et (obs_retire_pc)` - the whole bus is a single net. But Inserter's net list excludes nets with escaped names or specific chars! The net name `obs_retire_pc` has no special chars though.
+
+Hmm, but maybe the naming in the ADF is `obs_retire_pc[31:0]` and the netlist connectivity collapsed bus to individual bits `obs_retire_pc[0]`... ins list would show those.
+
+Alternatively: the adf file I copied might be from... perf600 run. Yes. Same design.
+
+Let me test by searching ins.log for 'retire_pc' (any case) — we did: hits=0. So no bits.
+
+Maybe Inserter filters nets by **fanout**: obs_retire_pc has loads only at top-level declaration (unused) → marks as "no load" → not connectable? But then how can one probe dangling debug nets? Normally debug nets have loads (the probe). But these are dangling wires (no loads) kept by syn_keep. Inserter may require net to have driver and at least one load? Possibly.
+
+Fix approach: in debug tree, make obs_* probes **drive real logic** so they have loads — e.g., XOR-reduce all probes into one register `dbg_xor` whose output drives a real output pin? No spare pins... Could drive led? no.
+
+Better: give probes loads via registers that are kept: e.g., `reg [N] probe_q; always @(posedge clk) probe_q <= probes;` then use probe_q bits XOR-reduced into a real observable? Still dangling unless syn_preserve forces.
+
+Hmm. Actually simplest: for ILA we don't strictly need those wires. We can connect ILA data channels to **existing** connectable nets: e.g., `soc/core/cpu/redirect_pc[*]` (listed!), `soc/core/fetch_inst[*]` (listed! `soc/core/fetch_inst[16]`), `soc/core/fetch_valid`, `soc/core/ls_req_addr[*]`, `soc/core/ls_req_write`, `soc/m_araddr[*]`, `soc/m_awaddr[*]`, `soc/m_wdata[*]`, `soc/m_rdata[*]`, cache state/miss nets, branch predictor nets, retire_ctrl nets.
+
+These are real functional nets. We can build a meaningful ILA:
+- clock: `nt_clk` (11930)
+- data: fetch_pc? need PC. `soc/core/cpu/redirect_pc[31:0]` bits are listed (GTP_LUT5/6). Also maybe `soc/core/pc` nets. Let me search for `pc_q`, `pc[`.
+- data: fetch_inst[31:0] (listed bits? `soc/core/fetch_inst[16]` yes, likely all 32 bits listed).
+- retire: any nets like `soc/core/cpu/u_retire_ctrl/...`? names are _N... not semantic. But count/fire nets exist as obs_retire_fire etc.
+
+Hmm: obs_retire_fire IS connectable (listed). So triggers can use obs_retire_fire, obs_trap_fire, obs_retire_count[31:0], obs_trap_count[31:0], plus redirect_pc bits, fetch_inst bits, ls/axi nets.
+
+Data channels: choose:
+- redirect_pc[31:0] (32) — but which redirect_pc listed bits? Let me count.
+- fetch_inst[31:0] (32)
+- fetch_valid (1)
+- fetch_pc? search.
+- obs_retire_fire (1), obs_trap_fire (1)
+- ls_req_addr[31:0] (32), ls_req_write (1), maybe ls_req_valid? search `ls_req_valid`.
+- AXI: m_araddr (64-bit? 57 bits listed), m_arvalid, m_rdata, m_awaddr, m_wdata, m_wvalid, m_awvalid.
+
+Trigger: on obs_retire_fire? too early. Better: trigger when PC == specific CoreMark address. Since we don't have PC connectable yet, use `soc/core/fetch_inst`? Hmm.
+
+Alternatively trigger on AXI transaction to a data address characteristic of CoreMark (e.g., matrix buffer 0x... in DRAM). We know coremark data addresses from map: data_ram base 0x10000000? Actually native AXI: program RAM at 0x00000000? Let me check soc address map. CoreMark's data arrays at specific addresses; trigger on m_awaddr==specific address.
+
+But competition wants trigger at "关键算法入口" — a PC or marker. We could trigger on `redirect_pc == <func entry>` if redirect_pc connectable, that occurs on taken branch — not exact entry though.
+
+Alternative: add a **real debug trigger** in RTL: in debug tree only, modify firmware? no.
+
+Better: use existing perf counter nets: `soc/perf_inst/...` — perf counters count events; trigger on counter reaching value? We can connect trigger to e.g. `soc/perf_inst/cnt[..]` bits? Hmm those are 2D arrays.
+
+Hmm, we do have `obs_retire_count[31:0]` connectable — trigger on retire_count == N where N = number of retires before CoreMark algorithm starts (approximate; we can compute from simulation? not easily for 600 iter board run... but we can choose the *first* iteration: CoreMark main starts after ~few thousand retires, stable across runs. We could trigger on retire_count == e.g. 0x1000 to catch early loop. But exact N unknown; we can binary-search: trigger values tested by captures, but board runs are cheap (~1 min each with JTAG).
+
+Simplest and robust: trigger on `obs_retire_fire == 1` with storage qualification? Trigger immediately after arming — capture window centered trigger shows some instructions. But competition wants CoreMark algorithm evidence; if trigger at capture start (e.g., 0.5 s after arm while program already running), the window will show CoreMark loop running — that's fine! Trigger condition "retire_fire==1" happens immediately on arm; window (with pre-trigger position) captures current execution. We can document trigger = "any instruction retires while CoreMark timed loop is running", with waveform showing PC/inst/AXI.
+
+Actually if we can't get PC, waveform shows inst, redirect_pc, fetch_valid, ls_req, AXI — enough to demonstrate workload and stalls? The prompt wants PC/retire/redirect/queue/cache/LSU/AXI. Need PC. Let's find connectable PC nets.
+
+Search ins.log for 'pc' broadly (many hits, filter shallow): nets like `soc/core/cpu/pc_q[...]`, `soc/core/fetch_pc`, `soc/core/cpu/if_pc`. Let me grep.
+
+Also search 'inst' (instruction), 'state' (cache state), 'hit','miss' aren't named; perf counters maybe `perf_i_miss` etc.
+
+Also 'queue' entries: pipeline valid bits maybe `soc/core/cpu/u_ex/valid`? grep 'valid'.
+
+Let me search and count families:
+- names matching 'pc' (limit print shallow)
+- 'fetch_' 
+- 'instr'
+- 'ls_'
+- 'cache' state regs
+- 'branch_predictor' (would give redirect/mispredict?)
+
+Then pick data set ~64 channels max? Data port width up to 256? Actually trigger port max 256; data port maybe 256 too? Default 1 data port.
+
+Plan: 1 debug core:
+- clock port: nt_clk
+- reset: nt_rst_n? maybe optional.
+- trigger port with channels: fetch_valid, redirect bits..., retire_fire, trap_fire, maybe pc? Value matching pc address.
+- data port channels: pc bits ×32, inst ×32, fetch_valid, retire_fire, trap_fire, redirect_pc? too wide; m_araddr lower bits? etc.
+
+Let me first see what PC-ish nets exist.
+
+[assistant • pwsh]
+{"command":"$log='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\log\\ins.log'\n$rows = Select-String -Path $log -Pattern '^\\s*(\\d+)\\s*:\\s+(\\S+)' | ForEach-Object { $m=$_.Matches[0]; [pscustomobject]@{idx=[int]$m.Groups[1].Value; name=$m.Groups[2].Value} }\n$rows | Export-Csv 'E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\nets.csv' -NoTypeInformation -Encoding UTF8\nfunction Fam($pat, $max) {\n  Write-Host \"=== $pat ===\"\n  $rows | Where-Object { $_.name -match $pat } | ForEach-Object { $_.name } | Sort-Object -Unique | Select-Object -First $max | ForEach-Object { Write-Host $_ }\n}\nFam '(^|/)pc(_q|_reg|_d|_next)?(\\[[0-9]+\\]|$)' 25\nFam 'if_pc|fetch_pc|pc_if|pc_id|pc_ex|pc_q' 25\nFam 'fetch_' 20\nFam 'inst(_|\\[)' 20\nFam 'ls_req|ls_rsp|ls_ack|ls_busy' 20\nFam 'state_reg|hit|miss' 20\nFam 'redirect' 20\nFam 'instr' 10","description":"Enumerate connectable net families","timeoutMs":120000}
+
+[tool • pwsh]
+=== (^|/)pc(_q|_reg|_d|_next)?(\[[0-9]+\]|$) ===
+=== if_pc|fetch_pc|pc_if|pc_id|pc_ex|pc_q ===
+soc/core/fetch_pc[0]
+soc/core/fetch_pc[1]
+soc/core/fetch_pc[10]
+soc/core/fetch_pc[11]
+soc/core/fetch_pc[12]
+soc/core/fetch_pc[13]
+soc/core/fetch_pc[14]
+soc/core/fetch_pc[15]
+soc/core/fetch_pc[16]
+soc/core/fetch_pc[17]
+soc/core/fetch_pc[18]
+soc/core/fetch_pc[19]
+soc/core/fetch_pc[2]
+soc/core/fetch_pc[20]
+soc/core/fetch_pc[21]
+soc/core/fetch_pc[22]
+soc/core/fetch_pc[23]
+soc/core/fetch_pc[24]
+soc/core/fetch_pc[25]
+soc/core/fetch_pc[26]
+soc/core/fetch_pc[27]
+soc/core/fetch_pc[28]
+soc/core/fetch_pc[29]
+soc/core/fetch_pc[3]
+soc/core/fetch_pc[30]
+=== fetch_ ===
+soc/core/fetch_cause[0]
+soc/core/fetch_fault
+soc/core/fetch_inst[0]
+soc/core/fetch_inst[1]
+soc/core/fetch_inst[10]
+soc/core/fetch_inst[11]
+soc/core/fetch_inst[12]
+soc/core/fetch_inst[13]
+soc/core/fetch_inst[14]
+soc/core/fetch_inst[15]
+soc/core/fetch_inst[16]
+soc/core/fetch_inst[17]
+soc/core/fetch_inst[18]
+soc/core/fetch_inst[19]
+soc/core/fetch_inst[2]
+soc/core/fetch_inst[20]
+soc/core/fetch_inst[21]
+soc/core/fetch_inst[22]
+soc/core/fetch_inst[23]
+soc/core/fetch_inst[24]
+=== inst(_|\[) ===
+obs_retire_inst[12]
+obs_retire_inst[13]
+obs_retire_inst[14]
+obs_retire_inst[15]
+obs_retire_inst[16]
+obs_retire_inst[17]
+obs_retire_inst[18]
+obs_retire_inst[19]
+soc/core/fetch_inst[0]
+soc/core/fetch_inst[1]
+soc/core/fetch_inst[10]
+soc/core/fetch_inst[11]
+soc/core/fetch_inst[12]
+soc/core/fetch_inst[13]
+soc/core/fetch_inst[14]
+soc/core/fetch_inst[15]
+soc/core/fetch_inst[16]
+soc/core/fetch_inst[17]
+soc/core/fetch_inst[18]
+soc/core/fetch_inst[19]
+=== ls_req|ls_rsp|ls_ack|ls_busy ===
+soc/core/ls_req_addr[0]
+soc/core/ls_req_addr[1]
+soc/core/ls_req_addr[10]
+soc/core/ls_req_addr[11]
+soc/core/ls_req_addr[12]
+soc/core/ls_req_addr[13]
+soc/core/ls_req_addr[14]
+soc/core/ls_req_addr[15]
+soc/core/ls_req_addr[16]
+soc/core/ls_req_addr[17]
+soc/core/ls_req_addr[18]
+soc/core/ls_req_addr[19]
+soc/core/ls_req_addr[2]
+soc/core/ls_req_addr[20]
+soc/core/ls_req_addr[21]
+soc/core/ls_req_addr[22]
+soc/core/ls_req_addr[23]
+soc/core/ls_req_addr[24]
+soc/core/ls_req_addr[25]
+soc/core/ls_req_addr[26]
+=== state_reg|hit|miss ===
+soc/core/cpu/u_branch_predictor/train_hitGTP_LUT6CARRY
+soc/core/data_cache/hit_any
+soc/core/data_cache/hit_q
+soc/core/data_cache/hit_way
+soc/core/data_cache/hit_way_q
+soc/core/data_cache/hit0
+soc/core/instruction_cache/hit_index[3]
+soc/core/instruction_cache/hit0
+soc/core/instruction_cache/state_reg[0]
+soc/core/instruction_cache/state_reg[1]
+soc/core/instruction_cache/state_reg[2]
+soc/core/instruction_cache/state_reg[3]
+soc/core/instruction_cache/state_reg[4]
+soc/core/instruction_cache/state_reg[5]
+soc/data_ram/state_reg[0]
+soc/data_ram/state_reg[1]
+soc/data_ram/state_reg[2]
+soc/data_ram/state_reg[3]
+soc/data_ram/state_reg[4]
+soc/data_ram/state_reg[5]
+=== redirect ===
+soc/core/cpu/redirect_pc[0]
+soc/core/cpu/redirect_pc[1]
+soc/core/cpu/redirect_pc[10]
+soc/core/cpu/redirect_pc[11]
+soc/core/cpu/redirect_pc[12]
+soc/core/cpu/redirect_pc[13]
+soc/core/cpu/redirect_pc[14]
+soc/core/cpu/redirect_pc[15]
+soc/core/cpu/redirect_pc[16]
+soc/core/cpu/redirect_pc[17]
+soc/core/cpu/redirect_pc[18]
+soc/core/cpu/redirect_pc[19]
+soc/core/cpu/redirect_pc[2]
+soc/core/cpu/redirect_pc[20]
+soc/core/cpu/redirect_pc[21]
+soc/core/cpu/redirect_pc[22]
+soc/core/cpu/redirect_pc[23]
+soc/core/cpu/redirect_pc[24]
+soc/core/cpu/redirect_pc[25]
+soc/core/cpu/redirect_pc[26]
+=== instr ===
+soc/core/cpu/u_csr/minstret[0]
+soc/core/cpu/u_csr/minstret[1]
+soc/core/cpu/u_csr/minstret[10]
+soc/core/cpu/u_csr/minstret[11]
+soc/core/cpu/u_csr/minstret[12]
+soc/core/cpu/u_csr/minstret[13]
+soc/core/cpu/u_csr/minstret[14]
+soc/core/cpu/u_csr/minstret[15]
+soc/core/cpu/u_csr/minstret[16]
+soc/core/cpu/u_csr/minstret[17]
+
+
+[assistant]
+Excellent! `soc/core/fetch_pc[31:0]`, `soc/core/fetch_inst[31:0]`, `soc/core/fetch_valid`, `soc/core/fetch_fault`, `soc/core/cpu/redirect_pc[31:0]`, `soc/core/ls_req_addr[31:0]`, `soc/core/ls_req_write`, cache hit/state nets, AXI m_* nets are all connectable (post-synth names listed by Inserter). 
+
+Now design the ILA fic:
+
+**Core 0** (sequential, single clock `nt_clk`):
+- Trigger port 0 width = channels connected. Trigger on instruction fetch at a known address: connect `fetch_valid` + `fetch_pc[31:0]` → 33 channels; match unit type Basic (==), value = 0b<32-bit pc><valid 1> with bit order: need to determine channel ↔ bit mapping. In Inserter GUI, when you connect trigger channels, the match unit value bits correspond in order; typically first connected net maps to bit... need to check guide for bit order. The guide says `-type` 0..5, `-value` binary string. The value's LSB corresponds to last channel? Need doc detail. Let me look at Inserter guide ins_set_trig/ins_set_unit/ins_set_net examples (pages 40-44) — examples may show mapping/ordering.
+
+Alternatively trigger on `soc/core/fetch_pc == addr` only (32 bits) if fetch_valid always 1 in capture? fetch_pc changes only on valid fetch? Might be stable. Simpler: 32-bit value match on fetch_pc equal to CoreMark function entry address; a fetch of that address occurs when entering function. Trigger fires at that fetch. Then data port captures window around it, showing instructions and AXI activity.
+
+But capture trigger may fire on the *first* fetch of that address (during first iteration); great for "CoreMark key algorithm running".
+
+Which address? Get CoreMark function addresses from ELF: `coremark` ELF in build dir (performance run). Use riscv objdump/nm: toolchain at `E:\file\pango\toolchains\openisa-1.0.0\gcc\riscv32-unknown-elf-gcc\bin`. Find `core_list_find`, `core_state_transition`, `matrix_test`, `crcu8`, `cmp_complex` etc.
+
+Also PC in fetch stage: instruction fetch pipeline; `fetch_pc` value might be aligned etc. fine.
+
+Additional data channels (max total width? data port max 256? Let me check guide: each debug core supports up to 256 trigger channels? Actually Pango ILA: each core data port up to 256? "Sample Depth 512; data port width up to 256"? Need check. Guide "Data Max Depth 512" per core, "Match Unit Number 1" default; max units maybe 16.
+
+Data port width budget: fetch_pc(32) + fetch_inst(32) + fetch_valid(1) + fetch_fault(1) + redirect_pc(32) + ls_req_addr(32) + ls_req_write(1) + d_cache hit_any? + m_arvalid,target nets + m_awvalid + m_wvalid + rlast? Let's aim ~180 bits:
+
+- fetch_pc[31:0] 32
+- fetch_inst[31:0] 32
+- fetch_valid 1
+- fetch_fault 1
+- redirect_pc[31:0] 32
+- ls_req_addr[31:0] 32
+- ls_req_write 1
+- ls_req_valid? (find net name) maybe `soc/core/ls_req_valid`? search later
+- instruction_cache state_reg[0..?]; data_cache hit_any, hit_way_q
+- AXI: m_arvalid, m_awvalid, m_wvalid, m_rready? Let me grep m_ nets.
+
+Total maybe 32*5+... ~200 bits. Pango core: data width max = 256? Need check guide chapter 3 (debug core). Let me grep "256" / "Data Port".
+
+Also storage depth: 512 (max 4096?). Capture window: use windows=1, depth=512, position=... e.g. 256 samples pre/post.
+
+Trigger value bit order: check guide examples. Let me read Inserter guide around ins_set_trig/ins_set_unit/ins_set_net examples (pages 40-44, txt lines ~920-1010) and any note on channel order/value bit mapping. Also the Inserter GUI flow may describe that match unit value is MSB..LSB corresponding to the connected channel order. Let me read that section fully in one go (lines 880-1080 already known but need details). Read txt around lines 900-1080.
+
+Also check Pango ILA core limits in Fabric_Debugger guide or Inserter guide chapter 2/3.
+
+Let's do: read Inserter txt lines 150-400 (concepts: debug core, trigger port, match unit, data port, capture, storage) and 880-1080 (commands). Might be long but needed. Use grep for key terms instead: 'Match Unit', 'trigger port', 'data port', '位宽', '256', 'channel'.
+
+Let me run two pwsh reads: context around set_trig and limits.
+
+[assistant • pwsh]
+{"command":"$g='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\docs\\pds_ref\\Fabric_Inserter_User_Guide.txt'\n$lines = Get-Content $g\nWrite-Host ('total lines=' + $lines.Count)\nWrite-Host '=== lines 100-260 (concepts) ==='\n$lines[99..259] | ForEach-Object { Write-Host $_ }","description":"Read Inserter guide concepts section","timeoutMs":60000}
+
+[tool • pwsh]
+total lines=1079
+=== lines 100-260 (concepts) ===
+4. Ins_save ............................................................................................................................................................................... 40 
+5. Ins_set_file .......................................................................................................................................................................... 40 
+6. Ins_add_core ....................................................................................................................................................................... 40 
+7. Ins_remove_core ................................................................................................................................................................. 40 
+8. Ins_operate ......................................................................................................................................................................... 40 
+9. Ins_set_core ........................................................................................................................................................................ 40 
+10. Ins_set_trig.......................................................................................................................................................................... 41 
+11. Ins_set_unit ......................................................................................................................................................................... 42 
+12. Ins_set_condition ................................................................................................................................................................ 42 
+13. Ins_set_capture ................................................................................................................................................................... 43 
+14. Ins_list_nets ........................................................................................................................................................................ 43 
+15. Ins_set_net .......................................................................................................................................................................... 43 
+16. Ins_core_info ....................................................................................................................................................................... 44 
+鍏嶈矗澹版槑 ............................................................................................................................................................................................ 45 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+=== PAGE 5 ===
+                           
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 5 / 49 
+鍥剧洰褰?
+鍥?2. 1 PDS 涓坊鍔?FIC 鏂囦欢 ................................................................................................................................................................. 9 
+鍥?2. 2 Inserter 杞欢涓荤晫闈?................................................................................................................................................................... 10 
+鍥?2. 3 JtagHub 閰嶇疆鐣岄潰 ...................................................................................................................................................................... 11 
+鍥?2. 4 Parameters 閰?Trigger 缃晫闈?................................................................................................................................................... 12 
+鍥?2. 5 Net Connections 閰嶇疆鐣岄潰锛堣繛绾垮畬鎴愬墠锛?............................................................................................................................ 12 
+鍥?2. 6 Select Net 閰嶇疆鐣岄潰 .................................................................................................................................................................. 13 
+鍥?2. 7 Net Connections 閰嶇疆鐣岄潰锛堣繛绾垮畬鎴愬悗锛?............................................................................................................................ 13 
+鍥?2. 8 Trigger Port 璋冩暣鐣岄潰 ............................................................................................................................................................... 14 
+鍥?2. 9 Power On Init Parameters 閰嶇疆鐣岄潰 .......................................................................................................................................... 14 
+鍥?3. 1 杞欢涓荤晫闈?................................................................................................................................................................................ 16 
+鍥?3. 2 File 鑿滃崟 .................................................................................................................................................................................... 17 
+鍥?3. 3 Edit 鑿滃崟 .................................................................................................................................................................................... 17 
+鍥?3. 4 View 鑿滃崟 .................................................................................................................................................................................. 17 
+鍥?3. 5 Help 鑿滃崟 ................................................................................................................................................................................... 18 
+鍥?3. 6 宸ュ叿鏍?...................................................................................................................................................................................... 18 
+鍥?3. 7 杞欢涓荤晫闈?............................................................................................................................................................................... 19 
+鍥?3. 8 JtagHub 閰嶇疆鐣岄潰 ..................................................................................................................................................................... 20 
+鍥?3. 9 DebugCore 閰嶇疆鐣岄潰 ................................................................................................................................................................ 20 
+鍥?3. 10 Trigger Parameters 閰嶇疆鐣岄潰 .................................................................................................................................................. 21 
+鍥?3. 11 Trigger Input and Trigger Unit Settings .................................................................................................................................... 22 
+鍥?3. 12 Capture and Storage Settings.................................................................................................................................................... 22 
+鍥?3. 13 Trigger Condition Setting ......................................................................................................................................................... 23 
+鍥?3. 14 Net Connections 閰嶇疆鐣岄潰锛堣繛绾垮畬鎴愬墠锛?........................................................................................................................... 23 
+鍥?3. 15 Select Net 閰嶇疆鐣岄潰 ................................................................................................................................................................ 23 
+鍥?3. 16 Net Connections 閰嶇疆鐣岄潰锛堣繛绾垮畬鎴愬悗锛?........................................................................................................................... 27 
+鍥?3. 17 PowerOn Init Parameters 閰嶇疆鐣岄潰 ......................................................................................................................................... 28 
+鍥?3. 18 Match Funciton 閰嶇疆 ............................................................................................................................................................... 28 
+鍥?3. 19 Match Counter 閰嶇疆 ................................................................................................................................................................. 29 
+鍥?3. 20 Trigger Condition ..................................................................................................................................................................... 30 
+鍥?3. 21 閰嶇疆 Trigger Condition 甯冨皵琛ㄨ揪寮?...................................................................................................................................... 30 
+=== PAGE 6 ===
+                           
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 6 / 49 
+鍥?3. 22 閰嶇疆 Trigger Condition 椤哄簭瑙﹀彂琛ㄨ揪寮?.............................................................................................................................. 31 
+鍥?3. 23 Capture Settings ....................................................................................................................................................................... 32 
+鍥?3. 24 Storage Qualification Condition 閫夋嫨 All Data ....................................................................................................................... 33 
+鍥?3. 25 Storage Qualification Condition 閫夋嫨甯冨皵琛ㄨ揪寮?.................................................................................................................. 34 
+鍥?3. 26 Edit Preferences 绐楀彛............................................................................................................................................................... 35 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+=== PAGE 7 ===
+                           
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 7 / 49 
+鍚嶈瘝鏈瑙ｉ噴 
+Debug Core锛氳皟璇曟牳銆?
+Trigger Port锛氳Е鍙戠鍙ｏ紝鍙湁褰撹繛鎺ヨ嚦 Trigger Port 鐨勪俊鍙风殑鍊兼弧瓒崇敤鎴疯缃殑瑙﹀彂鏉′欢鏃舵墠寮€濮嬭繘
+琛屾暟鎹崟鑾枫€?
+Data Port锛?鏁版嵁鎹曡幏绔彛锛?杩炴帴鑷矰ata Port 鐨勪俊鍙锋槸 Debug Core 鎹曡幏鏁版嵁鐨勬潵婧愶紝 鍙湁杩炴帴鑷矰ata Port
+鐨勪俊鍙锋墠鍙互鍦?Debugger 杞欢涓繘琛岃瀵熴€?
+Clock Port锛氭椂閽熺鍙ｏ紝杩炴帴鑷宠绔彛鐨勪俊鍙峰皢琚綔涓?Debug Core 鐨勫伐浣滄椂閽熷悓鏃朵篃鏄噰鏍锋椂閽熴€?
+Reset Port锛氬浣嶇鍙ｏ紝杩炴帴鑷宠绔彛鐨勪俊鍙峰皢琚綔涓?Debug Core 鐨勫浣嶄俊鍙凤紝Debug Core 鍦ㄥ浣嶄俊
+鍙蜂负浣庣數骞虫椂澶嶄綅銆?
+Trigger Unit锛氬尮閰嶅崟鍏冿紝鐢ㄤ簬璁剧疆瑙﹀彂鏉′欢銆?
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+=== PAGE 8 ===
+                                                 杞欢绠€浠? 
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 8 / 49 
+1 杞欢绠€浠?
+Fabric Inserter 杞欢涓昏鍔熻兘鏄妸 DebugCore 鑷姩鎻掑叆鐢ㄦ埛鐨勮璁＄綉琛ㄤ腑鐢熸垚鏂扮殑璁捐缃戣〃锛屼粠
+鑰屼娇鐢ㄦ埛涓嶉渶瑕佹墜宸ュ湪 HDL 浠ｇ爜涓緥鍖栥€?
+瀹冪殑涓昏鍔熻兘鍖呮嫭锛?
+鏈€澶ф敮鎸?15 涓?DebugCore銆?
+姣忎釜 DebugCore 鏈€澶ф敮鎸?16 涓?TriggerPort锛屾瘡涓?TriggerPort 鏈€澶т綅瀹戒负 256 骞舵敮鎸?16 涓?
+TriggerUnit锛屼笖鎵€鏈?TriggerPort 鐨?TriggerUnit 涔嬪拰涓嶈兘瓒呰繃 16銆?
+姣忎釜 DebugCore 鏈€澶ф敮鎸佹姄鍙?4096 涓暟鎹俊鍙枫€?
+鏀寔瀵?DebugCore 瑙﹀彂淇″彿鍜岃Е鍙戞潯浠剁瓑璁剧疆銆?
+鏀寔瀵?DebugCore 瀛樺偍娣卞害銆佹暟鎹綅瀹姐€侀噰鏍疯缃瓑鍙傛暟鐨勮缃€?
+鏀寔 DataPort銆乀riggerPort 杩炴帴璁剧疆锛孌ataPort 鍜?TriggerPort 鍙互鐩稿悓涔熷彲浠ュ垎寮€銆?
+鏀寔涓婄數鍒濆鍖栬Е鍙戝拰鎹曡幏灞炴€х殑璁剧疆銆?
+鏀寔宸ョ▼灞炴€ф枃浠剁殑瀵煎叆鍜屽鍑哄姛鑳姐€?
+=== PAGE 9 ===
+                                                 杞欢浣跨敤鍏ラ棬  
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 9 / 49 
+ 
+2 杞欢浣跨敤鍏ラ棬 
+ 2.1 鍚姩鏂瑰紡 
+Inserter 闇€瑕佺粨鍚?PDS 杞欢浣跨敤锛?鍙互閫氳繃鍗曞嚮鑿滃崟鏍忔垨宸ュ叿鏍忎腑鐨処nserter 鍥炬爣鍚姩 Inserter 杞?
+浠讹紝鎴栭€氳繃鍙屽嚮 Constraints 鍒楄〃涓殑.fic 鏂囦欢鍚姩 Inserter锛岄渶瑕佹敞鎰忕殑鏄彧鏈夊湪 PDS 涓坊鍔犱簡璧勬簮
+鏂囦欢锛?v 鎴?vm锛夊悗鎵嶈兘鍚姩 Inserter銆? 
+ 2.2 缁煎悎宸ュ叿璺緞璁剧疆璇存槑锛?
+Inserter 杞欢濮嬬粓浣跨敤 PDS 涓缃殑缁煎悎宸ュ叿璺緞銆?
+ 2.3 搴旂敤瀹炰緥 
+涓嬮潰锛岀敤涓€涓畝鍗曠殑渚嬪瓙璇存槑杞欢鍔熻兘鍜屽浣曚娇鐢?Fabric Inserter 杞欢銆?
+ 
+ 
+ 
+鍥?2. 1 PDS 涓坊鍔?FIC 鏂囦欢 
+2.3.1 鍦?PDS 涓坊鍔犺祫婧愭枃浠?
+
+
+[assistant]
+Text is mojibake (GBK decoded as UTF-16?). Actually it's Chinese garbled because pypdf extracted with wrong encoding — but some parts readable (page structure). The earlier b8 notes were from this txt? They got readable content maybe with different extraction. Hmm the text shows "Debug Core锛氳皟璇曟牳" — mojibake. But earlier extracts had readable text (b8/b14 said full command lists readable, e.g., `ins_set_trig` description). Possibly only some sections mojibake due to font encoding; the commands section was readable.
+
+Key info readable: max 15 debug cores; each core ≤16 trigger ports; each trigger port max width 256 and 16 trigger units; sum of trigger units across ports ≤16; each core ≤4096 data signals; supports storage depth, data width, sampling settings.
+
+Now read the command detail section (txt lines 920-1079) which earlier was readable (ins_set_trig etc.). Let me read lines 920-1079.
+
+Also need capture depth limit (max 4096 samples? Data Max Depth 512 default). Let in guide.
+
+Read commands section now.
+
+[assistant • pwsh]
+{"command":"$g='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\docs\\pds_ref\\Fabric_Inserter_User_Guide.txt'\n$lines = Get-Content $g\n$start = 920; $end = 1078\nfor ($i=$start; $i -le $end; $i++) { Write-Host ($lines[$i-1]) }","description":"Read Inserter TCL command detail section","timeoutMs":60000}
+
+[tool • pwsh]
+璇ュ懡浠ょ敤浜庤缃緭鍏ョ殑璁捐鏂囦欢锛岃鍛戒护鏀寔 1 涓?option锛?input锛岀敤浜庤缃緭鍏ョ殑璁捐鏂囦欢鐨?
+鏂囦欢鍚嶏紝鏂囦欢鍚嶅繀椤诲寘鍚粷瀵硅矾寰勩€?
+渚嬪锛歩ns_set_file 鈥搃nput d:/design.adf 灏嗕細璁剧疆杈撳叆璁捐鏂囦欢鍚嶄负 d:/design.adf銆?
+6. Ins_add_core 
+璇ュ懡浠ょ敤浜庢坊鍔?debug core锛屽彲鎺ュ彈涓€涓缃坊鍔?debug core 鏁伴噺鐨勫弬鏁般€?
+渚嬪锛歩ns_add_core 5 灏嗘坊鍔?5 涓?debug core銆?
+7. Ins_remove_core 
+璇ュ懡浠ょ敤浜庣Щ闄?debug core锛屽彲鎺ュ彈涓€涓缃Щ闄?debug core 鏁伴噺鐨勫弬鏁帮紝绉婚櫎鏃舵€绘槸浠?debug 
+core 鍒楄〃鐨勫熬閮ㄤ緷娆＄Щ闄ゃ€?
+渚嬪锛歩ns_remove_core 3 灏嗙Щ闄?debug core 鍒楄〃鏈€鍚庣殑 3 涓?debug core銆?
+8. Ins_operate  
+璇ュ懡浠ょ敤浜庤缃己鐪佺殑鎿嶄綔瀵硅薄锛?璇ュ懡浠ゆ湁3 涓?option锛?core銆?trig銆?unit锛?鍒嗗埆鐢ㄦ潵璁剧疆debug 
+core銆乼rigger port銆乵atch unit 鐨勭己鐪佹搷浣滃璞°€?姣忎釜option 瀵瑰簲涓€涓弬鏁帮紝 杈撳叆鐨勫弬鏁版槸debug core銆?
+trigger port 鎴?match unit 鐨勫簭鍙凤紝鍏佽鍚屾椂璁剧疆澶氫釜鐢ㄧ┖鏍煎垎闅旂殑搴忓彿锛屼絾闇€瑕佷娇鐢ㄢ€溾€濇爣璁般€?
+渚嬪锛歩ns_operate 鈥揷ore 鈥? 2 3 4鈥?鈥搕rig 鈥? 2 3 4鈥?鈥搖nit 鈥? 2 3 4鈥濆皢鍒嗗埆璁剧疆搴忓彿涓?1 2 3 4 鐨?debug 
+core銆乼rigger port 鍜?match unit 浣滀负缂虹渷鐨勬搷浣滃璞°€?
+9. Ins_set_core 
+璇ュ懡浠ょ敤鏉ヨ缃?debug core 涓殑鐩稿叧鍙傛暟锛屽叡 8 涓?option锛?
+-core 锛?瀵瑰簲涓€涓弬鏁帮紝 鐢ㄤ簬澹版槑鎿嶄綔鐨刣ebug core 鐨勫簭鍙凤紝 濡傛灉涓嶈緭鍏ヨ鍙傛暟锛?灏嗕娇鐢╥ns_operate
+=== PAGE 45 ===
+                                                 TCL 鍛戒护 
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 45 / 49 
+璁剧疆鐨勭己鐪佸璞★紝鏀寔鍚屾椂鎿嶄綔澶氫釜 debug core銆?
+-enable_sq : 瀵瑰簲涓€涓弬鏁?0 鎴?1锛岀敤浜庡０鏄庢槸鍚︿娇鑳借 debug core 鐨?storage Qualification锛?
+琛ㄧず浣胯兘銆? 涓嶄娇鑳姐€?
+-seq_level 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆椤哄簭瑙﹀彂鏉′欢鐨勬渶澶х骇鏁般€?
+-data_same 锛氬搴斾竴涓弬鏁?0 鎴?1锛岀敤浜庡０鏄庢槸鍚︿娇鑳?data same as trigger銆?
+-data_depth 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆 data port 鐨勬渶澶у瓨鍌ㄦ繁搴︺€?
+-clock_edge 锛氬搴斾竴涓弬鏁?0 鎴?1锛岀敤浜庤缃Е鍙戞椂閽熸部锛? 涓?Rising锛? 涓?Falling銆?
+-trig_num 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆 trigger port 鐨勬暟閲忋€?
+-power 锛氬搴斾竴涓弬鏁?0 鎴?1锛岀敤浜庡０鏄庢槸鍚︿娇鑳?power on init data銆?
+-multi_windows锛氬搴斾竴涓弬鏁?0 鎴?1锛岀敤浜庡０鏄庢槸鍚︿娇鑳藉绐楀彛鍙?Nsample 鍔熻兘 
+鍚勪釜 option 涔嬮棿娌℃湁鍐茬獊鍙互鍚屾椂浣跨敤銆?
+10. Ins_set_trig 
+璇ュ懡浠ょ敤浜庤缃?trigger port 涓殑鐩稿叧鍙傛暟锛屽叡 6 涓?option锛?
+-core 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鎿嶄綔鐨?trigger port 鎵€灞炵殑 debug core 鐨勫簭鍙凤紝濡傛灉涓嶅０鏄庡垯浣?
+鐢?ins_operate 鍛戒护璁剧疆鐨勭己鐪佸璞★紝涓嶆敮鎸佸悓鏃舵搷浣滃涓?debug core锛屽鏋滃０鏄庡涓?debug core锛屽垯
+浣跨敤绗竴涓€?
+-trig 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鎿嶄綔鐨?trigger port 鐨勫簭鍙凤紝濡傛灉涓嶅０鏄庯紝鍒欎娇鐢?ins_operate 鍛?
+浠よ缃殑缂虹渷瀵硅薄锛屾敮鎸佸悓鏃舵搷浣滃涓?trigger port銆?
+-counter 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆璇?trigger port 鐨勮鏁板櫒鐨勪綅鏁般€?
+-unit_num 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆 match unit 鐨勬暟閲忋€?
+-type 锛氬搴斾竴涓弬鏁扮敤浜庤缃?match unit 鐨?match type锛屾帴鍙楃殑鍙傛暟涓?match type 瀵瑰簲鐨勫簭鍙? 
+0:Basic  
+1:Basic W/Edges  
+2:Extened 
+3:Extened W/Edges 
+4:Range 
+5:Range W/Edges 
+-as_data 锛氬搴斾竴涓弬鏁?0 鎴?1锛屽０鏄庤 trigger port 鏄惁鍦ㄤ娇鑳?data same as trigger 鏃剁敤浣?data 
+port銆?
+=== PAGE 46 ===
+                                                 TCL 鍛戒护 
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 46 / 49 
+11. Ins_set_unit 
+璇ュ懡浠ょ敤浜庤缃?Match Unit 涓殑鐩稿叧鍙傛暟锛屽叡 6 涓?option锛?
+-core 锛?瀵瑰簲涓€涓弬鏁帮紝 鐢ㄤ簬澹版槑鎿嶄綔鐨凪atch Unit 鎵€灞炵殑 Debug Core 鐨勫簭鍙凤紝 濡傛灉涓嶅０鏄庯紝 鍒?
+浣跨敤 ins_operate 鍛戒护澹版槑鐨勭己鐪佸璞°€備笉鏀寔鍚屾椂鎿嶄綔澶氫釜 debug core锛屽鏋滃０鏄庡涓?debug core锛?
+鍒欎娇鐢ㄧ涓€涓€?
+-unit 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鎿嶄綔鐨?Match Unit 鐨勫簭鍙凤紝濡傛灉涓嶅０鏄庯紝鍒欎娇鐢?ins_operate 鍛?
+浠ゅ０鏄庣殑缂虹渷瀵硅薄銆傛敮鎸佸悓鏃舵搷浣滃涓?Match Unit銆?
+-func 锛?瀵瑰簲涓€涓弬鏁帮紝 鐢ㄤ簬澹版槑璇atch Unit 鐨?Function 绫诲瀷锛?鍙帴鍙楃殑鍙傛暟鏈夛細==銆?>銆?=銆?銆?
+<銆?=銆両n Range銆丱ut of Range锛屼笉鍖哄垎澶у皬鍐欍€?
+-value 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆璇?Match Unit 鐨?value 鍊硷紝鍙帴鍙椾簩杩涘埗鏍煎紡鐨勫弬鏁帮紝涓旇緭鍏?
+鐨勫弬鏁扮殑浣嶆暟蹇呴』绛変簬璇?Match Unit 鎵€灞炵殑 Trigger Port鐨勫搴︺€?濡傛灉Function 绫诲瀷涓?In Range 鎴?Out 
+of Range 鍒欓渶瑕佽緭鍏?2 涓簩杩涘埗鐨勫€硷紝鐢ㄧ┖鏍煎垎闅斾笖浣跨敤鈥溾€濇爣璁般€?
+-cnt_type 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆璇?Match Unit 璁℃暟鍣ㄧ殑绫诲瀷锛屽彲鎺ュ彈鐨勫弬鏁颁负瀵瑰簲绫诲瀷鐨?
+搴忓彿锛?
+ 0锛欳ounter Disable 
+ 1锛歄ccurring in exactly 
+ 2锛歄ccurring in at least 
+  3锛歀asting for at least 
+-cnt_num 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬璁剧疆璇?Match Unit 璁℃暟鍣ㄨ鏁扮殑娆℃暟銆?
+12. Ins_set_condition 
+璇ュ懡浠ょ敤浜庤缃?Trigger Condition 鎴?Storage Qualification锛?鍏辨湁3 涓?option 鍜屼竴涓繀椤昏緭鍏ョ殑鍙?
+鏁帮細 
+-core 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鎿嶄綔鐨?debug core 鐨勫簭鍙凤紝濡傛灉涓嶅０鏄庡垯浣跨敤 ins_operate 澹版槑
+鐨勭己鐪佹搷浣滃璞°€?
+-trigger 锛氳 option 鏃犲弬鏁帮紝濡傛灉澹版槑璇?option锛屽懡浠ゅ皢浼氬 trigger Condition 杩涜閰嶇疆銆?
+-storage 锛氳 option 鏃犲弬鏁帮紝濡傛灉澹版槑璇?option锛屽懡浠ゅ皢浼氬 storage condition 杩涜閰嶇疆銆?
+蹇呴渶鍙傛暟 锛氬繀闇€鍙傛暟涓鸿缃殑 condition 鐨勮〃杈惧紡锛堣〃杈惧紡鍐欐硶鍙傝€冩湰鎵嬪唽鍏充簬 PowerOn Init 
+Parameters 閰嶇疆鐣岄潰 Trigger Condition 鐨勪粙缁嶏級 锛屼緥濡傦細 鈥滐紒TU1&&TU2鈥?锛屽懡浠ゅ彧浼氬杈撳叆鐨勮〃杈?
+寮忚繘琛屼笉瀹屽叏鐨勬鏌ワ紝鎵€浠ヨ纭繚杈撳叆鐨勮〃杈惧紡鐨勬纭€с€?
+璇ュ懡浠ゅ厑璁稿悓鏃舵搷浣滃涓?debug core銆?
+=== PAGE 47 ===
+                                                 TCL 鍛戒护 
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 47 / 49 
+13. Ins_set_capture 
+璇ュ懡浠ょ敤浜庨厤缃?Storage Style 鐨勭浉鍏充俊鎭紝鍏辨湁 6 涓?option锛?
+-core 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鎿嶄綔鐨刣ebug core 鐨勫簭鍙?濡傛灉涓嶅０鏄庯紝鍒欎娇鐢?ins_operate 鍛戒护
+澹版槑鐨勭己鐪佸璞°€?
+-type 锛氬搴斾竴涓弬鏁?windows 鎴?Nsamples锛屼笉鍖哄垎澶у皬鍐欙紝鐢ㄤ簬澹版槑瀛樺偍绫诲瀷銆?
+-windows 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鍦?瀛樺偍绫诲瀷涓?Windows 鐨勬儏鍐典笅鐨勭獥鍙ｆ暟鐩€備慨鏀硅鍙?
+鏁帮紝浼氬搴斾慨鏀规瘡涓獥鍙ｇ殑瀛樺偍娣卞害銆?
+-depth 锛氬搴斾竴涓弬鏁扮敤浜庡０鏄庡瓨鍌ㄧ被鍨嬩负 Windows 鐨勬儏鍐典笅鐨勬瘡涓獥鍙ｇ殑瀛樺偍娣卞害銆?
+-position 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑瀛樺偍绫诲瀷涓?Windows 鐨勬儏鍐典笅锛岃Е鍙戠偣鍦ㄧ獥鍙ｄ腑鐨勪綅缃€?
+-samples 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑瀛樺偍绫诲瀷涓?Nsamples 鐨勬儏鍐典笅鐨勶紝姣忎釜瑙﹀彂鍛ㄦ湡涓偣鐨勬暟
+閲忥紝鍗?GUI 涓殑 Samples per Trigger銆?
+璇ュ懡浠ゅ厑璁稿悓鏃舵搷浣滃涓?debug core銆?
+14. Ins_list_nets 
+璇ュ懡浠ょ敤浜庡皢鐢ㄦ埛璁捐涓彲浠ヨ繛鎺ヨ嚦 debug core 鐨?net 鎵撳嵃鑷?console 绐楀彛涓紝璇ュ懡浠ゆ病鏈夊弬鏁般€?
+鐢变簬鐢ㄤ簬閰嶇疆杩炵嚎鐨?TCL 鍛戒护 ins_set_net 鍦ㄨ繛鎺?net 鏃讹紝 涓嶆帴鍙梟et 鍚嶄负鍙傛暟 锛堢敱浜庢煇浜沶et 鐨勫悕绉?
+涓惈鏈夌壒娈婂瓧绗︼紝TCL 杩涜瑙ｆ瀽鏃朵細鍑虹幇娣蜂贡锛?骞朵笖net 鍚嶇О杩囬暱涓嶄究杈撳叆锛?锛?鑰屾槸鎺ユ敹net 鍦?net list
+涓殑搴忓彿涓哄弬鏁帮紝鎵€浠ュ鏋滄兂鍑嗙‘鐨勮繘琛岃繛鎺ワ紝灏遍渶瑕佸厛浣跨敤 list_nets 鍛戒护灏?net list 鎵撳嵃銆?
+15. Ins_set_net 
+璇ュ懡浠ょ敤浜庨厤缃?debug core 鐨勮繛绾匡紝鍏辨湁 10 涓?option 鍜屼竴涓弬鏁帮細 
+-core 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑鎿嶄綔鐨?debug core 鐨勫簭鍙凤紝濡傝繃涓嶅０鏄庯紝鍒欎娇鐢?ins_operate 澹?
+鏄庣殑缂虹渷瀵硅薄锛屼竴娆′粎鍏佽鎿嶄綔涓€涓?debug core銆?
+-trig 锛?瀵瑰簲涓€涓弬鏁帮紝 鐢ㄤ簬澹版槑鎿嶄綔鐨則rigger port 鐨勫簭鍙凤紝 鍏佽鍚屾椂鎿嶄綔澶氫釜trigger port锛?涓嶅彲
+涓?all 鍚屾椂澹版槑銆?
+-all 锛氭棤鍙傛暟锛屽０鏄庤 option锛屽懡浠や細灏?debug core 涓殑鎵€鏈?trigger port 浣滀负鎿嶄綔瀵硅薄锛屽悓鏃跺
+鐞嗐€?
+-data 锛氭棤鍙傛暟锛屽０鏄庤 option锛屽懡浠や細灏?debug core 涓殑 data port 浣滀负鎿嶄綔瀵硅薄銆?
+-clock 锛氭棤鍙傛暟锛屽０鏄庤 option锛屽懡浠や細灏?debug core 鐨?clock port 浣滀负鎿嶄綔瀵硅薄銆?
+-reset 锛?鏃犲弬鏁帮紝澹版槑璇?option锛屽懡浠や細灏?debug core 鐨?resetport 浣滀负鎿嶄綔瀵硅薄銆?
+-channel 锛氬搴斾竴涓弬鏁帮紝褰撴搷浣滃璞℃槸 trigger port 鎴?data port 鏃讹紝鍙互浣跨敤-channel 鏉ュ０鏄?
+鎿嶄綔鐨勫叿浣?channel 鐨勫簭鍙凤紝 渚嬪锛?data 鈥揷hannel 4 琛ㄧず灏?data port 鐨?channel4 浣滀负鎿嶄綔瀵硅薄銆?鍏佽
+=== PAGE 48 ===
+                                                 TCL 鍛戒护 
+                                                                                   Fabric Inserter 鐢ㄦ埛鎵嬪唽(V1.0) 48 / 49 
+鍚屾椂鎿嶄綔澶氫釜 channel銆?
+-connect 锛氭棤鍙傛暟锛屽０鏄庤 option锛屽懡浠ゅ皢浼氭墽琛岃繛鎺?net 鐨勬搷浣溿€傝繛鎺?net 鏃讹紝鍛戒护浼氳嚜鍔ㄥ皢
+澹版槑鐨?net 渚濇杩炴帴鑷冲０鏄庣殑 port 涓紝鑰屼笉浼氳繛鎺ヨ嚦-channel 澹版槑鐨?channel 涓紝浠ユ淇濊瘉 port 涓繛
+鎺?net 鐨?channel 鏄繛缁殑銆?
+-replace 锛氭棤鍙傛暟锛屽０鏄庤 option锛屽懡浠ゅ皢浼氭墽琛屾浛鎹㈡搷浣滐紝璇ユ搷浣滈渶瑕佷娇鐢?channel 澹版槑闇€瑕?
+杩涜鏇挎崲鎿嶄綔鐨勫叿浣?channel 鐨勫簭鍙凤紝 骞朵笖锛?鍙湁宸茬粡杩炴帴浜唍et 鐨?channel 鎵嶅彲浠ヨ繘琛岀壒鎹㈡搷浣滐紝 灏?
+浠ヨ繛鎺ョ殑 net 鏇挎崲涓烘湰娆″０鏄庣殑 net锛屼互姝や繚璇?port 涓繛鎺?net 鐨?channel 鏃惰繛缁殑銆?
+-disconnect 锛氭棤鍙傛暟锛屽０鏄庤 option锛屽懡浠ゅ皢浼氭墽琛屾柇寮€杩炴帴鐨勬搷浣滐紝璇ユ搷浣滈渶瑕佷娇鐢?channel
+鍛戒护澹版槑闇€瑕佽繘琛屾柇寮€杩炴帴鐨?channel 鐨勫簭鍙凤紝鏂紑杩炴帴鍚庯紝鍚庣画 channel 浼氳嚜鍔ㄤ笂绉伙紝浠ヤ繚璇?port
+涓繛鎺?net 鐨?channel 鏄繛缁殑銆?
+鍙傛暟 锛?鍛戒护鍙帴鍙椾竴涓彲閫夊弬鏁帮紝 璇ュ弬鏁扮敤鏉ュ０鏄庨渶瑕佽繛鎺ヨ嚦port 鐨?net 鐨勫簭鍙凤紝 浠呮湁-disconnect
+鎿嶄綔涓嶉渶瑕佽鍙傛暟鏀寔銆?
+渚嬪锛?ins_set_net 鈥揷ore 0 鈥揹ata 鈥揷lock 鈥搑est 鈥? 2 3 4 5 6鈥?鎵ц璇ュ懡浠や細灏嗗簭鍙蜂负 1銆?銆?銆?銆?銆?
+6 鐨?net 渚濇杩炴帴鑷?debug core0 鐨?DataPort 涓€傚皢搴忓彿涓?1 鐨?net 杩炴帴鑷?debug core0 鐨?clock port 鍜?
+reset port 涓€?
+16. Ins_core_info 
+璇ュ懡浠ょ敤浜庤緭鍑烘樉绀?Debug Core 鐨勪俊鎭紝鍏?3 涓?option锛?
+-core 锛?瀵瑰簲涓€涓弬鏁帮紝 鐢ㄤ簬澹版槑闇€瑕佹樉绀轰俊鎭殑Debug Core 鐨勫簭鍙凤紝 濡傛灉涓嶅０鏄庤椤瑰垯鏄剧ず鎵€
+鏈?Debug Core 鐨勫熀鏈俊鎭€?
+-trig 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑闇€瑕佹樉绀轰俊鎭殑 Trigger port 鐨勫簭鍙凤紝濡傛灉涓嶅０鏄庯紝鍒欎笉浼氭樉绀?
+浠讳綍 Trigger Port 鐨勪俊鎭紝鏀寔鍚屾椂鏄剧ず澶氫釜 trigger port 鐨勪俊鎭€?
+-unit 锛氬搴斾竴涓弬鏁帮紝鐢ㄤ簬澹版槑闇€瑕佹樉绀轰俊鎭殑 Match Unit 鐨勫簭鍙凤紝鑻ユ灉涓嶅０鏄庯紝鍒欎笉浼氭樉绀?
+浠讳綍 Match Unit 鐨勪俊鎭紝鏀寔鍚屾椂鏄剧ず澶氫釜 Match Unit 鐨勪俊鎭€?
+=== PAGE 49 ===
+                                                  鍏嶈矗澹版槑  
+Fabric Inserter 鐢ㄦ埛鎵嬪唽(V2.6) 49 / 49 
+6 鍏嶈矗澹版槑 
+鐗堟潈澹版槑 
+鏈枃妗ｇ増鏉冨綊娣卞湷甯傜传鍏夊悓鍒涚數瀛愭湁闄愬叕鍙告墍鏈夛紝 骞朵繚鐣欎竴鍒囨潈鍒┿€?鏈粡涔﹂潰璁稿彲锛?浠讳綍鍏徃鍜?
+涓汉涓嶅緱灏嗘鏂囨。涓殑浠讳綍閮ㄥ垎鍏紑銆?杞浇鎴栦互鍏朵粬鏂瑰紡鎶湶銆?鏁ｅ彂缁欑涓夋柟銆?鍚﹀垯锛?鍏徃蹇呭皢杩界┒
+鍏舵硶寰嬭矗浠汇€?
+ 
+鍏嶈矗澹版槑 
+ 鏈枃妗ｄ粎鎻愪緵闃舵鎬т俊鎭紝鎵€鍚唴瀹瑰彲鏍规嵁浜у搧鐨勫疄闄呮儏鍐甸殢鏃舵洿鏂帮紝鎭曚笉鍙﹁閫氱煡銆傚鍥?
+鏈枃妗ｄ娇鐢ㄤ笉褰撻€犳垚鐨勭洿鎺ユ垨闂存帴鎹熷け锛屾湰鍏徃涓嶆壙鎷呬换浣曟硶寰嬭矗浠汇€?
+ 鏈枃妗ｆ寜鐜扮姸鎻愪緵锛屼笉璐熶换浣曟媴淇濊矗浠伙紝鍖呮嫭瀵归€傞攢鎬с€侀€傜敤浜庣壒瀹氱敤閫旀垨闈炰镜鏉冩€х殑浠讳綍
+鎷呬繚锛?鍜屼换浣曟彁妗堛€?瑙勬牸鎴栨牱鍝佸湪浠栧鎻愬埌鐨勪换浣曟媴淇濄€?鏈枃妗ｅ湪姝ゆ湭浠ョ姝㈠弽瑷€鎴栧叾浠栨柟寮忔巿浜堜换
+浣曠煡璇嗕骇鏉冧娇鐢ㄨ鍙紝涓嶇鏄槑绀鸿鍙繕鏄殫绀鸿鍙€?
+ 鍏徃淇濈暀浠讳綍鏃跺€欏湪涓嶄簨鍏堝０鏄庣殑鎯呭喌涓嬪鍏徃绯诲垪浜у搧鐩稿叧鏂囨。鐨勪慨鏀规潈鍒┿€?
+
+
+[assistant]
+The command detail text is mojibake but earlier extraction (b8/b14) had readable content? Actually the garbling is because PDF uses CID fonts with custom encoding; pypdf guessed wrong (decoded GBK bytes as UTF-8?). Some sections earlier were readable because they may have used different fonts. Wait earlier (b14) I extracted readable command info — maybe from a different source (e.g., the txt was readable in parts). The commands list details are mostly recoverable semantically, and I already have summaries.
+
+Important recovered details:
+- ins_add_core adds cores at end; core numbering from 0.
+- ins_operate sets default object with -core/-trig/-unit lists.
+- ins_set_core options as known.
+- ins_set_trig: -counter (counter width for trigger port!), -unit_num, -type (0 Basic, 1 Basic W/Edges, 2 Extended, 3 Extended W/Edges, 4 Range, 5 Range W/Edges), -as_data.
+- ins_set_unit: -func, -value (binary, width must equal trigger port width; for In/Out of Range 2 binary values separated by space), -cnt_type 0-3, -cnt_num.
+- ins_set_condition: -trigger/-storage + expression string e.g. "!TU1&&TU2".
+- ins_set_capture: -type windows|Nsamples, -windows, -depth, -position, -samples.
+- ins_set_net: -core, -trig, -all, -data, -clock, -reset, -channel, -connect, -replace, -disconnect + net indices. Important: `-connect` auto connects declared nets sequentially to declared ports, **not to -channel declared channels**, guaranteeing contiguous channels. Example: `ins_set_net -core 0 -data -clock -reset -n 1 2 3 4 5 6` → nets 1,2,3,4,5,6? Hmm example says "将序号为 1、2、3、4、5、6 的 net 依次连接至 debug core0 的 DataPort 中。将序号为 1 的 net 连接至 debug core0 的 clock port 和 reset port 中"? Odd. Actually example likely `-data -clock -reset` then nets; but the semantics: with `-clock`/`-reset` options and net list, the first net goes clock... unclear. We'll experiment.
+
+- Max: 15 cores, 16 trigger ports/core, port width ≤256, 16 units/port, sum units ≤16, data signals ≤4096/core.
+
+Bit order of match value: unspecified in this mojibake portion; GUI doc might say value LSB order corresponds to channels. Risky: we must get trigger right; but we can validate on board by trying.
+
+Alternative safer trigger: use 1-bit trigger channel (e.g., `soc/core/fetch_fault` or `obs_retire_fire`) — no bit-order ambiguity for 1-bit. But we want address trigger.
+
+Better: test bit order empirically using a *known-good* condition: trigger on fetch_pc == 0x0 (reset vector fetch) — happens at every reset; capture shows start. If bit order wrong, trigger won't fire (or wrong). We can verify quickly on board: after programming, run capture; if trigger fires we see waveform; then as evidence we can trigger on actual CoreMark address. Each board cycle ~1-2 min, so empirical test OK.
+
+Actually simpler robust trigger for evidence: trigger on `fetch_pc == <coremark function addr>`; bit order guess: channel numbering matches net order given to ins_set_net; value binary string likely written MSB-first over the port's channels where channel 0 is... hmm.
+
+Alternative: avoid value-matching on bus; use **trigger on fetch_valid rising** (1-bit) → capture window around instruction fetch; combined with storage qualification? For evidence of "CoreMark key algorithm", we can set capture depth 512 pre/post; but capture begins at arm time → shows arbitrary execution moment (still CoreMark loop). We can document trigger = fetch_valid, and waveform shows CoreMark code addresses/instructions (we can decode disassembly from the captured inst words). That's valid and simple: trigger immediately on next fetch after arming.
+
+But then window shows whatever loop; likely matrix/list functions. Good enough? The prompt says "触发点必须在算法执行区间，不能落在启动、初始化、LED/UART 输出". Hmm requires trigger within algorithm. Immediate trigger ~0.5s after arm — program is in algorithm loop, acceptable but not precise; evidence must show algorithm.
+
+Better: use `fetch_pc` equality to a known function address; if bit order issue, we can determine order via a test: set trigger to fetch_pc == 0 (fetch_valid) and verify by capture after reset; but first capture after board programming will land during boot; the reset fetch to 0x0 may have passed before arm. Could program then immediately arm? JTAG flow: program bitstream → CPU runs. Debugger arm afterwards; reset fetch already done. However, we can program via debugger `dbg_program` which resets device; but arming needs separate command after; race.
+
+Alternative test for bit order: use trigger on fetch_pc == address of a *known-constant* fetch? Not determinable.
+
+Hmm. Think about bit order from Pango ILA semantics: In Debugger GUI, trigger value shown as bits with the first channel... The guide chapter 3 mentions "Trigger Input and Trigger Unit Settings". Mojibake. Maybe the readable extraction of debugger guide (b8) has GUI description: "设置 value 时, 位宽等于 port 宽度, 位序..." Not captured.
+
+Pragmatic: We can test bit order by making TWO trigger units with two candidate encodings and OR them ("TU0||TU1") — same trigger port, 2 units allowed (≤16). One value = addr (LSB-first mapping), other = bit-reversed addr (MSB-first mapping). Then whichever is right fires. Both encodings of same 32-bit address; probability they trigger wrong spuriously is low but possible... Acceptable for capture; waveform will show whether pc matches.
+
+Even simpler: since only condition is "trigger during CoreMark algorithm", we could use trigger on `fetch_pc` **range**? no.
+
+OK. Next: What is the actual fetch_pc value semantics? Values are byte addresses (fetch_pc[31:0]).
+
+Now find CoreMark function addresses from ELF. Locate coremark.elf: `$A\contest_final\src\build\native_software\coremark\performance\coremark.elf`? Earlier b: build/native_software/coremark/performance contains program.hex etc. Maybe elf deleted? Check dir listing. Use riscv toolchain objdump/nm.
+
+Also get reset vector and .text base from map file. Then choose function e.g. `core_list_find` (used in list operations) or `core_bench_list`, `cmp_complex`, `matrix_test`, `crcu16`.
+
+Additionally, trigger port width: connect fetch_valid (1) + fetch_pc (32) = 33 bits; value = {pc,1'b1}. But bit order risk ×2. Could connect only fetch_pc (32 bits) and rely on fetch validity (address only meaningful when valid; spurious matches on stale pc value possible while stalled — the pc register holds last fetched address; equality would fire repeatedly even when invalid. Since trigger fires on first match after arm, stale match risk: after arm, fetch_pc already equals some value; if it equals target at arm moment (unlikely unless in that function), fine.)
+
+Better: connect 33 channels: [fetch_pc bits..., fetch_valid] and use value where fetch_valid=1. If channel order is first-net→LSB, value = binary string with pc bits low, valid highest: value = (1<<32) | pc, written MSB-first = "1" + 32-bit pc. If opposite (first net→MSB), value = (pc<<1)|1 = pc*2+1 in binary.
+
+Two units OR both encodings ensures trigger regardless. But if wrong mapping also accidentally matches a *different* pc with valid=0? Equality of all 33 bits requires exact; wrong encoding value pattern = some other (pc',valid') combination; pc' = reverse-ish; valid bit may be 0 → fetch_valid must be 0 to match, unlikely since fetch_valid is usually 1. So safe. Good: use two units with the two candidate encodings, ORed.
+
+Hmm, but if mapping is "net i → bit i counting from 0 = LSB", candidate A = (valid<<32)|pc. Candidate B = (pc<<1)|valid reversed? Actually "reverse" of full 33-bit value: valueB = reverse_bits(valueA, 33). Simpler: compute both 33-char binary strings and OR.
+
+Alternatively test on a fast board iteration: program a *debug* sbit? Not yet built. We'll just include both units.
+
+Now data channels: choose ≤ ~200 bits, order: fetch_pc[31:0], fetch_inst[31:0], fetch_valid, fetch_fault, redirect_pc[31:0], ls_req_addr[31:0], ls_req_write, ls_req_valid (find name), ls_rsp? cache: instruction_cache/state_reg[0..?] maybe 3 bits? data_cache/hit_any, hit_way_q, hit_q, miss? observe perf nets `soc/perf_i_miss`, `soc/perf_d_miss` maybe. AXI: m_arvalid, m_arready, m_awvalid, m_awready, m_wvalid, m_wready, m_rvalid, m_rready, m_rlast, m_awaddr[31:0]? too many; choose m_araddr[31:0] lower? Hmm.
+
+For "LSU/AXI" evidence: include ls_req_addr[11:0] (page bits) and AXI `soc/m_araddr` lower 16 bits, plus valid/ready flags.
+
+Let me enumerate exact net names for: fetch_valid, fetch_pc[31], fetch_fault, redirect_pc[31], ls_req_valid, ls_req_write, ls_req_addr[31], lsu req valid, dcache hit_any, icache hit0, m_arvalid, m_arready, m_rvalid, m_rready, m_awvalid, m_awready, m_wvalid, m_wready, m_bvalid, perf_i_miss, perf_d_miss, nt_rst_n.
+
+Check existence via nets.csv (already exported). Do that now.
+
+Also check the PDS guide for how fic is added in batch: `add_fic` in build.tcl; whether fic must exist before dev_map; and whether Inserter insertion happens inside dev_map automatically (guide 2.3: "在 PDS 中加入 FIC 文件" then map). Let me read Inserter guide section 2.3 (pages 9-15) — earlier mojibake but figure captions readable. Actually the flow described: 2.3.1 add resource file in PDS; 2.3.2 open Inserter? Wait Inserter is opened after synthesis to connect nets; then save fic; then run dev_map which auto inserts. In batch: since we generate fic **offline from adf** (post-synth netlist of an identical build), we can add fic to a new build before map. But is the offline adf identical to the debug build's post-synth netlist? Yes if same RTL/config/tool version → deterministic enough; ADI net names may differ if build seeds? Synthesis is deterministic typically.
+
+Risk: fic references net indices from adf; PDS insertion maps indices→nets internally; if debug build's synth output differs even slightly, indices mismatch → wrong connections. Mitigation: use the SAME synthesize step output? We can make debug build reuse the perf600 synth outputs? PDS flow can resume from checkpoint? Alternative: generate fic from the **perf600 adf** and, in debug build, copy the perf600 build's synthesize directory? PDS impl flow dirs are self-contained; we could copy `pango_native-perf600/synthesize` into debug run dir and continue from dev_map? But PDS build tcl runs `synthesize` always; maybe we can copy entire run dir (with build.pds) then modify... complex.
+
+Simplest: accept deterministic synth. ADS synthesis is seeded? Deterministic given same inputs typically. The two trees (candidate vs B0) differ; but debug build = candidate RTL exactly same as perf600 → same net names likely. Also we can verify by diffing the new debug build's adf against the perf600 adf (adf binary? or compare vm text). We can compare `pangoriscv_top_syn.vm` hashes after debug build: if equal, index mapping valid.
+
+Even better: keep the debug build's `synthesize` output produced FIRST in a scratch build, then generate fic from that exact adf, then rerun build with same synth (should reproduce). Hmm circular.
+
+Alternative PDS feature: "reuse synth"? Not documented.
+
+Plan: 
+1. Create debug tree copy of candidate tree (`ila_debug/src`), same RTL/config/images (performance 600? Use performance image for algorithm evidence; but bitstream embeds program.hex! For ILA capture we need CoreMark running: use performance 600 image).
+2. Build with modified build.tcl: compile → synthesize; then STOP before dev_map? Then run cdt_ins on produced adf to create fic; then continue map/pnr in a second pds_shell invocation that re-runs from clean? Hmm PDS state persists in impl dirs; second invocation with build.tcl calling dev_map might reuse existing synth? PDS flow: each command checks existing state; `compile` may be skipped if up-to-date, synthesize skipped, then dev_map runs with fic. That could work: two-phase batch.
+
+Actually simpler: generate fic from the **perf600** adf (identical RTL), add fic in build.tcl, run full debug build (compile→synth→dev_map auto-inserts using fic; if net index mapping derived from identical synth, correctness likely). Then validate on board: capture trigger works? That's the empirical check.
+
+But wait: cdt_ins on offline adf: after adding fic in PDS, does PDS use the net *indices* stored in fic, or net *names*? "ins_set_net 只接受序号" — FIC stores index; PDS then maps index → its internal netlist of the same synth run. If PDS's synth differs from our adf, indices wrong. Risk moderate. We can compare after debug build: extract its syn.adf and regenerate fic from it, then rebuild dev_map? We can do second pass: if mismatch, regenerate fic from debug build's adf (which now exists after first debug build) and rebuild again (map/pnr only? full build again). Cost ~25 min each. Acceptable.
+
+Also alternative: PDS dev_map may error if fic nets not found → we'd notice.
+
+OK. Also need to know exact `add_fic` semantics: `add_fic <file>` — shown in section 9.3; probably adds fic to project. In batch build.tcl, call after compile (needed before dev_map). Let me check PDS guide around L5536 for full text (readable? partially). Also Inserter guide section 2.3 flow (pages 9-15) — read to confirm placement (add fic then dev_map; auto Inserter opens? maybe not needed in batch).
+
+Actually critical: does PDS automatically run Inserter insertion during dev_map if a fic is in project? Inserter guide flow: "在 PDS 中添加 FIC 文件" → user opens Inserter after synthesis to connect nets → saves fic → then "Run Implementation" (Map) triggers Inserter insertion. If fic already fully configured, Map should insert automatically. There might be a PDS setting. Let me read Inserter guide 2.3 pages 9-17 (mojibake but maybe images/captions; maybe try better extraction with pdfminer? Check if pdfminer installed; pypdf used layout maybe. Actually could use `python -c "import fitz"` PyMuPDF? Try import check.)
+
+Let me check python packages available: pypdf, maybe fitz/pdfplumber. Try `python -c "import fitz"`. If available, re-extract Inserter guide with fitz textpage → better encoding handling? Mojibake arises from font CMap mis-mapping; fitz often handles CJK better. Worth trying quickly.
+
+Parallel: check nets.csv for exact names; and test python PDF libs.
+
+[assistant • pwsh]
+{"command":"$csv='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\nets.csv'\n$rows = Import-Csv $csv\nWrite-Host ('rows=' + $rows.Count)\n$want = @('soc/core/fetch_valid','soc/core/fetch_fault','soc/core/fetch_pc[31]','soc/core/fetch_inst[31]','soc/core/cpu/redirect_pc[31]','soc/core/ls_req_write','soc/core/ls_req_addr[31]','soc/core/data_cache/hit_any','soc/core/data_cache/hit_way_q','soc/core/instruction_cache/hit0','soc/perf_i_miss','soc/perf_d_miss','soc/m_arvalid','soc/m_arready','soc/m_rvalid','soc/m_rready','soc/m_awvalid','soc/m_awready','soc/m_wvalid','soc/m_wready','soc/m_bvalid','soc/m_awaddr[31]','soc/m_araddr[31]','nt_rst_n','nt_clk')\nforeach ($w in $want) {\n  $hit = $rows | Where-Object { $_.name -eq $w } | Select-Object -First 1\n  if ($hit) { Write-Host (\"{0,-40} idx={1}\" -f $w, $hit.idx) } else { Write-Host (\"{0,-40} MISSING\" -f $w) }\n}\nWrite-Host '=== similar names for missing ones ==='\nforeach ($pat in 'fetch_valid','ls_req','m_arvalid','m_wvalid','perf_i_miss','hit_any','m_rvalid') {\n  $rows | Where-Object { $_.name -match $pat } | Select-Object -First 8 | ForEach-Object { Write-Host (\"{0,-30} {1}\" -f $_.name, $_.idx) }\n  Write-Host '--'\n}","description":"Check exact net names and indices for ILA probes","timeoutMs":120000}
+
+[assistant • pwsh]
+{"command":"python -c \"import importlib; [print(m, bool(importlib.util.find_spec(m))) for m in ['fitz','pdfplumber','pdfminer','pypdf','PyPDF2']]\"","description":"Check available PDF libraries","timeoutMs":60000}
+
+[tool • pwsh]
+rows=24608
+soc/core/fetch_valid                     idx=629
+soc/core/fetch_fault                     idx=16129
+soc/core/fetch_pc[31]                    idx=3273
+soc/core/fetch_inst[31]                  idx=23558
+soc/core/cpu/redirect_pc[31]             idx=17360
+soc/core/ls_req_write                    idx=2648
+soc/core/ls_req_addr[31]                 idx=22101
+soc/core/data_cache/hit_any              idx=4316
+soc/core/data_cache/hit_way_q            idx=10189
+soc/core/instruction_cache/hit0          idx=16153
+soc/perf_i_miss                          idx=28
+soc/perf_d_miss                          idx=14015
+soc/m_arvalid                            MISSING
+soc/m_arready                            MISSING
+soc/m_rvalid                             MISSING
+soc/m_rready                             MISSING
+soc/m_awvalid                            MISSING
+soc/m_awready                            MISSING
+soc/m_wvalid                             MISSING
+soc/m_wready                             MISSING
+soc/m_bvalid                             MISSING
+soc/m_awaddr[31]                         MISSING
+soc/m_araddr[31]                         MISSING
+nt_rst_n                                 idx=6157
+nt_clk                                   idx=11930
+=== similar names for missing ones ===
+soc/core/fetch_valid           629
+--
+soc/core/ls_req_addr[17]       147
+soc/core/ls_req_addr[8]        312
+soc/core/ls_req_addr[6]        1027
+soc/core/ls_req_addr[11]       1046
+soc/core/ls_req_write          2648
+soc/core/ls_req_addr[0]        3214
+soc/core/ls_req_addr[16]       3812
+soc/core/ls_req_addr[25]       3902
+--
+soc/fabric/m_arvalid[0]        8013
+--
+--
+soc/perf_i_miss                28
+--
+soc/core/data_cache/hit_any    4316
+--
+soc/m_rvalid[1]                7183
+soc/m_rvalid[0]                18226
+--
+
+
+[tool • pwsh]
+[stderr]
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<string>", line 1, in <listcomp>
+AttributeError: module 'importlib' has no attribute 'util'
+[exit code: 1]
+
+[user]
+<acp tokens="63" type="text">m04767</acp>
+Time sampled while preparing turn 83, step 175: 2026-10-18T18:09:00+08:00[Asia/Shanghai]
+Browser time zone for this request: Asia/Shanghai. Interpret otherwise-unqualified dates and times in this zone.
+Elapsed since the preceding step context: 12m 38s.
+
+[assistant]
+Need to fix python check. But more important: AXI nets are in `soc/fabric/...`: e.g. `soc/fabric/m_arvalid[0]`, `soc/m_rvalid[1]`. Let's enumerate `soc/fabric/` family and `m_` nets with their names: search for `fabric/.*(ar|aw|w|r|b)(valid|ready|last|addr|data)` etc.
+
+Also `soc/perf_d_miss` exists.
+
+Let me query nets.csv for AXI-ish names: pattern 'm_(ar|aw|w|r|b)(addr|data|valid|ready|last|id|len|size)' and print unique names grouped. Also `soc/fabric/` sample.
+
+Then build final probe list.
+
+Also re-check python libs correctly.
+
+[assistant • pwsh]
+{"command":"$rows = Import-Csv 'E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\ila\\nets.csv'\n$ax = $rows | Where-Object { $_.name -match '/m_(ar|aw|w|r|b)(addr|data|valid|ready|last|id|len|size|resp|strb)' }\nWrite-Host ('axi-ish nets=' + $ax.Count)\n$ax | ForEach-Object { $_.name } | Sort-Object -Unique | Select-Object -First 60 | ForEach-Object { Write-Host $_ }\nWrite-Host '=== soc/fabric unique families ==='\n$rows | Where-Object { $_.name -match '^soc/fabric/' } | ForEach-Object { ($_.name -replace '\\[[0-9]+\\]$','') } | Sort-Object -Unique | Select-Object -First 40 | ForEach-Object { Write-Host $_ }","description":"Enumerate AXI connectable nets","timeoutMs":120000}
+
+[assistant • pwsh]
+{"command":"python -c \"import importlib.util as u; [print(m, bool(u.find_spec(m))) for m in ['fitz','pdfplumber','pdfminer','pypdf','PyPDF2']]\"","description":"Check PDF library availability","timeoutMs":60000}
+
+[tool • pwsh]
+axi-ish nets=154
+soc/fabric/m_arvalid[0]
+soc/m_araddr[10]
+soc/m_araddr[11]
+soc/m_araddr[12]
+soc/m_araddr[13]
+soc/m_araddr[32]
+soc/m_araddr[33]
+soc/m_araddr[34]
+soc/m_araddr[35]
+soc/m_araddr[36]
+soc/m_araddr[37]
+soc/m_araddr[38]
+soc/m_araddr[39]
+soc/m_araddr[40]
+soc/m_araddr[41]
+soc/m_araddr[42]
+soc/m_araddr[43]
+soc/m_araddr[44]
+soc/m_araddr[45]
+soc/m_araddr[46]
+soc/m_araddr[47]
+soc/m_araddr[48]
+soc/m_araddr[49]
+soc/m_araddr[5]
+soc/m_araddr[50]
+soc/m_araddr[51]
+soc/m_araddr[52]
+soc/m_araddr[53]
+soc/m_araddr[54]
+soc/m_araddr[55]
+soc/m_araddr[56]
+soc/m_araddr[57]
+soc/m_araddr[58]
+soc/m_araddr[59]
+soc/m_araddr[6]
+soc/m_araddr[60]
+soc/m_araddr[61]
+soc/m_araddr[62]
+soc/m_araddr[63]
+soc/m_araddr[7]
+soc/m_araddr[8]
+soc/m_araddr[9]
+soc/m_arid[4]
+soc/m_arlen[8]
+soc/m_awaddr[32]
+soc/m_awaddr[33]
+soc/m_awaddr[34]
+soc/m_awaddr[35]
+soc/m_awaddr[36]
+soc/m_awaddr[37]
+soc/m_awaddr[38]
+soc/m_awaddr[39]
+soc/m_awaddr[40]
+soc/m_awaddr[41]
+soc/m_awaddr[42]
+soc/m_awaddr[43]
+soc/m_awaddr[44]
+soc/m_awaddr[45]
+soc/m_awaddr[46]
+soc/m_awaddr[47]
+=== soc/fabric unique families ===
+soc/fabric/_N10019
+soc/fabric/_N10020
+soc/fabric/_N10021
+soc/fabric/_N10022
+soc/fabric/_N10023
+soc/fabric/_N10024
+soc/fabric/_N10025
+soc/fabric/_N10026
+soc/fabric/_N10027
+soc/fabric/_N10028
+soc/fabric/_N10029
+soc/fabric/_N10030
+soc/fabric/_N10031
+soc/fabric/_N10032
+soc/fabric/_N10033
+soc/fabric/_N10034
+soc/fabric/_N10035
+soc/fabric/_N10036
+soc/fabric/_N10037
+soc/fabric/_N10038
+soc/fabric/_N10039
+soc/fabric/_N10040
+soc/fabric/_N10041
+soc/fabric/_N10042
+soc/fabric/_N10043
+soc/fabric/_N10044
+soc/fabric/_N10045
+soc/fabric/_N10046
+soc/fabric/_N10047
+soc/fabric/_N10048
+soc/fabric/_N10049
+soc/fabric/_N10051
+soc/fabric/_N10052
+soc/fabric/_N10053
+soc/fabric/_N10054
+soc/fabric/_N10055
+soc/fabric/_N10056
+soc/fabric/_N10057
+soc/fabric/_N10058
+soc/fabric/_N10059
+
+
+[tool • pwsh]
+fitz False
+pdfplumber False
+pdfminer False
+pypdf True
+PyPDF2 False
+
+
+[assistant]
+AXI nets exist: `soc/m_araddr[5..63]` (only upper bits? interesting: bits 0-4 missing = constant/optimized), `soc/m_awaddr[32..?]`, `soc/m_rvalid[0..1]`? m_rvalid[1] & [0] exist (response per beat? no, maybe two masters?), `soc/fabric/m_arvalid[0]`.
+
+There will also be `soc/m_wvalid`? Our earlier check said missing exact `soc/m_wvalid`; let me enumerate all `soc/m_` names excluding addr/data buses to see handshake nets:
+- m_arvalid? only `soc/fabric/m_arvalid[0]`.
+Maybe handshake valid/ready distributed in fabric as single-bit with index [0] for bus 0 (per master port?). Let me list unique `soc/m_` base names (strip index) and `soc/fabric/m_*`.
+
+Let me get a concise enumeration: all names matching '^soc/m_' → strip [n] → unique; plus '^soc/fabric/m_' likewise. Print all (~fine).
+
+Also for data: `soc/m_rdata[...]`, `soc/m_wdata[...]` present (we saw earlier m_wdata[37..]).
+
+We also have `soc/perf_i_miss`, `soc/perf_d_miss` scalars — good cache miss events.
+
+Now decide probe list (data port), balancing width ≤256:
+1. fetch_pc[31:0] = 32
+2. fetch_inst[31:0] = 32
+3. fetch_valid = 1
+4. fetch_fault = 1
+5. redirect_pc[31:0] = 32
+6. ls_req_addr[31:0] = 32
+7. ls_req_write = 1
+8. data_cache/hit_any =1, hit_way_q=1 (maybe hit_way_q is 1-bit? check width by listing)
+9. perf_i_miss =1, perf_d_miss =1
+10. AXI: m_araddr[31:12]? Let's include m_araddr[31:16] 16 bits, m_awaddr[31:16] 16, m_rvalid[0], m_wvalid? need names, m_arvalid[0].
+
+Total: 32+32+1+1+32+32+1+1+1+1+1+16+16+~6 = ~205 bits. OK ≤256.
+
+Hmm but data capture width 205 => each sample 205 bits × 512 depth = 105 kbit; Pango DRAM 4.5 DRM available; each DRM 18Kb → need ~6 DRM; we have DRM 4.5? candidate used 4.5 DRM (out of ?). Pango PG2L100H has 126 DRM? "DRM 4.5" means 4.5 of total? Resource report said DRM 4.5 — probably used 4.5 (out of 126?). Plenty.
+
+Actually max data signals per core = 4096; but data capture width vs storage depth: "data_depth" max? With 512 depth and 205 width, storage = 205*512 = 105k bits = ~6 DRM. Fine.
+
+Simpler: reduce to ~160 bits to be safe with timing closure (debug core adds routing congestion). Also ILA debug build timing may fail with 200-bit probe at 27MHz — fine (very slow clock).
+
+Clock net: `nt_clk` input buffer output — is it a legal clock for debug core? Debug core clock port connects to a clock net; `nt_clk` is clock buffer output (GTP_INBUF). Should be OK. Alternative use `clk` top input name? Net `clk` not in list (pad). PDS uses `nt_clk` as internal clock. OK.
+
+Reset: `nt_rst_n` (active low) — connect to reset port (debug core resets when low). Good.
+
+Trigger port: channels: fetch_pc[31:0] + fetch_valid = 33 bits; two match units (two encodings OR). Hmm: match unit width = trigger port width 33. -value binary of width 33 each.
+
+Alternatively simpler trigger: `fetch_pc[31:0]` only (32 bits), no valid — the pc register holds fetched address; when a fetch of target address occurs, equality holds at least one cycle (unless combinational glitch). Trigger would fire at correct address. Two units for bit order. Width 32. Risk: pc stays equal on stall and trigger fires immediately when armed if current pc==target — that's actually desired (capture around that moment). Good.
+
+So trigger port width 32: fetch_pc bits ordered by ins_set_net net index list order (I'll pass net indices in bit order 0..31; ins_set_net -connect auto-connects sequentially "net 依次连接至声明的 port 中" — the order of nets in command maps sequentially to channels).
+
+Wait ins_set_net with -connect: "命令会自动将声明的 net 依次连接至声明的 port 中" — so provide nets in order ch0, ch1, .... Then trigger value binary bit correspondence: unknown LSB-first or MSB-first w.r.t. channel order. Use 2 units.
+
+Actually we could avoid ambiguity by generating both encodings AND verifying via a **self-test**: build fic with trigger = fetch_pc == 0x00000000? Not reachable after boot.
+
+Better empirical test: fire trigger on `fetch_pc == 0` might catch reset vector only during initial boot; but arming occurs after programming; we can use `dbg_program` to reset? debugger `dbg_program -device 0 -file X.sbit` reprograms → CPU restarts; then arm and capture: reset vector fetch at 0x0 occurs right after config; timing race but with pre-trigger window position maybe capture catches it? unreliable.
+
+Alternative validate bit order via two-unit OR during actual evidence capture: both encodings; if unit order mapping wrong, the correct one fires. If neither (both wrong, e.g., bus bits flipped because ins_set_net connects reversely?), capture times out. We can then iterate.
+
+Also possible to validate cheaply on **JTAG loop** by triggering on a slow-changing net: e.g., trigger on `obs_retire_count[0]` == 1? Hmm capture within ms; simpler: trigger on `nt_rst_n == 0` then manually press KEY? no physical access.
+
+Or trigger on a UART-related net toggling every character? eh.
+
+Practical: build fic with both encodings for target = CoreMark function; first debug build board run: if capture fires, inspect waveform PC values to confirm algorithm; if correct encoding seen (PC == target), then for the *final evidence* capture keep condition as fire-once with both units (document: trigger = fetch_pc == <addr>, redundant encoding units for robustness? That looks hacky in report). Better: once we determine encoding empirically, rebuild fic with single correct unit? But fic change requires rebuild bitstream (fic is embedded in debug build) — expensive but acceptable (~25 min). Or simply keep both units and document "两个匹配单元覆盖总线位序" — ugly for contest.
+
+Hmm. Alternative: eliminate bit-order ambiguity using **two trigger ports**: port0 = fetch_pc bits (32), port1 = fetch_valid(1)? But condition combining requires both → expression TU0&&TU1. Still bit order for bus match inside port0.
+
+Alternative: Use trigger on single-bit event only: e.g., `soc/core/fetch_valid` — no bit order issue. Then capture starts at first fetch after arm. Combined with capture depth 512 samples at 27MHz = 19 µs window: will cover some instructions but "algorithm" claim depends on PC values captured. Data includes fetch_pc, so waveform immediately shows PC sequence; we can state "trigger: fetch_valid; captured PC trace inside CoreMark list-processing loop". That's acceptable evidence but weak on "算法区间" (trigger fired 0.5s after arm, program in CoreMark main loop — yes within algorithm region since CoreMark runs 12.58s; only during ~0.3s boot is non-algorithm).
+
+For accuracy, better trigger = CoreMark algorithm address. Bit order test can be done on the SAME debug build before final captures: use Debugger TCL to set trigger units dynamically! The debug core has 2 units; Debugger allows `dbg_set_unit -unit 0 -func == -value ...` at runtime. So build fic with 2 units both configured; on board, test encoding A: set unit0 value=A, disable unit1; arm; see if fires within 12s. If not, encoding B. That's board-time testing, no rebuild. Then final captures with discovered encoding and documented single trigger. 
+
+Then for deliverable: fic contains 2 units (fine, docs can say one spare unit); final capture uses correct.
+
+Even better: fic units can both be set to different addresses and we can test both quickly.
+
+OK plan is workable. But wait: does the debug core support trigger on a 32-bit port with 1 unit value 32 bits — yes.
+
+Now, target address: need CoreMark function address. Find ELF. Let me search build dirs for .elf and map. Use glob for coremark.elf.
+
+Also check the PDS add_fic placement. Let me read PDS guide near L5536 (readable?) and Inserter guide section 2.3 pages 9-17 to confirm batch flow. The mojibake: try extracting pages 9-17 with pypdf different options? Or maybe PDF has two text layers. Alternatively use Inserter GUI screenshot docs? Hmm.
+
+Actually the crucial question: does PDS automatically insert debug core during dev_map when project has fic? Inserter guide 2.3 flow likely: add fic to PDS (Constraints list), run synthesis, open Inserter (double-click fic) to configure nets, save, then "Run" implementation → Map inserts core automatically. In batch, after fic configured, `dev_map` should insert. I'm fairly confident PDS flow inserts during Map when fic exists in project. Also there may be an option in PDS settings "insert debug core"? Maybe automatic.
+
+We'll test empirically: build debug bitstream; check map log for debug core insertion messages / resource increase (DRM/LUT), and check timing. If not inserted, look for PDS tcl `insert_core`? Hmm.
+
+Let me read PDS guide around add_fic (L5520-5560) — earlier excerpt showed only table. Also grep guide for "Inserter" section 4.7 (L3582) context maybe brief. And search "FIC" mentions in PDS guide.
+
+[assistant • pwsh]
+{"command":"$g='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\docs\\pds_ref\\Pango_Design_Suite_User_Guide.txt'\n$lines = Get-Content $g\nWrite-Host '=== add_fic section 5525-5565 ==='\nfor ($i=5525; $i -le 5565; $i++) { Write-Host ($lines[$i-1]) }\nWrite-Host '=== FIC mentions ==='\nSelect-String -Path $g -Pattern 'FIC|Inserter' | Select-Object -First 20 | ForEach-Object { Write-Host ('L' + $_.LineNumber + ': ' + $_.Line.Trim()) }","description":"Read add_fic section and FIC mentions in PDS guide","timeoutMs":60000}
+
+[assistant • pwsh]
+{"command":"$S='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\src'\nGet-ChildItem \"$S\\build\\native_software\\coremark\" -Recurse -File | Select-Object FullName,Length | Format-Table -AutoSize | Out-String -Width 200","description":"List CoreMark build artifacts","timeoutMs":60000}
+
+[tool • pwsh]
+=== add_fic section 5525-5565 ===
+琛?9-1 add_constraint 
+9.2 add_design 鎸囧畾璁捐鏂囦欢 
+閫夐」  
+-help 鎵撳嵃甯姪娑堟伅 
+-library 鎸囧畾閫昏緫搴撶殑鍚嶅瓧. 榛樿涓?work 
+-define 瀹氫箟缂栬瘧瀹?
+-copy 鎷疯礉鎸囧畾鐨勬枃浠跺埌鏈伐绋?
+  
+鍙傛暟  
+input_filename 鎸囧畾涓€涓緭鍏ユ枃浠跺悕 
+琛?9-2 add_designt 
+9.3 add_fic 鎸囧畾绾︽潫鏂囦欢 
+閫夐」  
+-help 鎵撳嵃甯姪娑堟伅 
+-copy 鎷疯礉鎸囧畾鐨勬枃浠跺埌鏈伐绋?
+  
+鍙傛暟  
+input_filename 鎸囧畾涓€涓緭鍏ユ枃浠跺悕 
+琛?9-3 add_fic 
+9.4 add_simulation 鎸囧畾浠跨湡鏂囦欢 
+閫夐」  
+-help 鎵撳嵃甯姪娑堟伅 
+-library 鎸囧畾閫昏緫搴撶殑鍚嶅瓧. 榛樿涓?work 
+-define 瀹氫箟缂栬瘧瀹?
+=== PAGE 249 ===
+ 甯哥敤鍛戒护鍒楄〃 
+ 248 / 273 Pango Design Suite User Guide 
+-copy 鎷疯礉鎸囧畾鐨勬枃浠跺埌鏈伐绋?
+  
+鍙傛暟  
+input_filename 鎸囧畾涓€涓緭鍏ユ枃浠跺悕 
+琛?9-4 add_simulation 
+9.5 add_sources 鎸囧畾鏂囦欢澶?
+閫夐」  
+-help 鎵撳嵃甯姪娑堟伅 
+-sub_directories 鎼滅储瀛愭枃浠跺す 
+-copy 鎷疯礉鎸囧畾鐨勬枃浠跺埌鏈伐绋?
+-continue 褰撳瓨鍦ㄦ姤閿欑户缁坊鍔犳枃浠?
+-design 鎸囧畾娣诲姞鏂囦欢鐨勭被鍨嬩负璁捐鏂囦欢 
+-simulation 鎸囧畾娣诲姞鏂囦欢鐨勭被鍨嬩负浠跨湡鏂囦欢 
+-constraint 鎸囧畾娣诲姞鏂囦欢鐨勭被鍨嬩负绾︽潫鏂囦欢 
+=== FIC mentions ===
+L97: 4.7 FABRIC INSERTER ..................................................................................................... 161
+L214: 9.3 ADD_FIC 指定约束文件 .......................................................................................... 247
+L562: 表 9-3 add_fic ........................................................................................................................ 247
+L612: Fabric_Inserter_User_Guide
+L898: Analyzer、Inserter、Debugger、Configuration、IP Compiler、Synplify Pro、Compile Simulation
+L912: 【Inserter】： Inserter 软件
+L1912: Write Vendor Constraint File：Generates a vendor-specific constraint file for forward
+L3582: 4.7 Fabric Inserter
+L3583: Fabric Inserter 具体用法请查《Fabric_Inserter_User_Guide》。
+L5536: 9.3 add_fic 指定约束文件
+L5543: 表 9-3 add_fic
+L5566: -fic 指定添加文件的类型为插核文件
+
+
+[tool • pwsh]
+
+FullName                                                                                                                                 Length
+--------                                                                                                                                 ------
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\00_start.o            1592
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\01_trap_entry.o       1076
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\02_init.o              960
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\03_trap_handler.o     1692
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\04_utils.o            1404
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\05_runtime.o          2116
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\06_uart.o             1432
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\07_xprintf.o          6348
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\08_spi.o              2108
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\09_flash_n25q.o       4552
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o   7248
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\11_core_main.o       10512
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\12_core_matrix.o      6524
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\13_core_state.o       7228
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\14_core_util.o        2980
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\15_core_portme.o      3104
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\coremark.elf         21364
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\data.hex             40960
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\firmware.dump       114260
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\firmware.map         45784
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\manifest.json        28222
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\program.bin          16384
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\program.hex          40960
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\00_start.o             1592
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\01_trap_entry.o        1076
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\02_init.o               960
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\03_trap_handler.o      1692
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\04_utils.o             1404
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\05_runtime.o           2116
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\06_uart.o              1432
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\07_xprintf.o           6348
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\08_spi.o               2108
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\09_flash_n25q.o        4552
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\10_core_list_join.o    7248
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\11_core_main.o        10508
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\12_core_matrix.o       6524
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\13_core_state.o        7228
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\14_core_util.o         2980
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\15_core_portme.o       3116
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\coremark.elf          21372
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\data.hex              40960
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\firmware.dump        114215
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\firmware.map          45632
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\manifest.json         28151
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\program.bin           16384
+E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\validation\program.hex           40960
+
+
+
+
+
+[assistant]
+ELF and map exist. Let me get function addresses from firmware.map (nm-style) or use objdump. Look at firmware.map for core_list_find, matrix_test, core_bench_list etc. Use riscv objdump -d to disassemble and find symbol addresses: `nm coremark.elf` simpler.
+
+Toolchain bin: E:\file\pango\toolchains\openisa-1.0.0\gcc\riscv32-unknown-elf-gcc\bin — check names (riscv32-unknown-elf-nm.exe? objdump.exe). Also local `E:\donwload\win64` has some tools? Whatever, use toolchain.
+
+Also need address of the *timed loop* region. CoreMark runs iterations in core_main.c; functions: core_bench_list, core_list_find, matrix_test, core_state_transition, crcu16/crcu8, cmp_complex. Trigger target good: `core_list_find` entry — executed many times (list benchmark → find). Or `matrix_test` — also frequent.
+
+But careful: fetch_pc equality triggers on fetch of the *entry address*; since function called many times, trigger fires at first call after arm. Great.
+
+Also capture window: 512 samples at 27MHz ≈ 19µs; enough to show a chunk of algorithm.
+
+Now: which image to use in debug build for ILA capture — performance mode (CoreMark loop 12.58s) or validation (17s)? Either. Use validation? Evidence requirements don't demand timed score from ILA build. Use performance 600 image (same as score image) for direct alignment — but bitstream is separate debug build. Actually better use validation image (more work, includes validation code paths...). Doesn't matter; choose performance.
+
+Actually maybe simpler: use the ILA debug build with performance 600 image → trigger at core_list_find; waveform shows algorithm. Fine.
+
+Wait: performance mode skips checks; core_bench_list still runs. Fine.
+
+Next: determine function addresses via nm.
+
+Also decide whether to use `fetch_pc` (IF stage pc) or a more semantically meaningful PC. fetch_pc is the address being fetched — its value appears when IF performs fetch. Good.
+
+Check bit width of fetch_pc when halted etc.
+
+Let me run nm/objdump listing of function symbols. Find tool names first.
+
+[assistant • pwsh]
+{"command":"$tc='E:\\file\\pango\\toolchains\\openisa-1.0.0\\gcc\\riscv32-unknown-elf-gcc\\bin'\nif (Test-Path $tc) { Get-ChildItem $tc -Filter '*nm*' | Select-Object Name; Get-ChildItem $tc -Filter '*objdump*' | Select-Object Name } else { Write-Host 'toolchain path missing' }\nWrite-Host '=== firmware.map symbol lines ==='\n$map='E:\\file\\pango\\project\\evidence\\records\\bottleneck_audit\\contest_final\\src\\build\\native_software\\coremark\\performance\\firmware.map'\nSelect-String -Path $map -Pattern 'core_list_find|core_list_join|matrix_test|core_bench|state_transition|cmp_complex|crcu|cmp_idx' | Select-Object -First 30 | ForEach-Object { Write-Host ('L' + $_.LineNumber + ': ' + $_.Line.Trim()) }","description":"Find toolchain nm and CoreMark symbols in map","timeoutMs":60000}
+
+[tool • pwsh]
+
+=== firmware.map symbol lines ===
+L80: .text          0x0000000000000000        0x0 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L81: .data          0x0000000000000000        0x0 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L82: .bss           0x0000000000000000        0x0 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L84: 0x0000000000000000       0x14 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L86: 0x0000000000000000       0x60 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L88: 0x0000000000000000       0x2c E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L90: 0x0000000000000000       0x20 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L92: 0x0000000000000000       0x24 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L115: .text.crcu8    0x0000000000000000       0x40 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\14_core_util.o
+L139: LOAD E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L182: .text.cmp_idx  0x0000000000000ecc       0x4c E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L183: 0x0000000000000ecc                cmp_idx
+L185: 0x0000000000000f18      0x110 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L187: .text.cmp_complex
+L188: 0x0000000000001028       0x50 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L189: 0x0000000000001028                cmp_complex
+L190: .text.core_list_find
+L191: 0x0000000000001078       0x70 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L192: 0x0000000000001078                core_list_find
+L194: 0x00000000000010e8      0x148 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L196: .text.core_bench_list
+L197: 0x0000000000001230      0x264 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L198: 0x0000000000001230                core_bench_list
+L200: 0x0000000000001494      0x158 E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\src\build\native_software\coremark\performance\10_core_list_join.o
+L216: .text.matrix_test
+L218: 0x0000000000001904                matrix_test
+L219: .text.core_bench_matrix
+L221: 0x0000000000001d30                core_bench_matrix
+L225: .text.core_state_transition
+L227: 0x0000000000001ec8                core_state_transition
+Name                           
+----                           
+riscv32-unknown-elf-gcc-nm.exe 
+riscv32-unknown-elf-nm.exe     
+riscv32-unknown-elf-objdump.exe
+
+

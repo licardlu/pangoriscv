@@ -1,0 +1,41 @@
+# Installed packages and downloaded datasets are not source deliverables.
+/.pylibs/
+/data/garbage_datasets/
+/data/g4/
+/data/raw/
+
+# Keep current programming packages, not duplicate historical packages.
+/release/*
+!/release/board_perf4_20261101/
+!/release/board_perf5_20261101/
+
+# Keep accepted source snapshots and recipes without implementation databases.
+/pds/*
+!/pds/vexii_camera_20261101_171914/
+!/pds/vexii_camera_20261101_181152/
+/pds/vexii_camera_*/sources/firmware_lane*.bin
+
+# Generated simulation memories can be rebuilt from the shipped deployment.
+/gen/audit_*/
+/gen/bulk_fix/
+/gen/perf5_fitcheck/
+/gen/rtl_vectors/
+/gen/integration/rtl_vectors/
+/gen/integration/yolo_sim/
+/gen/integration/vexii_soc/cpu_acc/
+/gen/integration/vexii_soc/firmware_boot/
+/gen/integration/vexii_soc/client_smoke/
+/sim/*/work*/
+/sim/*/firmware/
+/sim/*/*.hex
+/sim/*/*.bin
+/sim/*/ddr*
+/sim/*/*.npz
+/sim/*/*.npy
+/sim/*/cpu_oracle*
+/sim/*/*.vcd
+/logs/*.log
+/log/
+/logbackup/
+/flow.log
+/run.log

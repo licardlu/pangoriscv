@@ -1,0 +1,1013 @@
+{
+  "schema": 1,
+  "stage": "four verbatim shifter modules; remaining semantic boundaries pending",
+  "reference": "rtl/generated/MicroSoc.v",
+  "reference_sha256": "e2bb5a1f623a4190ed15546839ee5664315f56fbb85ff09b0f6caf0b93689b41",
+  "reference_bytes": 2906710,
+  "reference_lines": 36355,
+  "frozen_inputs": [
+    {
+      "path": "platform/profile.json",
+      "sha256": "a29b2e53b35ed6aaf443c0f7612f66e130951ff7ebc002c72f606db5d38b3b43"
+    },
+    {
+      "path": "platform/pango_vexii.fdc",
+      "sha256": "6d33951a6a2e085dea04b579bb5aa1cc439a306e0604d6a059a0366c4d7eb527"
+    },
+    {
+      "path": "platform/pango_vexii.pcf",
+      "sha256": "966714340c12207014f92668c05bdbef0668792b2d1da88f4c65f1a944c2bfef"
+    },
+    {
+      "path": "rtl/pango_pll.sv",
+      "sha256": "6cf206131a73ca92cd41cae7680309beb042713a0e3d19d898988d0c9f54040f"
+    },
+    {
+      "path": "rtl/pango_reset.sv",
+      "sha256": "45931fbbbeb0d7f334a96bd8f45f7a964fc79812c1b0ab04949ce6e312bc4170"
+    },
+    {
+      "path": "rtl/pango_vexii_top.sv",
+      "sha256": "09825e5ddd67fbe5eb696c7b994220945cf9053446bb8211822e0fe323017c9a"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol0.bin",
+      "sha256": "ae7278b7dc53be03270a1e2222ea8a6299335d1ce61e13eb5b3c3f221c94ee23"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol1.bin",
+      "sha256": "cfff4b1f2f3270ddda656d656a28f980c90e64209a695a0f997db4b7b41544d4"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol2.bin",
+      "sha256": "149ceaade5e0bde81ed7d77da8f56e2ee0e1ab63fab5cf58a474dcb80ad15aff"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol3.bin",
+      "sha256": "dcf00c281455ab6357394502f8cd68d57d3f4f4a63be632bb70cc8822be43361"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol4.bin",
+      "sha256": "c7262728ee665e66f8177ec6721931756393776d6fbc2941fd00670f71c4da87"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol5.bin",
+      "sha256": "9920b96c283db03a2273d58c8eeb89982a052addc1a3db6b643278840c5fc5b6"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol6.bin",
+      "sha256": "8f3ee7e71849528d2217add3f1de3b406bf2f9b336b0f66967df6dea294173eb"
+    },
+    {
+      "path": "rtl/generated/MicroSoc.v_toplevel_system_ram_thread_logic_mem_symbol7.bin",
+      "sha256": "68a1a0621f64bac547c80611402971349efcdef16bdc6d68107870aa7534dc98"
+    }
+  ],
+  "transformation": "reference_shifters_v1",
+  "modules": [
+    {
+      "module": "MicroSoc",
+      "path": "rtl/soc/replica_native/MicroSoc.v",
+      "first_line": 1,
+      "module_line": 6,
+      "last_line": 3266,
+      "sha256": "bf6cb2f064e168db7b4abdf34e559427d927c3b88818308ebdde8ad8525dbb78",
+      "bytes": 310994,
+      "compilation_preamble": false,
+      "file_sha256": "0371a1db3bbae32966fbc842f112ab8d92d810dc28162474c85502c8de6002c8"
+    },
+    {
+      "module": "Decoder_2",
+      "path": "rtl/soc/reference_exact/Decoder_2.v",
+      "first_line": 3267,
+      "module_line": 3268,
+      "last_line": 3809,
+      "sha256": "53a9bc663e41e09dd8583cde638ec0d38c03e14a1de52062fdb760325ad96dc6",
+      "bytes": 28309,
+      "compilation_preamble": true,
+      "file_sha256": "720bb22fb3e265178399eb65eb94ca53fad4713c00f45228fad991158c7bd816"
+    },
+    {
+      "module": "WidthAdapter_1",
+      "path": "rtl/soc/reference_exact/WidthAdapter_1.v",
+      "first_line": 3810,
+      "module_line": 3811,
+      "last_line": 4121,
+      "sha256": "1fb04ad2f50ee982b0f7f0a42d307336fa14815650b10618f1a5d828f5e26ea6",
+      "bytes": 14571,
+      "compilation_preamble": true,
+      "file_sha256": "748185735eb019451d6eb279c4fb7fdf1268601c167f952f555a0a9cd0da516c"
+    },
+    {
+      "module": "PeripheralDemo",
+      "path": "rtl/soc/reference_exact/PeripheralDemo.v",
+      "first_line": 4122,
+      "module_line": 4123,
+      "last_line": 4389,
+      "sha256": "855aa5311d7c1a198f0596b3e2d36bec2993dc4e7de11a6a956da31b177906eb",
+      "bytes": 12199,
+      "compilation_preamble": true,
+      "file_sha256": "567293c165958f2e7c0a9bd9cea79b3156c97e818af99acb2219fff53db011e7"
+    },
+    {
+      "module": "TilelinkUartCtrl",
+      "path": "rtl/soc/reference_exact/TilelinkUartCtrl.v",
+      "first_line": 4390,
+      "module_line": 4391,
+      "last_line": 4980,
+      "sha256": "ed3563b70ec77d0e26c2f7c02e78a41207c5542e7ae06e7d27cc2e2f73049bbf",
+      "bytes": 28592,
+      "compilation_preamble": true,
+      "file_sha256": "4683f4df87540ac47516fea357443a6492566fc20c54c78e7f01bb0b53182ed3"
+    },
+    {
+      "module": "TilelinkPlic",
+      "path": "rtl/soc/reference_exact/TilelinkPlic.v",
+      "first_line": 4981,
+      "module_line": 4982,
+      "last_line": 5467,
+      "sha256": "bf2bf4d3617f0a0ad9dea3c3c4bb73cd79084253932e6efd963ebca42ca534cc",
+      "bytes": 21548,
+      "compilation_preamble": true,
+      "file_sha256": "09ec16aa9d96ad8fb138eebb2a7a338d1efee75a03d34cf340e7e8a2002aa8d3"
+    },
+    {
+      "module": "Decoder_1",
+      "path": "rtl/soc/reference_exact/Decoder_1.v",
+      "first_line": 5468,
+      "module_line": 5469,
+      "last_line": 5873,
+      "sha256": "de6350caab740558981e5a811ff976812dee45c8cc99ac60c1bc42e4a21e1c55",
+      "bytes": 20680,
+      "compilation_preamble": true,
+      "file_sha256": "b49eedbf6d14a362aa53597e052618db9833ec3682985ebd643e41e787a1505a"
+    },
+    {
+      "module": "Decoder",
+      "path": "rtl/soc/reference_exact/Decoder.v",
+      "first_line": 5874,
+      "module_line": 5875,
+      "last_line": 6281,
+      "sha256": "68ff5021dcf503c9d7026066d258b4b25eee0f98f905adbf9f8cbd9c33de82f4",
+      "bytes": 20861,
+      "compilation_preamble": true,
+      "file_sha256": "c848d871ecb058b714d3b0c6d0ddba5d19e21805eb802e758da490353bbb2e9f"
+    },
+    {
+      "module": "TilelinkClint",
+      "path": "rtl/soc/reference_exact/TilelinkClint.v",
+      "first_line": 6282,
+      "module_line": 6283,
+      "last_line": 6652,
+      "sha256": "9c9b84987491e4ad6f6b0224d918810868f87deec6910714aa6f4ba7c3b592bd",
+      "bytes": 17950,
+      "compilation_preamble": true,
+      "file_sha256": "a6d81df3434ccef260889d91a5f406e7044ed2504d1453c0d4d1c93a41041cf6"
+    },
+    {
+      "module": "WidthAdapter",
+      "path": "rtl/soc/reference_exact/WidthAdapter.v",
+      "first_line": 6653,
+      "module_line": 6654,
+      "last_line": 6956,
+      "sha256": "3982234d7303135286844693f26af9701a9452f647899a99f8d32f9c09e4fb8b",
+      "bytes": 14892,
+      "compilation_preamble": true,
+      "file_sha256": "6c729890054b18181be0f0272035c19cab06442181e51d5f23ed5eadb48f3798"
+    },
+    {
+      "module": "Ram",
+      "path": "rtl/soc/reference_exact/Ram.v",
+      "first_line": 6957,
+      "module_line": 6958,
+      "last_line": 7339,
+      "sha256": "a519215a7c89a74585424edc1a0cff351f3310b160e55a65cd649d71f75e4e82",
+      "bytes": 16237,
+      "compilation_preamble": true,
+      "file_sha256": "c8c6cb5291a4395874cb6edba864b7eb748cfc916a84a5e48f2fb9b1c2209390"
+    },
+    {
+      "module": "Arbiter",
+      "path": "rtl/soc/reference_exact/Arbiter.v",
+      "first_line": 7340,
+      "module_line": 7341,
+      "last_line": 7826,
+      "sha256": "fbdcf2ff7671825d4b6f7ddce03b7818a79d974724277f4fd2977c861e18e096",
+      "bytes": 26829,
+      "compilation_preamble": true,
+      "file_sha256": "db4c3722d97810d44093dc021eb0b8646cc96c531ddb2c3722d94abea3d1eb58"
+    },
+    {
+      "module": "BufferCC_5",
+      "path": "rtl/soc/reference_exact/BufferCC_5.v",
+      "first_line": 7827,
+      "module_line": 7828,
+      "last_line": 7850,
+      "sha256": "76f26ee63c39c72871e4b1199461141cceb2980f26efdc3d8e9298fa5ffe96a1",
+      "bytes": 642,
+      "compilation_preamble": true,
+      "file_sha256": "e4b67a8c50ba2ea38498de8c4980e9d308c7b935e8ffa7a9a1371c29b9b34eaa"
+    },
+    {
+      "module": "BufferCC_4",
+      "path": "rtl/soc/reference_exact/BufferCC_4.v",
+      "first_line": 7851,
+      "module_line": 7852,
+      "last_line": 7874,
+      "sha256": "ccb74761ca6df18d88ecc5623e594a31260d884942722ec5f7b9989ad5175d3d",
+      "bytes": 600,
+      "compilation_preamble": true,
+      "file_sha256": "d196d241c06e56786b7d1f41253d25d7d42a4ca8f7d8431d4bd1c8818b3058f8"
+    },
+    {
+      "module": "BufferCC_3",
+      "path": "rtl/soc/reference_exact/BufferCC_3.v",
+      "first_line": 7875,
+      "module_line": 7876,
+      "last_line": 7898,
+      "sha256": "eb5d45becdecf631896c76dc6bc281bbf84371805f0c78b706fb7036d1e62e60",
+      "bytes": 639,
+      "compilation_preamble": true,
+      "file_sha256": "2af87e57b5618ddbb4025b38854935545a6b5f269cc2ff82ac93a69c0ebe12af"
+    },
+    {
+      "module": "BufferCC_2",
+      "path": "rtl/soc/reference_exact/BufferCC_2.v",
+      "first_line": 7899,
+      "module_line": 7900,
+      "last_line": 7922,
+      "sha256": "d581edf04fee8ad732c6eeb2e2d11fbe47eb99994acdf03e24a6ae88aa5f2c5e",
+      "bytes": 597,
+      "compilation_preamble": true,
+      "file_sha256": "f8a77e44db00700420215a0527b510d168b2ee42e576cea05fd2594bed111b35"
+    },
+    {
+      "module": "pango_replica_core",
+      "path": "rtl/core/replica_native/pango_replica_core.v",
+      "first_line": 7923,
+      "module_line": 7924,
+      "last_line": 33097,
+      "sha256": "2cf7f5ef08a78584a3dcc45293daed004d7258f07a22b6aa242880b63c162e1e",
+      "bytes": 2236190,
+      "compilation_preamble": true,
+      "sections": [
+        {
+          "path": "rtl/core/replica_native/sections/000_FetchL1Plugin.vh",
+          "first_line": 7923,
+          "last_line": 8342,
+          "sha256": "babd2ec592b2983ac10711fb218a2666cf55138ee9ac3f2d0111cbaa6288e690",
+          "bytes": 28467
+        },
+        {
+          "path": "rtl/core/replica_native/sections/001_FetchL1Plugin.vh",
+          "first_line": 8343,
+          "last_line": 8762,
+          "sha256": "527d082ae327848cc1fba4ce960486f71a9a1121b4f4cd55317847df15198556",
+          "bytes": 30941
+        },
+        {
+          "path": "rtl/core/replica_native/sections/002_DispatchPlugin.vh",
+          "first_line": 8763,
+          "last_line": 9182,
+          "sha256": "028515632642f4d0815a9588be3608f362d5369118e3a762e6521c06a4022351",
+          "bytes": 32516
+        },
+        {
+          "path": "rtl/core/replica_native/sections/003_LsuL1Plugin.vh",
+          "first_line": 9183,
+          "last_line": 9602,
+          "sha256": "d9bacb4c534e7f64bfa4165e61344739bdf558eab7efb7168156b7468a1d3b9f",
+          "bytes": 28641
+        },
+        {
+          "path": "rtl/core/replica_native/sections/004_CsrAccessPlugin.vh",
+          "first_line": 9603,
+          "last_line": 10022,
+          "sha256": "2e448d52d1233881ca904cf5098939a20f198bd0204121db86b533de17cac7fe",
+          "bytes": 30983
+        },
+        {
+          "path": "rtl/core/replica_native/sections/005_PerformanceCounterPlugin.vh",
+          "first_line": 10023,
+          "last_line": 10442,
+          "sha256": "e14e1c2a5520bea2caa8c0588583a29f5a71cf26a1e84fd43da7b24d1dfea1c5",
+          "bytes": 30487
+        },
+        {
+          "path": "rtl/core/replica_native/sections/006_execute_pipeline.vh",
+          "first_line": 10443,
+          "last_line": 10862,
+          "sha256": "02b0622d75fe8274739babdd2dde761d3ec59f6ab562af89b082f6c8fbaa4925",
+          "bytes": 29161
+        },
+        {
+          "path": "rtl/core/replica_native/sections/007_PrefetcherRptPlugin.vh",
+          "first_line": 10863,
+          "last_line": 11282,
+          "sha256": "4160a3ee2979985064c36416b26784403d8de6b4a24480e0c9bcca6ddfd7cbe8",
+          "bytes": 30162
+        },
+        {
+          "path": "rtl/core/replica_native/sections/008_execute_pipeline.vh",
+          "first_line": 11283,
+          "last_line": 11702,
+          "sha256": "046a6defa903218131e3b3c3974ef8aa894891ccb386107517f572dc6f8e3881",
+          "bytes": 31069
+        },
+        {
+          "path": "rtl/core/replica_native/sections/009_PrefetcherRptPlugin.vh",
+          "first_line": 11703,
+          "last_line": 12122,
+          "sha256": "0848024468a6f3a8baf19bb1b4e053d6679aaa215fb426cf9c76aeef3ea57077",
+          "bytes": 30732
+        },
+        {
+          "path": "rtl/core/replica_native/sections/010_FetchL1Plugin.vh",
+          "first_line": 12123,
+          "last_line": 12542,
+          "sha256": "b22e28324591c8a7b241628ca7eda58c5faad6cd28d246d289bcc9c7e6a15f5c",
+          "bytes": 28494
+        },
+        {
+          "path": "rtl/core/replica_native/sections/011_AlignerPlugin.vh",
+          "first_line": 12543,
+          "last_line": 12962,
+          "sha256": "747ddd2b126eb241ce62962ebc914b5d96207c9c381fd93ddd90b15b81a15143",
+          "bytes": 27186
+        },
+        {
+          "path": "rtl/core/replica_native/sections/012_AlignerPlugin.vh",
+          "first_line": 12963,
+          "last_line": 13382,
+          "sha256": "99bdc0e65d6ec2415e472dd9a85ba2d0dd2d98646712b738e434996c8498cc16",
+          "bytes": 29229
+        },
+        {
+          "path": "rtl/core/replica_native/sections/013_DispatchPlugin.vh",
+          "first_line": 13383,
+          "last_line": 13802,
+          "sha256": "516cc688f34c4130386a8cfbdc9bba0596d69d544f5965d0f5e6b991c3e96753",
+          "bytes": 33207
+        },
+        {
+          "path": "rtl/core/replica_native/sections/014_DispatchPlugin.vh",
+          "first_line": 13803,
+          "last_line": 14222,
+          "sha256": "d422251271d636a1e33f2d9c9c09beeef218b7d4e196cb37020a4508a11890f3",
+          "bytes": 31813
+        },
+        {
+          "path": "rtl/core/replica_native/sections/015_LsuL1Plugin.vh",
+          "first_line": 14223,
+          "last_line": 14642,
+          "sha256": "5d218d2ae075c2fe27fa52417348bb657106e5b0421193944c3e92f5b789f6b2",
+          "bytes": 28336
+        },
+        {
+          "path": "rtl/core/replica_native/sections/016_LsuL1Plugin.vh",
+          "first_line": 14643,
+          "last_line": 15062,
+          "sha256": "a4ca0f4dc8861722be2147eabeeec55a32a230a50490befb47499f01b8f36f7f",
+          "bytes": 26012
+        },
+        {
+          "path": "rtl/core/replica_native/sections/017_LsuPlugin.vh",
+          "first_line": 15063,
+          "last_line": 15482,
+          "sha256": "8d56b38e61a2bfba6252e8a70aada332da6e050e443b32234ca6d099b451c976",
+          "bytes": 29479
+        },
+        {
+          "path": "rtl/core/replica_native/sections/018_WhiteboxerPlugin.vh",
+          "first_line": 15483,
+          "last_line": 15902,
+          "sha256": "c0934be6bcbb3ae33f33142eb090101cf918a4636a7670a20b2e452943a5faaa",
+          "bytes": 32088
+        },
+        {
+          "path": "rtl/core/replica_native/sections/019_AlignerPlugin.vh",
+          "first_line": 15903,
+          "last_line": 16322,
+          "sha256": "9e7cbbf1d056ac133276bf118e8ed8dd39bf786a9017c3c7865019793b61b888",
+          "bytes": 45222
+        },
+        {
+          "path": "rtl/core/replica_native/sections/020_DispatchPlugin.vh",
+          "first_line": 16323,
+          "last_line": 16742,
+          "sha256": "16b0ce8050789e826cfeead71cdabf98ec951c9aa65b30465066c9c46fc6ff5f",
+          "bytes": 87728
+        },
+        {
+          "path": "rtl/core/replica_native/sections/021_FetchL1Plugin.vh",
+          "first_line": 16743,
+          "last_line": 17162,
+          "sha256": "54f5d0ee852b46d6e560879f515967f4ad6de6b7354d5918646fb8c9ae63fdcb",
+          "bytes": 58437
+        },
+        {
+          "path": "rtl/core/replica_native/sections/022_DispatchPlugin.vh",
+          "first_line": 17163,
+          "last_line": 17582,
+          "sha256": "58d88a41a277568fd785a5f9f0678f419e7969664f0716cbe27bf2f0b7097682",
+          "bytes": 80121
+        },
+        {
+          "path": "rtl/core/replica_native/sections/023_CsrAccessPlugin.vh",
+          "first_line": 17583,
+          "last_line": 18002,
+          "sha256": "347130ae66745bb7336e31953f51e6ca9fbfa1ef86dc62dddc13616b6d430723",
+          "bytes": 147512
+        },
+        {
+          "path": "rtl/core/replica_native/sections/024_LsuL1Plugin.vh",
+          "first_line": 18003,
+          "last_line": 18453,
+          "sha256": "88689a982c0b4c56a35de5bbd388b68fd57a6bc8c42500bba82701f080cba95c",
+          "bytes": 35747
+        },
+        {
+          "path": "rtl/core/replica_native/sections/025_LsuL1Plugin.vh",
+          "first_line": 18454,
+          "last_line": 18875,
+          "sha256": "ed70dcc0b3adadf7c94fbe49e0f9eb093ab83ab1ad4ff285ecab85ab3fdc8068",
+          "bytes": 21949
+        },
+        {
+          "path": "rtl/core/replica_native/sections/026_IntAluPlugin.vh",
+          "first_line": 18876,
+          "last_line": 19644,
+          "sha256": "287bc5da46c0a7af037cff904ddb7d97ff9019f0eff6fa69358f920b8bec014a",
+          "bytes": 56673
+        },
+        {
+          "path": "rtl/core/replica_native/sections/027_PcPlugin.vh",
+          "first_line": 19645,
+          "last_line": 20064,
+          "sha256": "e0e5e245cfbce1aba2de7319bf89aa27f9ee88191acbfe27970c47bcfdd60291",
+          "bytes": 17256
+        },
+        {
+          "path": "rtl/core/replica_native/sections/028_PrefetcherRptPlugin.vh",
+          "first_line": 20065,
+          "last_line": 20484,
+          "sha256": "bf5f4f38b8c4283d651cc8cd0c899b259ad428f9d3e9402c332db6cefe91d8c3",
+          "bytes": 20262
+        },
+        {
+          "path": "rtl/core/replica_native/sections/029_FetchL1Plugin.vh",
+          "first_line": 20485,
+          "last_line": 20904,
+          "sha256": "574e33fb4007ce2409aee0a5f9af22c5ef1a4bda55fe85a537df95fa65f66f80",
+          "bytes": 23255
+        },
+        {
+          "path": "rtl/core/replica_native/sections/030_FetchL1Plugin.vh",
+          "first_line": 20905,
+          "last_line": 21324,
+          "sha256": "d56ed73645b5b69cd1efd059f823ab11310f738aef861bd7e27fc19754d031ed",
+          "bytes": 34893
+        },
+        {
+          "path": "rtl/core/replica_native/sections/031_PerformanceCounterPlugin.vh",
+          "first_line": 21325,
+          "last_line": 21744,
+          "sha256": "e6f53c4c5920cc25e1ae221f7a9bbe66c710869fead2bb7117fb22f1d114da05",
+          "bytes": 26823
+        },
+        {
+          "path": "rtl/core/replica_native/sections/032_AlignerPlugin.vh",
+          "first_line": 21745,
+          "last_line": 22176,
+          "sha256": "45544c24ad6aaa56fa00035e0fba964205ffa13b62b85f5290ca1061a50ee738",
+          "bytes": 44738
+        },
+        {
+          "path": "rtl/core/replica_native/sections/033_AlignerPlugin.vh",
+          "first_line": 22177,
+          "last_line": 22600,
+          "sha256": "7af866f512a9a2a78a50da5edf3552155827342720a22daa77dae7a3d879cbff",
+          "bytes": 41890
+        },
+        {
+          "path": "rtl/core/replica_native/sections/034_BranchPlugin.vh",
+          "first_line": 22601,
+          "last_line": 23023,
+          "sha256": "66d04e1a2aa3ffc2ec5505f6d04e3300676c98f7c70561a3e78bf54bc608fe56",
+          "bytes": 40936
+        },
+        {
+          "path": "rtl/core/replica_native/sections/035_DispatchPlugin.vh",
+          "first_line": 23024,
+          "last_line": 23443,
+          "sha256": "91ce5daf8d2180e83859ff8e2e1900dc090fc49f4d2f2178d0568f10b85fd876",
+          "bytes": 59040
+        },
+        {
+          "path": "rtl/core/replica_native/sections/036_BtbPlugin.vh",
+          "first_line": 23444,
+          "last_line": 23863,
+          "sha256": "8f7fe3b730ad69236e0cc69f31dc8365ac4b3a1fac0df661b166b12c0f815dc1",
+          "bytes": 40729
+        },
+        {
+          "path": "rtl/core/replica_native/sections/037_DispatchPlugin.vh",
+          "first_line": 23864,
+          "last_line": 24297,
+          "sha256": "27c0e875f7191cbec3ef0eee6ddf25b18657dd03974cae97ccc904625ca6f3ae",
+          "bytes": 69965
+        },
+        {
+          "path": "rtl/core/replica_native/sections/038_TrapPlugin.vh",
+          "first_line": 24298,
+          "last_line": 24721,
+          "sha256": "591cd48d2c602b8d522eb665ccf2a201202c08acafcb5f4a2f2fcab71948b1e3",
+          "bytes": 30227
+        },
+        {
+          "path": "rtl/core/replica_native/sections/039_TrapPlugin.vh",
+          "first_line": 24722,
+          "last_line": 25165,
+          "sha256": "36a01b054090e52b0916d3004a54ec5a3d114228dd81ee0e43dd2d8bbcfac251",
+          "bytes": 19418
+        },
+        {
+          "path": "rtl/core/replica_native/sections/040_LsuL1Plugin.vh",
+          "first_line": 25166,
+          "last_line": 25600,
+          "sha256": "f1ebdac6a30b29abfc1b07a861f45c0548c409b4e6d0c3c47bcd4e2de419f6cb",
+          "bytes": 18789
+        },
+        {
+          "path": "rtl/core/replica_native/sections/041_LsuL1Plugin.vh",
+          "first_line": 25601,
+          "last_line": 26020,
+          "sha256": "fa461b6d58e5ecd96c61e03863c33087bc3b61d50b58006d55350ab4fe8dc8e2",
+          "bytes": 25603
+        },
+        {
+          "path": "rtl/core/replica_native/sections/042_LsuL1Plugin.vh",
+          "first_line": 26021,
+          "last_line": 26440,
+          "sha256": "733d924a3e29c748603554c8e16015415a87ac7f2e52786ccc0adbcfa779af86",
+          "bytes": 45409
+        },
+        {
+          "path": "rtl/core/replica_native/sections/043_CsrAccessPlugin.vh",
+          "first_line": 26441,
+          "last_line": 26867,
+          "sha256": "dc6b2529c9524fdb9447739def3cb36be37b2ca88f192a825e24dd20cf434c80",
+          "bytes": 41668
+        },
+        {
+          "path": "rtl/core/replica_native/sections/044_LsuPlugin.vh",
+          "first_line": 26868,
+          "last_line": 27287,
+          "sha256": "48353bbb833fe9052ec6212be3b1c2c30d1b995f6921af17334f6b8ccfe1943a",
+          "bytes": 29333
+        },
+        {
+          "path": "rtl/core/replica_native/sections/045_LsuPlugin.vh",
+          "first_line": 27288,
+          "last_line": 27708,
+          "sha256": "183308e316cd10a355f5e33170e16a385d0fc7fbfff87ff207d0b2d40720d7a0",
+          "bytes": 53777
+        },
+        {
+          "path": "rtl/core/replica_native/sections/046_PrefetcherRptPlugin.vh",
+          "first_line": 27709,
+          "last_line": 28134,
+          "sha256": "b50cbc947415c7c57818b6489e7160f650016d5901af5a611101ad61b8354cdb",
+          "bytes": 36645
+        },
+        {
+          "path": "rtl/core/replica_native/sections/047_PrefetcherRptPlugin.vh",
+          "first_line": 28135,
+          "last_line": 28554,
+          "sha256": "bf8beade1632fcafc9cb6d312febeb237c1f33bae51b9b6ee3efb7b658a75f8c",
+          "bytes": 48970
+        },
+        {
+          "path": "rtl/core/replica_native/sections/048_WhiteboxerPlugin.vh",
+          "first_line": 28555,
+          "last_line": 28979,
+          "sha256": "52a70071f9751986d833b02646e800ea024f9233680fc97ba4843359c6b34603",
+          "bytes": 43319
+        },
+        {
+          "path": "rtl/core/replica_native/sections/049_WhiteboxerPlugin.vh",
+          "first_line": 28980,
+          "last_line": 29399,
+          "sha256": "1c30b229613fef6d87afb24a83ecf99c34a700c23a71f1ce9f64b5d1cb8eee5d",
+          "bytes": 41806
+        },
+        {
+          "path": "rtl/core/replica_native/sections/050_TrapPlugin.vh",
+          "first_line": 29400,
+          "last_line": 29886,
+          "sha256": "ad33dd14efc50ec9790aa50a768eeb8859fe3e1a6213320651e60e6be2b14d7a",
+          "bytes": 43390
+        },
+        {
+          "path": "rtl/core/replica_native/sections/051_LsuL1Plugin.vh",
+          "first_line": 29887,
+          "last_line": 31256,
+          "sha256": "2ac2b3bf14692211d0cb5c280ddf9a681d8f03426d7632be94c291dad80c8608",
+          "bytes": 65422
+        },
+        {
+          "path": "rtl/core/replica_native/sections/052_LsuL1Plugin.vh",
+          "first_line": 31257,
+          "last_line": 33097,
+          "sha256": "79ba37e53f8de3a94d92213dd8fb62a5bd5da60f033f70391f1ca9754812c27f",
+          "bytes": 141967
+        }
+      ],
+      "file_sha256": "6005bc518dcedfbf850b5eb8bbeab9669580b13614dd84973a42550baaad6b27"
+    },
+    {
+      "module": "StreamArbiter_6",
+      "path": "rtl/soc/reference_exact/StreamArbiter_6.v",
+      "first_line": 33098,
+      "module_line": 33099,
+      "last_line": 33327,
+      "sha256": "9b71de0364e83c51bc84d337d39e5ab151bb316b33c52e3a94ea1e47075ce27e",
+      "bytes": 10871,
+      "compilation_preamble": true,
+      "file_sha256": "91d045af57e2b9287af3058a1c7b476d7218b95eb6c8c2c8eab83c75d576d23e"
+    },
+    {
+      "module": "BufferCC_1",
+      "path": "rtl/soc/reference_exact/BufferCC_1.v",
+      "first_line": 33328,
+      "module_line": 33329,
+      "last_line": 33346,
+      "sha256": "e0b3d0083217ca2c7301cbef981e06ba713b075e59453bc054a09342250ee89a",
+      "bytes": 455,
+      "compilation_preamble": true,
+      "file_sha256": "664a1c2cae06a9aa4c99ec51a3333eafeb2cec9c7ddf6ac32d0f4291d276fea1"
+    },
+    {
+      "module": "StreamFifo_1",
+      "path": "rtl/soc/reference_exact/StreamFifo_1.v",
+      "first_line": 33347,
+      "module_line": 33350,
+      "last_line": 33506,
+      "sha256": "56dce024301cba3053b9389f20bda17f6dce376032ca90c8cce94816c3cfa484",
+      "bytes": 6615,
+      "compilation_preamble": true,
+      "file_sha256": "ad3d1be716a093aa532bf383a720d4b27f888f9734e3663dc991747074a416b1"
+    },
+    {
+      "module": "UartCtrl",
+      "path": "rtl/soc/reference_exact/UartCtrl.v",
+      "first_line": 33507,
+      "module_line": 33508,
+      "last_line": 33635,
+      "sha256": "7b7d65ba6fb6d13829963ee333dbcb9fc2279736f0b1e8f79a0222980f4c1a32",
+      "bytes": 5075,
+      "compilation_preamble": true,
+      "file_sha256": "5e2ceb0f150d0aa0e2f6de7a2ff536a4f0d48b7c123f9d5eb7dd417f43431cfe"
+    },
+    {
+      "module": "StreamArbiter_5",
+      "path": "rtl/soc/reference_exact/StreamArbiter_5.v",
+      "first_line": 33636,
+      "module_line": 33637,
+      "last_line": 33815,
+      "sha256": "20066e3f911426f4841178bf96e4ca930247ca89b445a51f703dbce221dae8c8",
+      "bytes": 8389,
+      "compilation_preamble": true,
+      "file_sha256": "f44ab976cb242f04daa08ed06fa3dfe724d6a2846aa678f83dc9f049b9e81d00"
+    },
+    {
+      "module": "StreamArbiter_4",
+      "path": "rtl/soc/reference_exact/StreamArbiter_4.v",
+      "first_line": 33816,
+      "module_line": 33817,
+      "last_line": 33995,
+      "sha256": "d7ad2f17681e90994c8d150d938862e8cb8e41920b16fb9b863768d5786c1a7f",
+      "bytes": 8399,
+      "compilation_preamble": true,
+      "file_sha256": "6355c6317ae0033f18ef98827a4d9f491358158b7747fe50643d6d33bdb2dbea"
+    },
+    {
+      "module": "ContextAsyncBufferFull",
+      "path": "rtl/soc/reference_exact/ContextAsyncBufferFull.v",
+      "first_line": 33996,
+      "module_line": 33997,
+      "last_line": 34034,
+      "sha256": "bf60279a55e16c0a6cd4acef701e8727ca16d182eb8136f0176d1f2f3672ca53",
+      "bytes": 1060,
+      "compilation_preamble": true,
+      "file_sha256": "f4618026e40d7b390353138c41a8a75fa4d29ba8e5519766b4980c7170c0fd57"
+    },
+    {
+      "module": "StreamArbiter_3",
+      "path": "rtl/soc/reference_exact/StreamArbiter_3.v",
+      "first_line": 34035,
+      "module_line": 34036,
+      "last_line": 34306,
+      "sha256": "a4682891019842c6dfcd2d6260c4581e22531f453e28e2ab41dff410b1e7a697",
+      "bytes": 13242,
+      "compilation_preamble": true,
+      "file_sha256": "5ebd571f5d863fbc04022e3d3bb9accd0153271f6fddfee851a521dc57b8f116"
+    },
+    {
+      "module": "RegFileMem",
+      "path": "rtl/core/reference_exact/RegFileMem.v",
+      "first_line": 34307,
+      "module_line": 34308,
+      "last_line": 34401,
+      "sha256": "629d43f3d5612ea448a6628893de35ca2b22248ace64957318c337c5e8245f5f",
+      "bytes": 4689,
+      "compilation_preamble": true,
+      "file_sha256": "3f7dba9e14880421d1c4cc871a96e44ca0ee434d76b503e89c73e42698fefe76"
+    },
+    {
+      "module": "StreamArbiter_2",
+      "path": "rtl/core/reference_exact/StreamArbiter_2.v",
+      "first_line": 34402,
+      "module_line": 34403,
+      "last_line": 34666,
+      "sha256": "a09a0625bdb5383a7bf528b5ecf733649b1db51f245ba540744d79f0a8459252",
+      "bytes": 13629,
+      "compilation_preamble": true,
+      "file_sha256": "ce11ff7610a00e504a43d91af6bc0a33fcf1df990918da0fc435fbf980721c89"
+    },
+    {
+      "module": "StreamArbiter_1",
+      "path": "rtl/core/reference_exact/StreamArbiter_1.v",
+      "first_line": 34667,
+      "module_line": 34668,
+      "last_line": 34683,
+      "sha256": "f1bb1559a567b4cc19828277d7f7957af110da89d2ea780348e2c8ec98da0661",
+      "bytes": 452,
+      "compilation_preamble": true,
+      "file_sha256": "64ebc0b37ee104068f6f4ee145d94e7e92167b980208ea1aa49a389f753d5dc4"
+    },
+    {
+      "module": "StreamArbiter",
+      "path": "rtl/core/reference_exact/StreamArbiter.v",
+      "first_line": 34684,
+      "module_line": 34685,
+      "last_line": 34795,
+      "sha256": "6b5229c6ff827786d019088a73cf6f1f36753ceb2e638c75988d1effc12d9224",
+      "bytes": 6777,
+      "compilation_preamble": true,
+      "file_sha256": "383494549fae28f9e5d826584b02f9ff925ae72cca1dfc951cf68db353054683"
+    },
+    {
+      "module": "DivRadix",
+      "path": "rtl/core/reference_exact/DivRadix.v",
+      "first_line": 34796,
+      "module_line": 34797,
+      "last_line": 34990,
+      "sha256": "b55f64b11fa4e33881911d883ff0f31f1f97f657e826fd2d6eecbbc022abd0cd",
+      "bytes": 6306,
+      "compilation_preamble": true,
+      "file_sha256": "2754aa10bb79e9cdcd13973bd30a0025c504744bdc8a61f2e184ee5e907e2020"
+    },
+    {
+      "module": "StreamFifo",
+      "path": "rtl/core/reference_exact/StreamFifo.v",
+      "first_line": 34991,
+      "module_line": 34992,
+      "last_line": 35136,
+      "sha256": "c510cd71a4be699b48c4af5e8596dacf7635e4fdf21985523f477bc430424867",
+      "bytes": 7116,
+      "compilation_preamble": true,
+      "file_sha256": "df564a28905737923fc9b55e9cc70c2eeb7d076331c8ebe46ae2d290f82fe9f5"
+    },
+    {
+      "module": "UartCtrlRx",
+      "path": "rtl/soc/reference_exact/UartCtrlRx.v",
+      "first_line": 35137,
+      "module_line": 35138,
+      "last_line": 35430,
+      "sha256": "6763a92f5ed328b6bdec3fbc23852cc08f1ec88a327986a0787f3280ec5fa3bc",
+      "bytes": 10936,
+      "compilation_preamble": true,
+      "file_sha256": "c95795cbd534b376eeb1c9eccaf14e7fb4c6a892066a6a967472e5580e65eb41"
+    },
+    {
+      "module": "UartCtrlTx",
+      "path": "rtl/soc/reference_exact/UartCtrlTx.v",
+      "first_line": 35431,
+      "module_line": 35432,
+      "last_line": 35678,
+      "sha256": "3d18f68f0750866ab48ec102ffdfc57735ce757e539622da456def88186d5b0a",
+      "bytes": 9128,
+      "compilation_preamble": true,
+      "file_sha256": "5574ef3c13a96920c704b9e4354d68e9c187f73ce2f2a4b391c930128c3ed5b1"
+    },
+    {
+      "module": "RamSyncMwMux",
+      "path": "rtl/soc/reference_exact/RamSyncMwMux.v",
+      "first_line": 35679,
+      "module_line": 35680,
+      "last_line": 35872,
+      "sha256": "aff7e1f2697a95a94748447f416e226bcad52f17eb9a3048ff844fd62ecdcdc6",
+      "bytes": 6845,
+      "compilation_preamble": true,
+      "file_sha256": "6e82d0eecb4c6b9741f2b7d4d78ed799d6a568c9647e126b3864a58cf2feb4dd"
+    },
+    {
+      "module": "BufferCC",
+      "path": "rtl/soc/reference_exact/BufferCC.v",
+      "first_line": 35873,
+      "module_line": 35874,
+      "last_line": 35896,
+      "sha256": "2886704375e45600a4cc5337671e451933f0ef1f3e688a8536d50c8257023468",
+      "bytes": 666,
+      "compilation_preamble": true,
+      "file_sha256": "45bf8c25fb37ee2487dfaaf75255ea388d26cb707854493269a9241fb226efab"
+    },
+    {
+      "module": "RamAsyncMwReg",
+      "path": "rtl/soc/reference_exact/RamAsyncMwReg.v",
+      "first_line": 35897,
+      "module_line": 35898,
+      "last_line": 36355,
+      "sha256": "213ecd7536402d40d10fc64d6065a7f75a3759e045c40250694fcb952834b02a",
+      "bytes": 13730,
+      "compilation_preamble": true,
+      "file_sha256": "358fa0a8b1900474afae43145015166a9ad09d54b663d19f5022be2b7e9e4d95"
+    },
+    {
+      "module": "replica_early0_shifter",
+      "path": "rtl/core/replica_native/execute/replica_early0_shifter.v",
+      "compilation_preamble": false,
+      "file_sha256": "39a3b83e918badeb3b4fa0fadb9ccb4b61d95006b848bd8ccf1435c165637b15"
+    },
+    {
+      "module": "replica_late0_shifter",
+      "path": "rtl/core/replica_native/execute/replica_late0_shifter.v",
+      "compilation_preamble": false,
+      "file_sha256": "604e75b1966dbc36dda79d71402479d3803e58b63203bf1b969cfcffd2afd46f"
+    },
+    {
+      "module": "replica_early1_shifter",
+      "path": "rtl/core/replica_native/execute/replica_early1_shifter.v",
+      "compilation_preamble": false,
+      "file_sha256": "f99403f271804f98e4821863dd2bf60c4fe06386736560113fa970c625f2cde3"
+    },
+    {
+      "module": "replica_late1_shifter",
+      "path": "rtl/core/replica_native/execute/replica_late1_shifter.v",
+      "compilation_preamble": false,
+      "file_sha256": "a235f3ec8aa573b1d1e2b3b0f45710f6bfdb3540db3a32b92e0497783ac3951e"
+    }
+  ],
+  "extractions": [
+    {
+      "module": "replica_early0_shifter",
+      "inputs": [
+        "execute_ctrl2_down_BarrelShifterPlugin_LEFT_lane0",
+        "execute_ctrl2_down_BarrelShifterPlugin_SIGNED_lane0",
+        "execute_ctrl2_down_early0_SrcPlugin_SRC1_lane0",
+        "execute_ctrl2_down_early0_SrcPlugin_SRC2_lane0"
+      ],
+      "output": "execute_ctrl2_down_early0_BarrelShifterPlugin_SHIFT_RESULT_lane0",
+      "equation_lines": [
+        16133,
+        16134,
+        16135,
+        16136,
+        16137,
+        16805,
+        16806,
+        16807,
+        16808,
+        16809,
+        16810,
+        16811,
+        16812,
+        16813,
+        16814,
+        16815,
+        16816,
+        20355,
+        20356,
+        20357,
+        20358,
+        20359
+      ],
+      "equations_sha256": "da7bddb501ed66c78d7b46917516c920c0308c20885a15161bebc2bbda73bfc5",
+      "internal_signals": 21,
+      "registers_added": 0
+    },
+    {
+      "module": "replica_late0_shifter",
+      "inputs": [
+        "execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane0",
+        "execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane0",
+        "execute_ctrl4_down_late0_SrcPlugin_SRC1_lane0",
+        "execute_ctrl4_down_late0_SrcPlugin_SRC2_lane0"
+      ],
+      "output": "execute_ctrl4_down_late0_BarrelShifterPlugin_SHIFT_RESULT_lane0",
+      "equation_lines": [
+        16181,
+        16182,
+        16183,
+        16184,
+        16185,
+        16817,
+        16818,
+        16819,
+        16820,
+        16821,
+        16822,
+        16823,
+        16824,
+        16825,
+        16826,
+        16827,
+        16828,
+        20599,
+        20600,
+        20601,
+        20602,
+        20603
+      ],
+      "equations_sha256": "7c3a2950f89c0daec2466e53b36bc717b2af6cf93df2c28e4fbb5a0342363332",
+      "internal_signals": 21,
+      "registers_added": 0
+    },
+    {
+      "module": "replica_early1_shifter",
+      "inputs": [
+        "execute_ctrl2_down_BarrelShifterPlugin_LEFT_lane1",
+        "execute_ctrl2_down_BarrelShifterPlugin_SIGNED_lane1",
+        "execute_ctrl2_down_early1_SrcPlugin_SRC1_lane1",
+        "execute_ctrl2_down_early1_SrcPlugin_SRC2_lane1"
+      ],
+      "output": "execute_ctrl2_down_early1_BarrelShifterPlugin_SHIFT_RESULT_lane1",
+      "equation_lines": [
+        16192,
+        16193,
+        16194,
+        16195,
+        16196,
+        16829,
+        16830,
+        16831,
+        16832,
+        16833,
+        16834,
+        16835,
+        16836,
+        16837,
+        16838,
+        16839,
+        16840,
+        20627,
+        20628,
+        20629,
+        20630,
+        20631
+      ],
+      "equations_sha256": "894a156a27008b52b7215151662aecf75674a856320a7736b6ab8d3f34a44b8c",
+      "internal_signals": 21,
+      "registers_added": 0
+    },
+    {
+      "module": "replica_late1_shifter",
+      "inputs": [
+        "execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane1",
+        "execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane1",
+        "execute_ctrl4_down_late1_SrcPlugin_SRC1_lane1",
+        "execute_ctrl4_down_late1_SrcPlugin_SRC2_lane1"
+      ],
+      "output": "execute_ctrl4_down_late1_BarrelShifterPlugin_SHIFT_RESULT_lane1",
+      "equation_lines": [
+        16203,
+        16204,
+        16205,
+        16206,
+        16207,
+        16841,
+        16842,
+        16843,
+        16844,
+        16845,
+        16846,
+        16847,
+        16848,
+        16849,
+        16850,
+        16851,
+        16852,
+        20655,
+        20656,
+        20657,
+        20658,
+        20659
+      ],
+      "equations_sha256": "65f781f5ef0957334acbab21113456c6f626540dc7e945c1e67afd5feb39186c",
+      "internal_signals": 21,
+      "registers_added": 0
+    }
+  ],
+  "base_manifest_sha256": "9c086ac64be65256b8135d1edec06c8f7e471a37dd0548711df7ef2f55d34efc"
+}

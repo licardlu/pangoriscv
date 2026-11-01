@@ -1,0 +1,4 @@
+# pango_cpu_90.fdc -- 90 MHz 档 (27 x 30 / 9 = 90.000 MHz, VCO 810 MHz)
+# 用 REPLICA_PLL=pango_pll_90m.sv 一起传, 不要再手工覆盖 rtl/pango_pll.sv。
+create_clock -name board_clk -period 37.037037037 -waveform {0 18.518518519} [get_ports clk]
+create_clock -name core_clk  -period 11.111111111 -waveform {0 5.555555556}  [get_pins u_core_pll/u_ppll/CLKOUT0]

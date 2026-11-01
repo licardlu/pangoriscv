@@ -1,0 +1,67 @@
+{
+ "size": 320,
+ "conf": 0.25,
+ "backend": "int8-fbgemm",
+ "images": 239,
+ "multi_object_images": 108,
+ "skipped": 0,
+ "map50": 0.0523,
+ "per_class": {
+  "biodegradable": {
+   "ap50": 0.0894,
+   "tp": 64,
+   "fp": 235,
+   "gt": 279
+  },
+  "cardboard": {
+   "ap50": 0.0017,
+   "tp": 2,
+   "fp": 82,
+   "gt": 77
+  },
+  "glass": {
+   "ap50": 0.0887,
+   "tp": 20,
+   "fp": 154,
+   "gt": 52
+  },
+  "metal": {
+   "ap50": 0.1071,
+   "tp": 36,
+   "fp": 201,
+   "gt": 131
+  },
+  "paper": {
+   "ap50": 0.026,
+   "tp": 5,
+   "fp": 60,
+   "gt": 37
+  },
+  "plastic": {
+   "ap50": 0.0008,
+   "tp": 3,
+   "fp": 212,
+   "gt": 157
+  }
+ },
+ "mapping_40_to_6": {
+  "Cardboard": "cardboard",
+  "GlassCup": "glass",
+  "Can": "metal",
+  "MetalFoodCans": "metal",
+  "Pot": "metal",
+  "PaperBags": "paper",
+  "Bottle": "plastic",
+  "DrinkBottle": "plastic",
+  "ShampooBottle": "plastic",
+  "CosmeticBottles": "plastic",
+  "Meal": "biodegradable",
+  "Bone": "biodegradable",
+  "FruitPeel": "biodegradable",
+  "Pulp": "biodegradable",
+  "Tea": "biodegradable",
+  "Vegetable": "biodegradable",
+  "Eggshell": "biodegradable",
+  "FishBone": "biodegradable"
+ }
+}

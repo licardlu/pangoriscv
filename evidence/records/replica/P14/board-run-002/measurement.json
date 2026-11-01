@@ -1,0 +1,58 @@
+{
+  "record": "replica/P14/board-run-002",
+  "kind": "board",
+  "date": "2026-10-30",
+  "change": "取指块 32 位 -> 64 位 (一拍切 2 条) + 4 项分发缓冲; 仍单发射",
+  "board": {
+    "device": "PG2L100H-6IFBG676",
+    "jtag_id": "0x00602899",
+    "uart": "COM34 @115200"
+  },
+  "bitstream": {
+    "path": "build/replica_pds/run-004/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "9da14e95bbcefa8093e8b2cc1a8aee389f0ce609a11b180e4906c6641a780a93",
+    "bytes": 3791112
+  },
+  "firmware": {
+    "iterations": 7000,
+    "bin_sha256": "f91f6a930d684a977113d71b17d050d9a3bd917a7c1082d6b35a28ee86efd6f5"
+  },
+  "measurement": {
+    "total_ticks": 3074950428,
+    "seconds": 25.526,
+    "ticks_per_iter": 439278.63,
+    "coremark_per_mhz": 2.2765,
+    "coremark_score": 274.2,
+    "validity": "25.5 s >= 10 s, Correct operation validated"
+  },
+  "crc": {
+    "seedcrc": "0xe9f5",
+    "crclist": "0xe714",
+    "crcmatrix": "0x1fd7",
+    "crcstate": "0x8e3a",
+    "crcfinal": "0x25b5"
+  },
+  "sta": {
+    "summary": "All Constraints Met",
+    "setup_wns_ns": 3.223,
+    "core_freq_mhz": 120.461538
+  },
+  "resources": {
+    "LUT": 5082,
+    "FF": 3101,
+    "DRM": 32,
+    "APM": 4,
+    "distributed_ram": 78
+  },
+  "previous": {
+    "record": "replica/P14/board-run-001",
+    "coremark_per_mhz": 2.104,
+    "score": 253.4,
+    "ticks_per_iter": 475290.46,
+    "LUT": 3937
+  },
+  "delta_vs_previous": {
+    "per_mhz_pct": 8.2,
+    "ticks_per_iter_pct": -7.58
+  }
+}

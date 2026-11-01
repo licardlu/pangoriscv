@@ -1,0 +1,34 @@
+version,2022.2-SP6.1<build 138931>
+project name,flow.pds
+
+Single Seed:
+Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
+single,OK,OK,0.080,2.642,0.137,0.100,4.297,5.622,0.353,0.248,NA,NA,NA,2.92,123.58,210.30,272.53,NA,NA,NA,597731,NA,NA,1337,1337,1337,1337,NA,0,0,0.000,0,0.000,0,NA
+Pass Rate/Convergence Rate,100.00%,100.00%
+
+Synthesize:
+control_set,628
+Synthesize Performance Summary:
+slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
+slack value,1.776,0.000,5.484,0.000
+Synthesize Process Cpu Time,0h:3m:17s
+
+Device Map:
+Device Map Resource Usage Summary:
+Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
+Used,27742,21439,107.5,122,290,NA,8,0,3
+Available,66600,133200,155,240,19900,NA,32,96,24
+Utilization(%),42%,17%,70%,51%,2%,NA,25%,0%,13%
+Device Map Process Cpu Time,0h:0m:36s
+
+Project Configurations:
+top module,yolo_camera_top
+compile," -top_module {yolo_camera_top} 
+ -include_path {E:/file/pango/project/ai_lab/pds/vexii_camera_20261101_181152/sources/include} "
+synthesize," -ads "
+device map,
+place & route,
+
+Test Parameters Configurations:
+testparam,
+

@@ -1,0 +1,2511 @@
+{
+ "size": 320,
+ "n_ops": 85,
+ "outputs": [
+  82,
+  83,
+  84
+ ],
+ "ops": [
+  {
+   "idx": 0,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.0.conv",
+   "cin": 3,
+   "cout": 16,
+   "in_w": 320,
+   "in_h": 320,
+   "k": 6,
+   "stride": 2,
+   "inputs": [
+    -1
+   ],
+   "out_w": 160,
+   "out_h": 160,
+   "pad": 2,
+   "out_shape": [
+    16,
+    160,
+    160
+   ],
+   "scale": 0.2641627394308255,
+   "input_scales": [
+    0.007874015748031496
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.2641627394308255,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 1,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.1.conv",
+   "cin": 16,
+   "cout": 32,
+   "in_w": 160,
+   "in_h": 160,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    0
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 1,
+   "out_shape": [
+    32,
+    80,
+    80
+   ],
+   "scale": 1.0368317130982407,
+   "input_scales": [
+    0.2641627394308255
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 1.0368317130982407,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 2,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.cv1.conv",
+   "cin": 32,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    1
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    16,
+    80,
+    80
+   ],
+   "scale": 0.2617356007493387,
+   "input_scales": [
+    1.0368317130982407
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.2617356007493387,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 3,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.m.0.cv1.conv",
+   "cin": 16,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    2
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    16,
+    80,
+    80
+   ],
+   "scale": 0.16214565967950295,
+   "input_scales": [
+    0.2617356007493387
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.16214565967950295,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 4,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.m.0.cv2.conv",
+   "cin": 16,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    3
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 1,
+   "out_shape": [
+    16,
+    80,
+    80
+   ],
+   "scale": 0.18792937871978038,
+   "input_scales": [
+    0.16214565967950295
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.18792937871978038,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 5,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.2.m.0.add",
+   "cin": 16,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    2,
+    4
+   ],
+   "out_shape": [
+    16,
+    80,
+    80
+   ],
+   "scale": 0.2595556063914862,
+   "input_scales": [
+    0.2617356007493387,
+    0.18792937871978038
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 6,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.cv2.conv",
+   "cin": 32,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    1
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    16,
+    80,
+    80
+   ],
+   "scale": 0.2765923447496309,
+   "input_scales": [
+    1.0368317130982407
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.2765923447496309,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 7,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.2.cat",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    5,
+    6
+   ],
+   "out_shape": [
+    32,
+    80,
+    80
+   ],
+   "scale": 0.2765923447496309,
+   "input_scales": [
+    0.2595556063914862,
+    0.2765923447496309
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 8,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.cv3.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    7
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    32,
+    80,
+    80
+   ],
+   "scale": 0.17192628815418154,
+   "input_scales": [
+    0.2765923447496309
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.17192628815418154,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 9,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.3.conv",
+   "cin": 32,
+   "cout": 64,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    8
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    64,
+    40,
+    40
+   ],
+   "scale": 0.08860726243867649,
+   "input_scales": [
+    0.17192628815418154
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.08860726243867649,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 10,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.cv1.conv",
+   "cin": 64,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    9
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.02920460888719934,
+   "input_scales": [
+    0.08860726243867649
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.02920460888719934,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 11,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.0.cv1.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    10
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.06676116703063484,
+   "input_scales": [
+    0.02920460888719934
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06676116703063484,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 12,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.0.cv2.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    11
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.05955844038114773,
+   "input_scales": [
+    0.06676116703063484
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05955844038114773,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 13,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.4.m.0.add",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    10,
+    12
+   ],
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.058264799944059115,
+   "input_scales": [
+    0.02920460888719934,
+    0.05955844038114773
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 14,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.1.cv1.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    13
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.050768754613681105,
+   "input_scales": [
+    0.058264799944059115
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.050768754613681105,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 15,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.1.cv2.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    14
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.08858114527905081,
+   "input_scales": [
+    0.050768754613681105
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.08858114527905081,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 16,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.4.m.1.add",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    13,
+    15
+   ],
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.10086471827950065,
+   "input_scales": [
+    0.058264799944059115,
+    0.08858114527905081
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 17,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.cv2.conv",
+   "cin": 64,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    9
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.07339638987864096,
+   "input_scales": [
+    0.08860726243867649
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.07339638987864096,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 18,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.4.cat",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    16,
+    17
+   ],
+   "out_shape": [
+    64,
+    40,
+    40
+   ],
+   "scale": 0.10086471827950065,
+   "input_scales": [
+    0.10086471827950065,
+    0.07339638987864096
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 19,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.cv3.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    18
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    64,
+    40,
+    40
+   ],
+   "scale": 0.07312987169881505,
+   "input_scales": [
+    0.10086471827950065
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.07312987169881505,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 20,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.5.conv",
+   "cin": 64,
+   "cout": 128,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    19
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.06104872921320397,
+   "input_scales": [
+    0.07312987169881505
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06104872921320397,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 21,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.cv1.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    20
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.018525981527613842,
+   "input_scales": [
+    0.06104872921320397
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.018525981527613842,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 22,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.0.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    21
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.0666045616930864,
+   "input_scales": [
+    0.018525981527613842
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.0666045616930864,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 23,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.0.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    22
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.029458066609900767,
+   "input_scales": [
+    0.0666045616930864
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.029458066609900767,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 24,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.6.m.0.add",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    21,
+    23
+   ],
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.03469945502093458,
+   "input_scales": [
+    0.018525981527613842,
+    0.029458066609900767
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 25,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.1.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    24
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.05273482555479515,
+   "input_scales": [
+    0.03469945502093458
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05273482555479515,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 26,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.1.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    25
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.051226341818261335,
+   "input_scales": [
+    0.05273482555479515
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.051226341818261335,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 27,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.6.m.1.add",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    24,
+    26
+   ],
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.06007764846321166,
+   "input_scales": [
+    0.03469945502093458,
+    0.051226341818261335
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 28,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.2.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    27
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.05593064826304518,
+   "input_scales": [
+    0.06007764846321166
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05593064826304518,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 29,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.2.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    28
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.0730834870826541,
+   "input_scales": [
+    0.05593064826304518
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.0730834870826541,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 30,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.6.m.2.add",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    27,
+    29
+   ],
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.08522143326406403,
+   "input_scales": [
+    0.06007764846321166,
+    0.0730834870826541
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 31,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.cv2.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    20
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.06625570462444635,
+   "input_scales": [
+    0.06104872921320397
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06625570462444635,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 32,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.6.cat",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    30,
+    31
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.08522143326406403,
+   "input_scales": [
+    0.08522143326406403,
+    0.06625570462444635
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 33,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.cv3.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    32
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.06705862330639456,
+   "input_scales": [
+    0.08522143326406403
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06705862330639456,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 34,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.7.conv",
+   "cin": 128,
+   "cout": 256,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    33
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.05389363371481107,
+   "input_scales": [
+    0.06705862330639456
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05389363371481107,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 35,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.cv1.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    34
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.032967822758231576,
+   "input_scales": [
+    0.05389363371481107
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.032967822758231576,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 36,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.m.0.cv1.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    35
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.06719168715589628,
+   "input_scales": [
+    0.032967822758231576
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06719168715589628,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 37,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.m.0.cv2.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    36
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.06846768837275467,
+   "input_scales": [
+    0.06719168715589628
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06846768837275467,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 38,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.8.m.0.add",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    35,
+    37
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.0663891814825103,
+   "input_scales": [
+    0.032967822758231576,
+    0.06846768837275467
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 39,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.cv2.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    34
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.06593222130002,
+   "input_scales": [
+    0.05389363371481107
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06593222130002,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 40,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.8.cat",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    38,
+    39
+   ],
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.0663891814825103,
+   "input_scales": [
+    0.0663891814825103,
+    0.06593222130002
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 41,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.cv3.conv",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    40
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.05706856945368249,
+   "input_scales": [
+    0.0663891814825103
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05706856945368249,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 42,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.9.cv1.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    41
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.0523681640625,
+   "input_scales": [
+    0.05706856945368249
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.0523681640625,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 43,
+   "op": 1,
+   "name": "MAXPOOL",
+   "module": "model.9.m0",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 5,
+   "stride": 1,
+   "inputs": [
+    42
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.0523681640625,
+   "input_scales": [
+    0.0523681640625
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 44,
+   "op": 1,
+   "name": "MAXPOOL",
+   "module": "model.9.m1",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 5,
+   "stride": 1,
+   "inputs": [
+    43
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.0523681640625,
+   "input_scales": [
+    0.0523681640625
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 45,
+   "op": 1,
+   "name": "MAXPOOL",
+   "module": "model.9.m2",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 5,
+   "stride": 1,
+   "inputs": [
+    44
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.0523681640625,
+   "input_scales": [
+    0.0523681640625
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 46,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.9.cat",
+   "cin": 512,
+   "cout": 512,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    42,
+    43,
+    44,
+    45
+   ],
+   "out_shape": [
+    512,
+    10,
+    10
+   ],
+   "scale": 0.0523681640625,
+   "input_scales": [
+    0.0523681640625,
+    0.0523681640625,
+    0.0523681640625,
+    0.0523681640625
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 47,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.9.cv2.conv",
+   "cin": 512,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    46
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.035590982812596116,
+   "input_scales": [
+    0.0523681640625
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.035590982812596116,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 48,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.10.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    47
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.032303415884183145,
+   "input_scales": [
+    0.035590982812596116
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.032303415884183145,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 49,
+   "op": 2,
+   "name": "UPSAMPLE",
+   "module": "model.11",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    48
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.032303415884183145,
+   "input_scales": [
+    0.032303415884183145
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 50,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.12",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    49,
+    33
+   ],
+   "out_shape": [
+    256,
+    20,
+    20
+   ],
+   "scale": 0.06705862330639456,
+   "input_scales": [
+    0.032303415884183145,
+    0.06705862330639456
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 51,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.cv1.conv",
+   "cin": 256,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    50
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.03080919032960426,
+   "input_scales": [
+    0.06705862330639456
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.03080919032960426,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 52,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.m.0.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    51
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.04197944055392048,
+   "input_scales": [
+    0.03080919032960426
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.04197944055392048,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 53,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.m.0.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    52
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.059744632150244524,
+   "input_scales": [
+    0.04197944055392048
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.059744632150244524,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 54,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.cv2.conv",
+   "cin": 256,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    50
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.03030795375193198,
+   "input_scales": [
+    0.06705862330639456
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.03030795375193198,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 55,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.13.cat",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    53,
+    54
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.059744632150244524,
+   "input_scales": [
+    0.059744632150244524,
+    0.03030795375193198
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 56,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.cv3.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    55
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.036268921348992296,
+   "input_scales": [
+    0.059744632150244524
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.036268921348992296,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 57,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.14.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    56
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.041631600988192824,
+   "input_scales": [
+    0.036268921348992296
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.041631600988192824,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 58,
+   "op": 2,
+   "name": "UPSAMPLE",
+   "module": "model.15",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    57
+   ],
+   "out_shape": [
+    64,
+    40,
+    40
+   ],
+   "scale": 0.041631600988192824,
+   "input_scales": [
+    0.041631600988192824
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 59,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.16",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    58,
+    19
+   ],
+   "out_shape": [
+    128,
+    40,
+    40
+   ],
+   "scale": 0.07312987169881505,
+   "input_scales": [
+    0.041631600988192824,
+    0.07312987169881505
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 60,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.cv1.conv",
+   "cin": 128,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    59
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.02195178242180291,
+   "input_scales": [
+    0.07312987169881505
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.02195178242180291,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 61,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.m.0.cv1.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    60
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.029122744958231767,
+   "input_scales": [
+    0.02195178242180291
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.029122744958231767,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 62,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.m.0.cv2.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    61
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.05155244211512288,
+   "input_scales": [
+    0.029122744958231767
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05155244211512288,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 63,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.cv2.conv",
+   "cin": 128,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    59
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ],
+   "scale": 0.03826034726120356,
+   "input_scales": [
+    0.07312987169881505
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.03826034726120356,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 64,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.17.cat",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    62,
+    63
+   ],
+   "out_shape": [
+    64,
+    40,
+    40
+   ],
+   "scale": 0.05155244211512288,
+   "input_scales": [
+    0.05155244211512288,
+    0.03826034726120356
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 65,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.cv3.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    64
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    64,
+    40,
+    40
+   ],
+   "scale": 0.12640091002456785,
+   "input_scales": [
+    0.05155244211512288
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.12640091002456785,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 66,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.18.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    65
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.04160216849619948,
+   "input_scales": [
+    0.12640091002456785
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.04160216849619948,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 67,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.19",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    66,
+    57
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.041631600988192824,
+   "input_scales": [
+    0.04160216849619948,
+    0.041631600988192824
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 68,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.cv1.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    67
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.036455736385555715,
+   "input_scales": [
+    0.041631600988192824
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.036455736385555715,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 69,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.m.0.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    68
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.02618767520574134,
+   "input_scales": [
+    0.036455736385555715
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.02618767520574134,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 70,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.m.0.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    69
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.05300935985535148,
+   "input_scales": [
+    0.02618767520574134
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05300935985535148,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 71,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.cv2.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    67
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ],
+   "scale": 0.045862674713134766,
+   "input_scales": [
+    0.041631600988192824
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.045862674713134766,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 72,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.20.cat",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    70,
+    71
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.05300935985535148,
+   "input_scales": [
+    0.05300935985535148,
+    0.045862674713134766
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 73,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.cv3.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    72
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    128,
+    20,
+    20
+   ],
+   "scale": 0.11441688087042862,
+   "input_scales": [
+    0.05300935985535148
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.11441688087042862,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 74,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.21.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    73
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.05593513879250354,
+   "input_scales": [
+    0.11441688087042862
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05593513879250354,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 75,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.22",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    74,
+    48
+   ],
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.05593513879250354,
+   "input_scales": [
+    0.05593513879250354,
+    0.032303415884183145
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 76,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.cv1.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    75
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.05913563976137657,
+   "input_scales": [
+    0.05593513879250354
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.05913563976137657,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 77,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.m.0.cv1.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    76
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.04957594083050105,
+   "input_scales": [
+    0.05913563976137657
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.04957594083050105,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 78,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.m.0.cv2.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    77
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.07984544348529005,
+   "input_scales": [
+    0.04957594083050105
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.07984544348529005,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 79,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.cv2.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    75
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ],
+   "scale": 0.042198838211420016,
+   "input_scales": [
+    0.05593513879250354
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.042198838211420016,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 80,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.23.cat",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    78,
+    79
+   ],
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.07984544348529005,
+   "input_scales": [
+    0.07984544348529005,
+    0.042198838211420016
+   ],
+   "execution": "cpu"
+  },
+  {
+   "idx": 81,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.cv3.conv",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    80
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    256,
+    10,
+    10
+   ],
+   "scale": 0.06690508174145315,
+   "input_scales": [
+    0.07984544348529005
+   ],
+   "execution": "rtl_q15_conv",
+   "pre_scale": 0.06690508174145315,
+   "zero_multipliers": 0
+  },
+  {
+   "idx": 82,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.24.m.0",
+   "cin": 64,
+   "cout": 33,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    65
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    33,
+    40,
+    40
+   ],
+   "scale": 0.14194557610459216,
+   "input_scales": [
+    0.12640091002456785
+   ],
+   "execution": "cpu_fp32_head"
+  },
+  {
+   "idx": 83,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.24.m.1",
+   "cin": 128,
+   "cout": 33,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    73
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    33,
+    20,
+    20
+   ],
+   "scale": 0.11086186086098979,
+   "input_scales": [
+    0.11441688087042862
+   ],
+   "execution": "cpu_fp32_head"
+  },
+  {
+   "idx": 84,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.24.m.2",
+   "cin": 256,
+   "cout": 33,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    81
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    33,
+    10,
+    10
+   ],
+   "scale": 0.10694786131851317,
+   "input_scales": [
+    0.06690508174145315
+   ],
+   "execution": "cpu_fp32_head"
+  }
+ ],
+ "input_scale": 0.007874015748031496,
+ "checkpoint_sha256": "24623ac6d903e4554e548b97f963e277dfa32d102cecad6f3d518259c641deea",
+ "calibration_images": [
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_0.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_10.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_100.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_101.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_102.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1020.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1021.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1022.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1023.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1024.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1025.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1026.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1027.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1028.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1029.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_103.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1030.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1031.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1032.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1033.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1034.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1035.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1036.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1037.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1039.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_104.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1041.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1042.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1043.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1044.jpg",
+  "data\\garbage_datasets\\datasets\\images\\train\\fimg_1045.jpg"
+ ],
+ "note": "Exact Q15 simulation; NOT an accepted FPGA release"
+}

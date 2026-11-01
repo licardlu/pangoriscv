@@ -1,0 +1,54 @@
+{
+  "stage": "P08",
+  "run": "run-005",
+  "date": "2026-10-30",
+  "variant": "V2 (dual issue, 64-bit fetch)",
+  "design": {
+    "top": "pango_cpu_top",
+    "device": "PG2L100H-6IFBG676",
+    "flow": "compile -> synthesize -> device_map -> place_route -> report_timing -> gen_bit_stream",
+    "flow_result": "BUILD_FLOW_COMPLETE",
+    "fdc": "pango_cpu_120.fdc",
+    "core_clock_mhz": 120.461538,
+    "core_period_ns": 8.301
+  },
+  "timing": {
+    "summary": "Some Constraints Violated",
+    "setup_wns_ns": -2.114,
+    "setup_tns_ns": -1865.583,
+    "setup_failing_endpoints": 3025,
+    "setup_total_endpoints": 16502,
+    "hold_whs_ns": 0.062,
+    "hold_failing_endpoints": 0,
+    "implied_max_mhz": 96.0,
+    "worst_path": "u_soc/u_cpu/idex_rs1q[0][4] -> u_soc/u_ram/mem_0/gopdrm_36k/ADA0[12]",
+    "worst_path_delay_ns": 12.773,
+    "worst_path_logic_ns": 2.255,
+    "worst_path_route_ns": 7.921,
+    "worst_path_logic_levels": 12
+  },
+  "resources": {
+    "LUT": 7699,
+    "FF": 3476,
+    "DRM": 32,
+    "APM": 4,
+    "distributed_ram": 78,
+    "IO": 11
+  },
+  "bitstream": {
+    "path": "build/replica_pds/run-005/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "47788737c982431d293c7ab3a163665d675a37da672175f598ee7f9d4646d29a",
+    "size_bytes": 3791112
+  },
+  "firmware": {
+    "image": "build/firmware_v2_7000/firmware.hex",
+    "iterations": 7000,
+    "format": "8192 x 64bit"
+  },
+  "notes": [
+    "本 run 只证明 V2 能被 PDS 全流程吃下并出位流, 不证明 120 MHz 收敛。",
+    "3025 个失败端点说明这是结构性问题, 不是单条路径的微调能救的。",
+    "功能证据在 ModelSim: smoke PASS, CoreMark 四项 CRC 全对, PC 连续性断言 0 失配。",
+    "本 run 的位流未经上板验证, 不得当作成绩。"
+  ]
+}

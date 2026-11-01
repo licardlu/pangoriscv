@@ -1,0 +1,55 @@
+{
+  "record": "replica/P14/board-run-001",
+  "kind": "board",
+  "date": "2026-10-30",
+  "core": "rtl/core (V1 单发射 RV32IMC，2,106 行；与 run-002 源码快照 md5 一致)",
+  "board": {
+    "device": "PG2L100H-6IFBG676 (MES2L676-100HP V1.2)",
+    "jtag_id": "0x00602899",
+    "cable": "Pango USB Cable II (FTDI VID_0403 PID_6010)",
+    "uart": "COM34 @115200 8N1"
+  },
+  "bitstream": {
+    "path": "build/replica_pds/run-003/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "fe1a8e61fb371afe939ae025573f01f682a2f796d0c45bd98e5841a04b788155",
+    "bytes": 3791112,
+    "built_from": "build/replica_pds/run-003 (7000-iteration firmware)"
+  },
+  "firmware": {
+    "iterations": 7000,
+    "bin_sha256": "f91f6a930d684a977113d71b17d050d9a3bd917a7c1082d6b35a28ee86efd6f5",
+    "elf_sha256": "bdad70466548e81114e992f8947f630d071a09c6301bd08d52e7b2dfe60001fe"
+  },
+  "measurement": {
+    "total_ticks": 3327033220,
+    "seconds": 27.619049824849487,
+    "ticks_per_iter": 475290.46,
+    "iterations_per_sec_exact": 253.4,
+    "coremark_per_mhz": 2.104,
+    "coremark_score": 253.4,
+    "validity": "27 s >= 10 s, 'Correct operation validated' 已打印"
+  },
+  "crc": {
+    "seedcrc": "0xe9f5",
+    "crclist": "0xe714",
+    "crcmatrix": "0x1fd7",
+    "crcstate": "0x8e3a",
+    "crcfinal": "0x25b5"
+  },
+  "sta": {
+    "summary": "All Constraints Met",
+    "setup_wns_ns": 0.295,
+    "hold_whs_ns": 0.026,
+    "core_period_ns": 8.301,
+    "core_freq_mhz": 120.461538
+  },
+  "reference": {
+    "coremark_per_mhz": 5.3462,
+    "score": 644.0,
+    "note": "参考为双发射 + I/D Cache + BTB/GShare/RAS, 本核为单发射无 Cache"
+  },
+  "vs_reference": {
+    "per_mhz_ratio": 0.3935,
+    "score_ratio": 0.3936
+  }
+}

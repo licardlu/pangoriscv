@@ -1,0 +1,975 @@
+{
+ "size": 320,
+ "conf": 0.25,
+ "iou": 0.45,
+ "calib_images": 48,
+ "note": "feature extractor layers 0-23 INT8; Detect heads remain FP32",
+ "sets": {
+  "testset": {
+   "images": 12,
+   "float_hits": 7,
+   "int8_hits": 8,
+   "classification_agreement": 11,
+   "rows": [
+    {
+     "image": "cardboard__cardboard1.jpg",
+     "gt": "cardboard",
+     "float": [
+      {
+       "class": "cardboard",
+       "score": 0.8291,
+       "box": [
+        -15.6,
+        38.7,
+        320.3,
+        279.0
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "cardboard",
+       "score": 0.8148,
+       "box": [
+        -6.0,
+        39.9,
+        318.7,
+        276.3
+       ]
+      }
+     ]
+    },
+    {
+     "image": "cardboard__cardboard10.jpg",
+     "gt": "cardboard",
+     "float": [
+      {
+       "class": "cardboard",
+       "score": 0.9009,
+       "box": [
+        -7.6,
+        39.2,
+        332.9,
+        272.1
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "cardboard",
+       "score": 0.9218,
+       "box": [
+        -4.2,
+        36.9,
+        328.4,
+        273.7
+       ]
+      }
+     ]
+    },
+    {
+     "image": "glass__glass1.jpg",
+     "gt": "glass",
+     "float": [
+      {
+       "class": "metal",
+       "score": 0.5877,
+       "box": [
+        127.8,
+        89.9,
+        281.0,
+        241.0
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.5229,
+       "box": [
+        126.3,
+        89.4,
+        281.0,
+        238.3
+       ]
+      },
+      {
+       "class": "metal",
+       "score": 0.2719,
+       "box": [
+        130.4,
+        190.2,
+        179.1,
+        241.5
+       ]
+      },
+      {
+       "class": "metal",
+       "score": 0.2545,
+       "box": [
+        212.1,
+        87.7,
+        273.2,
+        221.5
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.3678,
+       "box": [
+        129.1,
+        130.4,
+        281.9,
+        238.2
+       ]
+      },
+      {
+       "class": "metal",
+       "score": 0.3285,
+       "box": [
+        130.3,
+        188.2,
+        179.8,
+        240.4
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.3178,
+       "box": [
+        129.5,
+        184.2,
+        182.1,
+        242.5
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.3069,
+       "box": [
+        214.7,
+        87.3,
+        274.4,
+        219.7
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.2537,
+       "box": [
+        217.9,
+        85.3,
+        275.5,
+        224.8
+       ]
+      }
+     ]
+    },
+    {
+     "image": "glass__glass10.jpg",
+     "gt": "glass",
+     "float": [
+      {
+       "class": "paper",
+       "score": 0.3935,
+       "box": [
+        9.9,
+        210.6,
+        320.2,
+        277.6
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.4225,
+       "box": [
+        6.3,
+        212.7,
+        323.9,
+        278.5
+       ]
+      },
+      {
+       "class": "paper",
+       "score": 0.3347,
+       "box": [
+        -1.1,
+        48.2,
+        318.5,
+        286.3
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.2506,
+       "box": [
+        105.5,
+        207.8,
+        318.3,
+        278.3
+       ]
+      }
+     ]
+    },
+    {
+     "image": "metal__metal1.jpg",
+     "gt": "metal",
+     "float": [
+      {
+       "class": "metal",
+       "score": 0.7933,
+       "box": [
+        -1.7,
+        38.0,
+        195.7,
+        213.7
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "metal",
+       "score": 0.7963,
+       "box": [
+        -1.0,
+        40.1,
+        194.3,
+        211.5
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.3488,
+       "box": [
+        6.8,
+        39.3,
+        194.5,
+        207.9
+       ]
+      }
+     ]
+    },
+    {
+     "image": "metal__metal10.jpg",
+     "gt": "metal",
+     "float": [
+      {
+       "class": "plastic",
+       "score": 0.8,
+       "box": [
+        158.9,
+        37.6,
+        318.3,
+        287.8
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.7372,
+       "box": [
+        161.1,
+        39.1,
+        318.6,
+        287.2
+       ]
+      }
+     ]
+    },
+    {
+     "image": "paper__paper1.jpg",
+     "gt": "paper",
+     "float": [
+      {
+       "class": "paper",
+       "score": 0.8233,
+       "box": [
+        42.8,
+        57.3,
+        267.6,
+        249.6
+       ]
+      },
+      {
+       "class": "cardboard",
+       "score": 0.7791,
+       "box": [
+        43.6,
+        57.0,
+        270.1,
+        250.9
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "paper",
+       "score": 0.7869,
+       "box": [
+        36.9,
+        54.6,
+        267.9,
+        252.7
+       ]
+      }
+     ]
+    },
+    {
+     "image": "paper__paper10.jpg",
+     "gt": "paper",
+     "float": [
+      {
+       "class": "glass",
+       "score": 0.6245,
+       "box": [
+        43.0,
+        41.4,
+        121.3,
+        278.7
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.5802,
+       "box": [
+        41.5,
+        46.5,
+        119.1,
+        273.5
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.5636,
+       "box": [
+        105.9,
+        41.7,
+        181.4,
+        280.2
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.5467,
+       "box": [
+        162.9,
+        39.8,
+        246.3,
+        277.8
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.4967,
+       "box": [
+        167.0,
+        41.7,
+        246.1,
+        279.5
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.6788,
+       "box": [
+        42.0,
+        42.1,
+        121.4,
+        278.4
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.615,
+       "box": [
+        106.5,
+        42.4,
+        182.6,
+        280.6
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.5884,
+       "box": [
+        104.2,
+        41.1,
+        181.7,
+        274.1
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.518,
+       "box": [
+        164.9,
+        42.2,
+        245.0,
+        284.0
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.4295,
+       "box": [
+        230.4,
+        49.3,
+        309.8,
+        283.4
+       ]
+      }
+     ]
+    },
+    {
+     "image": "plastic__plastic1.jpg",
+     "gt": "plastic",
+     "float": [
+      {
+       "class": "plastic",
+       "score": 0.832,
+       "box": [
+        75.3,
+        106.2,
+        270.5,
+        217.3
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.8258,
+       "box": [
+        82.4,
+        105.3,
+        269.1,
+        219.0
+       ]
+      }
+     ]
+    },
+    {
+     "image": "plastic__plastic10.jpg",
+     "gt": "plastic",
+     "float": [
+      {
+       "class": "plastic",
+       "score": 0.5342,
+       "box": [
+        118.1,
+        125.2,
+        196.4,
+        202.9
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.4091,
+       "box": [
+        135.8,
+        129.2,
+        194.3,
+        200.4
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.3597,
+       "box": [
+        106.5,
+        119.0,
+        128.1,
+        144.9
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.5857,
+       "box": [
+        132.2,
+        129.7,
+        192.7,
+        201.9
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.5011,
+       "box": [
+        135.3,
+        128.9,
+        194.1,
+        199.1
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.4873,
+       "box": [
+        104.2,
+        116.6,
+        131.2,
+        149.9
+       ]
+      }
+     ]
+    },
+    {
+     "image": "trash__trash1.jpg",
+     "gt": "trash",
+     "float": [
+      {
+       "class": "paper",
+       "score": 0.8497,
+       "box": [
+        95.6,
+        71.4,
+        265.4,
+        257.4
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.3896,
+       "box": [
+        108.2,
+        79.7,
+        267.3,
+        249.8
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.348,
+       "box": [
+        99.2,
+        66.8,
+        255.5,
+        253.1
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "paper",
+       "score": 0.8222,
+       "box": [
+        98.6,
+        73.6,
+        264.6,
+        261.8
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.3114,
+       "box": [
+        110.4,
+        81.5,
+        264.5,
+        251.5
+       ]
+      }
+     ]
+    },
+    {
+     "image": "trash__trash10.jpg",
+     "gt": "trash",
+     "float": [
+      {
+       "class": "glass",
+       "score": 0.8129,
+       "box": [
+        97.7,
+        71.7,
+        189.5,
+        227.8
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "glass",
+       "score": 0.8223,
+       "box": [
+        96.7,
+        74.1,
+        189.4,
+        225.8
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "indomain_test": {
+   "images": 8,
+   "float_hits": 0,
+   "int8_hits": 0,
+   "classification_agreement": 8,
+   "rows": [
+    {
+     "image": "metal1000_jpg.rf.f972491130c59d3bff7e97b22e8e2980.jpg",
+     "gt": "metal1000_jpg.rf.f972491130c59d3bff7e97b22e8e2980.jpg",
+     "float": [
+      {
+       "class": "metal",
+       "score": 0.803,
+       "box": [
+        81.2,
+        15.5,
+        235.0,
+        316.3
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.6161,
+       "box": [
+        92.3,
+        31.6,
+        237.2,
+        309.7
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.7232,
+       "box": [
+        81.5,
+        12.0,
+        237.6,
+        313.1
+       ]
+      }
+     ]
+    },
+    {
+     "image": "metal280_jpg.rf.cb748931e748b5d52c8862e34c09ad39.jpg",
+     "gt": "metal280_jpg.rf.cb748931e748b5d52c8862e34c09ad39.jpg",
+     "float": [
+      {
+       "class": "metal",
+       "score": 0.8634,
+       "box": [
+        11.3,
+        -7.0,
+        270.6,
+        322.2
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "metal",
+       "score": 0.8048,
+       "box": [
+        3.2,
+        -5.9,
+        279.6,
+        325.0
+       ]
+      }
+     ]
+    },
+    {
+     "image": "paper1265_jpg.rf.c4ee623657788eb0940a4f83fddd8c58.jpg",
+     "gt": "paper1265_jpg.rf.c4ee623657788eb0940a4f83fddd8c58.jpg",
+     "float": [
+      {
+       "class": "paper",
+       "score": 0.5959,
+       "box": [
+        22.4,
+        7.6,
+        292.7,
+        305.2
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "paper",
+       "score": 0.5284,
+       "box": [
+        13.3,
+        2.7,
+        296.1,
+        311.7
+       ]
+      }
+     ]
+    },
+    {
+     "image": "paper1639_jpeg.rf.f32f3b3a3ee4851bb63a07bc13713fed.jpg",
+     "gt": "paper1639_jpeg.rf.f32f3b3a3ee4851bb63a07bc13713fed.jpg",
+     "float": [
+      {
+       "class": "plastic",
+       "score": 0.8745,
+       "box": [
+        3.4,
+        5.1,
+        308.6,
+        301.2
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.845,
+       "box": [
+        0.2,
+        -1.7,
+        311.1,
+        301.8
+       ]
+      }
+     ]
+    },
+    {
+     "image": "paper2115_jpg.rf.b9845e846d154f22faec63d97fbba828.jpg",
+     "gt": "paper2115_jpg.rf.b9845e846d154f22faec63d97fbba828.jpg",
+     "float": [
+      {
+       "class": "plastic",
+       "score": 0.7421,
+       "box": [
+        3.3,
+        23.3,
+        312.2,
+        320.2
+       ]
+      },
+      {
+       "class": "paper",
+       "score": 0.6764,
+       "box": [
+        4.7,
+        -7.1,
+        310.9,
+        321.9
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.7098,
+       "box": [
+        3.4,
+        41.5,
+        306.8,
+        318.6
+       ]
+      }
+     ]
+    },
+    {
+     "image": "paper865_jpg.rf.36e50ce9ddf978d1adf29731e052383a.jpg",
+     "gt": "paper865_jpg.rf.36e50ce9ddf978d1adf29731e052383a.jpg",
+     "float": [
+      {
+       "class": "paper",
+       "score": 0.8637,
+       "box": [
+        6.9,
+        2.1,
+        316.1,
+        305.6
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "paper",
+       "score": 0.8605,
+       "box": [
+        3.6,
+        -1.6,
+        316.4,
+        305.3
+       ]
+      }
+     ]
+    },
+    {
+     "image": "plastic184_jpg.rf.2c91c5aa1db5bb367ca13499dfeb4853.jpg",
+     "gt": "plastic184_jpg.rf.2c91c5aa1db5bb367ca13499dfeb4853.jpg",
+     "float": [
+      {
+       "class": "glass",
+       "score": 0.8271,
+       "box": [
+        83.5,
+        52.5,
+        129.5,
+        309.6
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.8134,
+       "box": [
+        249.5,
+        88.4,
+        291.4,
+        317.2
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.7827,
+       "box": [
+        195.3,
+        62.4,
+        241.1,
+        301.8
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.7733,
+       "box": [
+        32.6,
+        82.5,
+        79.0,
+        311.6
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.7457,
+       "box": [
+        140.1,
+        56.3,
+        186.2,
+        303.3
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "glass",
+       "score": 0.8162,
+       "box": [
+        249.8,
+        89.9,
+        291.8,
+        316.2
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.8153,
+       "box": [
+        83.0,
+        50.8,
+        129.9,
+        312.4
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.7892,
+       "box": [
+        195.8,
+        66.1,
+        241.0,
+        304.6
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.7675,
+       "box": [
+        33.3,
+        82.8,
+        78.6,
+        313.1
+       ]
+      },
+      {
+       "class": "glass",
+       "score": 0.7233,
+       "box": [
+        140.2,
+        55.5,
+        185.5,
+        306.2
+       ]
+      }
+     ]
+    },
+    {
+     "image": "plastic607_jpg.rf.47b5dbba2fe32e8701d1fec241667705.jpg",
+     "gt": "plastic607_jpg.rf.47b5dbba2fe32e8701d1fec241667705.jpg",
+     "float": [
+      {
+       "class": "plastic",
+       "score": 0.5582,
+       "box": [
+        93.9,
+        24.9,
+        207.5,
+        316.0
+       ]
+      }
+     ],
+     "int8": [
+      {
+       "class": "plastic",
+       "score": 0.4608,
+       "box": [
+        99.4,
+        -1.5,
+        224.2,
+        88.0
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.4397,
+       "box": [
+        104.8,
+        31.7,
+        217.6,
+        312.6
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.329,
+       "box": [
+        2.5,
+        10.0,
+        61.8,
+        323.0
+       ]
+      },
+      {
+       "class": "plastic",
+       "score": 0.2685,
+       "box": [
+        250.5,
+        -1.3,
+        316.1,
+        307.3
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

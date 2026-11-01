@@ -1,71 +1,59 @@
-# =============================================================================
-# pangoriscv — RV32IM 处理器核 + 原生 AXI4 SoC
-# 入库范围：作品代码、设计文档、验证证据（可再生的产物一律不入库）。
-# =============================================================================
-
-# ---- 编辑与系统垃圾 ----
-.DS_Store
-Thumbs.db
-desktop.ini
-$RECYCLE.BIN/
-*.swp
-*~
-.vscode/
-.idea/
-*.bak
-*.tmp
-*.orig
-*.rej
-
-# ---- 仿真与综合的中间产物（可再生成） ----
-work/
-*.wlf
-transcript
-modelsim.ini
-vsim.wlf
-*.vstf
-*.log.wlf
-simv
-csrc/
-.sim_runs/
-build/
-compile/
-pds.prj
-*.sbit
-*.smsk
-*.bit
-*.pds
-pds.log
-*.rtr
-*.twr
-*.tsr
-*.pwr
-*.used_resources.txt
-
-# ---- Python ----
 __pycache__/
-*.py[cod]
-.pytest_cache/
-.venv/
-venv/
+*.pyc
+tools/local-tools.json
+build/sim_*/work/
+build/board_rtl_checks/work/
+upstream/**/target/
+upstream/**/null/
 
-# ---- 不入库的大件（体积与原因见 docs/repo/LAYOUT.md） ----
-# 注意：这些规则不随目录迁移而失效，因此按“任意层级”匹配。
-# 历史工作树、历史构建目录与备份，散落在本地若干位置，一律忽略。
-09_validation_results/
-02_original_backups/
-10_codex_chats/
-07_board_references/
+# Local environments, tool databases and historical working copies.
+.workbuddy/
+.pylibs/
+.venv/
+.pytest_cache/
+local_archive/
+local_builds/
+preserved/
+wip/
 log/
 logbackup/
-scratch_entry/
-adv_sram_build/
-led_sram_build/
-pangoriscv_axi4/
-legacy/
+build/
+compile/
+constraint_check/
+device_map/
+place_route/
+synthesize/
+generate_bitstream/
+work/
+work2/
+work_*/
+.sim_runs/
+modelsim.ini
+transcript
+*.wlf
+*.vvp
+*.obj
+*.o
+*.dll
+*.exe
+*.db
+*.adf
+*.lock
+*.tmp
+*.bak
+*.lic
+*.key
+*.pem
 
-# ---- 例外：主动入库的产物（复现与上板必需） ----
-# 发布位流：保证拿到仓库就能直接上板，不必重跑综合。
-!bitstream/pangoriscv_i400.sbit
-# PDS 工程文件：Fabric Compiler 可直接打开重建工程（器件 PG2L100H-6-FBG676）。
-!firmware/code/platform/pango_native/*.pds
+# Source and board evidence remain tracked; historical tool outputs do not.
+/evidence/logs/
+/evidence/pds/
+/evidence/records/bottleneck_audit/frontend_opt/pds/
+/evidence/records/bottleneck_audit/frontend_opt/src/
+/evidence/records/bottleneck_audit/frontend_opt/phase2_logs/
+/evidence/records/bottleneck_audit/lsu_opt/pds/
+/evidence/records/bottleneck_audit/lsu_opt/src/
+/evidence/records/bottleneck_audit/lsu_opt/g1_fix/
+/evidence/records/bottleneck_audit/lsu_opt/phase2_logs/
+/evidence/records/bottleneck_audit/lsu_opt_verify/
+/evidence/records/bottleneck_audit/work/

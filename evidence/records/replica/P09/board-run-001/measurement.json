@@ -1,0 +1,56 @@
+{
+  "tag": "P09/board-run-001",
+  "date": "2026-10-30",
+  "note": "树中立 P09（CFG_LD_BYPASS 关闭），与 P10/board-run-001 逐位同分的复验。两个不同哈希的位流跑出完全相同的 Total ticks，证明当前代码树与已上板那一版等价。",
+  "bitstream": {
+    "path": "build/replica_pds/run-019/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "9a990dc17311b7ec61a770763e73f2065e01dfd181f155b35b4822dafe433d94",
+    "pll": "27 MHz * 50 / 16 = 84.375 MHz, VCO 1350 MHz",
+    "sta": "All Constraints Met",
+    "setup_wns_ns": 0.121,
+    "critical_path_ns": 11.73,
+    "resources": {
+      "LUT": 8096,
+      "FF": 3615
+    }
+  },
+  "firmware": {
+    "iterations": 7000,
+    "cpu_hz": 84375000,
+    "uart_div": 91
+  },
+  "measurement": {
+    "total_ticks": 2214108570,
+    "ticks_per_iteration": 316301.22,
+    "coremark_per_mhz": 3.1615,
+    "runtime_secs": 26.24,
+    "runtime_valid": true,
+    "official_text": "Correct operation validated. See README.md for run and reporting rules.",
+    "crc": {
+      "seedcrc": "0xe9f5",
+      "crclist": "0xe714",
+      "crcmatrix": "0x1fd7",
+      "crcstate": "0x8e3a",
+      "crcfinal": "0x25b5"
+    },
+    "score_at_this_frequency": 266.8
+  },
+  "cross_checks": {
+    "identical_to": "P10/board-run-001 (bitstream sha 09f51d46…, 不同位流)",
+    "ticks_delta": 0,
+    "note": "两次独立实现、两个不同位流，Total ticks 完全相同 -> 当前树功能等价于已上板那一版。"
+  },
+  "p09_dev_result": {
+    "switch": "CFG_LD_BYPASS (默认关闭)",
+    "ticks_per_iteration": 296472.55,
+    "coremark_per_mhz": 3.373,
+    "pds_critical_path_ns": 13.1,
+    "pds_achieved_mhz": 76.3,
+    "verdict": "拍数 −6.3% 但频率 −11.7%，交付分 ~253 < 267，暂不启用；等流水线加级。"
+  },
+  "device": {
+    "part": "PG2L100H",
+    "jtag_id": "0x00602899",
+    "program_ok": true
+  }
+}

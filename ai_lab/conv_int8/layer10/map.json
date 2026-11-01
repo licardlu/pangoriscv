@@ -1,0 +1,11 @@
+{
+  "note": "Layer-10 DDR map. The shell reads one int8 per 32-bit word, so each region's physical footprint is 4x its byte length; the checker uses span_bytes for overlap and alignment, not length.",
+  "word_stride": 4,
+  "regions": [
+    {"name": "input",  "start": 0,        "length": 25600, "align": 4},
+    {"name": "weights","start": 131072,   "length": 32768, "align": 4},
+    {"name": "bias",   "start": 262144,   "length": 128,   "align": 4},
+    {"name": "m",      "start": 262656,   "length": 128,   "align": 4},
+    {"name": "output", "start": 263168,   "length": 12800, "align": 4}
+  ]
+}

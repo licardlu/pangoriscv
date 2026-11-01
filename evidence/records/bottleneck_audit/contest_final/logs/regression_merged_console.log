@@ -1,0 +1,46 @@
+=== unit : sim/run_unit_tests.py ===
+RESULT unit exit=0 42.4s :: RUN_DIR E:\file\pango\project\firmware\code\.sim_runs\unit-w_contract-h7__t58z | PASS w_contract | SUMMARY 6 / 6 PASS
+=== engine : sim/run_engine_tests.py ===
+RESULT engine exit=0 250.4s :: PASS data seed=1 fault=7 hardware=True | PASS data seed=1 fault=8 hardware=True | SUMMARY 64/64 PASS
+=== ifu_engine : sim/run_ifu_engine_tests.py ===
+RESULT ifu_engine exit=0 77.9s :: PASS IFU_REAL_ENGINE seed=19 | PASS IFU_REAL_ENGINE seed=20 | SUMMARY 20/20 PASS
+=== dcache : sim/run_dcache_tests.py ===
+RESULT dcache exit=0 4.9s :: PASS dcache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\dcache-3r1ot5a4\dcache.log
+=== icache : sim/run_icache_tests.py ===
+RESULT icache exit=0 4.8s :: PASS icache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\icache-p13nckp1\icache.log
+=== interconnect : sim/run_interconnect_tests.py ===
+RESULT interconnect exit=0 96.9s :: PASS 19 | PASS 20 | SUMMARY 20 / 20 PASS
+=== predictor : sim/run_predictor_tests.py ===
+RESULT predictor exit=0 7.6s :: PASS branch_predictor | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\predict-9qcaoe1j\predict.log
+=== pipeline : sim/run_pipeline_tests.py ===
+RESULT pipeline exit=0 6.2s :: RUN_DIR E:\file\pango\project\firmware\code\.sim_runs\pipeline-zwozgehh | PASS N03_PIPELINE
+=== ram : sim/run_ram_tests.py ===
+RESULT ram exit=0 156.1s :: PASS lsu seed=19 | PASS lsu seed=20 | SUMMARY 40/40 PASS
+=== gpio_trace : sim/run_gpio_trace_tests.py ===
+RESULT gpio_trace exit=0 49s :: PASS gpio_trace | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\gpio-trace-aub6lwfi\gpio_trace.log
+=== perf : sim/run_perf_tests.py ===
+RESULT perf exit=0 7s :: PASS perf_regs | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\perf-56xo6jtn\perf.log
+=== isa_e2e : tools/run_isa_e2e.py ===
+RESULT isa_e2e exit=0 73s :: case 15 PASS  machine timer interrupt and MRET | case 16 PASS  counter write/increment/wrap/retire semantics | SUMMARY 16 / 16 PASS
+=== halt_reset : tools/run_halt_reset_tests.py ===
+RESULT halt_reset exit=0 24.8s ::   scenario 4: PASS - reset during an in-flight data write |   scenario 5: PASS - reset while the bus is idle | SUMMARY 5 / 5 PASS
+
+suite        exit status seconds tail                                                                                                                                log                                                                                                          
+-----        ---- ------ ------- ----                                                                                                                                ---                                                                                                          
+unit            0 PASS      42.4 RUN_DIR E:\file\pango\project\firmware\code\.sim_runs\unit-w_contract-h7__t58z | PASS w_contract | SUMMARY 6 / 6 PASS               E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\unit.log        
+engine          0 PASS     250.4 PASS data seed=1 fault=7 hardware=True | PASS data seed=1 fault=8 hardware=True | SUMMARY 64/64 PASS                                E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\engine.log      
+ifu_engine      0 PASS      77.9 PASS IFU_REAL_ENGINE seed=19 | PASS IFU_REAL_ENGINE seed=20 | SUMMARY 20/20 PASS                                                    E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\ifu_engine.log  
+dcache          0 PASS       4.9 PASS dcache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\dcache-3r1ot5a4\dcache.log                E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\dcache.log      
+icache          0 PASS       4.8 PASS icache_axi | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\icache-p13nckp1\icache.log                E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\icache.log      
+interconnect    0 PASS      96.9 PASS 19 | PASS 20 | SUMMARY 20 / 20 PASS                                                                                            E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\interconnect.log
+predictor       0 PASS       7.6 PASS branch_predictor | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\predict-9qcaoe1j\predict.log        E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\predictor.log   
+pipeline        0 PASS       6.2 RUN_DIR E:\file\pango\project\firmware\code\.sim_runs\pipeline-zwozgehh | PASS N03_PIPELINE                                         E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\pipeline.log    
+ram             0 PASS     156.1 PASS lsu seed=19 | PASS lsu seed=20 | SUMMARY 40/40 PASS                                                                            E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\ram.log         
+gpio_trace      0 PASS        49 PASS gpio_trace | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\gpio-trace-aub6lwfi\gpio_trace.log        E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\gpio_trace.log  
+perf            0 PASS         7 PASS perf_regs | SUMMARY 1/1 PASS |   log: E:\file\pango\project\firmware\code\.sim_runs\perf-56xo6jtn\perf.log                     E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\perf.log        
+isa_e2e         0 PASS        73 case 15 PASS  machine timer interrupt and MRET | case 16 PASS  counter write/increment/wrap/retire semantics | SUMMARY 16 / 16 PASS E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\isa_e2e.log     
+halt_reset      0 PASS      24.8   scenario 4: PASS - reset during an in-flight data write |   scenario 5: PASS - reset while the bus is idle | SUMMARY 5 / 5 PASS   E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged\halt_reset.log  
+
+
+
+REGRESSION PASS: 13/13 suites passed, dir E:\file\pango\project\evidence\records\bottleneck_audit\contest_final\logs\regression_merged

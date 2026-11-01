@@ -1,0 +1,12 @@
+# 39 MHz on the CORE clock (period 25.641 ns) -- P16 delivery attempt.
+#
+# Hardware chain: 27 MHz on D18 -> GTP_PPLL I=1/M=1/F=52/O0=36 -> 27*52/36 = 39.000 MHz.
+# VCO = 1404 MHz (legal 1330..2133).
+#
+# Why 39 and not 45/50: the delivered 4-stage core's routed worst path is
+# 24.598 ns (p15nx45 .rtr, 45 MHz constraint, S1 reverted, All Constraints
+# Violated by -2.376).  P16 shortens the redirect cone on both lanes (nothing
+# else on that path changed), so the routed path should land just under 24.6 ns;
+# 39 MHz leaves ~1.0 ns of margin, which is what a board delivery needs.
+create_clock -name board_clk -period 37.037037 -waveform {0 18.5185185} [get_ports {clk}]
+create_clock -name core_clk -period 25.641026 -waveform {0 12.820513} [get_pins {u_core_pll/CLKOUT0}]

@@ -1,0 +1,58 @@
+{
+  "tag": "P10/board-run-001",
+  "date": "2026-10-30",
+  "note": "V2 双发射 + 分支预测 + 预测跳转清队；84.375 MHz 档上板。这是 V2 第一次在交付分上超过 V1，也是复现核目前的最高有效成绩。",
+
+  "bitstream": {
+    "path": "build/replica_pds/run-016/generate_bitstream/pango_cpu_top.sbit",
+    "sha256": "09f51d462de4ea0c012ce49f014ae16ba418bfb0603cf1435bd28b9338f78892",
+    "pll": "27 MHz * 50 / 16 = 84.375 MHz, VCO 1350 MHz",
+    "constraint": "project/core_replica/pango_cpu_84.fdc (11.851 ns)",
+    "sta": "All Constraints Met",
+    "setup_wns_ns": 0.280,
+    "critical_path_ns": 11.571,
+    "achieved_mhz": 86.42,
+    "resources": { "LUT": 8096, "FF": 3615, "distributed_ram": 200, "DRM": 32, "APM": 4 }
+  },
+
+  "firmware": {
+    "iterations": 7000,
+    "cpu_hz": 84375000,
+    "uart_div": 91,
+    "uart_actual_baud": 114640,
+    "uart_error_pct": 0.49
+  },
+
+  "measurement": {
+    "total_ticks": 2214108570,
+    "ticks_per_iteration": 316301.22,
+    "coremark_per_mhz": 3.1615,
+    "runtime_secs": 26.24,
+    "runtime_valid": true,
+    "official_text": "Correct operation validated. See README.md for run and reporting rules.",
+    "crc": {
+      "seedcrc": "0xe9f5",
+      "crclist": "0xe714",
+      "crcmatrix": "0x1fd7",
+      "crcstate": "0x8e3a",
+      "crcfinal": "0x25b5"
+    },
+    "score_at_this_frequency": 266.8
+  },
+
+  "cross_checks": {
+    "sim_ticks_per_iteration_with_btb": 316327.40,
+    "sim_vs_board_pct": -0.0083,
+    "note": "板上比仿真略快 0.008%，与 V1 的 0.0045% 同量级；crcfinal 0x25b5 与 V1/V2 之前 7000 迭代一致，说明跑的是同一份负载。"
+  },
+
+  "comparison": {
+    "V1_board_120_46MHz": { "coremark_per_mhz": 2.1040, "score": 253.4 },
+    "V2_board_90MHz_previous": { "coremark_per_mhz": 2.6131, "score": 235.2 },
+    "V2_board_84_375MHz_now": { "coremark_per_mhz": 3.1615, "score": 266.8 },
+    "delta_vs_previous_v2_pct": 13.4,
+    "delta_vs_v1_pct": 5.3
+  },
+
+  "device": { "part": "PG2L100H", "jtag_id": "0x00602899", "program_ok": true }
+}

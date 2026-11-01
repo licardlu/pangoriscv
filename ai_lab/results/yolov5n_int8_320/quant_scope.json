@@ -1,0 +1,56 @@
+{
+ "quantized_conv_count": 57,
+ "sample": [
+  {
+   "key": "seq.0.conv.weight",
+   "dtype": "torch.qint8",
+   "shape": [
+    16,
+    3,
+    6,
+    6
+   ]
+  },
+  {
+   "key": "seq.1.conv.weight",
+   "dtype": "torch.qint8",
+   "shape": [
+    32,
+    16,
+    3,
+    3
+   ]
+  },
+  {
+   "key": "seq.2.cv1.conv.weight",
+   "dtype": "torch.qint8",
+   "shape": [
+    16,
+    32,
+    1,
+    1
+   ]
+  },
+  {
+   "key": "seq.2.m.0.cv1.conv.weight",
+   "dtype": "torch.qint8",
+   "shape": [
+    16,
+    16,
+    1,
+    1
+   ]
+  },
+  {
+   "key": "seq.2.m.0.cv2.conv.weight",
+   "dtype": "torch.qint8",
+   "shape": [
+    16,
+    16,
+    3,
+    3
+   ]
+  }
+ ],
+ "backend": "fbgemm"
+}

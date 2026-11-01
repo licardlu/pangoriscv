@@ -1,0 +1,2 @@
+dbg_help
+exit

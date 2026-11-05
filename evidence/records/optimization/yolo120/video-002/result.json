@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "case": "split",
+      "passed": true,
+      "marker": "TEST_PASS light_split_video",
+      "test_sha256": "688690d1ada3177dc8f9f43b72af41ce9d84bee2550326ef07827c2ea9af2a67",
+      "inputs": [
+        {
+          "path": "extensions/ui_reference/extensions/business/application/rtl/light_split_video.sv",
+          "sha256": "3467aad17674fddce6d609d50072634583961568cc877df7863dc3c3409611dd"
+        }
+      ]
+    },
+    {
+      "case": "frame",
+      "passed": true,
+      "marker": "TEST_PASS light_live_frame",
+      "test_sha256": "43f4e0855eae8ee483da156f666c6985ef790f96e1a77ae0fe34cb4373527f56",
+      "inputs": [
+        {
+          "path": "project/yolo120/rtl/video_ai_frontend.v",
+          "sha256": "d63dc5658db8d2fdc48bf460d9a02d8a4e209b61c0023bff0638f06f2be72e28"
+        },
+        {
+          "path": "extensions/yolo/rtl/camera_snapshot.v",
+          "sha256": "dd71374dcd32b9896be71e38b9d2f460955df4439ae7a359eb36d1f4443480a7"
+        },
+        {
+          "path": "extensions/ui_reference/extensions/business/application/rtl/bcd32.sv",
+          "sha256": "450cf2c8041f2a2ddd85fea6e8c9a2b105494e015aa985e15fef06a7d6ae5cb0"
+        },
+        {
+          "path": "extensions/ui_reference/extensions/business/application/rtl/ui_light_panel.sv",
+          "sha256": "44164537cdfc4988d6aa236ab4cb660f3978e4ee37ea95d90a26ebf0ef0bde8a"
+        },
+        {
+          "path": "extensions/ui_reference/extensions/business/application/rtl/light_split_video.sv",
+          "sha256": "3467aad17674fddce6d609d50072634583961568cc877df7863dc3c3409611dd"
+        }
+      ]
+    }
+  ],
+  "board_verified": false,
+  "note": "Synthetic fixture -> canonical frontend OSD -> supplied white split compositor; not a camera capture, neural recognition result, or complete board-top verification."
+}

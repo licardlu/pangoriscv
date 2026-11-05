@@ -1,6 +1,8 @@
 # 独立 PDS 源码版：完整参考逻辑仿照基线
 
-**2026-10-30 已验收独立构建与两次新位流上板。** 可直接打开 `build/standalone-001/implementation.pds`；本次位流发布副本在 `bitstream/current/pango_replica_core_120.sbit`，SHA256 为 `2e38db1c26bd6a1bcb9a3fe1d09ca6d70bf430d5ac50001f450664a50c81f9cb`。两次均为 1309328358 ticks、五 CRC 全对，5.346252494 CoreMark/MHz @ PLL 120.461538 MHz。实测归档 `evidence/implementation-standalone-001/measurement.json`；源码隔离记录 `evidence/isolation/result.json`。最终 STA 仍未闭合，不宣称为 STA 合规终版。
+**2026-10-30 已验收独立构建与两次新位流上板。** `build/` 目录不随包发布，`build/standalone-001/implementation.pds` 需要先按下面的说明重建一次；本次位流发布副本在 `bitstream/current/pango_replica_core_120.sbit`，SHA256 为 `2e38db1c26bd6a1bcb9a3fe1d09ca6d70bf430d5ac50001f450664a50c81f9cb`。两次均为 1309328358 ticks、五 CRC 全对，5.346252494 CoreMark/MHz @ PLL 120.461538 MHz。实测归档 `evidence/implementation-standalone-001/measurement.json`；源码隔离记录 `evidence/isolation/result.json`。最终 STA 仍未闭合，不宣称为 STA 合规终版。
+
+**2026-11-04 又做了一次"搬家式"复验**：把本目录整份复制到仓库之外、删掉 `evidence/` 后重新构建，20 分 52 秒出位流，8/8 路镜像加载，LUT 8867 / FF 6658 / DRM 34 / APM 5，与交付版差 8 个 LUT、其余逐项相同；setup −1.532 ns（交付版 −1.426，属同一网表的摆放抽样，不是退化）。记录见 `evidence/indep-rebuild-001/`。**结论：本目录确实可以脱离仓库独立构建。**
 
 本目录可以整目录复制到别处，独立综合、实现和生成位流。入口为 `tools/build.py`；硬件顶层 `rtl/board/pango_vexii_top.sv`，CPU 顶层 `rtl/core/pango_replica_core.v`。本目录之外的 `upstream/`、`rtl/generated/`、`reference_exact/`、旧 build、旧 Python 工具与 Java/Scala/SBT 均不是本版本构建输入。
 
@@ -13,7 +15,7 @@
 - `sources.f`：43 个设计输入文件；全部路径相对本目录。
 - `constraints/`：冻结的 FDC/PCF；PG2L100H-6、FBG676，27 MHz 输入，PLL 120.461538 MHz。
 - `firmware/image/`：冻结 7000 迭代 ELF 与八 lane 初值。构建先核对 ELF/RAM，再检查 PDS 恰好加载八 lane。
-- `firmware/source/`：对应 CoreMark 与软件移植源码；默认直接用冻结镜像，避免重新编译改变性能对照条件。
+- `firmware/source/`：对应冻结镜像的 CoreMark 与移植源码。构建时**不重编**，直接用 `firmware/image/` 里的冻结镜像，避免重新编译改变性能对照条件。想验证"源码能否复现这份镜像"，用仓库根目录的 `python scripts/build.py firmware --iterations 7000`，产物经 `scripts/verify_image.py` 核对应得 `ram_sha256 = c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d`（已实测一致）。
 - `flow/`、`tools/`：本地构建、校验、下载和板测检查；不读取外部仓库配置。
 - `provenance/`：历史来源映射、原式提取清单和许可证，仅供审计，不是外部依赖。
 - `evidence/baseline/`、`bitstream/baseline/`：先前实际两次板测的原始证据和原位流，明确属于历史基线。
@@ -25,7 +27,7 @@
 
 ```powershell
 python tools/build.py verify
-python tools/build.py build --name run-001 --pds 'D:/FPGA_Project/zi_guang_tong_chuang/pds/PDS_2022.2-SP6.1/bin/pds_shell.exe'
+python tools/build.py build --name run-001 --pds '<PDS>/bin/pds_shell.exe'
 ```
 
 也可以将 PDS 可执行文件路径放入 `PDS_SHELL`，无需修改源码。每次换一个新 run 名，禁止覆盖既有实现。完成后打开 `build/run-001/implementation.pds`。移动本目录之后用新名字重新构建，以生成当前位置的 PDS 工程；不要仅拷贝单个 `.pds`。
@@ -37,7 +39,7 @@ python tools/build.py build --name run-001 --pds 'D:/FPGA_Project/zi_guang_tong_
 使用 `tools/program.ps1`，明确指定 PDS shell、串口和 JTAG server 端口。下载为 SRAM 配置，不改板载 Flash。先打开串口，再下载，保留独立 evidence 目录。命令示例：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools/program.ps1 -BuildName run-001 -EvidenceTag board-run-001 -PdsShell 'D:/FPGA_Project/zi_guang_tong_chuang/pds/PDS_2022.2-SP6.1/bin/pds_shell.exe' -SerialPort COM34 -JtagPort 65420
+powershell -ExecutionPolicy Bypass -File tools/program.ps1 -BuildName run-001 -EvidenceTag board-run-001 -PdsShell '<PDS>/bin/pds_shell.exe' -SerialPort COM34 -JtagPort 65420
 python tools/check_board.py evidence/board-run-001
 ```
 

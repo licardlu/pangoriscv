@@ -1,0 +1,1626 @@
+{
+  "baseline": {
+    "checksum_exceptions": [
+      {
+        "changed": true,
+        "current_bytes": 11561,
+        "current_sha256": "7137f3848573399df8884c4ff164e26fad12296efd91dc0a611a9759b4ee0e22",
+        "expected_bytes": 10455,
+        "expected_sha256": "0179d53916a1d95feac47a0e23b8d18cb7f6c8d5ddf7d1787e3f2b1a46b37150",
+        "path": "software/platform_main.c"
+      }
+    ],
+    "checksums_sha256": "6da94c3edbb58c14b6054257db680f6227f6e5dc5d2de0273c6baea494419d78",
+    "cpu_hz": 27000000,
+    "frozen_source_records": 71,
+    "model_sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a",
+    "name": "pre_pnr_source_20261103_002112",
+    "source_manifest_sha256": "6cf052c7c427b347760a9ad2887e5111ae09a71d87b1d7ae019b74926d269767",
+    "verified_checksum_records": 241
+  },
+  "contents": {
+    "board_score_audio_adapter_complete": false,
+    "bright_split_layout_included": true,
+    "build_or_pnr_artifacts_included": false,
+    "business_module_and_asset_files": 69,
+    "i2s_external_amp_output_included": true,
+    "music_asset_names": [
+      "MUSIC0.WAV",
+      "MUSIC1.WAV",
+      "MUSIC2.WAV"
+    ],
+    "music_assets_included": true,
+    "native_live_camera_right_half_included": true,
+    "points_display_included": true,
+    "qr_or_account_runtime_included": false,
+    "reward_music_included": true,
+    "servo_control_included": false,
+    "servo_or_music_feature_code_included": true,
+    "simplified_app_service_and_test_included": true,
+    "vision_osd_camera_and_classification_modules_included": true,
+    "voice_feedback_asset_names": [
+      "CORRECT.WAV",
+      "PROMPT.WAV",
+      "TIMEOUT.WAV",
+      "WRONG.WAV"
+    ],
+    "yolo_source_files": 243
+  },
+  "exclusions": {
+    "generated_eda_artifact": 1
+  },
+  "files": [
+    {
+      "bytes": 2531,
+      "path": "README.md",
+      "sha256": "5ea4eb33ab32b70be3b681af3c46ecc545ff4df05cfc002c9b1f2f851e2a854f"
+    },
+    {
+      "bytes": 242398,
+      "path": "extensions/business/application/assets/audio/CORRECT.WAV",
+      "sha256": "93b9281e8cec9f81c55a1096dfe243846a97585c1be42b2081a6b592abcd74c2"
+    },
+    {
+      "bytes": 553004,
+      "path": "extensions/business/application/assets/audio/MUSIC0.WAV",
+      "sha256": "3eb8047ea68008d7aee6b25bbd83b0a6b87a96b537b9be6a767b2ac27e49b90d"
+    },
+    {
+      "bytes": 553004,
+      "path": "extensions/business/application/assets/audio/MUSIC1.WAV",
+      "sha256": "c33f4e08241970866f744163f21f9fb30ed1daa65bb939bf88466b4b97198646"
+    },
+    {
+      "bytes": 553004,
+      "path": "extensions/business/application/assets/audio/MUSIC2.WAV",
+      "sha256": "ff8503789c6db80051a1a75f2b6a9b515cf67aa0aa05d948e1130f92bf1d25cc"
+    },
+    {
+      "bytes": 223198,
+      "path": "extensions/business/application/assets/audio/PROMPT.WAV",
+      "sha256": "356e5e7d3f6cc69f3ec725c2e9f22182719bceb39cd375ef0526c5fee67f0e41"
+    },
+    {
+      "bytes": 402718,
+      "path": "extensions/business/application/assets/audio/TIMEOUT.WAV",
+      "sha256": "bc73d670687da1927653c9e5a6912f426ca4cabaa5ef9d70c2699f0042aeeb45"
+    },
+    {
+      "bytes": 326,
+      "path": "extensions/business/application/assets/audio/VOICE_MANIFEST.json",
+      "sha256": "8b72085dbdec5d341c7633a944cdf495e13186893f8f93b8e2e7e8b1ede9aeb2"
+    },
+    {
+      "bytes": 227998,
+      "path": "extensions/business/application/assets/audio/WRONG.WAV",
+      "sha256": "c2258d7307b46580fdf31df4a6b6467ea4e8cf92728e6a5748080cf685efea5c"
+    },
+    {
+      "bytes": 288000,
+      "path": "extensions/business/application/assets/ui_bg.hex",
+      "sha256": "43667f6e48fe1cd4b6280cb78d9182f345177c28e984b357a476a41e0f32ae71"
+    },
+    {
+      "bytes": 288000,
+      "path": "extensions/business/application/assets/ui_light_bg.hex",
+      "sha256": "a9d3c4830ff8f73564ad74255454a05cde3c9904fbc8307395b8af41ad3eb4b3"
+    },
+    {
+      "bytes": 1047,
+      "path": "extensions/business/application/assets/ui_light_layout.json",
+      "sha256": "1379ac207f57f77ec00faf2640b96abf5f4a39cf6983bc831862e6bdd1aa9b23"
+    },
+    {
+      "bytes": 128,
+      "path": "extensions/business/application/assets/ui_light_palette.hex",
+      "sha256": "ef2c5c96cb080eba482fb538342cded2af5b411f58090d1418660134d0ac6e00"
+    },
+    {
+      "bytes": 97200,
+      "path": "extensions/business/application/assets/ui_light_status.hex",
+      "sha256": "186ebaf885c701526e4e7672ed891cc2ce2b33082fe0022eb13266c2f8afc6dc"
+    },
+    {
+      "bytes": 128,
+      "path": "extensions/business/application/assets/ui_palette.hex",
+      "sha256": "56113559325389e3d06ac5baacbaf49992cd0268bcea13bbaf45ac2bea969ee9"
+    },
+    {
+      "bytes": 97200,
+      "path": "extensions/business/application/assets/ui_status.hex",
+      "sha256": "50e36e462dddad59ccd4b8f2d7b78dc5c3d6693ac36e79a6f896d75a96c436b4"
+    },
+    {
+      "bytes": 12049,
+      "path": "extensions/business/application/assets/摄像头仿真输入.png",
+      "sha256": "a289a20b7cc5c5d878c13859c8acb8f70d3697f6fb4c2af0bb85d67d8212a1c2"
+    },
+    {
+      "bytes": 40385,
+      "path": "extensions/business/application/assets/白色布局_实时视频链路_RTL仿真.png",
+      "sha256": "bc21f1d0f5b4389b14c4bb01655236fe2a8ae1b40acaefb08edf1a291463a332"
+    },
+    {
+      "bytes": 4082,
+      "path": "extensions/business/application/docs/本次修改与验证.md",
+      "sha256": "3a52979a02547f1def4a1c2bc59b1770684ca55283e98ea1d1f70d9982d6754a"
+    },
+    {
+      "bytes": 3778,
+      "path": "extensions/business/application/docs/白色分屏与提示语音.md",
+      "sha256": "8f33ab2ae70c70410076ee9b51c03757e58063c909668e679f26f21b8bcf86ac"
+    },
+    {
+      "bytes": 2324,
+      "path": "extensions/business/application/docs/积分与音频状态界面.md",
+      "sha256": "1f61e18d5ebefcd948b29a95f9c9deeeea1d4a6c00a32b8ea8e0a348633e6b8f"
+    },
+    {
+      "bytes": 804,
+      "path": "extensions/business/application/docs/语音素材清单.md",
+      "sha256": "40014ed205b90a51f8afa7749dd4b5ea8a6185b1ca7ad3a2ac6805cf3cf4281c"
+    },
+    {
+      "bytes": 3567,
+      "path": "extensions/business/application/firmware/app.c",
+      "sha256": "5a33721f294542fb089d376445fe7795698b910905fe044a79f911704ae12868"
+    },
+    {
+      "bytes": 914,
+      "path": "extensions/business/application/firmware/app.h",
+      "sha256": "bf5bf7d2dba1c9e1a28090830b1e4e80071bbc894a55b331206bb289d0d4a99a"
+    },
+    {
+      "bytes": 1172,
+      "path": "extensions/business/application/firmware/app_yolo.c",
+      "sha256": "cc778e8c288cd444662df87bb447a6d2862f62f8712a0cf8e2e57bc7dd42bd56"
+    },
+    {
+      "bytes": 248,
+      "path": "extensions/business/application/firmware/app_yolo.h",
+      "sha256": "6aee4ef0c5268451173ddbc0b6dd0f57558cabe86cece81ed526ea890dffd045"
+    },
+    {
+      "bytes": 572,
+      "path": "extensions/business/application/firmware/audio_drain.c",
+      "sha256": "dd70e0586749fea50f1c13060e3603646622600b53369d0a626b02c602ff130b"
+    },
+    {
+      "bytes": 489,
+      "path": "extensions/business/application/firmware/audio_drain.h",
+      "sha256": "9e0496b148422635608d49bd600af3b802ae473524c63f221e7d880f714c1a95"
+    },
+    {
+      "bytes": 12658,
+      "path": "extensions/business/application/firmware/io.c",
+      "sha256": "b575a1dc509b757a4cf3262a176d535cb298271b1d8cfa3b363cc1a79d4a920a"
+    },
+    {
+      "bytes": 1658,
+      "path": "extensions/business/application/firmware/io.h",
+      "sha256": "2947645c5870ae354be671b351c7ef22c3e6cdfd994bc3b760519a5f76edf005"
+    },
+    {
+      "bytes": 8576,
+      "path": "extensions/business/application/firmware/platform.c",
+      "sha256": "ae71e8aea6020e2fba72c75ea1e74955092660d95f1a898f38c8419ab22173a5"
+    },
+    {
+      "bytes": 344,
+      "path": "extensions/business/application/firmware/platform.h",
+      "sha256": "e6a7672abb60c88251338533aaaa84c71334310f8df1f248a84e311f7ac546a0"
+    },
+    {
+      "bytes": 2833,
+      "path": "extensions/business/application/firmware/service.c",
+      "sha256": "36acf89fa3a792ea8d0aa4d10ad392fa751a6255883f7c43c4fd888296ff768b"
+    },
+    {
+      "bytes": 873,
+      "path": "extensions/business/application/firmware/service.h",
+      "sha256": "f86688167c837cc328ce50b7f0bd8659146de888fce579633d863e2314e7356b"
+    },
+    {
+      "bytes": 2663,
+      "path": "extensions/business/application/firmware/vision.c",
+      "sha256": "6a6865ad4b43cfb674cd66676e57cd42722109d0abced34cc298284325b6e952"
+    },
+    {
+      "bytes": 654,
+      "path": "extensions/business/application/firmware/vision.h",
+      "sha256": "843b78a0666f7d8276475ca4d99a17398d2bbde387471066fc16a21c39fcd441"
+    },
+    {
+      "bytes": 669,
+      "path": "extensions/business/application/rtl/bcd32.sv",
+      "sha256": "450cf2c8041f2a2ddd85fea6e8c9a2b105494e015aa985e15fef06a7d6ae5cb0"
+    },
+    {
+      "bytes": 726,
+      "path": "extensions/business/application/rtl/camera_cdc.sv",
+      "sha256": "cad0081c7b420de5a80d85c8c1804c43f79668ee1aca61e0b148271605f5f89f"
+    },
+    {
+      "bytes": 2648,
+      "path": "extensions/business/application/rtl/camera_preview.sv",
+      "sha256": "18cd7653586f2af45f2670e1576a594344d20d0804af6ae56898d199f0dbb2b2"
+    },
+    {
+      "bytes": 1296,
+      "path": "extensions/business/application/rtl/i2s_tx.sv",
+      "sha256": "e47d9c0b820cdf4381f2e98ee9eb9dd4ff3cc4576cac75c28646dee6f6de61ae"
+    },
+    {
+      "bytes": 3946,
+      "path": "extensions/business/application/rtl/light_split_video.sv",
+      "sha256": "3467aad17674fddce6d609d50072634583961568cc877df7863dc3c3409611dd"
+    },
+    {
+      "bytes": 638,
+      "path": "extensions/business/application/rtl/snapshot_cdc.sv",
+      "sha256": "ef52ff0aaa76627960053cbd5686e9a4f9e82424e6ea786bd29e9ea6e6585058"
+    },
+    {
+      "bytes": 3341,
+      "path": "extensions/business/application/rtl/ui_light_panel.sv",
+      "sha256": "44164537cdfc4988d6aa236ab4cb660f3978e4ee37ea95d90a26ebf0ef0bde8a"
+    },
+    {
+      "bytes": 8984,
+      "path": "extensions/business/application/rtl/ui_rgb.sv",
+      "sha256": "e276ebf1cc136c8d3a64e1a69fb45bf2437b859636e7aedc9bc421b6c85cbb82"
+    },
+    {
+      "bytes": 2422,
+      "path": "extensions/business/application/rtl/vision_font.vh",
+      "sha256": "208604d5869743049cbf28723437edac321594af488079493c1297e4d5e4e5ca"
+    },
+    {
+      "bytes": 2560,
+      "path": "extensions/business/application/rtl/vision_mmio.sv",
+      "sha256": "2a2d1faf9f84b51b1b337b4dcc545525a277075e2694a623d7b1c47d55039c41"
+    },
+    {
+      "bytes": 1716,
+      "path": "extensions/business/application/rtl/vision_overlay.sv",
+      "sha256": "61902b460496d269063bc34127d371005eae697f7037b36b867a7644f9d72b0b"
+    },
+    {
+      "bytes": 680,
+      "path": "extensions/business/application/tests/audio_retire_tb.sv",
+      "sha256": "5f1a245242906a14c602408ceae1fa045c4be136d2a3ac5d5e5504eb9450b852"
+    },
+    {
+      "bytes": 975,
+      "path": "extensions/business/application/tests/display_tb.sv",
+      "sha256": "27f9b2f926effadddc9150c5f39ac6a4f1d08dcd2fb18233bab0b0107e77fc8d"
+    },
+    {
+      "bytes": 2588,
+      "path": "extensions/business/application/tests/light_live_frame_tb.sv",
+      "sha256": "7395fa48cd221b8f9e221febc01601ced2f7db2a34eec9373cd3b7f81f362c61"
+    },
+    {
+      "bytes": 1105,
+      "path": "extensions/business/application/tests/light_panel_tb.sv",
+      "sha256": "30973ae954be5e134c7c13d75eb3fb672f282c1573b9e588521b9427971ecbf1"
+    },
+    {
+      "bytes": 4305,
+      "path": "extensions/business/application/tests/light_split_video_tb.sv",
+      "sha256": "d65c5d1629644526a55758edd62593c0b4c37a9783641ba8931342aa2383a8a0"
+    },
+    {
+      "bytes": 1291,
+      "path": "extensions/business/application/tests/overlay_tb.sv",
+      "sha256": "2f9696419f7c3adabbb1afa4569fa899a8fba93510ed255aa5ad7e9bb82076aa"
+    },
+    {
+      "bytes": 764,
+      "path": "extensions/business/application/tests/test_audio_assets.py",
+      "sha256": "3496f70126d2e53b95a18b043cf60a032b2051f717b359ba7f2e2ea5187f04ea"
+    },
+    {
+      "bytes": 1848,
+      "path": "extensions/business/application/tests/test_light_ui_assets.py",
+      "sha256": "28c05096273878b791c8fb957f5f3c28b3f29bdcb9be182206ac047c86fefb6c"
+    },
+    {
+      "bytes": 6748,
+      "path": "extensions/business/application/tests/test_simplified_app.c",
+      "sha256": "6e69ca02c84fb5d3a00aeeb18e34cc9ebc2f96a1bb7c4a239628162382b5b2a1"
+    },
+    {
+      "bytes": 1407,
+      "path": "extensions/business/application/tests/test_voice_assets.py",
+      "sha256": "b085baceec641976d72a5be62606ceb957e681eb81c7ab46043c06f65ed99b2e"
+    },
+    {
+      "bytes": 1008,
+      "path": "extensions/business/application/tests/ui_points_audio_frame_tb.sv",
+      "sha256": "275dc3308ed9773e05ea606dbfbdacb1058d57ee432e10a3d0fbeb74a2bdfc95"
+    },
+    {
+      "bytes": 1276,
+      "path": "extensions/business/application/tests/ui_points_audio_tb.sv",
+      "sha256": "1331b2bc2f50427b1a4ad8f79b3fa988c00a7916ee028296252117a7c98df17a"
+    },
+    {
+      "bytes": 1858,
+      "path": "extensions/business/application/tests/vision_display_tb.sv",
+      "sha256": "7de01b5ef3e59519211b8045cb82287dea6a30a74f3bb88faf77c53c9143edfa"
+    },
+    {
+      "bytes": 5578,
+      "path": "extensions/business/application/tools/light_ui_assets.py",
+      "sha256": "a675a82f73081c2e9651cf86d9a91cb1028d4886fa785ef23d29c828205c17a3"
+    },
+    {
+      "bytes": 949,
+      "path": "extensions/business/application/tools/make_voice.ps1",
+      "sha256": "a9c02c5053ddf91021627a9258f1b86038c5841ce8ffefb1e96b7703088655c1"
+    },
+    {
+      "bytes": 2682,
+      "path": "extensions/business/application/tools/test_light_live_frame.py",
+      "sha256": "4ad2f9466c6dd0cfeca800861d1e561280edd676832996c3832214ddc257a5c1"
+    },
+    {
+      "bytes": 1571,
+      "path": "extensions/business/application/tools/test_light_split_video.py",
+      "sha256": "bd999b46e29697c8b5f6e6d6f645b674b38dffdacb63b7fde557b5c6a64233f7"
+    },
+    {
+      "bytes": 5053,
+      "path": "extensions/business/application/tools/test_rtl.py",
+      "sha256": "3043050af88237071ef7dbff1ae7c6a08287f465d9c3b1cbb68c6bf3e28aa7e2"
+    },
+    {
+      "bytes": 1596,
+      "path": "extensions/business/application/tools/test_ui_points_audio.py",
+      "sha256": "7aa67efbdf4d9af48b669f2408a338a3948e168d23e7ab1eda6665a08177e837"
+    },
+    {
+      "bytes": 1365,
+      "path": "extensions/business/rtl/camera_events.sv",
+      "sha256": "6b400682d4a1b8c307e5c72d28504b13330d6af7414ea222ad2aab21d0bbbf46"
+    },
+    {
+      "bytes": 1353,
+      "path": "extensions/business/rtl/request_cdc.sv",
+      "sha256": "2920ee440e6fb28bf3f23aac8cdd08fc9453038e227f7462299eac31252042d1"
+    },
+    {
+      "bytes": 1056,
+      "path": "extensions/business/rtl/shared_boot_flash.sv",
+      "sha256": "8411c7904dbcd7e39d2623359f856b91d56b579113149ebbada01e20ed235541"
+    },
+    {
+      "bytes": 806,
+      "path": "extensions/business/rtl/uart_mode.sv",
+      "sha256": "4b15f33457485ec9479811dbc2b1308a60a7c3e7e631c5d3de37c216092e6453"
+    },
+    {
+      "bytes": 29237,
+      "path": "tools_simplified/build_source_package.py",
+      "sha256": "c70b590f14306436e1863a423752e2eb689dfcaacd82b45bb76cbf20399b1730"
+    },
+    {
+      "bytes": 2000,
+      "path": "yolo/README.pre_pnr.md",
+      "sha256": "75402ec939a9879868380f7a08b83341425782cfa8cc150b7a34b36b46abbc68"
+    },
+    {
+      "bytes": 4673,
+      "path": "yolo/build_pre_pnr.tcl",
+      "sha256": "7074979ac6984785ea1d6e0b2a30412cce2b0902102d746d515be17b464cad4e"
+    },
+    {
+      "bytes": 41353,
+      "path": "yolo/checksums.json",
+      "sha256": "6da94c3edbb58c14b6054257db680f6227f6e5dc5d2de0273c6baea494419d78"
+    },
+    {
+      "bytes": 77018,
+      "path": "yolo/ipcore/ddr3_test/ddr3_test.idf",
+      "sha256": "b600d6102995be4e76b060dd45786b5e1497bd2e7499bbc04b870de9355f2747"
+    },
+    {
+      "bytes": 22196,
+      "path": "yolo/ipcore/ddr3_test/ddr3_test.v",
+      "sha256": "3c5441b4bff33dff73811c3a025ede3b6348cb5779e21778653659b6cbfb84e0"
+    },
+    {
+      "bytes": 53206,
+      "path": "yolo/ipcore/ddr3_test/ddr3_test_ddrphy_top.v",
+      "sha256": "a95c28f225d2984401a798f673efff209154ae5beb8a7356d303136b71ea49d5"
+    },
+    {
+      "bytes": 55691,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ddr3_test_slice_top_v1_10.v",
+      "sha256": "69d4135c367efbb73f83c82ecd9871519e19b0d5c48bce2df0eac6b3dff50b87"
+    },
+    {
+      "bytes": 13948,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_calib_mux_v1_0.vp",
+      "sha256": "676e36319e7ce80b93e3543e255d53708d9fc71606587a6e692eab1ec82ecaed"
+    },
+    {
+      "bytes": 29035,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_calib_top_v1_10.vp",
+      "sha256": "04faf434cef120b5d712911dfc97c8f498901b0679fba720b806f596d688bded"
+    },
+    {
+      "bytes": 8870,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_control_path_adj_v1_10.vp",
+      "sha256": "8cdd7b9ec01c143882217b038cbf840d77e52ee3037e629e75e10b03fc223a38"
+    },
+    {
+      "bytes": 12614,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_cpd_ctrl_v1_3.vp",
+      "sha256": "56f52683adbe720c7d43da1a9f199f4ab3add3f3b5960e3f687f87f60267c161"
+    },
+    {
+      "bytes": 3988,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_cpd_lock_v1_0.vp",
+      "sha256": "a6696f8e79e2d132a6e76ad4997d5366d6c9cf8f05c60f77feff1b47b50d0090"
+    },
+    {
+      "bytes": 7140,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_data_slice_dqs_gate_cal_v1_10.vp",
+      "sha256": "8764275d4eeb8d1765b3a09aba527d6d3bf3e46f5e1d17eefc685d7e0dbe1520"
+    },
+    {
+      "bytes": 43859,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_data_slice_v1_10.vp",
+      "sha256": "e13e33d97ecbfea1838c4dd28e7f9f1c57dcb974606179523be46bba75344d50"
+    },
+    {
+      "bytes": 20167,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp",
+      "sha256": "b7a9757c252f74c4b57eb0fb74738c57e4eed3e669ddd7ffeeca1acedd330b2e"
+    },
+    {
+      "bytes": 21219,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_data_slice_wrlvl_v1_10.vp",
+      "sha256": "871874f4af0f068571416916898f83eb07052e6e015c5800ffdf65d67620cf7e"
+    },
+    {
+      "bytes": 23431,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_dfi_v1_3.vp",
+      "sha256": "9828a1ef43a864d287a7a317910fe330bfc904f44e8f60c8773aafa1d8c1534e"
+    },
+    {
+      "bytes": 8102,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_dll_update_ctrl_v1_3.vp",
+      "sha256": "bc4e8f402d2fb98920e050a3c1514d44ec959877217d7865a30b22b7da73cac6"
+    },
+    {
+      "bytes": 11936,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_dqs_gate_coarse_cal_v1_0.vp",
+      "sha256": "950a0010929854894c2c92d9f3f8e9dce0fee6985fee70d4160540a058853ede"
+    },
+    {
+      "bytes": 39545,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_dqs_rddata_align_v1_10.vp",
+      "sha256": "c0cab4287a7a7b6b720977c1c5f9259c5f48f8da18e9a3ca1173a073b1ccf025"
+    },
+    {
+      "bytes": 29297,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_dqsi_rdel_cal_v1_3.vp",
+      "sha256": "ef7e57755ab7558b1b518aa73999384368f349efe7077cf9283e0911e711ac1a"
+    },
+    {
+      "bytes": 7226,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_drift_ctrl_v1_0.vp",
+      "sha256": "8ea99ac6decf6fe14c0585b4f121d7a1acc17290d7a1c68725d984e704e277bc"
+    },
+    {
+      "bytes": 16271,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_eyecal_v1_5.vp",
+      "sha256": "31977dd34339d163ecbd8b9949ac4b65f0eaa6fbcd9a75d787400ae73f7f51d2"
+    },
+    {
+      "bytes": 6262,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_gate_update_ctrl_v1_3.vp",
+      "sha256": "ce20eb3b9cbe3b392d8be0aa1d6787247bc7b2d91af36a1f734f35c9eb03d642"
+    },
+    {
+      "bytes": 17323,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_gatecal_v1_10.vp",
+      "sha256": "b6859250ca098e81ff05bcab08dfe8ffee77648218e90c040a1dd3838a0671f2"
+    },
+    {
+      "bytes": 3812,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_gpll_phase_v1_0.vp",
+      "sha256": "ef8ebe3742d23848bd2a1492d4901f886ce49aa98dbc295873b67e4116ba8524"
+    },
+    {
+      "bytes": 12042,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_info_v1_0.vp",
+      "sha256": "0794201be97885e7695a16b6c35848655b08c4bf191405d26417126512ce4aa8"
+    },
+    {
+      "bytes": 43375,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_init_v1_0.vp",
+      "sha256": "817f9f32b2260a4c35af446e89ff4c2d4b065381b25cb2020c538d22b4a45088"
+    },
+    {
+      "bytes": 13750,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_main_ctrl_v1_10.vp",
+      "sha256": "39d5024d7364b441340b131d265d0648d8b7c1f92cc417424d7c584413c5f4a6"
+    },
+    {
+      "bytes": 56971,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_rdcal_v1_10.vp",
+      "sha256": "6b4c7f3c24a4750ac69b4e7882617105c6e31f02da712aaa87932b8561ccea2b"
+    },
+    {
+      "bytes": 19445,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_reset_ctrl_v1_3.vp",
+      "sha256": "17189b59ed5307c4a27ec35485b33af5c98a89e6ee7f9c5d85aaed9c03a77163"
+    },
+    {
+      "bytes": 7292,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_rst_clk_phase_adj_v1_0.vp",
+      "sha256": "dd1dbae71726d968df475fe7fbb2b7321411fa67786092c0dc2e065edcf39382"
+    },
+    {
+      "bytes": 4580,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_rst_debounce_v1_0.vp",
+      "sha256": "bff7ed95c8d305dfb88e6002c6de8453a21c72c03a5a0521a76ddd105598dc4d"
+    },
+    {
+      "bytes": 6878,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_slice_rddata_align_v1_0.vp",
+      "sha256": "befb44f07d851524109a6dc8e17c5b8062694aa274ed8dbc4f7326b8fe1c443e"
+    },
+    {
+      "bytes": 4908,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_training_ctrl_v1_0.vp",
+      "sha256": "777e8ee9d8d819fdcf04b39b5a5d6086c52369a7f19f04dbd0d06f7a7d3d6110"
+    },
+    {
+      "bytes": 10182,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_upcal_v1_0.vp",
+      "sha256": "afbca3503da609f7951ad7fbef386bd007f403c89f52377211ba521967c94455"
+    },
+    {
+      "bytes": 16469,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_wdata_path_adj_v1_10.vp",
+      "sha256": "85f625ed4a09964442e8616074eea9e4757e43b4217589bb9e2f289c9748b272"
+    },
+    {
+      "bytes": 37069,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_wrcal_v1_7.vp",
+      "sha256": "0a8cb0bb70bd40809260c50bcb85d092c16fea5d9ab2e4fbbe647ccbd1bfb1b0"
+    },
+    {
+      "bytes": 12764,
+      "path": "yolo/ipcore/ddr3_test/rtl/ddrphy/ips2l_ddrphy_wrlvl_v1_0.vp",
+      "sha256": "00c086bd729be3ab8287f6eb786cfb3549c97aa92f8465c608b8fc2477df3edc"
+    },
+    {
+      "bytes": 3024,
+      "path": "yolo/ipcore/ddr3_test/rtl/ips2l_rst_sync_v1_3.vp",
+      "sha256": "64b8d83f15f2ff373e6b1040405c42051d8761bd1857dec719c884c2eb59361a"
+    },
+    {
+      "bytes": 7838,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/distributed_fifo/ips2l_distributed_fifo_v1_0.vp",
+      "sha256": "d6c0b0d8560b0f22128b4883933944fc686fd7597cfea0d6c545cc6af56c0b7a"
+    },
+    {
+      "bytes": 18809,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/distributed_fifo/rtl/ips2l_distributed_fifo_ctr_v1_0.vp",
+      "sha256": "fe31c8f44bea653ab20bb1830ad4f8ed41566e9cfef354bd5e2d48c7682f353d"
+    },
+    {
+      "bytes": 7708,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/distributed_fifo/rtl/ips2l_distributed_fifo_v1_0_distributed_fifo_v1_0.vp",
+      "sha256": "867ac91a1485dfe613a81f372d788e784bba8cd4b0497e56986135e92685ba73"
+    },
+    {
+      "bytes": 6854,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/distributed_fifo/rtl/ips2l_distributed_sdpram_v1_0_distributed_fifo_v1_0.vp",
+      "sha256": "3561bbbbd4e4432a538c3d20818d262b4f1e5517c48296f6b1b4cc8afdd19aef"
+    },
+    {
+      "bytes": 9592,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_apb_cross_v1_2.vp",
+      "sha256": "62f7d55354a8afe4d02bc6f6d6dc30fc8e9960d3b21709988b887acc99d09cf5"
+    },
+    {
+      "bytes": 6590,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_calib_delay_v1_2.vp",
+      "sha256": "a52e992b9766b6cb22ed23aa01d1cc5ac9b6a429a8e49de7a13ac51dd70e9784"
+    },
+    {
+      "bytes": 42389,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_cfg_apb_v1_2.vp",
+      "sha256": "482cb280a614f70209f1d07892fdd773a259d2ca0f23e8f38b85a9faf00513b9"
+    },
+    {
+      "bytes": 17651,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcd_bm_v1_2.vp",
+      "sha256": "bfbd472dd8b427fe6b003dd510f73db89f915ac92d31fe8a779c40f9d4e56bee"
+    },
+    {
+      "bytes": 4580,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcd_rowaddr_v1_2.vp",
+      "sha256": "4ac4721747b13020e1895be6265e55df90968f05beb8056279589039394bb9be"
+    },
+    {
+      "bytes": 15064,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcd_sm_v1_2.vp",
+      "sha256": "d7e710e3ed4d1807fb0bdd4d84c264817247a4da41123c72439c555573821f49"
+    },
+    {
+      "bytes": 12330,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcd_top_v1_2.vp",
+      "sha256": "26ab4e142f555602c023f62b19df52056c6d51da5052401254066cae0655ddaa"
+    },
+    {
+      "bytes": 48957,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcp_back_ctrl_v1_2.vp",
+      "sha256": "fe7b340b41d80ec7428cc38329a41864bcf5c209a6310610d09c7bc8579e541f"
+    },
+    {
+      "bytes": 22007,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcp_buf_v1_2.vp",
+      "sha256": "dab35fa172243ecbb5426a8ebccc2c168368ea0a6ea0558c909b815d781b17d6"
+    },
+    {
+      "bytes": 15064,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcp_out_v1_2.vp",
+      "sha256": "9471082e23170b144dc619f7f7e08c94b8a03378f72da388f744d6acb728928b"
+    },
+    {
+      "bytes": 24371,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dcp_top_v1_2.vp",
+      "sha256": "21b1f0e3b4660e1078b47000bfe50022346414f5d5e713ac9e522a4f39f76548"
+    },
+    {
+      "bytes": 32495,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_dfi_v1_2.vp",
+      "sha256": "abf138d692e634fabe5f569b98d897dfece8a8ae66cee1dba830a56d7e255df1"
+    },
+    {
+      "bytes": 23123,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_lp_v1_2.vp",
+      "sha256": "7a80ccb1e053e5c9d8f389169359570f256d709ff2e4ad2c51fda7a7a6a4239d"
+    },
+    {
+      "bytes": 23735,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_mrs_v1_2.vp",
+      "sha256": "f78133bc021a57cf469773daaf102817fc37069447e8accc80afa1f4b20b0ad6"
+    },
+    {
+      "bytes": 6044,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_prefetch_fifo_v1_2.vp",
+      "sha256": "ee3aa91e980fb3dd08231cf1806a28edf759f4ea8248adfd44407d607519b9e4"
+    },
+    {
+      "bytes": 5212,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_rdatapath_v1_2.vp",
+      "sha256": "72dd8ece021f4ee74fd576c1628c4f7d3606ef632f0e68b9569a288a092a6b0f"
+    },
+    {
+      "bytes": 4818,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_reg_fifo2_v1_2.vp",
+      "sha256": "bc9cff65e4002a51af0c20c2f0a9b9f17dacde5157b58691bbfb1c44348ee08a"
+    },
+    {
+      "bytes": 19885,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_ui_axi_v1_2a.vp",
+      "sha256": "145b69395412be2553835f9278cdf1cb1703d3beeb914abf7d985e3c69f817fb"
+    },
+    {
+      "bytes": 11760,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_wdatapath_v1_2.vp",
+      "sha256": "db648e90ff607ca2f9e2b5cca048de417439888d0b906288e0cec7cf038d9dee"
+    },
+    {
+      "bytes": 9722,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_wdp_align_v1_2.vp",
+      "sha256": "1645e9eb7fac3c9c13cd3e0d7367f132293f9cec16835ce188c6345993d2b730"
+    },
+    {
+      "bytes": 9132,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_wdp_dcp_v1_2.vp",
+      "sha256": "3f30be0f49f78f09915743995c950fa6ff8de5f14598ebc8802e73b5c6d140ee"
+    },
+    {
+      "bytes": 47013,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/ips2l_mcdq_wrapper_v1_2b.vp",
+      "sha256": "d35010f49be551fb15ab2655cbeffcaaaa74fdf3ccb0754b033fc979d615e805"
+    },
+    {
+      "bytes": 6636,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_com_timing_v1_2.vp",
+      "sha256": "e3f19c4be6352ab64f07426973387f2876c540ee992f6eac9d3f2d470b3d49c2"
+    },
+    {
+      "bytes": 8738,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_tfaw_timing_v1_2.vp",
+      "sha256": "c632619f042bebb4f059df7f20eee90eb2b51b81210430cb37d01958ad3cd30f"
+    },
+    {
+      "bytes": 4074,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_tfaw_v1_2.vp",
+      "sha256": "ab87b7718bffc4fb2a2b27765576187f09b5266bbca7fc393c43c6dec96ff379"
+    },
+    {
+      "bytes": 7642,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_timing_act2wr_pass_v1_2.vp",
+      "sha256": "1b3874b059923481f292ba382ad156f7dcdd9ad39da6c86dddd480290ccce498"
+    },
+    {
+      "bytes": 5892,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_timing_act_pass_v1_2.vp",
+      "sha256": "9f32b6936e039c15f7b07b74480179d39d1b3787965e1b90bd067a7ede7fdd4c"
+    },
+    {
+      "bytes": 10248,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_timing_pre_pass_v1_2.vp",
+      "sha256": "e40a64caec9725c231cd88dde69973eab3aca38c9d2e66a2c5c0bbddf3103ae0"
+    },
+    {
+      "bytes": 8652,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_timing_rd_pass_v1_2.vp",
+      "sha256": "78b1de719a43ee0fc80e1a5464f7284439d91f1d4b3f83ef2ae5611920293988"
+    },
+    {
+      "bytes": 5672,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_timing_ref_pass_v1_2.vp",
+      "sha256": "c79dde6f9a682c55aff7bb89c4863f76a069b874fb154dff7d3e4d4a7a88f9d1"
+    },
+    {
+      "bytes": 8626,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_timing_wr_pass_v1_2.vp",
+      "sha256": "ea3470ca984554d4908ec950314f9242042417c6c4c6b3fd05ac5d6daab98c90"
+    },
+    {
+      "bytes": 10424,
+      "path": "yolo/ipcore/ddr3_test/rtl/mcdq_ctrl/syn_mod/ips2l_mcdq_trc_timing_v1_2.vp",
+      "sha256": "7234241e5968f91ec6e396794f0bb80f6c7d1bca2038aa004d5078d3937953da"
+    },
+    {
+      "bytes": 8324,
+      "path": "yolo/ipcore/ddr3_test/rtl/pll/ips2l_ddrphy_gpll_v1_3.vp",
+      "sha256": "3fecc367573a4b5bd158e1a8ff106c5c401c5f180143e8e5abe6bb068e5078d2"
+    },
+    {
+      "bytes": 17323,
+      "path": "yolo/ipcore/ddr3_test/rtl/pll/ips2l_ddrphy_ppll_v1_0.vp",
+      "sha256": "34bb46106b84eab147f130bd7526f1486d35caeb40b0258cd59656e50d19dddd"
+    },
+    {
+      "bytes": 41772,
+      "path": "yolo/ipcore/pll/pll.idf",
+      "sha256": "4d9a7c778eac4c4c026c225f9866ca1ce6e75a165fd69595148569393f31ea3e"
+    },
+    {
+      "bytes": 11256,
+      "path": "yolo/ipcore/pll/pll.v",
+      "sha256": "500a351a110b38cfb9fba627b7abbdb643912792e163005713776f4a9addb852"
+    },
+    {
+      "bytes": 5802,
+      "path": "yolo/ipcore/rd_fram_buf/rd_fram_buf.idf",
+      "sha256": "687d33d6f9665917e9c51dc10ab537c1dca59f521c48d15f654c61163b733eb8"
+    },
+    {
+      "bytes": 8001,
+      "path": "yolo/ipcore/rd_fram_buf/rd_fram_buf.v",
+      "sha256": "a2e850a37d528082b2a7965ca95f61a6b8e3702729e252b10139f0d59a575de9"
+    },
+    {
+      "bytes": 56396,
+      "path": "yolo/ipcore/rd_fram_buf/rtl/ipm2l_sdpram_v1_10_rd_fram_buf.v",
+      "sha256": "d036cb0fb93ed9d07eb8d371b426f813b87194ad2bc9040dfe7b739ffe33546e"
+    },
+    {
+      "bytes": 68773,
+      "path": "yolo/ipcore/wr_fram_buf/rtl/ipm2l_sdpram_v1_10_wr_fram_buf.v",
+      "sha256": "d250c599d9aa4242bb3488dd945c960195f1a3b8e830d30191872534dbabad8e"
+    },
+    {
+      "bytes": 5800,
+      "path": "yolo/ipcore/wr_fram_buf/wr_fram_buf.idf",
+      "sha256": "4d3214ee0f69f3a375c03541cf5cec4f5a778f969bbbd899c35bf23987321967"
+    },
+    {
+      "bytes": 8001,
+      "path": "yolo/ipcore/wr_fram_buf/wr_fram_buf.v",
+      "sha256": "750ace9f19803e53a0bb3d6e0c5a4086ae5df83afa52a9a0bf68e2c573467cd3"
+    },
+    {
+      "bytes": 24527,
+      "path": "yolo/model/deployment_model.h",
+      "sha256": "4d08631a670f5e58e170ce9a782cc80c78177083f3304519c5ae0e8822af4f6e"
+    },
+    {
+      "bytes": 25943,
+      "path": "yolo/model/graph.json",
+      "sha256": "53ef047239971a75196a649851696920132aa7913678a03ef0acd57894c77d7b"
+    },
+    {
+      "bytes": 72676,
+      "path": "yolo/model/memory_map.json",
+      "sha256": "dc0cc0672812e222a9fcc55c6db3d9bfd5906a06cf47f83ab4f85b7ecea902d0"
+    },
+    {
+      "bytes": 1863560,
+      "path": "yolo/model/model.bin",
+      "sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a"
+    },
+    {
+      "bytes": 16380,
+      "path": "yolo/portable/009_Ram.v",
+      "sha256": "03e4ca3e6f22f4041fcffdedfcc55cfcd5fe9183d005ca0000e87614f1a0387e"
+    },
+    {
+      "bytes": 40722,
+      "path": "yolo/portable/052_yolo_camera_top.v",
+      "sha256": "3e93125fdc1dbe07adf435c795ac6d0bfe2bd6da3c86e1bd842033d4e3d452c9"
+    },
+    {
+      "bytes": 13093,
+      "path": "yolo/software/acc_regs.h",
+      "sha256": "c0f5d7a6a607df9f1895c158da72f1e2ae405ac5822da8701ebf7c36daa84ac1"
+    },
+    {
+      "bytes": 765,
+      "path": "yolo/software/platform.ld",
+      "sha256": "0eacf05c4838b30e290dd79572cbb9920ea899f7aacd5830f273ca975e9e80d9"
+    },
+    {
+      "bytes": 11561,
+      "path": "yolo/software/platform_main.c",
+      "sha256": "7137f3848573399df8884c4ff164e26fad12296efd91dc0a611a9759b4ee0e22"
+    },
+    {
+      "bytes": 433,
+      "path": "yolo/software/platform_start.S",
+      "sha256": "30412957b3d5fc9059e800ff98dcf3ee8353c4b026f9b23194633e132d676292"
+    },
+    {
+      "bytes": 1428,
+      "path": "yolo/software/test_bbox_osd.c",
+      "sha256": "ed6c2c7a07b80f7c100799d52e809e4f779b46f99f0a3d59af24873648658074"
+    },
+    {
+      "bytes": 1398,
+      "path": "yolo/software/vexii_acc_smoke.S",
+      "sha256": "e942e25443b829280f76070316de34bb0e70dc1d4b90e954a74b4f2f814f0885"
+    },
+    {
+      "bytes": 442,
+      "path": "yolo/software/vexii_mmio_smoke.S",
+      "sha256": "98c718f00b1c3894ad8dec51a6067e70b180732ab5ae3f89bec3281d354a6479"
+    },
+    {
+      "bytes": 715,
+      "path": "yolo/software/vexii_platform.ld",
+      "sha256": "928a03e15ba20cde2b857623138934dc2b0b9bfc98fe434e5d0b3f6215680cf7"
+    },
+    {
+      "bytes": 5884,
+      "path": "yolo/software/yolo_decode.c",
+      "sha256": "ac594dce4ea6169c4564bde17ecc750ff4f39c4e29de67ba15cdc3ecd2365e21"
+    },
+    {
+      "bytes": 889,
+      "path": "yolo/software/yolo_decode.h",
+      "sha256": "a316bc00614627ddd28c1935de6f4df140c311ba1fb2cd282fa11a1fc6a95ae1"
+    },
+    {
+      "bytes": 622,
+      "path": "yolo/software/yolo_forward.c",
+      "sha256": "247a6ffa861d4da5eb998a8a457eac317657217314dc022f3edff4c570b92159"
+    },
+    {
+      "bytes": 27356,
+      "path": "yolo/software/yolo_runtime.c",
+      "sha256": "a1650400d23a38d58f358f119b21c3896cee5f1e893b0c6ca7f60f77f99e1d0e"
+    },
+    {
+      "bytes": 2319,
+      "path": "yolo/software/yolo_runtime.h",
+      "sha256": "6063cd85cd68b6553111de30c3049c4243100f90d4282de6a7c4eb4d868ee25b"
+    },
+    {
+      "bytes": 22810,
+      "path": "yolo/source_manifest.json",
+      "sha256": "6cf052c7c427b347760a9ad2887e5111ae09a71d87b1d7ae019b74926d269767"
+    },
+    {
+      "bytes": 28393,
+      "path": "yolo/sources/000_Decoder_2.v",
+      "sha256": "47b7554bc531778212b0c6a6bdceb4c2c45d317c87a8a6a1c8d88f1c38486452"
+    },
+    {
+      "bytes": 14655,
+      "path": "yolo/sources/001_WidthAdapter_1.v",
+      "sha256": "0416c4ee31cb9cac002a6133b3ad95a6749531fa43255711cbaebfd8ede94aed"
+    },
+    {
+      "bytes": 12283,
+      "path": "yolo/sources/002_PeripheralDemo.v",
+      "sha256": "c804d0ff064f24a71ba9ac78431f54ef7168b9e9cf848d81d969a7fc4348d610"
+    },
+    {
+      "bytes": 29309,
+      "path": "yolo/sources/003_TilelinkUartCtrl.v",
+      "sha256": "4024b44126ae4dada440242099822a23562129108260b26911c5413775d47ff0"
+    },
+    {
+      "bytes": 21632,
+      "path": "yolo/sources/004_TilelinkPlic.v",
+      "sha256": "491f12fdd39eaf6bec20d43e0f6eeef7f9a719d6600cc47e60b8c874bf9ab923"
+    },
+    {
+      "bytes": 20764,
+      "path": "yolo/sources/005_Decoder_1.v",
+      "sha256": "f29e3cb37acc05454c225b462c87fa2db850895c014ba111a2e0a6a9194cb040"
+    },
+    {
+      "bytes": 20945,
+      "path": "yolo/sources/006_Decoder.v",
+      "sha256": "a96863349a40d113c5bc55c3e2a3a88aaef88b04f111f9f42b695fa237b96ab7"
+    },
+    {
+      "bytes": 18034,
+      "path": "yolo/sources/007_TilelinkClint.v",
+      "sha256": "17fa84c6cd85ecaa0e54f555900f54a31ec0f0a136bb41873b78a6ba3581b984"
+    },
+    {
+      "bytes": 14976,
+      "path": "yolo/sources/008_WidthAdapter.v",
+      "sha256": "07471d8e6f172b63b50ad7bb159829bd8dfd57304c10127a473d819c9f5b6322"
+    },
+    {
+      "bytes": 16938,
+      "path": "yolo/sources/009_Ram.v",
+      "sha256": "fc9c36542948c2e896a37ade58ce4a75a5345a657771df7ddc3c06d872218f3d"
+    },
+    {
+      "bytes": 26913,
+      "path": "yolo/sources/010_Arbiter.v",
+      "sha256": "4a526be0f1929ae5c3d5d591bf3ab2474b4b36eb6e8594fd91ac52f3763ba19b"
+    },
+    {
+      "bytes": 726,
+      "path": "yolo/sources/011_BufferCC_5.v",
+      "sha256": "a0eca82991d81e579390b68cfb41ccf955d12213854e7622cbaa64df2127d0f6"
+    },
+    {
+      "bytes": 684,
+      "path": "yolo/sources/012_BufferCC_4.v",
+      "sha256": "164ec31046e1d9f23789e87f0772034dab52d4d1ee9cfb4691fd5ad0e42273e7"
+    },
+    {
+      "bytes": 723,
+      "path": "yolo/sources/013_BufferCC_3.v",
+      "sha256": "1d7fc2c71b43a34013bf503e54a3ea0493f609be03cb9c8e67f2728352f7ec51"
+    },
+    {
+      "bytes": 681,
+      "path": "yolo/sources/014_BufferCC_2.v",
+      "sha256": "78d883f36d780513f94d65b113b3ae50b0a7e2fb0d09b945548b39ead760b7f8"
+    },
+    {
+      "bytes": 2292,
+      "path": "yolo/sources/015_pango_replica_core.v",
+      "sha256": "6005bc518dcedfbf850b5eb8bbeab9669580b13614dd84973a42550baaad6b27"
+    },
+    {
+      "bytes": 10955,
+      "path": "yolo/sources/016_StreamArbiter_6.v",
+      "sha256": "ba068d0abcd8c3da32aacf837a9de7cf0b54391e855de50453a0151b19156907"
+    },
+    {
+      "bytes": 539,
+      "path": "yolo/sources/017_BufferCC_1.v",
+      "sha256": "c8f8a0bb19b73a570f72bacfd0fdc44e116afcd80c30035b948186f1e43f3ced"
+    },
+    {
+      "bytes": 6699,
+      "path": "yolo/sources/018_StreamFifo_1.v",
+      "sha256": "49c1a58beda949792ccb3f65eb0f9aabd5c867555f5328c6f9a77f7aee8708a8"
+    },
+    {
+      "bytes": 5159,
+      "path": "yolo/sources/019_UartCtrl.v",
+      "sha256": "5d4725b151f5467e924ecced67e4b615997aa0633dad9272a88336104045eb91"
+    },
+    {
+      "bytes": 8473,
+      "path": "yolo/sources/020_StreamArbiter_5.v",
+      "sha256": "3f38752c88ce2ec51c6875682795e2971b0fb63c69b1c572978703bcf9495619"
+    },
+    {
+      "bytes": 8483,
+      "path": "yolo/sources/021_StreamArbiter_4.v",
+      "sha256": "980d2330ee67735dbc2e64e15fa13bc8bda9d054dc69ba72f1a2ffc475ee49f4"
+    },
+    {
+      "bytes": 1144,
+      "path": "yolo/sources/022_ContextAsyncBufferFull.v",
+      "sha256": "7162a9d8e04219c26faaaf9399f0dd02b4c06fb6449f11e0acc768fb3989be2f"
+    },
+    {
+      "bytes": 13326,
+      "path": "yolo/sources/023_StreamArbiter_3.v",
+      "sha256": "9ca31f4b51b1d743b337a668bf98296a49a4e07526389dcb59312e4abe731869"
+    },
+    {
+      "bytes": 4773,
+      "path": "yolo/sources/024_RegFileMem.v",
+      "sha256": "b5b26fa93436c54d0a09919a534129be3d9fb70fdf62e9841f12ba0cc6ad45ea"
+    },
+    {
+      "bytes": 13713,
+      "path": "yolo/sources/025_StreamArbiter_2.v",
+      "sha256": "632b577f461e974f5e9ae004aac7f634789b93647f277e781ce287eb43bbfc78"
+    },
+    {
+      "bytes": 536,
+      "path": "yolo/sources/026_StreamArbiter_1.v",
+      "sha256": "19936dda4c6c9a37a2401758044a50a8638483e1b0a42dcaec6b6e936b200424"
+    },
+    {
+      "bytes": 6861,
+      "path": "yolo/sources/027_StreamArbiter.v",
+      "sha256": "4c9c58c6a7219abb4df646f376f088d80d3d1013e9467a5a742473f0a1834412"
+    },
+    {
+      "bytes": 6390,
+      "path": "yolo/sources/028_DivRadix.v",
+      "sha256": "f0d1fac9d1a10b0a2fc7502fbf82224e99e65d5355d10122d197c4f0d97d7fcd"
+    },
+    {
+      "bytes": 7200,
+      "path": "yolo/sources/029_StreamFifo.v",
+      "sha256": "d7d20928a86f98d1a1f9f40f74bae2486fd46b01ded197d11c5cd6f270f288bb"
+    },
+    {
+      "bytes": 11020,
+      "path": "yolo/sources/030_UartCtrlRx.v",
+      "sha256": "98c2f7b85388f5748dece5eee6f59a1bc3655e74b9d1c1ff338c85624c30f258"
+    },
+    {
+      "bytes": 9212,
+      "path": "yolo/sources/031_UartCtrlTx.v",
+      "sha256": "b49f4f6a5893d2618dd1809b729ffd2d7fd9a86067ee108524bec3f7b42c41a9"
+    },
+    {
+      "bytes": 6929,
+      "path": "yolo/sources/032_RamSyncMwMux.v",
+      "sha256": "93fe237c95debfc77f43d45e2a0ae799d57121b18204af36df978c45f9bbd8ef"
+    },
+    {
+      "bytes": 750,
+      "path": "yolo/sources/033_BufferCC.v",
+      "sha256": "15652dcb6f89a91630ce632bed049e4b9921db8ced40bbfceceab8023973e4ef"
+    },
+    {
+      "bytes": 13814,
+      "path": "yolo/sources/034_RamAsyncMwReg.v",
+      "sha256": "084ae4a9cab34bfc6ba7880bbe3f99a5b4dc07fd643cca322a38a8e39ac01e47"
+    },
+    {
+      "bytes": 11189,
+      "path": "yolo/sources/035_replica_early0_shifter.v",
+      "sha256": "39a3b83e918badeb3b4fa0fadb9ccb4b61d95006b848bd8ccf1435c165637b15"
+    },
+    {
+      "bytes": 10996,
+      "path": "yolo/sources/036_replica_late0_shifter.v",
+      "sha256": "604e75b1966dbc36dda79d71402479d3803e58b63203bf1b969cfcffd2afd46f"
+    },
+    {
+      "bytes": 11189,
+      "path": "yolo/sources/037_replica_early1_shifter.v",
+      "sha256": "f99403f271804f98e4821863dd2bf60c4fe06386736560113fa970c625f2cde3"
+    },
+    {
+      "bytes": 10996,
+      "path": "yolo/sources/038_replica_late1_shifter.v",
+      "sha256": "a235f3ec8aa573b1d1e2b3b0f45710f6bfdb3540db3a32b92e0497783ac3951e"
+    },
+    {
+      "bytes": 769,
+      "path": "yolo/sources/039_branch_eq_pipeline.v",
+      "sha256": "29c7bfbccb11ca91447b07c75dd48d7804a3955958ff6dc1a42eb18924496045"
+    },
+    {
+      "bytes": 316988,
+      "path": "yolo/sources/040_vexii_ai_soc.v",
+      "sha256": "30d593c3f8483a5b5451a06b96598a20406e83e8c382831266546d56ecc9c6be"
+    },
+    {
+      "bytes": 2550,
+      "path": "yolo/sources/041_tlul_to_axil.v",
+      "sha256": "104e6a6ca2c556a4fca47a63552dba6431f41351a061b4417e5fa13cadd95233"
+    },
+    {
+      "bytes": 27898,
+      "path": "yolo/sources/042_conv_band_rt.v",
+      "sha256": "ebb5ef38c6b1da597bb58e6d926d36bb1b7f1aa5fca9ee44d18e579e46b888a8"
+    },
+    {
+      "bytes": 2980,
+      "path": "yolo/sources/043_mac_array.v",
+      "sha256": "010b174c3755022e5745df469d4e9190489fee0d312606b54df476b8b5cc8c67"
+    },
+    {
+      "bytes": 23870,
+      "path": "yolo/sources/044_conv_engine_axil.v",
+      "sha256": "45617d87608d6977a3b0dc15a5815c646dab1cd5620d23e02cee0d3f5ee02038"
+    },
+    {
+      "bytes": 5280,
+      "path": "yolo/sources/045_ddr_axi_bridge.v",
+      "sha256": "3feac7dd29510d9afa2ba300f8bbcf6df094dbbeb10c0be00ef066198dc0da7a"
+    },
+    {
+      "bytes": 3383,
+      "path": "yolo/sources/046_bridge_to_cdc.v",
+      "sha256": "b86650320f6d48d8bbcfda9e0c26e3f32f86a9fdc97971d699793a1b1618bc95"
+    },
+    {
+      "bytes": 9443,
+      "path": "yolo/sources/047_axi_cdc.v",
+      "sha256": "9089c936f2109f3dd4939652852f126389b48dfa19154024b3cc0bc8724deced"
+    },
+    {
+      "bytes": 2910,
+      "path": "yolo/sources/048_camera_snapshot.v",
+      "sha256": "dd71374dcd32b9896be71e38b9d2f460955df4439ae7a359eb36d1f4443480a7"
+    },
+    {
+      "bytes": 11504,
+      "path": "yolo/sources/049_video_ai_frontend.v",
+      "sha256": "63638d69e1dfa980430ce02f9fdd84365a2387cbfb1663988fc77879ff5a12f7"
+    },
+    {
+      "bytes": 2941,
+      "path": "yolo/sources/050_ddr_native_arbiter.v",
+      "sha256": "8281db9093c1f08d0519f124dee453fd0efde029a99ea03ca1c50564716ecb36"
+    },
+    {
+      "bytes": 7120,
+      "path": "yolo/sources/051_yolo_ai_client.v",
+      "sha256": "92c0ffb29db3e9b8094f8f3a9259ce94b7a997c623012b18e54a9bfca9a782b8"
+    },
+    {
+      "bytes": 39904,
+      "path": "yolo/sources/052_yolo_camera_top.v",
+      "sha256": "ee67c9accf62439fb75c79c8586d04013b40e9a6761e407d11c33c74e398dc1a"
+    },
+    {
+      "bytes": 5129,
+      "path": "yolo/sources/053_cam_diag.v",
+      "sha256": "1466de9317fa1a14e45b6dddc11c950318abb8912c8b446c1ead1ab242aff73f"
+    },
+    {
+      "bytes": 3329,
+      "path": "yolo/sources/054_cmos_8_16bit.v",
+      "sha256": "deb17d6551b0ffa6a8c85575f82acd3b9a77eef706a9f428e4ba10a9ac3334b5"
+    },
+    {
+      "bytes": 15140,
+      "path": "yolo/sources/055_fram_buf.v",
+      "sha256": "a241074a1df0c8f77c72b7c815c4e4aea0e2efde2edd192b6b7daeb0c906323a"
+    },
+    {
+      "bytes": 3824,
+      "path": "yolo/sources/056_i2c_com.v",
+      "sha256": "1cba1c5556b5baa0a2cd558e5ec32cb272e5344a2548e8606cb0b31966db7a5e"
+    },
+    {
+      "bytes": 15726,
+      "path": "yolo/sources/057_iic_dri.v",
+      "sha256": "5f60bc8bcac110f0125a278c332065d2594874c465ec961c603662f92c16b13e"
+    },
+    {
+      "bytes": 31324,
+      "path": "yolo/sources/058_ms7200_ctl.v",
+      "sha256": "501521c4cceecd48de5741d3116eb7062c93a70a606a386682e1d8756a494199"
+    },
+    {
+      "bytes": 11483,
+      "path": "yolo/sources/059_ms7210_ctl.v",
+      "sha256": "c9b101e58f381ddf3c6d663d0003c18065302659424b8345022161413ccf09ae"
+    },
+    {
+      "bytes": 7156,
+      "path": "yolo/sources/060_ms72xx_ctl.v",
+      "sha256": "f55ca26277656da30dc8c1fc7ae83881626d37bd0e5385fbf73f5d04b60f1e03"
+    },
+    {
+      "bytes": 1852,
+      "path": "yolo/sources/061_power_on_delay.v",
+      "sha256": "1e106410abaefda66d8dc68ef5417318ff49625a5b4699b6950e4b853e2442f5"
+    },
+    {
+      "bytes": 7965,
+      "path": "yolo/sources/062_rd_buf.v",
+      "sha256": "96e67ac265b7823cd240c700d629cb0ef3a4e9263de5cf9e7a6d8c88eb6afa7e"
+    },
+    {
+      "bytes": 4728,
+      "path": "yolo/sources/063_rd_ctrl.v",
+      "sha256": "40656be19a1afcf0cc743cee652b1d90339392f8ca5ca67cea270ddd12ae22e4"
+    },
+    {
+      "bytes": 13777,
+      "path": "yolo/sources/064_reg_config.v",
+      "sha256": "f5bc7f6bf18c2879a1a253b11cf91a968f00a00afd87b5e77b98b5356ad9b71d"
+    },
+    {
+      "bytes": 4683,
+      "path": "yolo/sources/065_sync_vg.v",
+      "sha256": "d2c7348e1cb418261f4365d3461cda2768d5b0922dc2a0f6db50a21cf465fb77"
+    },
+    {
+      "bytes": 9971,
+      "path": "yolo/sources/066_uart_cam_report.v",
+      "sha256": "15f3cf1fd3718b866af64e5d97829597c8eee41f73f73e7f5fc51af4a3e82635"
+    },
+    {
+      "bytes": 8974,
+      "path": "yolo/sources/067_wr_buf.v",
+      "sha256": "854481a8e4b8f7c139059305a6fa51780eb99cae40cc8c39d81056da9eaaf25b"
+    },
+    {
+      "bytes": 10026,
+      "path": "yolo/sources/068_wr_cmd_trans.v",
+      "sha256": "ccaa77338301ef6416f48b7aacdd6881bf5e8970d1e0575c41e45b79f826ca86"
+    },
+    {
+      "bytes": 6371,
+      "path": "yolo/sources/069_wr_ctrl.v",
+      "sha256": "bdfd6cbf962c26ba2756aeea177d612b6428a6058ceb22ebfc452c59ea9193b8"
+    },
+    {
+      "bytes": 14863,
+      "path": "yolo/sources/070_wr_rd_ctrl_top.v",
+      "sha256": "d130db39d2623ddcf78aba31da85a9cda6da269f851bc385938169039e634806"
+    },
+    {
+      "bytes": 55808,
+      "path": "yolo/sources/camera.fdc",
+      "sha256": "9d6ba0b59525161762d53fe5c0d55b741199e11f28cf68718e3f6bb8a087505c"
+    },
+    {
+      "bytes": 40036,
+      "path": "yolo/sources/firmware.bin",
+      "sha256": "a8d910005f627fd5820eb3622432da782cb9264f2ed81da2ec23e3880ff30a7d"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane0.bin",
+      "sha256": "c83e805395170e04e30b6f7bd00be2ed8a2a8525bf75f80966cf88535553120e"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane1.bin",
+      "sha256": "f80fd9d30627b928e5d98d5bd3b5984d6064ddec343f688511a554f4aa6b829b"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane2.bin",
+      "sha256": "dd194ab068a8211c14696069ff92d8b9c29c0360243089f6dadf2b2bccd6e6c3"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane3.bin",
+      "sha256": "1521f68c7aace6d8d5a2a9d1b8866354670731dc481c3b74f187a95c3ffe038f"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane4.bin",
+      "sha256": "4115aa597a79ad8e788686a51d9e80d5d37f6d538b430222d79df0f58e585466"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane5.bin",
+      "sha256": "ce2d6718f598214139269614258b2d2721e94c1fd5f23e593eb175188eebad9e"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane6.bin",
+      "sha256": "a687b1bce81afd6e546097b0a104821bddc52a6b68aa140bc1d0aff9f89ae3cb"
+    },
+    {
+      "bytes": 81920,
+      "path": "yolo/sources/firmware_lane7.bin",
+      "sha256": "009c5a2e8d67b4163df5d44df35739987ee78f8849169553c89f70c7a1c921d6"
+    },
+    {
+      "bytes": 28883,
+      "path": "yolo/sources/include/sections/000_FetchL1Plugin.vh",
+      "sha256": "330f072cb91f8a8ac0b1abd6b2644fcb849cd5ea1d2eeacc6ff3ec3a101f61a4"
+    },
+    {
+      "bytes": 31361,
+      "path": "yolo/sources/include/sections/001_FetchL1Plugin.vh",
+      "sha256": "0d5b19a88e57715242e814ab88533e7e6327ebde9196e490254a91ba7d2c7d86"
+    },
+    {
+      "bytes": 32936,
+      "path": "yolo/sources/include/sections/002_DispatchPlugin.vh",
+      "sha256": "2b665aaf6142a448ea6dd9a6b3ae77e76bcac6550c61817e876f5bd3a006946c"
+    },
+    {
+      "bytes": 29061,
+      "path": "yolo/sources/include/sections/003_LsuL1Plugin.vh",
+      "sha256": "74e1bdf2da42c79e6ca4f7f33b7028be8ca41b2e4965f8fa2416c14389160d3b"
+    },
+    {
+      "bytes": 31403,
+      "path": "yolo/sources/include/sections/004_CsrAccessPlugin.vh",
+      "sha256": "b7db54b7035aecdebf6d69e8b24082e68d8a844964d3d8c67014408fdefb6d22"
+    },
+    {
+      "bytes": 30907,
+      "path": "yolo/sources/include/sections/005_PerformanceCounterPlugin.vh",
+      "sha256": "59ceb60c14f10c34b337798b9eeac56ceb61d1141cf1845e89cec172845827a6"
+    },
+    {
+      "bytes": 29581,
+      "path": "yolo/sources/include/sections/006_execute_pipeline.vh",
+      "sha256": "16b2f18640c8204cf77b21f4f19038f87dbcf509ce95962989571bdbeee0c864"
+    },
+    {
+      "bytes": 30582,
+      "path": "yolo/sources/include/sections/007_PrefetcherRptPlugin.vh",
+      "sha256": "f83af03578f9d314653b152a39d258bc77081ea902ef1f9f60468090117d5fff"
+    },
+    {
+      "bytes": 31489,
+      "path": "yolo/sources/include/sections/008_execute_pipeline.vh",
+      "sha256": "4e38888b6122b475888fb11e2ca3dedd0b91c7ca18fa3fa20bf828f15fa81360"
+    },
+    {
+      "bytes": 31152,
+      "path": "yolo/sources/include/sections/009_PrefetcherRptPlugin.vh",
+      "sha256": "1c0f670f498258619ff03f990741ba150c733918a1d2d11b4abe6842757deffd"
+    },
+    {
+      "bytes": 28914,
+      "path": "yolo/sources/include/sections/010_FetchL1Plugin.vh",
+      "sha256": "e66d407ef71eed2f6ea79fc7104366818b606094d8800adbdf53014c9bce6d9e"
+    },
+    {
+      "bytes": 27606,
+      "path": "yolo/sources/include/sections/011_AlignerPlugin.vh",
+      "sha256": "c1b4b0e757dfa764533d714a228ef95ef869d3944abbb61b2a9eb3f205775293"
+    },
+    {
+      "bytes": 29649,
+      "path": "yolo/sources/include/sections/012_AlignerPlugin.vh",
+      "sha256": "1bdc90e2c5fabded789e839685afcb648fe5accc26736478a2d74736b5f315fe"
+    },
+    {
+      "bytes": 33627,
+      "path": "yolo/sources/include/sections/013_DispatchPlugin.vh",
+      "sha256": "6e091f1b3397b0168014bd25546a7badecc67ea1c9ded9be40f1d052c93a93e2"
+    },
+    {
+      "bytes": 32233,
+      "path": "yolo/sources/include/sections/014_DispatchPlugin.vh",
+      "sha256": "7fcf3b28ae615e6efe872f7035cd5c38ba70958f8e5d1fcca3963377636a52a1"
+    },
+    {
+      "bytes": 28756,
+      "path": "yolo/sources/include/sections/015_LsuL1Plugin.vh",
+      "sha256": "adbefa813243b83a9fe352a8bcffe62a7f8b4705728160d32b683bfd807d89a0"
+    },
+    {
+      "bytes": 26432,
+      "path": "yolo/sources/include/sections/016_LsuL1Plugin.vh",
+      "sha256": "22db0b7bd372f38e8fc27ea7e92c72e115fd631b18aa8f910cd3eefad2a10eef"
+    },
+    {
+      "bytes": 29899,
+      "path": "yolo/sources/include/sections/017_LsuPlugin.vh",
+      "sha256": "fbec2bfafdbd045ba92b7572fffcc0da32942ab03d987575db342134b9a1d8f7"
+    },
+    {
+      "bytes": 32508,
+      "path": "yolo/sources/include/sections/018_WhiteboxerPlugin.vh",
+      "sha256": "8f13b6ba1fd2155dd3ca3aa75d69b0a436202005571f6c23da129694b187cb1c"
+    },
+    {
+      "bytes": 45641,
+      "path": "yolo/sources/include/sections/019_AlignerPlugin.vh",
+      "sha256": "5ef56e88315786368b2005d30276b90837a868841a437b3a60323e4f797e7821"
+    },
+    {
+      "bytes": 88148,
+      "path": "yolo/sources/include/sections/020_DispatchPlugin.vh",
+      "sha256": "67bc502111a9dd2e3fd9c5ded49f2ce08725569e4b8a315dd54d1bc44240edf1"
+    },
+    {
+      "bytes": 58857,
+      "path": "yolo/sources/include/sections/021_FetchL1Plugin.vh",
+      "sha256": "40ed74da167e9e7aae1b6a6df4bc3042d225eef894564c2b7186d9184afe3f25"
+    },
+    {
+      "bytes": 80541,
+      "path": "yolo/sources/include/sections/022_DispatchPlugin.vh",
+      "sha256": "54f05c270b99a22fd9e3c36e80ffe904d9f4149b7d51043972d2e50abf31c1da"
+    },
+    {
+      "bytes": 147926,
+      "path": "yolo/sources/include/sections/023_CsrAccessPlugin.vh",
+      "sha256": "90eeb73113162cfb933093f9c0f0896494cde29ebfe6e3c2aabcc737a40f2acc"
+    },
+    {
+      "bytes": 36180,
+      "path": "yolo/sources/include/sections/024_LsuL1Plugin.vh",
+      "sha256": "cac89b18b9164dabc7057d1542870eff437aa224e080edbab78e6eb774f4b54a"
+    },
+    {
+      "bytes": 22371,
+      "path": "yolo/sources/include/sections/025_LsuL1Plugin.vh",
+      "sha256": "eeb03b728b2a217aa1d8e093cd844e275aeeacee9f6fdeb13946bcad792bc320"
+    },
+    {
+      "bytes": 57442,
+      "path": "yolo/sources/include/sections/026_IntAluPlugin.vh",
+      "sha256": "b6cc812408776ce9d2230c743eb7c9981a5123c668af76d2bde42bdc4106569b"
+    },
+    {
+      "bytes": 17676,
+      "path": "yolo/sources/include/sections/027_PcPlugin.vh",
+      "sha256": "a609314f664cf76e0d87b089dcc038a52f1c566d10c4a9a15a0b1f208001b106"
+    },
+    {
+      "bytes": 20682,
+      "path": "yolo/sources/include/sections/028_PrefetcherRptPlugin.vh",
+      "sha256": "4ce8d8fa056cdb8d07c82c42887fcfcacc286273496bcdcd35c03dbbdb024190"
+    },
+    {
+      "bytes": 23675,
+      "path": "yolo/sources/include/sections/029_FetchL1Plugin.vh",
+      "sha256": "cce84840d03a27bbbc64d4bd9d7824966d11af406ac582de9de5fbf004831943"
+    },
+    {
+      "bytes": 35405,
+      "path": "yolo/sources/include/sections/030_FetchL1Plugin.vh",
+      "sha256": "f1b9c551acdd80a475091a8bae1d85e937dbd86f61a17b7dbffde431b0627715"
+    },
+    {
+      "bytes": 27243,
+      "path": "yolo/sources/include/sections/031_PerformanceCounterPlugin.vh",
+      "sha256": "97dd69ecf906230c7adf8ae75d53ce7fec860a64dbfd7b89c9d13872745fd3cd"
+    },
+    {
+      "bytes": 45170,
+      "path": "yolo/sources/include/sections/032_AlignerPlugin.vh",
+      "sha256": "b601aa46736b34eea4ad02f40390bad1592c9ffe682ad9d0fa88e1e3cdf540a3"
+    },
+    {
+      "bytes": 42314,
+      "path": "yolo/sources/include/sections/033_AlignerPlugin.vh",
+      "sha256": "40a267b3e232d53f3371281c54288ce1af56a67d3deb5a3ad1bd5db813c8856c"
+    },
+    {
+      "bytes": 41995,
+      "path": "yolo/sources/include/sections/034_BranchPlugin.vh",
+      "sha256": "747b072f9321ab19d245dd390cc48ebddb662a457405ecccd2c0a1409f9d9b83"
+    },
+    {
+      "bytes": 59460,
+      "path": "yolo/sources/include/sections/035_DispatchPlugin.vh",
+      "sha256": "5cd39a83acc7f21d6bec7837c03fc98c925f65f9dff23010a3c2413e5f0ab20b"
+    },
+    {
+      "bytes": 41241,
+      "path": "yolo/sources/include/sections/036_BtbPlugin.vh",
+      "sha256": "134da1a7cc478f7dd9ffd2961e4835f3f3eb9a9f8af8f5d26de6bd9c6bcdbed5"
+    },
+    {
+      "bytes": 70399,
+      "path": "yolo/sources/include/sections/037_DispatchPlugin.vh",
+      "sha256": "622dce6453f95d92610cd263a6617f9e445f98ad5bc502587fb7f933d32b85e0"
+    },
+    {
+      "bytes": 30651,
+      "path": "yolo/sources/include/sections/038_TrapPlugin.vh",
+      "sha256": "ca72f33b71a8e0641d5c5faad221f6bb69b83594eeea3bccc757147addcdfa81"
+    },
+    {
+      "bytes": 19862,
+      "path": "yolo/sources/include/sections/039_TrapPlugin.vh",
+      "sha256": "84fda5f3feaf083394888155808d0e22f4226f2646517674751b0c8b176960e9"
+    },
+    {
+      "bytes": 19224,
+      "path": "yolo/sources/include/sections/040_LsuL1Plugin.vh",
+      "sha256": "6b963051227e20a0e875645e5b180a9f12a25d426ba130b6c9a389f62de1d213"
+    },
+    {
+      "bytes": 26023,
+      "path": "yolo/sources/include/sections/041_LsuL1Plugin.vh",
+      "sha256": "d75cbf8089631773235f6a524bce600c55bf3bf41bf0c7d843c82505e2658614"
+    },
+    {
+      "bytes": 47059,
+      "path": "yolo/sources/include/sections/042_LsuL1Plugin.vh",
+      "sha256": "41994e9c862e33ef471e1a7d3ac90329e463c2fe63ddb46c1a037bab6b4d1e94"
+    },
+    {
+      "bytes": 42095,
+      "path": "yolo/sources/include/sections/043_CsrAccessPlugin.vh",
+      "sha256": "62cc1529dbed33d375530fbf76d2bcdb01b6fcff80df5eb396db2e089a759e62"
+    },
+    {
+      "bytes": 29753,
+      "path": "yolo/sources/include/sections/044_LsuPlugin.vh",
+      "sha256": "9ac85a2cb01467e3643f49e0a62536b6d079e92b63fda061c64e6d2d8f00ee70"
+    },
+    {
+      "bytes": 54198,
+      "path": "yolo/sources/include/sections/045_LsuPlugin.vh",
+      "sha256": "6841b0374765e859a2db8a7027d30c4d8274ad4000701c3ff04f3aeb8fb97983"
+    },
+    {
+      "bytes": 37071,
+      "path": "yolo/sources/include/sections/046_PrefetcherRptPlugin.vh",
+      "sha256": "560fb594e5fa106a075b79198cba781131ff3fd1c0a977ea6dfc59cc76a5b0cb"
+    },
+    {
+      "bytes": 49390,
+      "path": "yolo/sources/include/sections/047_PrefetcherRptPlugin.vh",
+      "sha256": "a49a8e4a1c3500cfad0fa3e1a5851790a2fb655e9cb8ca3a237e89485deabc21"
+    },
+    {
+      "bytes": 43744,
+      "path": "yolo/sources/include/sections/048_WhiteboxerPlugin.vh",
+      "sha256": "af09c518e5564a83033b99bf494ddda2655acf44adbf942710903551965dd5c9"
+    },
+    {
+      "bytes": 42226,
+      "path": "yolo/sources/include/sections/049_WhiteboxerPlugin.vh",
+      "sha256": "f957363f5ec00917a1518fa476c943e35196391bdb4e48d9dcf871a3ba94438c"
+    },
+    {
+      "bytes": 43877,
+      "path": "yolo/sources/include/sections/050_TrapPlugin.vh",
+      "sha256": "1154d5430bc08ec0862a07d4fe24a9ad59a8997d14a9aaf79d5f53a3383c570a"
+    },
+    {
+      "bytes": 66792,
+      "path": "yolo/sources/include/sections/051_LsuL1Plugin.vh",
+      "sha256": "c03868e3bc5eed54dd86b2dfc6eb1ca320cb78f59514293aaf95cec3532f85c3"
+    },
+    {
+      "bytes": 142267,
+      "path": "yolo/sources/include/sections/052_LsuL1Plugin.vh",
+      "sha256": "b3d9ba14dcb85710f23bfd607154a7957e0d616ce004e6f08dd3d6d7704cfb0a"
+    },
+    {
+      "bytes": 341,
+      "path": "yolo/sources/manifest.json",
+      "sha256": "95e5a3c62ad8c73ce5064e5782f64fc628efb85f1908c8320a8eb60b648a71f5"
+    },
+    {
+      "bytes": 100090,
+      "path": "yolo/sources/program.hex",
+      "sha256": "f26fe2d1805a9941b63453b48e2f0e86275e8fb5e0e436deb55b1f00b4828188"
+    },
+    {
+      "bytes": 2878,
+      "path": "yolo/tb/tb_bbox_osd.v",
+      "sha256": "60dd9587693d32befe627c2ff823a457b43731830a1d483511035edadf8f582a"
+    }
+  ],
+  "format": "simplified-source-package-v1",
+  "toolchain_required_for_static_verify": false
+}

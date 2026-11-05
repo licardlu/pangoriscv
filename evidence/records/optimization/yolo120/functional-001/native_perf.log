@@ -1,0 +1,9 @@
+HEAD_TRAFFIC channels=64 input_words=48 weight_words=1056
+HEAD_TRAFFIC channels=128 input_words=192 weight_words=2112
+HEAD_TRAFFIC channels=256 input_words=576 weight_words=4224
+REAL_HEAD_TRAFFIC channels=64 pixels=1600 input_bytes=102400 weight_bytes=8448
+REAL_HEAD_TRAFFIC channels=128 pixels=400 input_bytes=102400 weight_bytes=16896
+REAL_HEAD_TRAFFIC channels=256 pixels=100 input_bytes=76800 weight_bytes=33792
+HEAD_CHECK input_word_reads=9600 worst_logit_error=4.76837e-06
+POOL_CHECK input_word_reads=1600
+CPU_PERF_CHECK_PASS head/logits/padding/pool/bandwidth

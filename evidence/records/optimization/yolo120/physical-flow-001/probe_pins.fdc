@@ -1,0 +1,7 @@
+define_attribute {p:clk} {PAP_IO_LOC} {D18}
+define_attribute {p:clk} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:q} {PAP_IO_LOC} {C24}
+define_attribute {p:q} {PAP_IO_STANDARD} {LVCMOS33}
+create_clock -name clk [get_ports {clk}] -period 37.037
+define_attribute {p:clk} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:q} {PAP_IO_VCCIO} {3.3}

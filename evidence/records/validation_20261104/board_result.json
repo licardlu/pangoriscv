@@ -1,0 +1,5470 @@
+{
+  "started_utc": "2026-11-04T01:28:49Z",
+  "bitstream_sha256": "2b98f90fbd0b4fd2de4074e74cb2c4aa8886d6009aa12bba4dfaf5d071bc4657",
+  "model_sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a",
+  "port": "COM34",
+  "model_crc_pass": true,
+  "runs": [
+    {
+      "frame": 0,
+      "wall_s": 3.8497912000166252,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.5289037227630615,
+          "box": [
+            19.87762451171875,
+            0.0,
+            1207.424560546875,
+            717.3311767578125
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4834718518518519,
+          "forward": 3.2908074814814814,
+          "decode": 0.06991418518518519,
+          "display": 1.7148148148148147e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0128555185185184,
+          "YOLO_ADD": 0.5747823703703704,
+          "YOLO_CONCAT": 0.8432782592592594,
+          "YOLO_POOL": 0.21795025925925926,
+          "YOLO_UPSAMPLE": 0.07380537037037037,
+          "YOLO_HEAD": 0.5679281481481482
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.1540374074074074,
+            "cycles": 4159010
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.05646025925925926,
+            "cycles": 1524427
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02029148148148148,
+            "cycles": 547870
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015411518518518519,
+            "cycles": 416111
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024841296296296295,
+            "cycles": 670715
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.198278,
+            "cycles": 5353506
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020300555555555554,
+            "cycles": 548115
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.1740868888888889,
+            "cycles": 4700346
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.032840037037037036,
+            "cycles": 886681
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03973837037037037,
+            "cycles": 1072936
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011440555555555556,
+            "cycles": 308895
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008354703703703704,
+            "cycles": 225577
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815374074074074,
+            "cycles": 490151
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.10035785185185185,
+            "cycles": 2709662
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008340925925925925,
+            "cycles": 225205
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018147333333333335,
+            "cycles": 489978
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.10051955555555556,
+            "cycles": 2714028
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011454962962962964,
+            "cycles": 309284
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.0827272962962963,
+            "cycles": 2233637
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019028629629629628,
+            "cycles": 513773
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03510725925925926,
+            "cycles": 947896
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0075421481481481485,
+            "cycles": 203638
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099333333333333,
+            "cycles": 137682
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01666225925925926,
+            "cycles": 449881
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.05074514814814815,
+            "cycles": 1370119
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005108962962962963,
+            "cycles": 137942
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016688296296296295,
+            "cycles": 450584
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04983681481481481,
+            "cycles": 1345594
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005104407407407407,
+            "cycles": 137819
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01668048148148148,
+            "cycles": 450373
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04957085185185185,
+            "cycles": 1338413
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00753037037037037,
+            "cycles": 203320
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.041232074074074074,
+            "cycles": 1113266
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013083555555555555,
+            "cycles": 353256
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.04420092592592593,
+            "cycles": 1193425
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0068494444444444445,
+            "cycles": 184935
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004127962962962963,
+            "cycles": 111455
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021657481481481482,
+            "cycles": 584752
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.02547414814814815,
+            "cycles": 687802
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006848,
+            "cycles": 184896
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.020470074074074075,
+            "cycles": 552692
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012651074074074073,
+            "cycles": 341579
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006849,
+            "cycles": 184923
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07695122222222223,
+            "cycles": 2077683
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07205896296296296,
+            "cycles": 1945592
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06894007407407407,
+            "cycles": 1861382
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.03608751851851852,
+            "cycles": 974363
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.022389037037037037,
+            "cycles": 604504
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006850148148148148,
+            "cycles": 184954
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024656074074074073,
+            "cycles": 665714
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07978559259259259,
+            "cycles": 2154211
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012376222222222222,
+            "cycles": 334158
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005100777777777778,
+            "cycles": 137721
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667637037037037,
+            "cycles": 450262
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012386555555555555,
+            "cycles": 334437
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04088777777777778,
+            "cycles": 1103970
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013075222222222222,
+            "cycles": 353031
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00753425925925926,
+            "cycles": 203425
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.049149296296296295,
+            "cycles": 1327031
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.16162837037037037,
+            "cycles": 4363966
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017675703703703704,
+            "cycles": 477244
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008347777777777779,
+            "cycles": 225390
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815711111111111,
+            "cycles": 490242
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017672296296296297,
+            "cycles": 477152
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08394033333333334,
+            "cycles": 2266389
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019034962962962962,
+            "cycles": 513944
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019657777777777777,
+            "cycles": 530760
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04088122222222222,
+            "cycles": 1103793
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007539518518518518,
+            "cycles": 203567
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099037037037037,
+            "cycles": 137674
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016674222222222222,
+            "cycles": 450204
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007528037037037037,
+            "cycles": 203257
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040879518518518516,
+            "cycles": 1103747
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013090925925925926,
+            "cycles": 353455
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023227222222222222,
+            "cycles": 627135
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.02036437037037037,
+            "cycles": 549838
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006849962962962963,
+            "cycles": 184949
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004125481481481482,
+            "cycles": 111388
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021659703703703705,
+            "cycles": 584812
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006854962962962963,
+            "cycles": 185084
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.020307222222222223,
+            "cycles": 548295
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01263948148148148,
+            "cycles": 341266
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.28624166666666667,
+            "cycles": 7728525
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.15122618518518519,
+            "cycles": 4083107
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1304602962962963,
+            "cycles": 3522428
+          }
+        ]
+      }
+    },
+    {
+      "frame": 1,
+      "wall_s": 3.802916600019671,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.47257187962532043,
+          "box": [
+            25.5025634765625,
+            0.0,
+            1280.0,
+            720.0
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.46133014814814816,
+          "forward": 3.267409074074074,
+          "decode": 0.06865348148148148,
+          "display": 1.6814814814814814e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0128544444444443,
+          "YOLO_ADD": 0.5654667407407408,
+          "YOLO_CONCAT": 0.8306834814814815,
+          "YOLO_POOL": 0.21755855555555556,
+          "YOLO_UPSAMPLE": 0.07329285185185186,
+          "YOLO_HEAD": 0.5673858518518519
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.154026,
+            "cycles": 4158702
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.05646085185185185,
+            "cycles": 1524443
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02028951851851852,
+            "cycles": 547817
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015408407407407407,
+            "cycles": 416027
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024838370370370372,
+            "cycles": 670636
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19427166666666668,
+            "cycles": 5245335
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02028948148148148,
+            "cycles": 547816
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17404866666666666,
+            "cycles": 4699314
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03283114814814815,
+            "cycles": 886441
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03972288888888889,
+            "cycles": 1072518
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011456925925925926,
+            "cycles": 309337
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008355037037037038,
+            "cycles": 225586
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018154925925925925,
+            "cycles": 490183
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09884151851851852,
+            "cycles": 2668721
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008358407407407408,
+            "cycles": 225677
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815422222222222,
+            "cycles": 490164
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09877518518518519,
+            "cycles": 2666930
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011459592592592592,
+            "cycles": 309409
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08270429629629629,
+            "cycles": 2233016
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019041666666666665,
+            "cycles": 514125
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03509837037037037,
+            "cycles": 947656
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007530296296296296,
+            "cycles": 203318
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005100740740740741,
+            "cycles": 137720
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01666211111111111,
+            "cycles": 449877
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049609814814814815,
+            "cycles": 1339465
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0051041481481481485,
+            "cycles": 137812
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01668011111111111,
+            "cycles": 450363
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04954970370370371,
+            "cycles": 1337842
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005094777777777778,
+            "cycles": 137559
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01666762962962963,
+            "cycles": 450026
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049535888888888886,
+            "cycles": 1337469
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007538592592592592,
+            "cycles": 203542
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040277703703703704,
+            "cycles": 1087498
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013086666666666667,
+            "cycles": 353340
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.04422322222222222,
+            "cycles": 1194027
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006857222222222222,
+            "cycles": 185145
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0041238148148148145,
+            "cycles": 111343
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02167522222222222,
+            "cycles": 585231
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024882962962962964,
+            "cycles": 671840
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006856481481481482,
+            "cycles": 185125
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01991440740740741,
+            "cycles": 537689
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012639148148148148,
+            "cycles": 341257
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006853148148148148,
+            "cycles": 185035
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07680740740740741,
+            "cycles": 2073800
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07196925925925926,
+            "cycles": 1943170
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06878188888888889,
+            "cycles": 1857111
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.035229,
+            "cycles": 951183
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02235837037037037,
+            "cycles": 603676
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006847,
+            "cycles": 184869
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.02440174074074074,
+            "cycles": 658847
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.0780774074074074,
+            "cycles": 2108090
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012378925925925925,
+            "cycles": 334231
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005104407407407407,
+            "cycles": 137819
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016683518518518518,
+            "cycles": 450455
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012397407407407407,
+            "cycles": 334730
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04005185185185185,
+            "cycles": 1081400
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01307825925925926,
+            "cycles": 353113
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007536851851851852,
+            "cycles": 203495
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.048891111111111114,
+            "cycles": 1320060
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.1581735925925926,
+            "cycles": 4270687
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01765925925925926,
+            "cycles": 476800
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008356074074074075,
+            "cycles": 225614
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01816074074074074,
+            "cycles": 490340
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017667111111111113,
+            "cycles": 477012
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08226959259259259,
+            "cycles": 2221279
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019028185185185186,
+            "cycles": 513761
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019643777777777777,
+            "cycles": 530382
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040007703703703705,
+            "cycles": 1080208
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007544481481481482,
+            "cycles": 203701
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005103444444444444,
+            "cycles": 137793
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016676814814814814,
+            "cycles": 450274
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007540481481481481,
+            "cycles": 203593
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04006081481481481,
+            "cycles": 1081642
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013069222222222222,
+            "cycles": 352869
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023225814814814814,
+            "cycles": 627097
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019968518518518517,
+            "cycles": 539150
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006856777777777778,
+            "cycles": 185133
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004132222222222222,
+            "cycles": 111570
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02165711111111111,
+            "cycles": 584742
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006851851851851852,
+            "cycles": 185000
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019899925925925925,
+            "cycles": 537298
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012657185185185185,
+            "cycles": 341744
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.2857512962962963,
+            "cycles": 7715285
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.15128592592592593,
+            "cycles": 4084720
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.13034862962962962,
+            "cycles": 3519413
+          }
+        ]
+      }
+    },
+    {
+      "frame": 2,
+      "wall_s": 3.8243546999874525,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.4384981095790863,
+          "box": [
+            17.603271484375,
+            0.0,
+            1209.18212890625,
+            717.0198974609375
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4838996296296296,
+          "forward": 3.2664553333333335,
+          "decode": 0.06847659259259259,
+          "display": 1.6703703703703703e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0128471851851852,
+          "YOLO_ADD": 0.5653268148148148,
+          "YOLO_CONCAT": 0.8306531481481481,
+          "YOLO_POOL": 0.21727896296296295,
+          "YOLO_UPSAMPLE": 0.0732841111111111,
+          "YOLO_HEAD": 0.5668993333333333
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.154019,
+            "cycles": 4158513
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.056472148148148146,
+            "cycles": 1524748
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02028259259259259,
+            "cycles": 547630
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015402037037037037,
+            "cycles": 415855
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024838555555555555,
+            "cycles": 670641
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19425507407407408,
+            "cycles": 5244887
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020287481481481483,
+            "cycles": 547762
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17405307407407408,
+            "cycles": 4699433
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03283651851851852,
+            "cycles": 886586
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03971303703703704,
+            "cycles": 1072252
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011455888888888889,
+            "cycles": 309309
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008350259259259259,
+            "cycles": 225457
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815803703703704,
+            "cycles": 490267
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09882777777777778,
+            "cycles": 2668350
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008352370370370371,
+            "cycles": 225514
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815237037037037,
+            "cycles": 490114
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09876448148148148,
+            "cycles": 2666641
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011452703703703705,
+            "cycles": 309223
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08271277777777777,
+            "cycles": 2233245
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019031555555555555,
+            "cycles": 513852
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03511081481481482,
+            "cycles": 947992
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007526666666666667,
+            "cycles": 203220
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0051041481481481485,
+            "cycles": 137812
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667714814814815,
+            "cycles": 450283
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04955174074074074,
+            "cycles": 1337897
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00510262962962963,
+            "cycles": 137771
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016664037037037036,
+            "cycles": 449929
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04953503703703704,
+            "cycles": 1337446
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005098925925925926,
+            "cycles": 137671
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667333333333333,
+            "cycles": 450180
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049524074074074075,
+            "cycles": 1337150
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00753962962962963,
+            "cycles": 203570
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040155555555555555,
+            "cycles": 1084200
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013090296296296296,
+            "cycles": 353438
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.04422633333333333,
+            "cycles": 1194111
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00685462962962963,
+            "cycles": 185075
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0041196666666666664,
+            "cycles": 111231
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021666296296296295,
+            "cycles": 584990
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.02486862962962963,
+            "cycles": 671453
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006853407407407407,
+            "cycles": 185042
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01993025925925926,
+            "cycles": 538117
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012652444444444444,
+            "cycles": 341616
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006839666666666667,
+            "cycles": 184671
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07666503703703703,
+            "cycles": 2069956
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07185148148148149,
+            "cycles": 1939990
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06876244444444445,
+            "cycles": 1856586
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.035260703703703704,
+            "cycles": 952039
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.022357444444444444,
+            "cycles": 603651
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006846111111111111,
+            "cycles": 184845
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.02440788888888889,
+            "cycles": 659013
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.0780834074074074,
+            "cycles": 2108252
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012375703703703703,
+            "cycles": 334144
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005104925925925926,
+            "cycles": 137833
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01669285185185185,
+            "cycles": 450707
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01239325925925926,
+            "cycles": 334618
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04006585185185185,
+            "cycles": 1081778
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013089370370370371,
+            "cycles": 353413
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007530111111111111,
+            "cycles": 203313
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.048876222222222224,
+            "cycles": 1319658
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.15819844444444445,
+            "cycles": 4271358
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01766774074074074,
+            "cycles": 477029
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00835762962962963,
+            "cycles": 225656
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018155555555555557,
+            "cycles": 490200
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017658296296296297,
+            "cycles": 476774
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08227292592592593,
+            "cycles": 2221369
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019035814814814814,
+            "cycles": 513967
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019648444444444444,
+            "cycles": 530508
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040018851851851854,
+            "cycles": 1080509
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007537333333333333,
+            "cycles": 203508
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005101555555555555,
+            "cycles": 137742
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667837037037037,
+            "cycles": 450316
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007538407407407408,
+            "cycles": 203537
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04005937037037037,
+            "cycles": 1081603
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013071555555555555,
+            "cycles": 352932
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023241222222222222,
+            "cycles": 627513
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01995240740740741,
+            "cycles": 538715
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006860703703703704,
+            "cycles": 185239
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004132222222222222,
+            "cycles": 111570
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021661777777777776,
+            "cycles": 584868
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006853925925925926,
+            "cycles": 185056
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019889518518518518,
+            "cycles": 537017
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012652222222222223,
+            "cycles": 341610
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.285354,
+            "cycles": 7704558
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1511568888888889,
+            "cycles": 4081236
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.13038844444444445,
+            "cycles": 3520488
+          }
+        ]
+      }
+    },
+    {
+      "frame": 3,
+      "wall_s": 3.819563900004141,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.5167635083198547,
+          "box": [
+            16.9473876953125,
+            0.0,
+            1196.662841796875,
+            720.0
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4862267037037037,
+          "forward": 3.258131,
+          "decode": 0.06972133333333333,
+          "display": 1.6592592592592594e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0129559629629625,
+          "YOLO_ADD": 0.5653722962962963,
+          "YOLO_CONCAT": 0.8305564814814815,
+          "YOLO_POOL": 0.21749507407407406,
+          "YOLO_UPSAMPLE": 0.0732627037037037,
+          "YOLO_HEAD": 0.5583247037037037
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.1540275925925926,
+            "cycles": 4158745
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.05647288888888889,
+            "cycles": 1524768
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02029685185185185,
+            "cycles": 548015
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015417962962962963,
+            "cycles": 416285
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024847666666666667,
+            "cycles": 670887
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19424703703703702,
+            "cycles": 5244670
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020288444444444446,
+            "cycles": 547788
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17403237037037037,
+            "cycles": 4698874
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03284862962962963,
+            "cycles": 886913
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.039725,
+            "cycles": 1072575
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011456962962962962,
+            "cycles": 309338
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008354407407407408,
+            "cycles": 225569
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018150407407407407,
+            "cycles": 490061
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.0988627037037037,
+            "cycles": 2669293
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008356666666666667,
+            "cycles": 225630
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018149407407407406,
+            "cycles": 490034
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09881551851851852,
+            "cycles": 2668019
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011459666666666667,
+            "cycles": 309411
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08271522222222222,
+            "cycles": 2233311
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019029074074074073,
+            "cycles": 513785
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03510044444444444,
+            "cycles": 947712
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007530814814814815,
+            "cycles": 203332
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099185185185185,
+            "cycles": 137678
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01669114814814815,
+            "cycles": 450661
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04952355555555556,
+            "cycles": 1337136
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099962962962963,
+            "cycles": 137699
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016675,
+            "cycles": 450225
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049497703703703703,
+            "cycles": 1336438
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0051,
+            "cycles": 137700
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016687407407407408,
+            "cycles": 450560
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.0495387037037037,
+            "cycles": 1337545
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007539074074074074,
+            "cycles": 203555
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04014344444444445,
+            "cycles": 1083873
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013092962962962962,
+            "cycles": 353510
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.04420092592592593,
+            "cycles": 1193425
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0068494444444444445,
+            "cycles": 184935
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004119148148148148,
+            "cycles": 111217
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021681333333333334,
+            "cycles": 585396
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024887074074074075,
+            "cycles": 671951
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006856851851851852,
+            "cycles": 185135
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019912370370370372,
+            "cycles": 537634
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012665703703703703,
+            "cycles": 341974
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006844925925925926,
+            "cycles": 184813
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07660396296296296,
+            "cycles": 2068307
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07195448148148148,
+            "cycles": 1942771
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06893662962962963,
+            "cycles": 1861289
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.03525496296296296,
+            "cycles": 951884
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02236740740740741,
+            "cycles": 603920
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006844444444444445,
+            "cycles": 184800
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.02440188888888889,
+            "cycles": 658851
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07805937037037038,
+            "cycles": 2107603
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012383888888888889,
+            "cycles": 334365
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005109111111111111,
+            "cycles": 137946
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01668714814814815,
+            "cycles": 450553
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012387555555555556,
+            "cycles": 334464
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04004166666666667,
+            "cycles": 1081125
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01308251851851852,
+            "cycles": 353228
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007537888888888889,
+            "cycles": 203523
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.048860814814814815,
+            "cycles": 1319242
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.15822774074074075,
+            "cycles": 4272149
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017668592592592593,
+            "cycles": 477052
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008347777777777779,
+            "cycles": 225390
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01816125925925926,
+            "cycles": 490354
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01767437037037037,
+            "cycles": 477208
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08226233333333334,
+            "cycles": 2221083
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019037185185185185,
+            "cycles": 514004
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019652074074074075,
+            "cycles": 530606
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040031962962962964,
+            "cycles": 1080863
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007537037037037037,
+            "cycles": 203500
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099814814814815,
+            "cycles": 137695
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016673185185185187,
+            "cycles": 450176
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007536333333333333,
+            "cycles": 203481
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04001892592592592,
+            "cycles": 1080511
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013081148148148147,
+            "cycles": 353191
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023237074074074073,
+            "cycles": 627401
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019970925925925927,
+            "cycles": 539215
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006846925925925926,
+            "cycles": 184867
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004126,
+            "cycles": 111402
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021665925925925925,
+            "cycles": 584980
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00684874074074074,
+            "cycles": 184916
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019885185185185186,
+            "cycles": 536900
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012646592592592593,
+            "cycles": 341458
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.2784202962962963,
+            "cycles": 7517348
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1496968148148148,
+            "cycles": 4041814
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1302075925925926,
+            "cycles": 3515605
+          }
+        ]
+      }
+    },
+    {
+      "frame": 4,
+      "wall_s": 3.7926674999762326,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.44749605655670166,
+          "box": [
+            31.97406005859375,
+            0.0,
+            1280.0,
+            720.0
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.457120037037037,
+          "forward": 3.2618874444444446,
+          "decode": 0.06814703703703703,
+          "display": 1.6851851851851853e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.012946407407407,
+          "YOLO_ADD": 0.565358925925926,
+          "YOLO_CONCAT": 0.8307165925925927,
+          "YOLO_POOL": 0.21746955555555553,
+          "YOLO_UPSAMPLE": 0.07329188888888889,
+          "YOLO_HEAD": 0.5619381481481481
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.15402407407407406,
+            "cycles": 4158650
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.05648640740740741,
+            "cycles": 1525133
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020294851851851852,
+            "cycles": 547961
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015409851851851852,
+            "cycles": 416066
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024844814814814816,
+            "cycles": 670810
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19423766666666667,
+            "cycles": 5244417
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020280518518518517,
+            "cycles": 547574
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17405074074074073,
+            "cycles": 4699370
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.032853037037037035,
+            "cycles": 887032
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03971459259259259,
+            "cycles": 1072294
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011450703703703704,
+            "cycles": 309169
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008356407407407408,
+            "cycles": 225623
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018158555555555556,
+            "cycles": 490281
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09883503703703704,
+            "cycles": 2668546
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008353777777777778,
+            "cycles": 225552
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018153703703703703,
+            "cycles": 490150
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09878903703703704,
+            "cycles": 2667304
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011456555555555555,
+            "cycles": 309327
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08270374074074074,
+            "cycles": 2233001
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01901674074074074,
+            "cycles": 513452
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03509214814814815,
+            "cycles": 947488
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007526666666666667,
+            "cycles": 203220
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00510437037037037,
+            "cycles": 137818
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01668337037037037,
+            "cycles": 450451
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04953081481481481,
+            "cycles": 1337332
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005102592592592593,
+            "cycles": 137770
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016667666666666667,
+            "cycles": 450027
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049542555555555555,
+            "cycles": 1337649
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00509737037037037,
+            "cycles": 137629
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667751851851852,
+            "cycles": 450293
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.0495377037037037,
+            "cycles": 1337518
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007541703703703704,
+            "cycles": 203626
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04015374074074074,
+            "cycles": 1084151
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013074148148148149,
+            "cycles": 353002
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.044237740740740744,
+            "cycles": 1194419
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0068542222222222225,
+            "cycles": 185064
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0041196666666666664,
+            "cycles": 111231
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021679777777777777,
+            "cycles": 585354
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024886111111111112,
+            "cycles": 671925
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006855407407407407,
+            "cycles": 185096
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01992437037037037,
+            "cycles": 537958
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01265062962962963,
+            "cycles": 341567
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006849,
+            "cycles": 184923
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07673318518518518,
+            "cycles": 2071796
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07193503703703703,
+            "cycles": 1942246
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06880133333333334,
+            "cycles": 1857636
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.03525611111111111,
+            "cycles": 951915
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02238162962962963,
+            "cycles": 604304
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0068507037037037035,
+            "cycles": 184969
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024410555555555557,
+            "cycles": 659085
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07809025925925926,
+            "cycles": 2108437
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012400185185185186,
+            "cycles": 334805
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099740740740741,
+            "cycles": 137693
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016671555555555554,
+            "cycles": 450132
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012370518518518519,
+            "cycles": 334004
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04004318518518519,
+            "cycles": 1081166
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013081555555555556,
+            "cycles": 353202
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007537444444444445,
+            "cycles": 203511
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.04888133333333333,
+            "cycles": 1319796
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.15819703703703702,
+            "cycles": 4271320
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017661,
+            "cycles": 476847
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008345777777777778,
+            "cycles": 225336
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018160222222222223,
+            "cycles": 490326
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017682666666666666,
+            "cycles": 477432
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08227855555555555,
+            "cycles": 2221521
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019035,
+            "cycles": 513945
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01966037037037037,
+            "cycles": 530830
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040056925925925926,
+            "cycles": 1081537
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007544629629629629,
+            "cycles": 203705
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005105,
+            "cycles": 137835
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016683555555555556,
+            "cycles": 450456
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007536851851851852,
+            "cycles": 203495
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040069,
+            "cycles": 1081863
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01307637037037037,
+            "cycles": 353062
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023235,
+            "cycles": 627345
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01996137037037037,
+            "cycles": 538957
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006856851851851852,
+            "cycles": 185135
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004136888888888889,
+            "cycles": 111696
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021654518518518517,
+            "cycles": 584672
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006853925925925926,
+            "cycles": 185056
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019931555555555557,
+            "cycles": 538152
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012655851851851852,
+            "cycles": 341708
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.2798171111111111,
+            "cycles": 7555062
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.15069418518518518,
+            "cycles": 4068743
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.13142685185185185,
+            "cycles": 3548525
+          }
+        ]
+      }
+    },
+    {
+      "frame": 5,
+      "wall_s": 3.7928696000017226,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.49348995089530945,
+          "box": [
+            43.39337158203125,
+            0.0,
+            1280.0,
+            720.0
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4561820740740741,
+          "forward": 3.261118777777778,
+          "decode": 0.06966544444444445,
+          "display": 1.637037037037037e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.01296162962963,
+          "YOLO_ADD": 0.5653664074074074,
+          "YOLO_CONCAT": 0.8307137407407407,
+          "YOLO_POOL": 0.2174350740740741,
+          "YOLO_UPSAMPLE": 0.07327785185185186,
+          "YOLO_HEAD": 0.5611978148148148
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.15401344444444445,
+            "cycles": 4158363
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.056489296296296294,
+            "cycles": 1525211
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020298185185185186,
+            "cycles": 548051
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015417222222222223,
+            "cycles": 416265
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02483662962962963,
+            "cycles": 670589
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19426537037037037,
+            "cycles": 5245165
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020283259259259258,
+            "cycles": 547648
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17410655555555554,
+            "cycles": 4700877
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03286340740740741,
+            "cycles": 887312
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.039712518518518515,
+            "cycles": 1072238
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011453814814814814,
+            "cycles": 309253
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00835751851851852,
+            "cycles": 225653
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018159074074074074,
+            "cycles": 490295
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09884803703703704,
+            "cycles": 2668897
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008354148148148149,
+            "cycles": 225562
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018155777777777778,
+            "cycles": 490206
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09876859259259259,
+            "cycles": 2666752
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011457518518518518,
+            "cycles": 309353
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08272203703703704,
+            "cycles": 2233495
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019028444444444445,
+            "cycles": 513768
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.035090111111111114,
+            "cycles": 947433
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007536,
+            "cycles": 203472
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005104888888888889,
+            "cycles": 137832
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016683925925925925,
+            "cycles": 450466
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04955855555555556,
+            "cycles": 1338081
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005102074074074074,
+            "cycles": 137756
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016670777777777777,
+            "cycles": 450111
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04952881481481482,
+            "cycles": 1337278
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005106185185185185,
+            "cycles": 137867
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016665555555555555,
+            "cycles": 449970
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04951003703703704,
+            "cycles": 1336771
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007535111111111111,
+            "cycles": 203448
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04016325925925926,
+            "cycles": 1084408
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013081185185185185,
+            "cycles": 353192
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.044213888888888886,
+            "cycles": 1193775
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0068494444444444445,
+            "cycles": 184935
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0041225555555555555,
+            "cycles": 111309
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02167096296296296,
+            "cycles": 585116
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024887,
+            "cycles": 671949
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006849925925925926,
+            "cycles": 184948
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01990625925925926,
+            "cycles": 537469
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012670185185185185,
+            "cycles": 342095
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006867666666666667,
+            "cycles": 185427
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07675344444444444,
+            "cycles": 2072343
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07180318518518519,
+            "cycles": 1938686
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06887844444444445,
+            "cycles": 1859718
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.035278555555555556,
+            "cycles": 952521
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.022371555555555554,
+            "cycles": 604032
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006856962962962963,
+            "cycles": 185138
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024395666666666666,
+            "cycles": 658683
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07806162962962963,
+            "cycles": 2107664
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01239062962962963,
+            "cycles": 334547
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005104407407407407,
+            "cycles": 137819
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016677814814814815,
+            "cycles": 450301
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01237925925925926,
+            "cycles": 334240
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04006977777777778,
+            "cycles": 1081884
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013077185185185185,
+            "cycles": 353084
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007538407407407408,
+            "cycles": 203537
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.04888218518518519,
+            "cycles": 1319819
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.15815485185185185,
+            "cycles": 4270181
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01766766666666667,
+            "cycles": 477027
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008346740740740741,
+            "cycles": 225362
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018148814814814816,
+            "cycles": 490018
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017678,
+            "cycles": 477306
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.082274,
+            "cycles": 2221398
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019037703703703703,
+            "cycles": 514018
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019647925925925926,
+            "cycles": 530494
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04003925925925926,
+            "cycles": 1081060
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007539555555555555,
+            "cycles": 203568
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005100518518518518,
+            "cycles": 137714
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667837037037037,
+            "cycles": 450316
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007541,
+            "cycles": 203607
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04006885185185185,
+            "cycles": 1081859
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013076925925925926,
+            "cycles": 353077
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023239148148148148,
+            "cycles": 627457
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019961444444444445,
+            "cycles": 538959
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006857185185185185,
+            "cycles": 185144
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00413637037037037,
+            "cycles": 111682
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02165814814814815,
+            "cycles": 584770
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006853925925925926,
+            "cycles": 185056
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01990725925925926,
+            "cycles": 537496
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012656703703703703,
+            "cycles": 341731
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.27898466666666666,
+            "cycles": 7532586
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1511635925925926,
+            "cycles": 4081417
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.13104955555555556,
+            "cycles": 3538338
+          }
+        ]
+      }
+    },
+    {
+      "frame": 6,
+      "wall_s": 3.822451300045941,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.5040638446807861,
+          "box": [
+            20.8668212890625,
+            0.0,
+            1217.8380126953125,
+            720.0
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.48527625925925927,
+          "forward": 3.262895,
+          "decode": 0.06865051851851851,
+          "display": 1.6481481481481482e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0128965185185186,
+          "YOLO_ADD": 0.565440925925926,
+          "YOLO_CONCAT": 0.8305284074074073,
+          "YOLO_POOL": 0.2180441111111111,
+          "YOLO_UPSAMPLE": 0.07324977777777777,
+          "YOLO_HEAD": 0.5625696296296296
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.154017,
+            "cycles": 4158459
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0564852962962963,
+            "cycles": 1525103
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02028959259259259,
+            "cycles": 547819
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015416703703703703,
+            "cycles": 416251
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024834814814814817,
+            "cycles": 670540
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19426985185185186,
+            "cycles": 5245286
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020282777777777778,
+            "cycles": 547635
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17403270370370372,
+            "cycles": 4698883
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.032863555555555556,
+            "cycles": 887316
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03972059259259259,
+            "cycles": 1072456
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011449666666666667,
+            "cycles": 309141
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008357148148148148,
+            "cycles": 225643
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815514814814815,
+            "cycles": 490189
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09885803703703704,
+            "cycles": 2669167
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008351111111111111,
+            "cycles": 225480
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018156814814814813,
+            "cycles": 490234
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09875692592592593,
+            "cycles": 2666437
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011453925925925926,
+            "cycles": 309256
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08270270370370371,
+            "cycles": 2232973
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019029074074074073,
+            "cycles": 513785
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03508851851851852,
+            "cycles": 947390
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0075411851851851855,
+            "cycles": 203612
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005100444444444445,
+            "cycles": 137712
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016680777777777777,
+            "cycles": 450381
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04956937037037037,
+            "cycles": 1338373
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005101,
+            "cycles": 137727
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01668062962962963,
+            "cycles": 450377
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04955388888888889,
+            "cycles": 1337955
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0051041481481481485,
+            "cycles": 137812
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016673925925925925,
+            "cycles": 450196
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04953518518518518,
+            "cycles": 1337450
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007546333333333334,
+            "cycles": 203751
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040151185185185186,
+            "cycles": 1084082
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013076740740740741,
+            "cycles": 353072
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.04422011111111111,
+            "cycles": 1193943
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00684062962962963,
+            "cycles": 184697
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004125888888888889,
+            "cycles": 111399
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021673037037037036,
+            "cycles": 585172
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024897666666666665,
+            "cycles": 672237
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006850074074074074,
+            "cycles": 184952
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01991722222222222,
+            "cycles": 537765
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012650555555555556,
+            "cycles": 341565
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006852111111111111,
+            "cycles": 185007
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07685662962962964,
+            "cycles": 2075129
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07209074074074075,
+            "cycles": 1946450
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06909674074074074,
+            "cycles": 1865612
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.03522622222222222,
+            "cycles": 951108
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.022387333333333332,
+            "cycles": 604458
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006865148148148148,
+            "cycles": 185359
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024402,
+            "cycles": 658854
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07806325925925926,
+            "cycles": 2107708
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012371962962962963,
+            "cycles": 334043
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005100259259259259,
+            "cycles": 137707
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016672074074074075,
+            "cycles": 450146
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012380814814814815,
+            "cycles": 334282
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04005848148148148,
+            "cycles": 1081579
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013078777777777778,
+            "cycles": 353127
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00753425925925926,
+            "cycles": 203425
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.048847777777777775,
+            "cycles": 1318890
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.15818162962962962,
+            "cycles": 4270904
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017669814814814815,
+            "cycles": 477085
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008354518518518518,
+            "cycles": 225572
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815562962962963,
+            "cycles": 490202
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01767748148148148,
+            "cycles": 477292
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08226562962962963,
+            "cycles": 2221172
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01903237037037037,
+            "cycles": 513874
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019645444444444445,
+            "cycles": 530427
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04002362962962963,
+            "cycles": 1080638
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007532740740740741,
+            "cycles": 203384
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005107777777777778,
+            "cycles": 137910
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016671111111111112,
+            "cycles": 450120
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007528037037037037,
+            "cycles": 203257
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040039333333333336,
+            "cycles": 1081062
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013077222222222223,
+            "cycles": 353085
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023251888888888888,
+            "cycles": 627801
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019972962962962963,
+            "cycles": 539270
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00684162962962963,
+            "cycles": 184724
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0041225555555555555,
+            "cycles": 111309
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021653481481481482,
+            "cycles": 584644
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006854444444444444,
+            "cycles": 185070
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019893444444444443,
+            "cycles": 537123
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012660407407407407,
+            "cycles": 341831
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.2805132962962963,
+            "cycles": 7573859
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.15095425925925926,
+            "cycles": 4075765
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.13110207407407407,
+            "cycles": 3539756
+          }
+        ]
+      }
+    },
+    {
+      "frame": 7,
+      "wall_s": 3.81740090000676,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.5146541595458984,
+          "box": [
+            17.94586181640625,
+            0.0,
+            1193.82861328125,
+            719.19287109375
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4860540740740741,
+          "forward": 3.259244851851852,
+          "decode": 0.066525,
+          "display": 1.6703703703703703e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.012871185185185,
+          "YOLO_ADD": 0.5653271481481481,
+          "YOLO_CONCAT": 0.8305331851851853,
+          "YOLO_POOL": 0.21740051851851852,
+          "YOLO_UPSAMPLE": 0.07328648148148148,
+          "YOLO_HEAD": 0.55966
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.1540131111111111,
+            "cycles": 4158354
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.05648814814814815,
+            "cycles": 1525180
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020285074074074073,
+            "cycles": 547697
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015409148148148148,
+            "cycles": 416047
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02483788888888889,
+            "cycles": 670623
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19420722222222223,
+            "cycles": 5243595
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020284703703703704,
+            "cycles": 547687
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17404985185185184,
+            "cycles": 4699346
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03286251851851852,
+            "cycles": 887288
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.039723666666666664,
+            "cycles": 1072539
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011448370370370371,
+            "cycles": 309106
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008355666666666667,
+            "cycles": 225603
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815803703703704,
+            "cycles": 490267
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09882603703703703,
+            "cycles": 2668303
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008356814814814815,
+            "cycles": 225634
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01814540740740741,
+            "cycles": 489926
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09876055555555556,
+            "cycles": 2666535
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011454962962962964,
+            "cycles": 309284
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08269485185185185,
+            "cycles": 2232761
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019034666666666665,
+            "cycles": 513936
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03510666666666667,
+            "cycles": 947880
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00753962962962963,
+            "cycles": 203570
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005101777777777778,
+            "cycles": 137748
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01666988888888889,
+            "cycles": 450087
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04954114814814815,
+            "cycles": 1337611
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005101518518518518,
+            "cycles": 137741
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016672407407407407,
+            "cycles": 450155
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04957640740740741,
+            "cycles": 1338563
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005105296296296296,
+            "cycles": 137843
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016675962962962962,
+            "cycles": 450251
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049548777777777775,
+            "cycles": 1337817
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007539074074074074,
+            "cycles": 203555
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04015277777777778,
+            "cycles": 1084125
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013081814814814815,
+            "cycles": 353209
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.044208185185185184,
+            "cycles": 1193621
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006845296296296296,
+            "cycles": 184823
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004126925925925926,
+            "cycles": 111427
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02166888888888889,
+            "cycles": 585060
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024867,
+            "cycles": 671409
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006855333333333333,
+            "cycles": 185094
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01991574074074074,
+            "cycles": 537725
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012654666666666666,
+            "cycles": 341676
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006852111111111111,
+            "cycles": 185007
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07672251851851852,
+            "cycles": 2071508
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07186596296296296,
+            "cycles": 1940381
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06881203703703703,
+            "cycles": 1857925
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.03524214814814815,
+            "cycles": 951538
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02238037037037037,
+            "cycles": 604270
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006847740740740741,
+            "cycles": 184889
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024394666666666665,
+            "cycles": 658656
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07805377777777778,
+            "cycles": 2107452
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012378296296296297,
+            "cycles": 334214
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005101851851851852,
+            "cycles": 137750
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016680407407407408,
+            "cycles": 450371
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01237874074074074,
+            "cycles": 334226
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040049777777777774,
+            "cycles": 1081344
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013078222222222222,
+            "cycles": 353112
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007531148148148148,
+            "cycles": 203341
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.04889181481481481,
+            "cycles": 1320079
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.15818618518518518,
+            "cycles": 4271027
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017661518518518517,
+            "cycles": 476861
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008352444444444444,
+            "cycles": 225516
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01814674074074074,
+            "cycles": 489962
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017672296296296297,
+            "cycles": 477152
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08224566666666666,
+            "cycles": 2220633
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01903537037037037,
+            "cycles": 513955
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019643777777777777,
+            "cycles": 530382
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04003948148148148,
+            "cycles": 1081066
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007535333333333333,
+            "cycles": 203454
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0050994074074074075,
+            "cycles": 137684
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016684074074074073,
+            "cycles": 450470
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007538925925925926,
+            "cycles": 203551
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04004462962962963,
+            "cycles": 1081205
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013084185185185185,
+            "cycles": 353273
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02323862962962963,
+            "cycles": 627443
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019952962962962964,
+            "cycles": 538730
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006854666666666667,
+            "cycles": 185076
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004130666666666667,
+            "cycles": 111528
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021659185185185184,
+            "cycles": 584798
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006840962962962963,
+            "cycles": 184706
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019905333333333334,
+            "cycles": 537444
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012652592592592592,
+            "cycles": 341620
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.27842588888888886,
+            "cycles": 7517499
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.15027688888888888,
+            "cycles": 4057476
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.13095722222222222,
+            "cycles": 3535845
+          }
+        ]
+      }
+    },
+    {
+      "frame": 8,
+      "wall_s": 3.791957099980209,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.4885041415691376,
+          "box": [
+            36.6519775390625,
+            0.0,
+            1280.0,
+            719.2109375
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4552358888888889,
+          "forward": 3.262495037037037,
+          "decode": 0.06867681481481482,
+          "display": 1.614814814814815e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0129034444444447,
+          "YOLO_ADD": 0.565451962962963,
+          "YOLO_CONCAT": 0.8305027037037037,
+          "YOLO_POOL": 0.21777092592592592,
+          "YOLO_UPSAMPLE": 0.07326470370370369,
+          "YOLO_HEAD": 0.5624372222222223
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.1539988148148148,
+            "cycles": 4157968
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.056490074074074074,
+            "cycles": 1525232
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020291629629629628,
+            "cycles": 547874
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015407222222222221,
+            "cycles": 415995
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.024845037037037037,
+            "cycles": 670816
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19429548148148149,
+            "cycles": 5245978
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020297037037037037,
+            "cycles": 548020
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17401977777777777,
+            "cycles": 4698534
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03286,
+            "cycles": 887220
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.039720296296296295,
+            "cycles": 1072448
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011445,
+            "cycles": 309015
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00836025925925926,
+            "cycles": 225727
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018147592592592594,
+            "cycles": 489985
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09886203703703704,
+            "cycles": 2669275
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008349555555555556,
+            "cycles": 225438
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01815525925925926,
+            "cycles": 490192
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.0987862962962963,
+            "cycles": 2667230
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011455444444444445,
+            "cycles": 309297
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08269744444444445,
+            "cycles": 2232831
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019031814814814814,
+            "cycles": 513859
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.035086962962962966,
+            "cycles": 947348
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007537037037037037,
+            "cycles": 203500
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0051051111111111115,
+            "cycles": 137838
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01668025925925926,
+            "cycles": 450367
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049568666666666664,
+            "cycles": 1338354
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005105185185185185,
+            "cycles": 137840
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016674925925925926,
+            "cycles": 450223
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04954525925925926,
+            "cycles": 1337722
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0050968518518518515,
+            "cycles": 137615
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016678,
+            "cycles": 450306
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.049522666666666666,
+            "cycles": 1337112
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007543777777777778,
+            "cycles": 203682
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04014640740740741,
+            "cycles": 1083953
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013084074074074074,
+            "cycles": 353270
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.044229444444444446,
+            "cycles": 1194195
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006846333333333334,
+            "cycles": 184851
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004125888888888889,
+            "cycles": 111399
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021671481481481483,
+            "cycles": 585130
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024871555555555556,
+            "cycles": 671532
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0068481851851851855,
+            "cycles": 184901
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019904777777777778,
+            "cycles": 537429
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012648259259259258,
+            "cycles": 341503
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006853148148148148,
+            "cycles": 185035
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07672429629629629,
+            "cycles": 2071556
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.0720065925925926,
+            "cycles": 1944178
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06904003703703704,
+            "cycles": 1864081
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.035254703703703705,
+            "cycles": 951877
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.022387814814814815,
+            "cycles": 604471
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006843925925925926,
+            "cycles": 184786
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024394407407407406,
+            "cycles": 658649
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.07806333333333333,
+            "cycles": 2107710
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012375185185185185,
+            "cycles": 334130
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005094592592592592,
+            "cycles": 137554
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016678333333333333,
+            "cycles": 450315
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012388592592592593,
+            "cycles": 334492
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04004744444444444,
+            "cycles": 1081281
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013079185185185185,
+            "cycles": 353138
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0075316666666666665,
+            "cycles": 203355
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.048870296296296294,
+            "cycles": 1319498
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.1581652962962963,
+            "cycles": 4270463
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017685703703703703,
+            "cycles": 477514
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008352962962962963,
+            "cycles": 225530
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018155555555555557,
+            "cycles": 490200
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017668148148148148,
+            "cycles": 477040
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08227662962962963,
+            "cycles": 2221469
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019041185185185185,
+            "cycles": 514112
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019658296296296295,
+            "cycles": 530774
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.040050592592592596,
+            "cycles": 1081366
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007539481481481481,
+            "cycles": 203566
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005103111111111111,
+            "cycles": 137784
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016673185185185187,
+            "cycles": 450176
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007535296296296296,
+            "cycles": 203453
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04002537037037037,
+            "cycles": 1080685
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013081925925925926,
+            "cycles": 353212
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023230333333333332,
+            "cycles": 627219
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019965555555555556,
+            "cycles": 539070
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006836296296296296,
+            "cycles": 184580
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004131185185185185,
+            "cycles": 111542
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021661777777777776,
+            "cycles": 584868
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006857555555555556,
+            "cycles": 185154
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.01988537037037037,
+            "cycles": 536905
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012642185185185185,
+            "cycles": 341339
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.28022122222222223,
+            "cycles": 7565973
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1506322962962963,
+            "cycles": 4067072
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1315837037037037,
+            "cycles": 3552760
+          }
+        ]
+      }
+    },
+    {
+      "frame": 9,
+      "wall_s": 3.820010999974329,
+      "detections": [
+        {
+          "category": "paper",
+          "score": 0.4664008617401123,
+          "box": [
+            21.9156494140625,
+            0.0,
+            1194.040283203125,
+            711.9462890625
+          ]
+        }
+      ],
+      "profile": {
+        "cpu_hz": 27000000,
+        "flags": 63,
+        "stages": {
+          "capture": 0.4853922592592593,
+          "forward": 3.2608047407407406,
+          "decode": 0.06823125925925926,
+          "display": 1.677777777777778e-05
+        },
+        "seconds_by_kind": {
+          "YOLO_CONV": 1.0130072962962966,
+          "YOLO_ADD": 0.5654022962962963,
+          "YOLO_CONCAT": 0.8306341111111111,
+          "YOLO_POOL": 0.21754655555555558,
+          "YOLO_UPSAMPLE": 0.07327003703703704,
+          "YOLO_HEAD": 0.5607764444444444
+        },
+        "operators": [
+          {
+            "index": 0,
+            "kind": "YOLO_CONV",
+            "seconds": 0.15399351851851853,
+            "cycles": 4157825
+          },
+          {
+            "index": 1,
+            "kind": "YOLO_CONV",
+            "seconds": 0.05649014814814815,
+            "cycles": 1525234
+          },
+          {
+            "index": 2,
+            "kind": "YOLO_CONV",
+            "seconds": 0.020279814814814816,
+            "cycles": 547555
+          },
+          {
+            "index": 3,
+            "kind": "YOLO_CONV",
+            "seconds": 0.015409851851851852,
+            "cycles": 416066
+          },
+          {
+            "index": 4,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02484074074074074,
+            "cycles": 670700
+          },
+          {
+            "index": 5,
+            "kind": "YOLO_ADD",
+            "seconds": 0.19429488888888888,
+            "cycles": 5245962
+          },
+          {
+            "index": 6,
+            "kind": "YOLO_CONV",
+            "seconds": 0.02029814814814815,
+            "cycles": 548050
+          },
+          {
+            "index": 7,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.17401711111111112,
+            "cycles": 4698462
+          },
+          {
+            "index": 8,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03285848148148148,
+            "cycles": 887179
+          },
+          {
+            "index": 9,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03973662962962963,
+            "cycles": 1072889
+          },
+          {
+            "index": 10,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011444740740740741,
+            "cycles": 309008
+          },
+          {
+            "index": 11,
+            "kind": "YOLO_CONV",
+            "seconds": 0.00834837037037037,
+            "cycles": 225406
+          },
+          {
+            "index": 12,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018155666666666667,
+            "cycles": 490203
+          },
+          {
+            "index": 13,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09885722222222222,
+            "cycles": 2669145
+          },
+          {
+            "index": 14,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008362703703703704,
+            "cycles": 225793
+          },
+          {
+            "index": 15,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018154740740740742,
+            "cycles": 490178
+          },
+          {
+            "index": 16,
+            "kind": "YOLO_ADD",
+            "seconds": 0.09877177777777778,
+            "cycles": 2666838
+          },
+          {
+            "index": 17,
+            "kind": "YOLO_CONV",
+            "seconds": 0.011452333333333333,
+            "cycles": 309213
+          },
+          {
+            "index": 18,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.0827215925925926,
+            "cycles": 2233483
+          },
+          {
+            "index": 19,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01903874074074074,
+            "cycles": 514046
+          },
+          {
+            "index": 20,
+            "kind": "YOLO_CONV",
+            "seconds": 0.03508177777777778,
+            "cycles": 947208
+          },
+          {
+            "index": 21,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007541703703703704,
+            "cycles": 203626
+          },
+          {
+            "index": 22,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005107222222222222,
+            "cycles": 137895
+          },
+          {
+            "index": 23,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016684407407407408,
+            "cycles": 450479
+          },
+          {
+            "index": 24,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04955625925925926,
+            "cycles": 1338019
+          },
+          {
+            "index": 25,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005097925925925926,
+            "cycles": 137644
+          },
+          {
+            "index": 26,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016678555555555554,
+            "cycles": 450321
+          },
+          {
+            "index": 27,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04952707407407408,
+            "cycles": 1337231
+          },
+          {
+            "index": 28,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005105148148148148,
+            "cycles": 137839
+          },
+          {
+            "index": 29,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01667851851851852,
+            "cycles": 450320
+          },
+          {
+            "index": 30,
+            "kind": "YOLO_ADD",
+            "seconds": 0.04952514814814815,
+            "cycles": 1337179
+          },
+          {
+            "index": 31,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007544296296296296,
+            "cycles": 203696
+          },
+          {
+            "index": 32,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.0401802962962963,
+            "cycles": 1084868
+          },
+          {
+            "index": 33,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013080962962962963,
+            "cycles": 353186
+          },
+          {
+            "index": 34,
+            "kind": "YOLO_CONV",
+            "seconds": 0.0442252962962963,
+            "cycles": 1194083
+          },
+          {
+            "index": 35,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006854703703703704,
+            "cycles": 185077
+          },
+          {
+            "index": 36,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004126407407407408,
+            "cycles": 111413
+          },
+          {
+            "index": 37,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021677185185185185,
+            "cycles": 585284
+          },
+          {
+            "index": 38,
+            "kind": "YOLO_ADD",
+            "seconds": 0.024869925925925927,
+            "cycles": 671488
+          },
+          {
+            "index": 39,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006860037037037037,
+            "cycles": 185221
+          },
+          {
+            "index": 40,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019916777777777776,
+            "cycles": 537753
+          },
+          {
+            "index": 41,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012644814814814815,
+            "cycles": 341410
+          },
+          {
+            "index": 42,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006865074074074074,
+            "cycles": 185357
+          },
+          {
+            "index": 43,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07675033333333334,
+            "cycles": 2072259
+          },
+          {
+            "index": 44,
+            "kind": "YOLO_POOL",
+            "seconds": 0.07190755555555556,
+            "cycles": 1941504
+          },
+          {
+            "index": 45,
+            "kind": "YOLO_POOL",
+            "seconds": 0.06888866666666667,
+            "cycles": 1859994
+          },
+          {
+            "index": 46,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.03527562962962963,
+            "cycles": 952442
+          },
+          {
+            "index": 47,
+            "kind": "YOLO_CONV",
+            "seconds": 0.022386444444444445,
+            "cycles": 604434
+          },
+          {
+            "index": 48,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006844111111111111,
+            "cycles": 184791
+          },
+          {
+            "index": 49,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.024394370370370372,
+            "cycles": 658648
+          },
+          {
+            "index": 50,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.078088,
+            "cycles": 2108376
+          },
+          {
+            "index": 51,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012376407407407407,
+            "cycles": 334163
+          },
+          {
+            "index": 52,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005099259259259259,
+            "cycles": 137680
+          },
+          {
+            "index": 53,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016680407407407408,
+            "cycles": 450371
+          },
+          {
+            "index": 54,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012387037037037037,
+            "cycles": 334450
+          },
+          {
+            "index": 55,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04006474074074074,
+            "cycles": 1081748
+          },
+          {
+            "index": 56,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013084481481481482,
+            "cycles": 353281
+          },
+          {
+            "index": 57,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007538925925925926,
+            "cycles": 203551
+          },
+          {
+            "index": 58,
+            "kind": "YOLO_UPSAMPLE",
+            "seconds": 0.048875666666666664,
+            "cycles": 1319643
+          },
+          {
+            "index": 59,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.1581574074074074,
+            "cycles": 4270250
+          },
+          {
+            "index": 60,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01767325925925926,
+            "cycles": 477178
+          },
+          {
+            "index": 61,
+            "kind": "YOLO_CONV",
+            "seconds": 0.008346740740740741,
+            "cycles": 225362
+          },
+          {
+            "index": 62,
+            "kind": "YOLO_CONV",
+            "seconds": 0.018159185185185184,
+            "cycles": 490298
+          },
+          {
+            "index": 63,
+            "kind": "YOLO_CONV",
+            "seconds": 0.017673333333333333,
+            "cycles": 477180
+          },
+          {
+            "index": 64,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.08225396296296296,
+            "cycles": 2220857
+          },
+          {
+            "index": 65,
+            "kind": "YOLO_CONV",
+            "seconds": 0.019034333333333334,
+            "cycles": 513927
+          },
+          {
+            "index": 66,
+            "kind": "YOLO_CONV",
+            "seconds": 0.01965311111111111,
+            "cycles": 530634
+          },
+          {
+            "index": 67,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04003725925925926,
+            "cycles": 1081006
+          },
+          {
+            "index": 68,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007544148148148148,
+            "cycles": 203692
+          },
+          {
+            "index": 69,
+            "kind": "YOLO_CONV",
+            "seconds": 0.005106740740740741,
+            "cycles": 137882
+          },
+          {
+            "index": 70,
+            "kind": "YOLO_CONV",
+            "seconds": 0.016674222222222222,
+            "cycles": 450204
+          },
+          {
+            "index": 71,
+            "kind": "YOLO_CONV",
+            "seconds": 0.007532185185185185,
+            "cycles": 203369
+          },
+          {
+            "index": 72,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.04004711111111111,
+            "cycles": 1081272
+          },
+          {
+            "index": 73,
+            "kind": "YOLO_CONV",
+            "seconds": 0.013083629629629629,
+            "cycles": 353258
+          },
+          {
+            "index": 74,
+            "kind": "YOLO_CONV",
+            "seconds": 0.023243296296296297,
+            "cycles": 627569
+          },
+          {
+            "index": 75,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019972407407407407,
+            "cycles": 539255
+          },
+          {
+            "index": 76,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006865851851851852,
+            "cycles": 185378
+          },
+          {
+            "index": 77,
+            "kind": "YOLO_CONV",
+            "seconds": 0.004129111111111111,
+            "cycles": 111486
+          },
+          {
+            "index": 78,
+            "kind": "YOLO_CONV",
+            "seconds": 0.021662296296296298,
+            "cycles": 584882
+          },
+          {
+            "index": 79,
+            "kind": "YOLO_CONV",
+            "seconds": 0.006847703703703704,
+            "cycles": 184888
+          },
+          {
+            "index": 80,
+            "kind": "YOLO_CONCAT",
+            "seconds": 0.019901814814814813,
+            "cycles": 537349
+          },
+          {
+            "index": 81,
+            "kind": "YOLO_CONV",
+            "seconds": 0.012662407407407407,
+            "cycles": 341885
+          },
+          {
+            "index": 82,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.27864448148148147,
+            "cycles": 7523401
+          },
+          {
+            "index": 83,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.15058985185185186,
+            "cycles": 4065926
+          },
+          {
+            "index": 84,
+            "kind": "YOLO_HEAD",
+            "seconds": 0.1315421111111111,
+            "cycles": 3551637
+          }
+        ]
+      }
+    }
+  ],
+  "autonomous": false
+}

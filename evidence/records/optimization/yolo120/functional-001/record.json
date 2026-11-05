@@ -1,0 +1,130 @@
+{
+  "passed": true,
+  "board_verified": false,
+  "rtl_checks": "yolo120-001/checks/result.json archived in ../yolo120-001",
+  "native_checks": "native_result.json",
+  "python_tests": 15,
+  "rtl_ip_files_identical": 209,
+  "functional_equivalence": [
+    "yolo120-001",
+    "yolo120-003"
+  ],
+  "ram_sha256": "ee772ad4ccea399226e92de8ff62352bdfaf69eed1b042d016cee26fa16e299d",
+  "inputs": [
+    {
+      "path": "project/yolo120/tests/tb_runtime_uart.sv",
+      "sha256": "5838995d53d3dfc3b0cb397216270de0996118f1cb0c7f86ee24906ca410ca42"
+    },
+    {
+      "path": "project/yolo120/tests/tb_snapshot_stream.sv",
+      "sha256": "1340848c084196dd31619c9b3c81a1656a7493fb82f1f23a9e7acc9059850c0e"
+    },
+    {
+      "path": "project/yolo120/tests/test_area_gate.py",
+      "sha256": "00caaacd3d87e374d3e64accf36d725ce6a1bdcc83183bb5c9547322bf4b9ef2"
+    },
+    {
+      "path": "project/yolo120/tests/test_benchmark.py",
+      "sha256": "2942e7216d4387d2a494d2a3d7ecf76626b0bc2babfb840ea04b4dc9322e60eb"
+    },
+    {
+      "path": "project/yolo120/tests/test_timing_gate.py",
+      "sha256": "086f41fa2f085fafff7bcac4ce716d46d1ea8b033ed72f6520d35fec6ffca6c7"
+    },
+    {
+      "path": "project/yolo120/tools/benchmark.py",
+      "sha256": "5017129c0010e3799619206903aef4c702a98d9975807004bb0c2b294d01479b"
+    },
+    {
+      "path": "project/yolo120/tools/build.py",
+      "sha256": "188ee946d27909b315c0780182fffe4a5bd5dfec6a1a191c16b64b5ef2c5a3ec"
+    },
+    {
+      "path": "project/yolo120/tools/camera_preview.py",
+      "sha256": "fcbf520f07157cb721d8d8451d72159e749fca3bbd192d71b5ee977724f25ce5"
+    },
+    {
+      "path": "project/yolo120/tools/check.py",
+      "sha256": "7828f69fb4578c6447634a612b16f707b1c1e6363fe929295331c4bea453bea4"
+    },
+    {
+      "path": "project/yolo120/tools/check_native.py",
+      "sha256": "648ae6b17e3abece27d7e35c930a10c12f713a9af37b570df5a49d29e0e21dc4"
+    },
+    {
+      "path": "project/yolo120/tools/collect_evidence.py",
+      "sha256": "f0f588d808e001405688235aa987ad51dac8228bfc344454259dc245b097a387"
+    },
+    {
+      "path": "project/yolo120/tools/program.py",
+      "sha256": "72ca8b4371ace4f73d4354ae3cf643d3fdbf4e32530d859ae7822915a20b78fc"
+    },
+    {
+      "path": "tools/check_area_budget.py",
+      "sha256": "d66c2047db02ec3c1ecec5d39e90cee6bd26d8f80daec07ad9d8f1b769603a9c"
+    },
+    {
+      "path": "project/yolo120/sw/platform_main.c",
+      "sha256": "0d90cc925bcc4bf68416bacbd862a8b81ccad19934599b5682ceb53e49022b56"
+    },
+    {
+      "path": "extensions/yolo/sw/yolo_runtime.c",
+      "sha256": "a1650400d23a38d58f358f119b21c3896cee5f1e893b0c6ca7f60f77f99e1d0e"
+    },
+    {
+      "path": "extensions/yolo/sw/yolo_runtime.h",
+      "sha256": "6063cd85cd68b6553111de30c3049c4243100f90d4282de6a7c4eb4d868ee25b"
+    },
+    {
+      "path": "extensions/yolo/sw/yolo_decode.c",
+      "sha256": "ac594dce4ea6169c4564bde17ecc750ff4f39c4e29de67ba15cdc3ecd2365e21"
+    },
+    {
+      "path": "extensions/yolo/sw/yolo_decode.h",
+      "sha256": "a316bc00614627ddd28c1935de6f4df140c311ba1fb2cd282fa11a1fc6a95ae1"
+    },
+    {
+      "path": "extensions/yolo/tb/test_yolo_perf.c",
+      "sha256": "5d00bdd1b5fa318d6bcb3c03592750cde4a0f178d4565c22b5f47078142fc2ea"
+    },
+    {
+      "path": "extensions/yolo/tb/test_yolo_runtime.c",
+      "sha256": "006e9cf062424cbf60d3890f2ab5647103a0b79b80b16774602a92b2385f31bc"
+    },
+    {
+      "path": "extensions/yolo/tb/test_yolo_decode.c",
+      "sha256": "f2642d936125bae5c599b402fb0781747db5f050ae21a5889e1e4bd634fb011b"
+    },
+    {
+      "path": "extensions/ui_reference/yolo/software/test_bbox_osd.c",
+      "sha256": "ed6c2c7a07b80f7c100799d52e809e4f779b46f99f0a3d59af24873648658074"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "native_bbox.log",
+      "sha256": "9741cd2964f49ad70326a1ec19f18e6de02f112b38b4a18a49c3d52fa59b30b6"
+    },
+    {
+      "path": "native_decode.log",
+      "sha256": "a136ae7ba2aaa2cacedf63d702235e7f765ead178dbe98a34ebb1da6a605c0a5"
+    },
+    {
+      "path": "native_perf.log",
+      "sha256": "64856e02599f7bcad871119f849bdf357694f0601649f889600bbbc64922845c"
+    },
+    {
+      "path": "native_result.json",
+      "sha256": "b7071ab62512c90ced7f0b0d871b26365edac07f92638db945465e68641653f9"
+    },
+    {
+      "path": "native_runtime.log",
+      "sha256": "de85572757853b0407777165bae2d95750166e73b53b871c7cac0a80873c22d9"
+    },
+    {
+      "path": "python_checks.log",
+      "sha256": "d65f3b3a2f536f77396fcd966f35c4276bc39dfd39f87a293ed5953457b08653"
+    }
+  ],
+  "note": "Functional tests cover 001. The 003 RTL/IP and program RAM are byte-identical; only timing constraints changed. No full-model CPU oracle or board inference measured."
+}

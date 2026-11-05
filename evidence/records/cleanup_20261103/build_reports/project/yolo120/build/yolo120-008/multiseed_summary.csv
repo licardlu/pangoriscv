@@ -1,0 +1,38 @@
+version,2022.2-SP6.1<build 138931>
+project name,flow.pds
+
+Single Seed:
+Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
+single,OK,Fail,-1.540,1.747,0.008,0.002,2.166,4.568,0.406,0.278,NA,NA,NA,8.09,227.88,1911.42,2255.98,NA,NA,NA,617845,NA,NA,-3018,-3018,-351,-353,NA,-8997,-9008,-668.634,1533,0.000,0,NA
+Pass Rate/Convergence Rate,100.00%,0.00%
+
+Synthesize:
+control_set,630
+Synthesize Performance Summary:
+slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
+slack value,-2.309,-1678.901,5.484,0.000
+Synthesize Process Cpu Time,0h:3m:13s
+
+Device Map:
+Device Map Resource Usage Summary:
+Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
+Used,25683,21654,107.5,124,290,NA,9,0,3
+Available,66600,133200,155,240,19900,NA,32,96,24
+Utilization(%),39%,17%,70%,52%,2%,NA,29%,0%,13%
+Device Map Process Cpu Time,0h:0m:32s
+
+Project Configurations:
+top module,yolo_camera_top
+compile," -top_module {yolo_camera_top} 
+ -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/project/yolo120/build/yolo120-008/sources} "
+synthesize," -ads "
+device map,
+place & route," -gplace_seed 2 
+ -groute_seed 2 
+ -fix_hold_violation_iterations 300 
+ -fix_hold_violation_threshold 200 
+ -fix_hold_violation_threshold_for_clk_tree 200 "
+
+Test Parameters Configurations:
+testparam,
+

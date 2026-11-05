@@ -29,8 +29,9 @@ void portable_init(core_portable *p,int *argc,char *argv[]) {
     (void)argc; (void)argv;
     /* UART 分频必须跟着 CPU_HZ 走, 不能写死 130 (那等于把 120 MHz 焊在固件里)。
        90 MHz 档用写死的 130 会得到 85.9 kbaud, 上位机 115200 收下来全是乱码。
-       120.461538 MHz: 120461538/921600-1 = 129.7 -> 130, 与原来的值一致。 */
-    MMIO(0x10001008)=(CPU_HZ/(115200*8))-1;
+       分频值取四舍五入: 120461538/921600 = 130.73 -> 131, 寄存器写 131-1 = 130,
+       与冻结镜像 (0x08200693) 逐字节一致。直接整除会得到 130-1 = 129, 镜像差一字节。 */
+    MMIO(0x10001008)=((CPU_HZ+460800u)/(115200*8))-1;
     MMIO(0x1000100c)=7; /* 8N1 */
     MMIO(0x10003000)=1;
     /* Load the volatile count: short/release runs must retain identical .text. */

@@ -1,3 +1,4 @@
+"""Bare-metal CoreMark firmware build and PDS flow driver.
 
 No command in this script programs or probes a physical board.
 """
@@ -58,6 +59,12 @@ def firmware(iterations, optimization='-O2'):
 
 
 def generate(iterations, name, extra):
+    # The Scala/Java generator inputs (upstream/VexiiRiscv, tools/runtime) are
+    # not part of the delivered package, so this stage cannot run from here.
+    if not (ROOT/'upstream/VexiiRiscv').is_dir() and not TOOLS.get('classpath'):
+        raise SystemExit('generate: the VexiiRiscv generator checkout is not shipped with this '
+                         'package. Use the frozen RTL in project/pds_native_120/ instead; '
+                         'see README.md section 4.')
     output = ROOT / 'build' / ('gen_' + name)
     output.mkdir(parents=True, exist_ok=False)
     args = [*PROFILE['generator_args'], '--ram-elf='+str(ROOT/'build'/f'firmware_{iterations}/coremark.elf'), *extra]
@@ -84,6 +91,12 @@ def generate(iterations, name, extra):
 
 
 def simulate(name, cycles):
+    # Needs the generated SoC netlist, which this package does not ship.
+    if not (ROOT/'rtl/generated/MicroSoc.v').is_file():
+        raise SystemExit('simulate: rtl/generated/MicroSoc.v is not shipped (only the 8 ROM '
+                         'lane files are). The application-side testbenches that DO run are '
+                         'listed in project/trash_sorting/source/extensions/business/application/'
+                         'run_smoke.ps1.')
     output = ROOT/'build'/('sim_'+name)
     output.mkdir(parents=True, exist_ok=False)
     ms = Path(TOOLS.get('modelsim', os.environ.get('MODELSIM_BIN', 'D:/modeltech64_10.6e/win64')))
@@ -99,10 +112,18 @@ def simulate(name, cycles):
 
 
 def implement(name):
+    # This stage drove the old reference-baseline flow. Its entry script is no
+    # longer part of the package; the delivered CPU builds from project/.
+    if not (ROOT/'platform/build.tcl').is_file():
+        raise SystemExit('implement: platform/build.tcl is not shipped. Build the delivered CPU '
+                         'with: cd project/pds_native_120 && python tools/build.py build '
+                         '--name <new-name> --pds <pds_shell.exe>')
     output = ROOT/'build'/name
     output.mkdir(parents=True, exist_ok=False)
     os.environ['VEXII_ROOT'] = str(ROOT)
-    pds = TOOLS.get('pds', os.environ.get('PDS_SHELL', 'D:/pango/PDS_2022.2-SP6.1/bin/pds_shell.exe'))
+    pds = TOOLS.get('pds', os.environ.get('PDS_SHELL'))
+    if not pds:
+        raise SystemExit('implement: pass PDS_SHELL=<path to pds_shell.exe>')
     text = run([pds, '-file', ROOT/'platform/build.tcl', '-work_dir', output, '-project_name', 'pango_vexii'],
                output, output/'pds.log')
     if 'BUILD_FLOW_COMPLETE' not in text:

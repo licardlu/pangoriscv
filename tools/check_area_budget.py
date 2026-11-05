@@ -6,27 +6,47 @@ permits an explicitly supplied percentage tolerance; it is not exact neutrality.
 import argparse
 import csv
 import json
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check(summary, module, mode, tolerance):
+def read_budget(module):
     with (ROOT/'docs/architecture/area-budget.csv').open(newline='',encoding='utf-8-sig') as handle:
-        budgets = {r['module']:r for r in csv.DictReader(handle)}
-    budget = budgets[module]
+        rows = list(csv.DictReader(handle))
+    if not rows:
+        raise ValueError('Area budget is empty')
+    key = 'implementation' if 'implementation' in rows[0] else 'module'
+    # Preserve the original CLI alias for the documented standalone baseline.
+    name = ('baseline-implementation-standalone-001'
+            if key == 'implementation' and module == 'reference_exact' else module)
+    budgets = {row[key]: row for row in rows}
+    if name not in budgets:
+        raise ValueError('Unknown area budget: '+name)
+    budget = budgets[name]
+    columns = ('lut', 'ff', 'lutram') if key == 'implementation' else ('LUT', 'FF', 'LUTRAM')
+    expected = dict(zip(('LUT', 'FF', 'Distributed RAM'),
+                        (int(budget[column]) for column in columns)))
+    if any(v < 0 for v in expected.values()) or not sum(expected.values()):
+        raise ValueError('Invalid documented area budget')
+    return expected, float(budget.get('max_delta', 0))
+
+
+def check(summary, module, mode, tolerance):
+    expected, allowed = read_budget(module)
     rows = list(csv.reader(summary.read_text(encoding='utf-8-sig').splitlines()))
     index = next(i for i,r in enumerate(rows) if r and r[0]=='Logic Utilization')
     used = dict(zip(rows[index],rows[index+1]))
     actual = {key:int(used[key]) for key in ('LUT','FF','Distributed RAM')}
-    expected = {'LUT':int(budget['LUT']),'FF':int(budget['FF']),'Distributed RAM':int(budget['LUTRAM'])}
     before, after = sum(expected.values()),sum(actual.values())
-    allowed = float(budget['max_delta'])
+    if any(v < 0 for v in actual.values()) or not math.isfinite(allowed):
+        raise ValueError('Invalid area values')
     if mode == 'baseline':
         allowed += before*tolerance/100
     elif tolerance:
         raise ValueError('tolerance requires explicit baseline mode')
-    if tolerance < 0:
+    if not math.isfinite(tolerance) or tolerance < 0:
         raise ValueError('negative tolerance is invalid')
     delta = after-before
     return {'status':'PASS' if delta<=allowed else 'FAIL', 'mode':mode,'module':module,

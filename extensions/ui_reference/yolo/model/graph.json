@@ -1,0 +1,1913 @@
+{
+ "size": 320,
+ "n_ops": 85,
+ "outputs": [
+  82,
+  83,
+  84
+ ],
+ "ops": [
+  {
+   "idx": 0,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.0.conv",
+   "cin": 3,
+   "cout": 16,
+   "in_w": 320,
+   "in_h": 320,
+   "k": 6,
+   "stride": 2,
+   "inputs": [
+    -1
+   ],
+   "out_w": 160,
+   "out_h": 160,
+   "pad": 2,
+   "out_shape": [
+    16,
+    160,
+    160
+   ]
+  },
+  {
+   "idx": 1,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.1.conv",
+   "cin": 16,
+   "cout": 32,
+   "in_w": 160,
+   "in_h": 160,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    0
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 1,
+   "out_shape": [
+    32,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 2,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.cv1.conv",
+   "cin": 32,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    1
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    16,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 3,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.m.0.cv1.conv",
+   "cin": 16,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    2
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    16,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 4,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.m.0.cv2.conv",
+   "cin": 16,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    3
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 1,
+   "out_shape": [
+    16,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 5,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.2.m.0.add",
+   "cin": 16,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    2,
+    4
+   ],
+   "out_shape": [
+    16,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 6,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.cv2.conv",
+   "cin": 32,
+   "cout": 16,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    1
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    16,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 7,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.2.cat",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    5,
+    6
+   ],
+   "out_shape": [
+    32,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 8,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.2.cv3.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    7
+   ],
+   "out_w": 80,
+   "out_h": 80,
+   "pad": 0,
+   "out_shape": [
+    32,
+    80,
+    80
+   ]
+  },
+  {
+   "idx": 9,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.3.conv",
+   "cin": 32,
+   "cout": 64,
+   "in_w": 80,
+   "in_h": 80,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    8
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    64,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 10,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.cv1.conv",
+   "cin": 64,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    9
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 11,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.0.cv1.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    10
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 12,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.0.cv2.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    11
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 13,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.4.m.0.add",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    10,
+    12
+   ],
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 14,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.1.cv1.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    13
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 15,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.m.1.cv2.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    14
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 16,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.4.m.1.add",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    13,
+    15
+   ],
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 17,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.cv2.conv",
+   "cin": 64,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    9
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 18,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.4.cat",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    16,
+    17
+   ],
+   "out_shape": [
+    64,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 19,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.4.cv3.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    18
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    64,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 20,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.5.conv",
+   "cin": 64,
+   "cout": 128,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    19
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 21,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.cv1.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    20
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 22,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.0.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    21
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 23,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.0.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    22
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 24,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.6.m.0.add",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    21,
+    23
+   ],
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 25,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.1.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    24
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 26,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.1.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    25
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 27,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.6.m.1.add",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    24,
+    26
+   ],
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 28,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.2.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    27
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 29,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.m.2.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    28
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 30,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.6.m.2.add",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    27,
+    29
+   ],
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 31,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.cv2.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    20
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 32,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.6.cat",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    30,
+    31
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 33,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.6.cv3.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    32
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 34,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.7.conv",
+   "cin": 128,
+   "cout": 256,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    33
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 35,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.cv1.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    34
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 36,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.m.0.cv1.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    35
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 37,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.m.0.cv2.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    36
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 38,
+   "op": 4,
+   "name": "ADD",
+   "module": "model.8.m.0.add",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    35,
+    37
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 39,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.cv2.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    34
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 40,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.8.cat",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    38,
+    39
+   ],
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 41,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.8.cv3.conv",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    40
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 42,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.9.cv1.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    41
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 43,
+   "op": 1,
+   "name": "MAXPOOL",
+   "module": "model.9.m0",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 5,
+   "stride": 1,
+   "inputs": [
+    42
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 44,
+   "op": 1,
+   "name": "MAXPOOL",
+   "module": "model.9.m1",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 5,
+   "stride": 1,
+   "inputs": [
+    43
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 45,
+   "op": 1,
+   "name": "MAXPOOL",
+   "module": "model.9.m2",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 5,
+   "stride": 1,
+   "inputs": [
+    44
+   ],
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 46,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.9.cat",
+   "cin": 512,
+   "cout": 512,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    42,
+    43,
+    44,
+    45
+   ],
+   "out_shape": [
+    512,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 47,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.9.cv2.conv",
+   "cin": 512,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    46
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 48,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.10.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    47
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 49,
+   "op": 2,
+   "name": "UPSAMPLE",
+   "module": "model.11",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    48
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 50,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.12",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    49,
+    33
+   ],
+   "out_shape": [
+    256,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 51,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.cv1.conv",
+   "cin": 256,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    50
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 52,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.m.0.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    51
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 53,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.m.0.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    52
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 54,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.cv2.conv",
+   "cin": 256,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    50
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 55,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.13.cat",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    53,
+    54
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 56,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.13.cv3.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    55
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 57,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.14.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    56
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 58,
+   "op": 2,
+   "name": "UPSAMPLE",
+   "module": "model.15",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    57
+   ],
+   "out_shape": [
+    64,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 59,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.16",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    58,
+    19
+   ],
+   "out_shape": [
+    128,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 60,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.cv1.conv",
+   "cin": 128,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    59
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 61,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.m.0.cv1.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    60
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 62,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.m.0.cv2.conv",
+   "cin": 32,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    61
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 1,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 63,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.cv2.conv",
+   "cin": 128,
+   "cout": 32,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    59
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    32,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 64,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.17.cat",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    62,
+    63
+   ],
+   "out_shape": [
+    64,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 65,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.17.cv3.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    64
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    64,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 66,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.18.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    65
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 67,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.19",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    66,
+    57
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 68,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.cv1.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    67
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 69,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.m.0.cv1.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    68
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 70,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.m.0.cv2.conv",
+   "cin": 64,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    69
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 1,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 71,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.cv2.conv",
+   "cin": 128,
+   "cout": 64,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    67
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    64,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 72,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.20.cat",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    70,
+    71
+   ],
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 73,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.20.cv3.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    72
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    128,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 74,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.21.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 3,
+   "stride": 2,
+   "inputs": [
+    73
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 75,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.22",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    74,
+    48
+   ],
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 76,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.cv1.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    75
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 77,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.m.0.cv1.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    76
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 78,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.m.0.cv2.conv",
+   "cin": 128,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 3,
+   "stride": 1,
+   "inputs": [
+    77
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 1,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 79,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.cv2.conv",
+   "cin": 256,
+   "cout": 128,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    75
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    128,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 80,
+   "op": 3,
+   "name": "CONCAT",
+   "module": "model.23.cat",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 0,
+   "stride": 1,
+   "inputs": [
+    78,
+    79
+   ],
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 81,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.23.cv3.conv",
+   "cin": 256,
+   "cout": 256,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    80
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    256,
+    10,
+    10
+   ]
+  },
+  {
+   "idx": 82,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.24.m.0",
+   "cin": 64,
+   "cout": 33,
+   "in_w": 40,
+   "in_h": 40,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    65
+   ],
+   "out_w": 40,
+   "out_h": 40,
+   "pad": 0,
+   "out_shape": [
+    33,
+    40,
+    40
+   ]
+  },
+  {
+   "idx": 83,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.24.m.1",
+   "cin": 128,
+   "cout": 33,
+   "in_w": 20,
+   "in_h": 20,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    73
+   ],
+   "out_w": 20,
+   "out_h": 20,
+   "pad": 0,
+   "out_shape": [
+    33,
+    20,
+    20
+   ]
+  },
+  {
+   "idx": 84,
+   "op": 0,
+   "name": "CONV",
+   "module": "model.24.m.2",
+   "cin": 256,
+   "cout": 33,
+   "in_w": 10,
+   "in_h": 10,
+   "k": 1,
+   "stride": 1,
+   "inputs": [
+    81
+   ],
+   "out_w": 10,
+   "out_h": 10,
+   "pad": 0,
+   "out_shape": [
+    33,
+    10,
+    10
+   ]
+  }
+ ]
+}

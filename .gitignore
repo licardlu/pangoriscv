@@ -5,3 +5,21 @@ build/sim_*/work/
 build/board_rtl_checks/work/
 upstream/**/target/
 upstream/**/null/
+project/yolo120/build/
+extensions/yolo/sim/offline_checks/
+extensions/ui_reference/extensions/business/application/build/
+
+# Reproducible implementation databases and local simulator output.
+/build/
+/project/*/build/
+**/__pycache__/
+**/.pytest_cache/
+**/transcript
+*.wlf
+*.vcd
+/.workbuddy/
+/.vscode/
+/.idea/
+# Do not exclude model weights, ROM images, IP or evidence logs.
+*.lic
+*.dmp

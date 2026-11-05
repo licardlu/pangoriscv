@@ -1,0 +1,45 @@
+{
+  "status": "build_complete",
+  "purpose": "Independent rebuild from the packaged sources only, started from a copy of project/pds_native_120 placed outside the repository. No board test was run on this bitstream.",
+  "wall_seconds": 1252.03,
+  "bitstream": "build/indep-001/generate_bitstream/pango_vexii_top.sbit",
+  "bitstream_sha256": "f544b61ec250b1acfaff31acf242518e213502ad547b498c429b058ce283b61d",
+  "loaded_memory_lanes": 8,
+  "resources": {
+    "LUT": 8867,
+    "FF": 6658,
+    "DRM": 34,
+    "APM": 5,
+    "Distributed RAM": 72
+  },
+  "resources_available": {
+    "LUT": 66600,
+    "FF": 133200,
+    "DRM": 155,
+    "APM": 240,
+    "Distributed RAM": 19900
+  },
+  "final_sta": {
+    "Setup(Slow)": -1.532,
+    "Setup(Fast)": 2.128,
+    "Hold(Slow)": 0.043,
+    "Hold(Fast)": 0.031,
+    "Recovery(Slow)": 4.054,
+    "Recovery(Fast)": 5.562,
+    "Removal(Slow)": 0.305,
+    "Removal(Fast)": 0.213
+  },
+  "sta_closed": false,
+  "design_summary": "Some Constraints Violated.",
+  "setup_failing_endpoints": 1171,
+  "setup_tns_ns": -531.982,
+  "delta_vs_delivered": {
+    "LUT": -8,
+    "FF": 0,
+    "DRM": 0,
+    "APM": 0,
+    "Dist RAM": 0
+  },
+  "interpretation": "Resources reproduce within 8 LUT; FF/DRM/APM/DistRAM identical. Setup slack moves -1.426 -> -1.532 ns between two builds of the same netlist, which is the documented placement sampling spread, not a regression. 120 MHz still does not close.",
+  "board_verified": false
+}

@@ -1,0 +1,22 @@
+{
+  "board": "MES2L676-100HP V1.2 / PG2L100H-6IFBG676",
+  "input_mhz": 27.0,
+  "clock_pin": "D18",
+  "io_standard": "LVCMOS33",
+  "vccio": 3.3,
+  "pins": {
+    "clk": "D18", "rst_n": "C22", "key": "C23",
+    "uart_rx": "B24", "uart_tx": "C24",
+    "led[0]": "A20", "led[1]": "C18", "led[2]": "C19", "led[3]": "E18",
+    "led[4]": "A17", "led[5]": "A18", "led[6]": "C17", "led[7]": "B17"
+  },
+  "ppll_limits": {
+    "input_mhz": [19, 800], "pfd_mhz": [19, 450], "vco_mhz": [1330, 2133],
+    "output_mhz": [10.39, 2133]
+  },
+  "sources": [
+    {"document": "教程1_硬件实验指导手册_盘古676系列100Pro+开发板.pdf", "pdf_pages": [21,22,23,43,44,50,51], "purpose": "clock, supply, UART, keys and LEDs"},
+    {"document": "DS04001_Logos2系列FPGA器件数据手册.pdf", "pdf_pages": [25,26], "purpose": "Distinguish GPLL limits from PPLL limits; PPLL used here"}
+  ],
+  "scope": "Checked integration parameters; not a board measurement, oscillator tolerance characterization or signal-integrity proof"
+}

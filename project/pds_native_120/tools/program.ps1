@@ -1,22 +1,47 @@
 param(
-    [Parameter(Mandatory=$true)][string]$BuildName,
+    [string]$BuildName = '',
     [Parameter(Mandatory=$true)][string]$EvidenceTag,
     [Parameter(Mandatory=$true)][string]$PdsShell,
+    [string]$Bitstream = '',
+    [string]$BitstreamSha256 = '',
     [string]$SerialPort = 'COM34',
     [int]$JtagPort = 65420,
     [int]$TimeoutSeconds = 65
 )
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-if ($BuildName -notmatch '^[A-Za-z0-9_-]+$') { throw 'BuildName must be a single name' }
-if ($EvidenceTag -notmatch '^[A-Za-z0-9_/-]+$' -or $EvidenceTag.Contains('..')) { throw 'Invalid evidence tag' }
-$BuildDir = Join-Path $Root "build/$BuildName"
-$Result = Get-Content (Join-Path $BuildDir 'build_result.json') -Raw | ConvertFrom-Json
-$Bitstream = Join-Path $Root $Result.bitstream
-if (-not (Test-Path -LiteralPath $Bitstream -PathType Leaf)) { throw 'Build bitstream missing' }
-if ((Get-FileHash -LiteralPath $Bitstream -Algorithm SHA256).Hash.ToLower() -ne $Result.sha256) {
-    throw 'Bitstream changed after build'
+if ($BuildName -ne '' -and $BuildName -notmatch '^[A-Za-z0-9_-]+$') { throw 'BuildName must be a single name' }
+if ($BuildName -eq '' -and $Bitstream -eq '') {
+    throw 'Give either -BuildName <name of a build under build/> or -Bitstream <path to an .sbit>'
 }
+if ($EvidenceTag -notmatch '^[A-Za-z0-9_/-]+$' -or $EvidenceTag.Contains('..')) { throw 'Invalid evidence tag' }
+
+if ($BuildName -ne '') {
+    # Re-program a bitstream produced by `python tools/build.py build --name <BuildName>`.
+    $BuildDir = Join-Path $Root "build/$BuildName"
+    if (-not (Test-Path -LiteralPath $BuildDir -PathType Container)) {
+        throw "No such build directory: $BuildDir. Use -Bitstream to program a shipped bitstream."
+    }
+    $Result = Get-Content (Join-Path $BuildDir 'build_result.json') -Raw | ConvertFrom-Json
+    $BitstreamPath = Join-Path $Root $Result.bitstream
+    $ExpectedSha = $Result.sha256
+    $BuildRecord = "build/$BuildName"
+    $RecordedBitstream = $Result.bitstream
+} else {
+    # Program a bitstream that ships with the package, e.g. the one in
+    # bitstream/current/. No build database is needed for this.
+    $BitstreamPath = (Resolve-Path -LiteralPath $Bitstream).Path
+    $ExpectedSha = $BitstreamSha256
+    $BuildRecord = ''
+    $RecordedBitstream = $BitstreamPath
+    $BuildDir = $Root
+}
+if (-not (Test-Path -LiteralPath $BitstreamPath -PathType Leaf)) { throw "Bitstream missing: $BitstreamPath" }
+$ActualSha = (Get-FileHash -LiteralPath $BitstreamPath -Algorithm SHA256).Hash.ToLower()
+if ($ExpectedSha -ne '' -and $ActualSha -ne $ExpectedSha.ToLower()) {
+    throw "Bitstream hash mismatch: expected $ExpectedSha, got $ActualSha"
+}
+$Bitstream = $BitstreamPath
 $EvidenceDir = Join-Path $Root "evidence/$EvidenceTag"
 if (Test-Path -LiteralPath $EvidenceDir) { throw 'Evidence directory already exists; never overwrite a board run' }
 $null = New-Item -ItemType Directory -Path $EvidenceDir
@@ -79,9 +104,9 @@ try {
         $ClientClosedAfterSuccess = $true
     } elseif ($Process.ExitCode -ne 0) { throw "Programmer exit code $($Process.ExitCode)" }
     $Metadata = [ordered]@{
-        build = "build/$BuildName"
-        bitstream = $Result.bitstream
-        bitstream_sha256 = $Result.sha256
+        build = $BuildRecord
+        bitstream = $RecordedBitstream
+        bitstream_sha256 = $ActualSha
         serial_port = $SerialPort
         baud = 115200
         jtag_port = $JtagPort

@@ -1,0 +1,58 @@
+﻿{
+  "source": "evidence/records/optimization/yolo120/experiment-yolo120-006/result.json",
+  "source_sha256": "95ad245dd91f4959c7b53361c4f85665e18a733db1573429ff4522ccd0e8c684",
+  "model_sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a",
+  "cpu_hz": 120461538,
+  "candidate": {
+    "experimental": true,
+    "release_accepted": false,
+    "timing_pass": false,
+    "reason": "Final setup timing is not closed; board observations are diagnostic only",
+    "cpu_hz": 120461538,
+    "bitstream": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\yolo120\\build\\yolo120-006\\generate_bitstream\\yolo_camera_top.sbit",
+    "bitstream_sha256": "1d57861ef477b1a08d7d57fdb8247388699337c88955a39914c5d4f5abd68c91",
+    "timing_report_sha256": "5a3e1a0e2c1c226cf44bea7285d56b44528b18d6ec409c3fc3cc215101863fc2",
+    "inputs_sha256": "97317d3037056a5db311f48d51136bed8dd095045cb2c17000a55bb17dd7b58a"
+  },
+  "metric": "max(wall_seconds,device_seconds); exclude warmup; average 10 frames per mode",
+  "modes": {
+    "0": {
+      "frames": 10,
+      "mean_s": 1.0575956596787603,
+      "min_s": 1.050515949746549,
+      "median_s": 1.0586284474047187,
+      "max_s": 1.0630000000237487,
+      "fps": 0.945540945491158,
+      "stages_mean_s": {
+        "capture": 0.15157210345429925,
+        "forward": 0.8879121483572624,
+        "decode": 0.013855086259981173,
+        "display": 2.687164761253505e-06
+      }
+    },
+    "1": {
+      "frames": 10,
+      "mean_s": 1.0173000000067987,
+      "min_s": 1.0150000000139698,
+      "median_s": 1.0160000000032596,
+      "max_s": 1.0310000000172295,
+      "fps": 0.9829942003276486,
+      "stages_mean_s": {
+        "capture": 0.10981812634668503,
+        "forward": 0.8875979692372847,
+        "decode": 0.013839269593253906,
+        "display": 2.6755427944145956e-06
+      }
+    }
+  },
+  "end_to_end_speedup": 1.039610399755915,
+  "end_to_end_latency_reduction_percent": 3.8101196145416627,
+  "capture_speedup": 1.3802102484957812,
+  "capture_latency_reduction_percent": 27.54727034596015,
+  "map50": null,
+  "map50_95": null,
+  "precision": null,
+  "recall": null,
+  "accuracy_reason": "No verifiable annotated evaluation report/dataset found; detection confidence is not accuracy.",
+  "pure_cpu_vs_fpga_speedup": null
+}

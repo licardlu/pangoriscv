@@ -1,0 +1,36 @@
+{
+  "purpose": "illegal instruction, ECALL, masked/pending CLINT timer, GPR preservation and MRET",
+  "command": [
+    "D:/pangowork/xpack-riscv-none-elf-gcc-15.2.0-1/bin/riscv-none-elf-gcc.exe",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-march=rv32imc_zicsr_zifencei",
+    "-mabi=ilp32",
+    "-fno-builtin",
+    "-nostdlib",
+    "-nostartfiles",
+    "-ffreestanding",
+    "-Wl,--no-relax",
+    "-T",
+    "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\project\\pds_native_120\\firmware\\source\\port\\link.ld",
+    "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\project\\pds_native_120\\firmware\\diagnostics\\start.S",
+    "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\project\\pds_native_120\\firmware\\diagnostics\\trap_test.c",
+    "-Wl,-Map=C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\project\\pds_native_120\\build\\review_trap_image_002\\diagnostics.map",
+    "-o",
+    "C:\\Users\\21962\\Documents\\comosol\\pangoriscv_improved1_20261030\\project\\pds_native_120\\build\\review_trap_image_002\\diagnostics.elf"
+  ],
+  "source_sha256": {
+    "firmware/diagnostics/start.S": "7d3fc4878e45d74417ebb0e45bbad8bf7a8a798a4891c9e76b34dc3c7ff23e3d",
+    "firmware/diagnostics/trap_test.c": "072c4bc7f8537fb8b4b258af503317886a640d801047f4dc2808f49a2b9c518b",
+    "firmware/source/port/link.ld": "b5fa704a6b9a218a95e197e459647b1e064ac7c847367f44864a4ce279dac1df"
+  },
+  "image": {
+    "checked_bytes": 1816,
+    "ram_bytes": 65536,
+    "elf_sha256": "6466994f3631c01ce88c48af2f54c4a2c876f3547de15100ac33059e8c2fa072",
+    "ram_sha256": "551d9bab884de0cde828462a72f1cd78422d04f183a3a49d87919e848c01f1ea"
+  },
+  "board_verified": false
+}

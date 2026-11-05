@@ -1,0 +1,109 @@
+{
+  "repository": "keremberke/garbage-object-detection",
+  "canonical_url": "https://huggingface.co/datasets/keremberke/garbage-object-detection",
+  "mirror": "https://hf-mirror.com/datasets/keremberke/garbage-object-detection/",
+  "upstream_roboflow": "https://universe.roboflow.com/material-identification/garbage-classification-3/dataset/2",
+  "license": "CC BY 4.0 (dataset README)",
+  "class_order": [
+    "biodegradable",
+    "cardboard",
+    "glass",
+    "metal",
+    "paper",
+    "plastic"
+  ],
+  "model_source": "https://huggingface.co/keremberke/yolov5n-garbage",
+  "upstream_model_card_map50": 0.31988455750353156,
+  "model_card_metric_is_not_board_measurement": true,
+  "dataset_relationship": "Same source used to train/evaluate upstream model. Test split supplied by upstream is held out in repository; original training split membership and duplicate leakage still need audit before claiming independence.",
+  "splits": {
+    "test": {
+      "images": 1042,
+      "annotations": 3563,
+      "categories": {
+        "0": "biodegradable",
+        "1": "cardboard",
+        "2": "glass",
+        "3": "metal",
+        "4": "paper",
+        "5": "plastic"
+      },
+      "instances_per_class": {
+        "paper": 1376,
+        "plastic": 1585,
+        "metal": 533,
+        "cardboard": 20,
+        "biodegradable": 49,
+        "glass": 0
+      },
+      "annotation_path": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\evidence\\records\\validation_20261104\\dataset\\test\\_annotations.coco.json",
+      "archive_sha256": "31e66c695f3e5a32891a18a60231dfcbf80087af9c7671ac68a260360584b0ab",
+      "multi_object_images": 442,
+      "multi_class_images": 18,
+      "empty_images": 0,
+      "images_per_class": {
+        "biodegradable": 8,
+        "cardboard": 11,
+        "glass": 0,
+        "metal": 172,
+        "paper": 515,
+        "plastic": 354
+      }
+    },
+    "valid": {
+      "images": 2098,
+      "annotations": 18916,
+      "categories": {
+        "0": "biodegradable",
+        "1": "cardboard",
+        "2": "glass",
+        "3": "metal",
+        "4": "paper",
+        "5": "plastic"
+      },
+      "instances_per_class": {
+        "biodegradable": 13637,
+        "metal": 1360,
+        "cardboard": 1292,
+        "glass": 2380,
+        "plastic": 214,
+        "paper": 33
+      },
+      "annotation_path": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\evidence\\records\\validation_20261104\\dataset\\valid\\_annotations.coco.json",
+      "archive_sha256": "1d9dbe38f5d291ccd33ee6981c12fe003aea37c0b2a43382ad2a7c492a09c3eb",
+      "multi_object_images": 1200,
+      "multi_class_images": 307,
+      "empty_images": 0,
+      "images_per_class": {
+        "biodegradable": 676,
+        "cardboard": 438,
+        "glass": 805,
+        "metal": 398,
+        "paper": 15,
+        "plastic": 91
+      }
+    }
+  },
+  "validation18_manifest": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\evidence\\records\\validation_20261104\\dataset\\validation18_seed20261104.json",
+  "validation18_counts": {
+    "biodegradable": 95,
+    "cardboard": 3,
+    "glass": 11,
+    "metal": 3,
+    "paper": 6,
+    "plastic": 9
+  },
+  "validation18_instances": 127,
+  "retrieved_utc": "2026-11-04T01:34:53.147692+00:00",
+  "repository_commit": "d8ad1490da2686d7af5c6a7f3d8844f0f9542b0f",
+  "source_files_manifest": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\evidence\\records\\validation_20261104\\dataset\\source_documents.json",
+  "local_model_checkpoint": {
+    "path": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\data\\models\\yolov5n-garbage.pt",
+    "bytes": 3912765,
+    "sha256": "24623ac6d903e4554e548b97f963e277dfa32d102cecad6f3d518259c641deea",
+    "matches_upstream_best_pt_lfs": true,
+    "upstream_commit": "257276b8c4ce530f48dff415e36761f9d1af4e69",
+    "tree_api": "https://hf-mirror.com/api/models/keremberke/yolov5n-garbage/tree/main?recursive=true&limit=100"
+  },
+  "all_test_and_valid_image_files_exist": true
+}

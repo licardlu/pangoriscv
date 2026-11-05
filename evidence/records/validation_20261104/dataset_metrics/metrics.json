@@ -1,0 +1,230 @@
+{
+  "complete": true,
+  "partial": false,
+  "scope": "Actual 27 MHz v3 FPGA inference on precommitted stratified upstream validation subset; no PC detections.",
+  "images": 18,
+  "planned_images": 18,
+  "gt_objects": 127,
+  "returned_predictions": 52,
+  "model_sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a",
+  "bitstream_sha256": "2b98f90fbd0b4fd2de4074e74cb2c4aa8886d6009aa12bba4dfaf5d071bc4657",
+  "subset_sha256": "dc027b64792fe82e029dc06aaa0c67927a8a77d4838271e4756c976a28d42c27",
+  "raw_results_sha256": "f7ac85c9a8b43db097bd781f8c3b234f7683e3a0e726a773e399b2defd5d8641",
+  "coordinate_format": "Original-image absolute pixels xyxy verified against board_loader.parse_detections, yolo_decode.c:127-130, metadata original width/height, and raw <5fI packets.",
+  "operating_point": {
+    "confidence_min": 0.25,
+    "nms_iou": 0.45,
+    "evaluation_iou": 0.5,
+    "matching": "Class-aware, score-descending, greedy one-to-one IoU >= 0.50.",
+    "zero_denominator": "Precision/recall/F1 = 0 when denominator is zero."
+  },
+  "micro": {
+    "tp": 22,
+    "fp": 30,
+    "fn": 105,
+    "gt": 127,
+    "precision": 0.4230769230769231,
+    "recall": 0.1732283464566929,
+    "f1": 0.2458100558659218
+  },
+  "macro": {
+    "precision": 0.3713675213675214,
+    "recall": 0.33418394471026047,
+    "f1": 0.29589371980676327
+  },
+  "coco": {
+    "ap50_95": 0.23855656398973232,
+    "ap50": 0.3278327832783279,
+    "ap75": 0.28166254125412543,
+    "ar100": 0.2521318447634237,
+    "per_class": {
+      "biodegradable": {
+        "ap50": 0.1254125412541254,
+        "ap50_95": 0.08915016501650164
+      },
+      "cardboard": {
+        "ap50": 0.6633663366336634,
+        "ap50_95": 0.46534653465346537
+      },
+      "glass": {
+        "ap50": 0.5148514851485149,
+        "ap50_95": 0.2798129812981298
+      },
+      "metal": {
+        "ap50": 0.6633663366336634,
+        "ap50_95": 0.597029702970297
+      },
+      "paper": {
+        "ap50": 0.0,
+        "ap50_95": 0.0
+      },
+      "plastic": {
+        "ap50": 0.0,
+        "ap50_95": 0.0
+      }
+    }
+  },
+  "per_class": {
+    "biodegradable": {
+      "tp": 12,
+      "fp": 8,
+      "fn": 83,
+      "gt": 95,
+      "precision": 0.6,
+      "recall": 0.12631578947368421,
+      "f1": 0.20869565217391306,
+      "ap50": 0.1254125412541254,
+      "ap50_95": 0.08915016501650164
+    },
+    "cardboard": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "gt": 3,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "ap50": 0.6633663366336634,
+      "ap50_95": 0.46534653465346537
+    },
+    "glass": {
+      "tp": 6,
+      "fp": 7,
+      "fn": 5,
+      "gt": 11,
+      "precision": 0.46153846153846156,
+      "recall": 0.5454545454545454,
+      "f1": 0.4999999999999999,
+      "ap50": 0.5148514851485149,
+      "ap50_95": 0.2798129812981298
+    },
+    "metal": {
+      "tp": 2,
+      "fp": 10,
+      "fn": 1,
+      "gt": 3,
+      "precision": 0.16666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.26666666666666666,
+      "ap50": 0.6633663366336634,
+      "ap50_95": 0.597029702970297
+    },
+    "paper": {
+      "tp": 0,
+      "fp": 2,
+      "fn": 6,
+      "gt": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "ap50": 0.0,
+      "ap50_95": 0.0
+    },
+    "plastic": {
+      "tp": 0,
+      "fp": 3,
+      "fn": 9,
+      "gt": 9,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "ap50": 0.0,
+      "ap50_95": 0.0
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "biodegradable",
+      "cardboard",
+      "glass",
+      "metal",
+      "paper",
+      "plastic",
+      "background"
+    ],
+    "rows": "ground truth",
+    "columns": "prediction",
+    "matrix": [
+      [
+        12,
+        0,
+        0,
+        0,
+        0,
+        0,
+        83
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        5,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        4
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        8,
+        0,
+        8,
+        6,
+        0,
+        1,
+        0
+      ]
+    ],
+    "matching": "Class-agnostic descending-IoU greedy one-to-one matching; unmatched GT -> background column, unmatched prediction -> background row. Off-diagonal class confusions may yield counts different from class-aware P/R matching."
+  },
+  "latency": {
+    "inference_mean_s": 3.4039194833442,
+    "inference_min_s": 3.3308697000029497,
+    "inference_max_s": 4.072444400051609,
+    "inference_median_s": 3.342894549976336,
+    "mean_image_upload_s": 81.9632792333335,
+    "static_image_scope": "Excludes camera capture and one-time model upload; inference_seconds includes command/reply and actual model forward, decode, display submission."
+  },
+  "limitations": [
+    "18-image stratified validation re-test, not the complete 1042-image held-out test or deployment-population accuracy.",
+    "Checkpoint was tuned/evaluated on the same upstream validation split; train/validation duplication independence is unverified.",
+    "Returned predictions are truncated at firmware confidence >=0.25, NMS IoU 0.45 and at most 32 returned boxes. Reported COCO AP describes this operating pipeline; it is not unrestricted low-confidence model AP.",
+    "COCO AP averages IoU 0.50:0.05:0.95 and 101 recall points over six classes with GT. No confidence intervals are inferred from 18 images.",
+    "Per-target-class image allocation is three, but all GT are retained: GT distribution is strongly imbalanced.",
+    "Six material/object classes cover only kitchen and recyclable business bins; hazardous/other coverage is not established."
+  ]
+}

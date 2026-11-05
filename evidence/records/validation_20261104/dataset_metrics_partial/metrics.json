@@ -1,0 +1,230 @@
+{
+  "complete": false,
+  "partial": true,
+  "scope": "Actual 27 MHz v3 FPGA inference on precommitted stratified upstream validation subset; no PC detections.",
+  "images": 16,
+  "planned_images": 18,
+  "gt_objects": 111,
+  "returned_predictions": 38,
+  "model_sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a",
+  "bitstream_sha256": "2b98f90fbd0b4fd2de4074e74cb2c4aa8886d6009aa12bba4dfaf5d071bc4657",
+  "subset_sha256": "dc027b64792fe82e029dc06aaa0c67927a8a77d4838271e4756c976a28d42c27",
+  "raw_results_sha256": "d21413cad891fe7f60ff898978563e00cd2935d410e0febc4950f472732763db",
+  "coordinate_format": "Original-image absolute pixels xyxy verified against board_loader.parse_detections, yolo_decode.c:127-130, metadata original width/height, and raw <5fI packets.",
+  "operating_point": {
+    "confidence_min": 0.25,
+    "nms_iou": 0.45,
+    "evaluation_iou": 0.5,
+    "matching": "Class-aware, score-descending, greedy one-to-one IoU >= 0.50.",
+    "zero_denominator": "Precision/recall/F1 = 0 when denominator is zero."
+  },
+  "micro": {
+    "tp": 19,
+    "fp": 19,
+    "fn": 92,
+    "gt": 111,
+    "precision": 0.5,
+    "recall": 0.17117117117117117,
+    "f1": 0.25503355704697983
+  },
+  "macro": {
+    "precision": 0.44027777777777777,
+    "recall": 0.4099415204678363,
+    "f1": 0.37013614404918754
+  },
+  "coco": {
+    "ap50_95": 0.28218509350935095,
+    "ap50": 0.3946644664466447,
+    "ap75": 0.3237417491749175,
+    "ar100": 0.30970760233918126,
+    "per_class": {
+      "biodegradable": {
+        "ap50": 0.1254125412541254,
+        "ap50_95": 0.08915016501650164
+      },
+      "cardboard": {
+        "ap50": 0.6633663366336634,
+        "ap50_95": 0.46534653465346537
+      },
+      "glass": {
+        "ap50": 0.9158415841584159,
+        "ap50_95": 0.5415841584158416
+      },
+      "metal": {
+        "ap50": 0.6633663366336634,
+        "ap50_95": 0.597029702970297
+      },
+      "paper": {
+        "ap50": 0.0,
+        "ap50_95": 0.0
+      },
+      "plastic": {
+        "ap50": 0.0,
+        "ap50_95": 0.0
+      }
+    }
+  },
+  "per_class": {
+    "biodegradable": {
+      "tp": 12,
+      "fp": 8,
+      "fn": 83,
+      "gt": 95,
+      "precision": 0.6,
+      "recall": 0.12631578947368421,
+      "f1": 0.20869565217391306,
+      "ap50": 0.1254125412541254,
+      "ap50_95": 0.08915016501650164
+    },
+    "cardboard": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "gt": 3,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "ap50": 0.6633663366336634,
+      "ap50_95": 0.46534653465346537
+    },
+    "glass": {
+      "tp": 3,
+      "fp": 5,
+      "fn": 0,
+      "gt": 3,
+      "precision": 0.375,
+      "recall": 1.0,
+      "f1": 0.5454545454545454,
+      "ap50": 0.9158415841584159,
+      "ap50_95": 0.5415841584158416
+    },
+    "metal": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 1,
+      "gt": 3,
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666,
+      "ap50": 0.6633663366336634,
+      "ap50_95": 0.597029702970297
+    },
+    "paper": {
+      "tp": 0,
+      "fp": 2,
+      "fn": 6,
+      "gt": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "ap50": 0.0,
+      "ap50_95": 0.0
+    },
+    "plastic": {
+      "tp": 0,
+      "fp": 3,
+      "fn": 1,
+      "gt": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "ap50": 0.0,
+      "ap50_95": 0.0
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "biodegradable",
+      "cardboard",
+      "glass",
+      "metal",
+      "paper",
+      "plastic",
+      "background"
+    ],
+    "rows": "ground truth",
+    "columns": "prediction",
+    "matrix": [
+      [
+        12,
+        0,
+        0,
+        0,
+        0,
+        0,
+        83
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        4
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        8,
+        0,
+        5,
+        1,
+        0,
+        1,
+        0
+      ]
+    ],
+    "matching": "Class-agnostic descending-IoU greedy one-to-one matching; unmatched GT -> background column, unmatched prediction -> background row. Off-diagonal class confusions may yield counts different from class-aware P/R matching."
+  },
+  "latency": {
+    "inference_mean_s": 3.3935705625081027,
+    "inference_min_s": 3.3308697000029497,
+    "inference_max_s": 4.072444400051609,
+    "inference_median_s": 3.341646149987355,
+    "mean_image_upload_s": 81.96747341875016,
+    "static_image_scope": "Excludes camera capture and one-time model upload; inference_seconds includes command/reply and actual model forward, decode, display submission."
+  },
+  "limitations": [
+    "18-image stratified validation re-test, not the complete 1042-image held-out test or deployment-population accuracy.",
+    "Checkpoint was tuned/evaluated on the same upstream validation split; train/validation duplication independence is unverified.",
+    "Returned predictions are truncated at firmware confidence >=0.25, NMS IoU 0.45 and at most 32 returned boxes. Reported COCO AP describes this operating pipeline; it is not unrestricted low-confidence model AP.",
+    "COCO AP averages IoU 0.50:0.05:0.95 and 101 recall points over six classes with GT. No confidence intervals are inferred from 18 images.",
+    "Per-target-class image allocation is three, but all GT are retained: GT distribution is strongly imbalanced.",
+    "Six material/object classes cover only kitchen and recyclable business bins; hazardous/other coverage is not established."
+  ]
+}

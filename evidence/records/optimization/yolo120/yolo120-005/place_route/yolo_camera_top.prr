@@ -1,0 +1,17 @@
+
+Inputs and Outputs :
++----------------------------------------------------------------------------------------------------------------------------------------+
+| Type       | File Name                                                                                                                
++----------------------------------------------------------------------------------------------------------------------------------------+
+| Input      | D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/project/yolo120/build/yolo120-005/device_map/yolo_camera_top_map.adf     
+|            | D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/project/yolo120/build/yolo120-005/cpu_region.pcf                         
+| Output     | D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/project/yolo120/build/yolo120-005/place_route/prr.db                     
+|            | D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/project/yolo120/build/yolo120-005/place_route/yolo_camera_top.prr        
++----------------------------------------------------------------------------------------------------------------------------------------+
+
+
+Flow Command: pnr -gplace_seed 2 -groute_seed 2 -fix_hold_violation_iterations 300 -fix_hold_violation_threshold 200 -fix_hold_violation_threshold_for_clk_tree 200 
+Peak memory: 577 MB
+Total CPU time to pnr completion : 0h:0m:12s
+Process Total CPU time to pnr completion : 0h:0m:12s
+Total real time to pnr completion : 0h:0m:15s

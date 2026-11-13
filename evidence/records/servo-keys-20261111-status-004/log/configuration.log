@@ -1,0 +1,118 @@
+[Info] [2026-11-11 13:55:57] /***************************Start Configuration***************************/
+[Info] [2026-11-11 13:55:57] Path: D:/FPGA_Project/zi_guang_tong_chuang/pds/PDS_2022.2-SP6.1/bin
+[Info] [2026-11-11 13:55:57] Version: 138931
+[Info] [2026-11-11 13:55:58] Current Path: D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/evidence/records/servo-keys-20261111-status-004
+[Info] [2026-11-11 13:55:58] PDS Dir Path: D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\evidence\records\servo-keys-20261111-status-004
+[Debug] [2026-11-11 13:55:58] begin to check the cfg_connect exec condition.
+[Debug] [2026-11-11 13:55:58] end to check the cfg_connect exec condition.
+[Debug] [2026-11-11 13:55:59] Client Local host name:Twinkle
+[Debug] [2026-11-11 13:55:59] Client Local Address:10.43.53.135
+[Debug] [2026-11-11 13:55:59] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-11-11 13:55:59] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-11-11 13:55:59] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-11-11 13:55:59] Finish.
+[Info] [2026-11-11 13:55:59] Connect server succeeded
+[Debug] [2026-11-11 13:55:59] Send RPC:1
+[Debug] [2026-11-11 13:55:59] Send cmd [check version information:40004] OK
+[Debug] [2026-11-11 13:55:59] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-11-11 13:55:59] Send RPC:2
+[Debug] [2026-11-11 13:55:59] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-11-11 13:55:59] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-11-11 13:55:59] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-11-11 13:56:00] COMMAND[get_cable_paras] execute successfully, takes 1.5 secs.
+[Debug] [2026-11-11 13:56:00] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-11-11 13:56:00] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 1.5 secs.
+[Debug] [2026-11-11 13:56:01] cfg_connect succeed.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_help -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_help : list all support commands (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_help -help successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_read_register -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_read_register : read register value by address (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    -address string
+        Specify the address of register.   ---Hexadecimal Number.
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_read_register -help successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_read_device_property -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_read_device_property : read device properties of chip from server (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify device's index.
+    -mode integer_number
+        Specify device's operate mode.
+             	0: Read Device ID.
+             	1: Read Device UID.
+             	2: Read Device UserCode.
+             	3: Read Device Status Register.
+             	4: Read Device EFuse Value.
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_read_device_property -help successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_verify -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_verify : verify the bit stream on the board (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_verify -help successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_readback -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_readback : read back the bit_stream on the board to the specified file (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    -file string
+        Specify read back file name
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_readback -help successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_debug_operate -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_debug_operate : process to some special debug function,such as read debug register (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    -mode integer_number
+        Specify the mode of operation. 
+           	0:Read  Device RDRDC Value. 
+           	1:Write Device RDRDC Value. 
+           	2:Read  Device Debug Register Value. 
+           	3:Read  Device Instruction Register Value. 
+           	4:Read  Device Calibration Status Register Value.
+           	5:Read  Device Pin OutPut Value.
+           	6:Read  Device EFlash SM Page Data.
+	
+ 	200:Disable Jtag. 
+           	201:Disable Scan Chain.
+    [ -value string ]
+        Specify value of the operate function   ---Hexadecimal Number.
+    [ -file string ]
+        Specify the sbit file of operation
+    [ -device_index integer_number ]
+        Specify operate device's index
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_debug_operate -help successfully.
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_set_options -help
+[Debug] [2026-11-11 13:56:01] Log::Print : cfg_set_options : set server running condition (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    [ -report_detail Boolean_value (TRUE/FALSE) ]
+        set report detailed info
+    [ -server_delay_time string ]
+        set server delay time(second)
+
+
+[Debug] [2026-11-11 13:56:01] Log::Print : Executing : cfg_set_options -help successfully.

@@ -1,0 +1,38 @@
+{
+  "status": "PASS_FLOAT_CONTEXT_DIAGNOSTIC",
+  "summaries": {
+    "held_val": {
+      "n": 50,
+      "subject_and_bucket_correct": 46,
+      "selected_subject_correct": 48,
+      "selected_class_correct": 48,
+      "selected_class_changed_vs_whole": 7
+    },
+    "public_hazard_val": {
+      "n": 45,
+      "subject_and_bucket_correct": 20,
+      "selected_subject_correct": 40,
+      "selected_class_correct": 20,
+      "selected_class_changed_vs_whole": 25
+    }
+  },
+  "paired": {
+    "held_val": {
+      "gain": 14,
+      "both_correct": 32,
+      "both_wrong": 4
+    },
+    "public_hazard_val": {
+      "loss": 24,
+      "both_correct": 20,
+      "both_wrong": 1
+    }
+  },
+  "checkpoint_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0",
+  "source_sha256": "c0996b8fe9790362489f5b48a20b1ca1ee1952a7ad4cff4f5de39d41dfe644a0",
+  "script_sha256": "9d9a991b32aa4a5d33aaf5823f8505a5d441307a31ac14913ecf3e8b5321669a",
+  "truth_assisted": true,
+  "held_out_test_used": false,
+  "board_changed": false,
+  "caveat": "Constant gray masking is itself a distribution change; not proof of background-only causality."
+}

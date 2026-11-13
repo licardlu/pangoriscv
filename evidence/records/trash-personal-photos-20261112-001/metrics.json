@@ -1,0 +1,206 @@
+{
+  "images": 80,
+  "strict_correct": 47,
+  "strict_accuracy": 0.5875,
+  "user_accepted_correct": 74,
+  "user_accepted_accuracy": 0.925,
+  "excluding_medicine_bottles": {
+    "images": 53,
+    "correct": 47
+  },
+  "no_detection": 0,
+  "objects": {
+    "玻璃密封罐": {
+      "images": 5,
+      "strict_correct": 5,
+      "accepted_correct": 5,
+      "predictions": {
+        "recyclable": 5
+      }
+    },
+    "玻璃食品罐": {
+      "images": 6,
+      "strict_correct": 6,
+      "accepted_correct": 6,
+      "predictions": {
+        "recyclable": 6
+      }
+    },
+    "塑料盒": {
+      "images": 7,
+      "strict_correct": 6,
+      "accepted_correct": 6,
+      "predictions": {
+        "recyclable": 6,
+        "other": 1
+      }
+    },
+    "玻璃杯": {
+      "images": 3,
+      "strict_correct": 3,
+      "accepted_correct": 3,
+      "predictions": {
+        "recyclable": 3
+      }
+    },
+    "电池": {
+      "images": 9,
+      "strict_correct": 8,
+      "accepted_correct": 8,
+      "predictions": {
+        "recyclable": 1,
+        "hazardous": 8
+      }
+    },
+    "纸板": {
+      "images": 3,
+      "strict_correct": 3,
+      "accepted_correct": 3,
+      "predictions": {
+        "recyclable": 3
+      }
+    },
+    "梨": {
+      "images": 7,
+      "strict_correct": 7,
+      "accepted_correct": 7,
+      "predictions": {
+        "kitchen": 7
+      }
+    },
+    "作文纸": {
+      "images": 4,
+      "strict_correct": 4,
+      "accepted_correct": 4,
+      "predictions": {
+        "recyclable": 4
+      }
+    },
+    "药瓶": {
+      "images": 27,
+      "strict_correct": 0,
+      "accepted_correct": 27,
+      "predictions": {
+        "recyclable": 27
+      }
+    },
+    "用过的纸巾": {
+      "images": 9,
+      "strict_correct": 5,
+      "accepted_correct": 5,
+      "predictions": {
+        "recyclable": 4,
+        "other": 5
+      }
+    }
+  },
+  "bins": {
+    "recyclable": {
+      "images": 28,
+      "strict_correct": 27,
+      "accepted_correct": 27
+    },
+    "hazardous": {
+      "images": 36,
+      "strict_correct": 8,
+      "accepted_correct": 35
+    },
+    "kitchen": {
+      "images": 7,
+      "strict_correct": 7,
+      "accepted_correct": 7
+    },
+    "other": {
+      "images": 9,
+      "strict_correct": 5,
+      "accepted_correct": 5
+    }
+  },
+  "confusion_matrix": [
+    [
+      7,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      27,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      28,
+      8,
+      0,
+      0
+    ],
+    [
+      0,
+      4,
+      0,
+      5,
+      0
+    ]
+  ],
+  "matrix_rows": [
+    "kitchen",
+    "recyclable",
+    "hazardous",
+    "other"
+  ],
+  "matrix_columns": [
+    "kitchen",
+    "recyclable",
+    "hazardous",
+    "other",
+    "no_detection"
+  ],
+  "wrong_ids": [
+    16,
+    22,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75
+  ],
+  "wrong_ids_after_user_relaxation": [
+    16,
+    22,
+    72,
+    73,
+    74,
+    75
+  ],
+  "limits": "Image-level top-score bucket only; boxes were not manually annotated, no mAP is measured. Repeated real objects and backgrounds, no independent-object population inference. Confidence is not accuracy. All 80 photos are evaluation only, not used for training."
+}

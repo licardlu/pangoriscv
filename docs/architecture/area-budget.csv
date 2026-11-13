@@ -1,4 +1,9 @@
 implementation,device,clock_mhz,lut,ff,dram,lutram,lut_ff_lutram_total,acceptance
+trash_game_target_lock,PG2L100H-6IFBG676,54,64,48,0,0,112,"planning ceiling inside full application; code/simulation only; user requires one final PNR after all edits; no measured resource or STA yet"
+trash_full_restored,PG2L100H-6IFBG676,27,40000,60000,0,4096,104096,"planning ceilings for full application; status48 candidate shrinks background ROM and adds DDR/OSD row mapping without frame RAM; user authorized implementation and download on 2026-11-12 with old model; actual device capacities and final multi-corner STA required"
+trash_result_event_cdc,PG2L100H-6IFBG676,74.25,128,96,0,0,224,"planning ceiling within trash_full_restored; user authorizes 2-second inference work; preserve 27MHz mechanics/audio, atomic event CDC; final STA and board validation separate"
+servo_key_diagnostic,PG2L100H-6IFBG676,27,800,400,0,0,1200,"planning caps for user-requested standalone key/servo diagnostic; final STA and SRAM download separately recorded"
+trash_servo_direct,PG2L100H-6IFBG676,27,512,256,0,0,768,"planning caps for standalone servo_pwm4 (not measured); user-authorized STM32 motion migration; whole application STA separate"
 baseline-implementation-standalone-001,PG2L100H-6IFBG676,120.4674,8875,6658,34,72,15605,"reference only; candidate total must not increase; aim LUT <= 8841"
 yolo120_application,PG2L100H-6IFBG676,120.461538,25680,21653,107.5,290,47623,"yolo120-001 device-map measured; user-authorized whole application; final STA pending"
 hdmi_startup_diagnostic,PG2L100H-6IFBG676,74.25,436,526,0.5,0,962,"hdmi-startup-001 mapped; final multi-corner STA passed; SRAM/UART verified; physical picture pending; no YOLO claim"

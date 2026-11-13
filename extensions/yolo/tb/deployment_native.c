@@ -2,6 +2,7 @@
 #include "yolo_runtime.h"
 #ifdef NATIVE_DECODE
 #include "yolo_decode.h"
+#include "yolo_frame_workspace.h"
 #endif
 #include <string.h>
 
@@ -111,7 +112,12 @@ uint32_t native_decode_bulk_reads(void)
 int native_decode(const yolo_tensor_t heads[3],float ratio,float pad_x,float pad_y,
                   uint32_t width,uint32_t height,yolo_box_t *boxes,uint32_t *count)
 {
-    static yolo_decode_workspace_t workspace;
+#ifdef NATIVE_SHARED_FRAME_WORKSPACE
+    yolo_decode_workspace_t *workspace=&yolo_frame_workspace_get()->decode;
+#else
+    static yolo_decode_workspace_t separate_workspace;
+    yolo_decode_workspace_t *workspace=&separate_workspace;
+#endif
     yolo_io_t io={.read64=load64,.read_bulk=decode_load_bulk};
     yolo_decode_config_t cfg={
         .anchors={{{10,13},{16,30},{33,23}},{{30,61},{62,45},{59,119}},
@@ -122,7 +128,7 @@ int native_decode(const yolo_tensor_t heads[3],float ratio,float pad_x,float pad
     if(!width || !height || width>UINT16_MAX || height>UINT16_MAX)
         return YOLO_INVALID;
     decode_bulk_reads=0;
-    return yolo_decode(&io,heads,&cfg,&workspace,boxes,count);
+    return yolo_decode(&io,heads,&cfg,workspace,boxes,count);
 }
 #endif
 

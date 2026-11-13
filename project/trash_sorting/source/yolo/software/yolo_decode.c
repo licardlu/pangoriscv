@@ -63,11 +63,12 @@ int yolo_decode(const yolo_io_t *io,const yolo_tensor_t heads[3],
     if(raw_minimum>16) raw_minimum=16;
     for(h=0;h<3;h++) {
         const yolo_tensor_t *t=&heads[h];
-        if(t->c!=33 || t->padded_c<33 || (t->address&7) ||
+        if(t->c!=YOLO_HEAD_CHANNELS || t->padded_c<YOLO_HEAD_CHANNELS || (t->address&7) ||
            !t->w || !t->h || !(cfg->strides[h]>0)) return YOLO_INVALID;
         for(y=0;y<t->h;y++) for(x=0;x<t->w;x++) for(a=0;a<3;a++) {
-            float obj,raw[11],scores[YOLO_CLASSES],best=0;
-            uint32_t base=t->address+((y*t->w+x)*t->padded_c+a*11)*4;
+            float obj,raw[YOLO_ANCHOR_VALUES],scores[YOLO_CLASSES],best=0;
+            uint32_t best_class=0;
+            uint32_t base=t->address+((y*t->w+x)*t->padded_c+a*YOLO_ANCHOR_VALUES)*4;
             int cached=0;
             int rc=read_float(io,base+16,&obj);
             if(rc) return rc;
@@ -75,12 +76,11 @@ int yolo_decode(const yolo_io_t *io,const yolo_tensor_t heads[3],
                obj<raw_minimum) continue;
             obj=sigmoid(obj);
             if(obj<cfg->confidence) continue;
-            /* Six aligned words contain all 11 logits even when the anchor
-             * starts in the upper half of a word. Require a padding channel
-             * so the last burst cannot read past the tensor's allocation. */
+            /* Include worst-case upper-word start and an extra padding
+             * channel. Support both legacy 11 and four-class 9 logits. */
             if((yolo_runtime_options&YOLO_FAST_DECODE) &&
-               io->read_bulk && t->padded_c>=34) {
-                uint64_t words[6];
+               io->read_bulk && t->padded_c>=YOLO_HEAD_CHANNELS+1) {
+                uint64_t words[(YOLO_ANCHOR_VALUES+2)/2];
                 rc=io->read_bulk(io->context,base&~7u,words,sizeof words);
                 if(rc) return rc;
                 memcpy(raw,(unsigned char *)words+(base&7u),sizeof raw);
@@ -91,8 +91,18 @@ int yolo_decode(const yolo_io_t *io,const yolo_tensor_t heads[3],
                     read_float(io,base+(5+c)*4,&raw[5+c]);
                 if(rc) return rc;
                 scores[c]=obj*sigmoid(raw[5+c]);
-                if(scores[c]>best) best=scores[c];
+                if(scores[c]>best) {best=scores[c];best_class=c;}
             }
+            /* Cardboard and paper are one user-facing class. Merge before
+             * Top-K/NMS so overlapping predictions suppress each other. Max
+             * preserves the original confidence; summing would inflate it. */
+#if YOLO_CLASSES == 6
+            scores[4]=fmaxf(scores[1],scores[4]);
+            scores[1]=0;
+#endif
+#if !YOLO_SINGLE_LABEL
+            (void)best_class;
+#endif
             if(best<cfg->confidence) continue;
             for(c=0;c<4;c++) {
                 rc=cached ? (isfinite(raw[c])?0:YOLO_INVALID) :
@@ -105,7 +115,11 @@ int yolo_decode(const yolo_io_t *io,const yolo_tensor_t heads[3],
                 float cy=(raw[1]*2-0.5f+y)*cfg->strides[h];
                 float bw=raw[2]*raw[2]*4*cfg->anchors[h][a][0];
                 float bh=raw[3]*raw[3]*4*cfg->anchors[h][a][1];
-                for(c=0;c<YOLO_CLASSES;c++) if(scores[c]>=cfg->confidence) {
+                for(c=0;c<YOLO_CLASSES;c++) if(scores[c]>=cfg->confidence
+#if YOLO_SINGLE_LABEL
+                                               && c==best_class
+#endif
+                                               ) {
                     yolo_box_t box={cx-bw/2,cy-bh/2,cx+bw/2,cy+bh/2,scores[c],c};
                     /* Padding-only anchors otherwise consume Top-K slots and
                      * become zero-area boxes after clipping to the image. */

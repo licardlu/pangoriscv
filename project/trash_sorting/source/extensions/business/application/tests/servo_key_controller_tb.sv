@@ -47,7 +47,7 @@ module servo_key_controller_tb;
         wait_frames(3);
         if (open_state !== 4'b0101)
             $fatal(1, "servo closed before configured open duration: %b", open_state);
-        wait_frames(4);
+        wait_frames(106);
         if (open_state !== 4'b0000)
             $fatal(1, "servo did not auto-close after configured duration: %b", open_state);
 
@@ -57,7 +57,7 @@ module servo_key_controller_tb;
         wait_frames(2);
         if (open_state !== 4'b1000)
             $fatal(1, "key 4 must map to blue PWM[3]: %b", open_state);
-        wait_frames(8);
+        wait_frames(108);
         if (open_state !== 4'b0000)
             $fatal(1, "held key retriggered after timeout: %b", open_state);
         key_n[3] = 1;
@@ -67,7 +67,7 @@ module servo_key_controller_tb;
     end
 
     initial begin
-        repeat (100000) @(posedge clk);
+        repeat (150000) @(posedge clk);
         $fatal(1, "timeout");
     end
 endmodule

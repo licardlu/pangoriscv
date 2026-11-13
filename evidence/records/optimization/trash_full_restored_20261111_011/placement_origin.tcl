@@ -1,0 +1,5 @@
+set_arch -input_db_file {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/trash_full_restored_20261111_010/mapped_input/yolo_camera_top_map.adf}
+add_constraint {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/trash_full_restored_20261111_010/mapped_input/yolo_camera_top.pcf}
+pnr -input_db_file {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/trash_full_restored_20261111_010/mapped_input/yolo_camera_top_map.adf} -plc_decongestion 4 -early_block_placement Global -share_router_control_signal TRUE -fast_router TRUE -gplace_seed 3 -groute_seed 2 -slack_prior_in_global_router FALSE -pin_cost_increasing_speed 600 -dump_router_congestion_plot TRUE -fix_hold_violation_iterations 300 -fix_hold_violation_threshold 200 -fix_hold_violation_threshold_for_clk_tree 200 -fix_hold_violation_threshold_for_clock_path_cross_srb 200 -fix_hold_violation_in_route TRUE
+report_timing
+puts FULL_APPLICATION_IMPLEMENTATION_COMPLETE

@@ -1,0 +1,67 @@
+{
+  "status": "FIXED_PUBLIC_VAL_OPERATING_POINT_EVALUATED",
+  "images": 1508,
+  "model_sha256": "ea70896cec65e802cd063525ba8a09814b10c52b65a36822abbc0d7854ac447e",
+  "conf": 0.25,
+  "nms_iou": 0.45,
+  "max_detections": 32,
+  "matching_iou": 0.5,
+  "matching": "Per-image descending-confidence, best unmatched same-class IoU>=.5",
+  "per_class": {
+    "kitchen": {
+      "TP": 232,
+      "FP": 159,
+      "FN": 82,
+      "GT": 314,
+      "precision": 0.5933503836317136,
+      "recall": 0.7388535031847133
+    },
+    "recyclable": {
+      "TP": 1273,
+      "FP": 281,
+      "FN": 443,
+      "GT": 1716,
+      "precision": 0.8191763191763192,
+      "recall": 0.7418414918414918
+    },
+    "hazardous": {
+      "TP": 45,
+      "FP": 60,
+      "FN": 0,
+      "GT": 45,
+      "precision": 0.42857142857142855,
+      "recall": 1.0
+    },
+    "other": {
+      "TP": 165,
+      "FP": 214,
+      "FN": 92,
+      "GT": 257,
+      "precision": 0.43535620052770446,
+      "recall": 0.642023346303502
+    }
+  },
+  "micro": {
+    "TP": 1715,
+    "FP": 714,
+    "FN": 617,
+    "GT": 2332,
+    "precision": 0.7060518731988472,
+    "recall": 0.7354202401372213
+  },
+  "numeric_sha256": "2c2a00e0b4fcf16638b76e98675873c0d864833fab2de074b33d3e7a1386013b",
+  "predictions_sha256": "68e856e9906352b25acb69ba43c7d3f6d0b5f58b31fea7ceb0d09ed1033b3593",
+  "fixture_truth_sha256": "97aeb4c42db754ba90dd554fcd2ae7d31e9100d0f96fbfe4361b56ca4b9cbf3b",
+  "script_sha256": "7165e8ea923dc31cb8b90b7eb68a4491085bb1b65d7d210beb8b1cbd94c78c71",
+  "split": "val",
+  "test_used": false,
+  "board_programmed": false,
+  "model_selection_frozen": true,
+  "limits": [
+    "Offline Q15 convolution oracle and actual C head/decoder, not FPGA/camera accuracy",
+    "Original public development validation, not new held-out physical instances",
+    "Fixed-threshold detection Precision/Recall, not AP or single-target game accuracy",
+    "Sparse deployment head discards low-confidence anchors, so complete AP is not reported",
+    "No changes to frozen model, confidence, policy or training after these results"
+  ]
+}

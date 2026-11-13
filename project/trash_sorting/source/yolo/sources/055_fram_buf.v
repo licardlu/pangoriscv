@@ -27,7 +27,8 @@ module fram_buf #(
     parameter                     MEM_DQ_WIDTH         = 32    ,
     parameter                     H_NUM                = 12'd1280,//12'd1920,
     parameter                     V_NUM                = 12'd720,//12'd1080,//12'd106,//
-    parameter                     PIX_WIDTH            = 16//24 
+    parameter                     PIX_WIDTH            = 16,//24
+    parameter                     DISPLAY_V_NUM        = V_NUM
 )(
     input                         vin_clk,
     input                         wr_fsync,
@@ -140,6 +141,7 @@ module fram_buf #(
     end 
     
     rd_buf #(
+        .DISPLAY_V_NUM    (  DISPLAY_V_NUM    ),
         .ADDR_WIDTH       (  CTRL_ADDR_WIDTH  ),//parameter                     ADDR_WIDTH      = 6'd27,
         .ADDR_OFFSET      (  32'h0000_0000    ),//parameter                     ADDR_OFFSET     = 32'h0000_0000,
         .H_NUM            (  H_NUM            ),//parameter                     H_NUM           = 12'd1920,

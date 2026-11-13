@@ -1,11 +1,12 @@
 `timescale 1ns/1ps
 module tb_yolo_result_commit;
+    wire quiz_hold=1'b0;
     reg cpu_clk=0,pix_clk=0,cam_clk=0;
     always #5 cpu_clk=~cpu_clk;
     always #7 pix_clk=~pix_clk;
     always #9 cam_clk=~cam_clk;
     reg cpu_rstn=0,pix_rstn=0,cam_rstn=0;
-    reg wr_en=0;
+    reg wr_en=0,rd_en=0;
     reg [7:0] wr_addr=0,rd_addr=0;
     reg [31:0] wr_data=0;
     wire [31:0] rd_data;
@@ -47,7 +48,7 @@ module tb_yolo_result_commit;
         wr(8'h94,0);
         if(result_commit) $fatal(1,"commit bit 0 created a pulse");
         wr(8'h94,1);
-        if(!result_commit || !result_valid || result_count!=2 || result_class_id!=5 || !bin_valid || bin_code!=1)
+        if(!result_commit || !result_valid || result_count!=2 || result_class_id!=5 || !bin_valid || bin_code!=4)
             $fatal(1,"multi-slot result count or priority failed");
         @(negedge cpu_clk);
         if(result_commit) $fatal(1,"commit was not a single CPU clock pulse");
@@ -59,7 +60,7 @@ module tb_yolo_result_commit;
         wr(8'h84,3);wr(8'h90,0);
         wr(8'h84,6);wr(8'h90,32'h80000000);
         wr(8'h94,1);
-        if(!result_commit || !result_valid || result_count!=1 || result_class_id!=0 || bin_code!=4)
+        if(!result_commit || !result_valid || result_count!=1 || result_class_id!=0 || bin_code!=1)
             $fatal(1,"first valid slot search or organic mapping failed");
         acknowledge();
         wr(8'h84,6);wr(8'h90,0);wr(8'h94,1);

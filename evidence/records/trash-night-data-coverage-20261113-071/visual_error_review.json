@@ -1,0 +1,32 @@
+{
+  "status": "ALL_45_BASELINE_ERROR_OVERLAYS_VISUALLY_REVIEWED",
+  "sheets": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "software_only": true,
+  "test_inference_performed": false,
+  "held50_errors": {
+    "images": 50,
+    "right_bucket_wrong_localization_or_subject": 10,
+    "both_correct": 31,
+    "wrong_bucket": 7,
+    "wrong_bucket_but_subject_iou050": 5,
+    "no_selection": 2
+  },
+  "observations": [
+    "Empty-hand crop false positives often cover face+hand or much of person, rather than a well-localized waste object",
+    "Banana peel often has a tight or roughly correct box but class recyclable, confirming classification failure; two missing detections",
+    "Glass jar and cardboard misses often have oversized selected bounds containing hand/body/background; not all are completely missed waste",
+    "Purple hand boxes are ground truth for review, not predictions by the deployed four-class model"
+  ],
+  "next_round": [
+    "Keep physical-instance isolation; never move held battery final test into training",
+    "Collect additional distinct hand-held hazardous and gray-bin instances to create real train AND separate val groups; current new held val covers only green/blue",
+    "Use real board-camera hand-held/empty-hand/background clutter rather than relying only on cropped face-cover gesture negatives",
+    "Preserve full-size large-object labels; small-object crops must be paired with actual hand/object localization and deployed compute budget",
+    "A separate hand branch preserved exact four-bin output in earlier experiments but failed hand quality and increased MAC, so it is not a verified solution"
+  ]
+}

@@ -2,7 +2,17 @@
 #define YOLO_DECODE_H
 #include "yolo_runtime.h"
 
+/* Compile with the packed checkpoint's raw class count. Legacy six-class
+ * weights merge cardboard into paper; four-bin weights already merge materials.
+ * Five internal classes add hand at ID4 for target selection, never a fifth bin. */
+#ifndef YOLO_CLASSES
 #define YOLO_CLASSES 6
+#endif
+#ifndef YOLO_SINGLE_LABEL
+#define YOLO_SINGLE_LABEL 0
+#endif
+#define YOLO_ANCHOR_VALUES (5+YOLO_CLASSES)
+#define YOLO_HEAD_CHANNELS (3*YOLO_ANCHOR_VALUES)
 #define YOLO_PER_CLASS 32
 #define YOLO_MAX_RESULTS 32
 typedef struct {

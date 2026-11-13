@@ -1,0 +1,43 @@
+version,2022.2-SP6.1<build 138931>
+project name,implement.pds
+
+Single Seed:
+Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
+single,OK,OK,0.108,2.712,0.228,0.167,4.206,5.521,0.349,0.248,NA,NA,NA,4.59,214.28,281.47,393.55,NA,NA,NA,621865,NA,NA,2455,2455,2455,2455,NA,0,0,0.000,0,0.000,0,NA
+Pass Rate/Convergence Rate,100.00%,100.00%
+
+Synthesize:
+control_set,680
+Synthesize Performance Summary:
+slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
+slack value,1.776,0.000,5.480,0.000
+Synthesize Process Cpu Time,0h:5m:29s
+
+Device Map:
+Device Map Resource Usage Summary:
+Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
+Used,29054,22141,132.5,123,290,NA,9,0,3
+Available,66600,133200,155,240,19900,NA,32,96,24
+Utilization(%),44%,17%,86%,52%,2%,NA,29%,0%,13%
+Device Map Process Cpu Time,0h:0m:51s
+
+Project Configurations:
+top module,yolo_camera_top
+compile," -top_module {yolo_camera_top} 
+ -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/trash_camera_probe_os54_20261113_064/input/yolo/sources/include	D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/trash_camera_probe_os54_20261113_064/input/extensions/business/application/rtl} 
+ -system_verilog "
+synthesize," -ads "
+device map,
+place & route," -plc_decongestion 4 
+ -gplace_seed 3 
+ -groute_seed 2 
+ -optimize_multi_corner_timing 
+ -fix_hold_violation_iterations 300 
+ -fix_hold_violation_threshold 200 
+ -fix_hold_violation_threshold_for_clk_tree 200 
+ -early_block_placement {Global} 
+ -slack_prior_in_global_router false "
+
+Test Parameters Configurations:
+testparam,
+

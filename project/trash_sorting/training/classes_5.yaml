@@ -1,0 +1,10 @@
+# Next retraining schema. Existing six-class weights cannot use this directly.
+# Set path to an independently prepared YOLO detection dataset before training.
+path: ./dataset_5
+train: images/train
+val: images/val
+test: images/test
+nc: 5
+names: [biodegradable, glass, metal, paper, plastic]
+# Original labels: 0->0, 1->3, 2->1, 3->2, 4->3, 5->4.
+# Paper includes cardboard. Used tissues are excluded from recyclable paper.

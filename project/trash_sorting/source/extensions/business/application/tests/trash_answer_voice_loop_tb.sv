@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 // Real controller + debounce + servo PWM + real WAV ROM + physical I2S.
-// Only OPEN_MS is accelerated: one 20ms servo frame instead of five seconds.
+// Accelerate OPEN_MS to one frame and each movement to one frame.
 // The separate trash_peripherals_tb covers the actual 5s configuration.
 module trash_answer_voice_loop_tb;
     localparam integer CLK_HZ=27000000;
@@ -12,7 +12,7 @@ module trash_answer_voice_loop_tb;
     wire [2:0] voice_asset_id;
     wire [127:0] snapshot;
     wire audio_busy,playback_done,i2s_bclk,i2s_lrclk,i2s_data;
-    trash_peripherals #(.CLK_HZ(CLK_HZ),.DEBOUNCE_MS(1),.OPEN_MS(20),.TEST_MODE(1)) peripherals(
+    trash_peripherals #(.CLK_HZ(CLK_HZ),.DEBOUNCE_MS(1),.OPEN_MS(20),.SERVO_MOVE_FRAMES(1),.TEST_MODE(1)) peripherals(
         .clk(clk),.rst(rst),.start_ready(start_ready),.key_n(key_n),
         .detect_event(1'b0),.bin_valid(1'b0),.bin_code(3'b0),
         .servo_pwm(servo_pwm),.open_state(open_state),.voice_valid(voice_valid),
@@ -37,15 +37,15 @@ module trash_answer_voice_loop_tb;
     // Track actual servo feedback rather than an independent quiz timer.
     always @(negedge clk) if(!rst) begin
         if(open_state != 0 && open_state != 1)
-            $fatal(1,"Fixed answer must open correct BLUE only: %b",open_state);
+            $fatal(1,"Fixed answer must open correct GREEN only: %b",open_state);
         if(old_open==0 && open_state!=0) begin
             open_count=open_count+1;
             opened_at=$realtime;
         end
         if(old_open!=0 && open_state==0) begin
             close_count=close_count+1;
-            if(($realtime-opened_at)<19999000 || ($realtime-opened_at)>20001000)
-                $fatal(1,"27MHz servo opening did not last 20ms: %0fns",$realtime-opened_at);
+            if(($realtime-opened_at)<59997000 || ($realtime-opened_at)>60003000)
+                $fatal(1,"27MHz servo opening did not last 60ms: %0fns",$realtime-opened_at);
         end
         old_open=open_state;
     end
@@ -140,15 +140,15 @@ module trash_answer_voice_loop_tb;
         key_n=15;
         repeat(100100) @(negedge clk); // release debounce
         key_n[1]=0;
-        wait(requests==4); // button 2 -> wrong; opens correct BLUE servo
+        wait(requests==4); // button 2 -> wrong; opens correct GREEN servo
         key_n=0;
         wait(open_count==2);
         wait(requests==5);
         repeat(150000) @(negedge clk);
         if(requests!=5 || close_count!=2 || open_state!=0 || !audio_busy || frame_samples<100 || audio_windows_checked<4)
             $fatal(1,"Wrong-answer close/re-prompt/held-key loop failed");
-        $display("TEST_PASS trash_answer_voice_loop real 27MHz + real audio ROM + I2S decode: prompt/correct+blue/wrong+blue/closed prompts; readiness and held-key guard; OPEN_MS=20 only");
+        $display("TEST_PASS trash_answer_voice_loop real 27MHz + real audio ROM + I2S decode: prompt/correct+green/wrong+green/closed prompts; readiness and held-key guard; OPEN_MS=20, SERVO_MOVE_FRAMES=1");
         $finish;
     end
-    initial begin #200000000;$fatal(1,"Answer/voice loop timeout");end
+    initial begin #400000000;$fatal(1,"Answer/voice loop timeout");end
 endmodule

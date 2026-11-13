@@ -1,0 +1,196 @@
+{
+  "generated": "2026-11-04",
+  "scope": "Static dependency closure plus checks that were actually re-run on this machine. No synthesis, P&R or board download was performed while generating this file; the board numbers come from archived captures.",
+  "how_to_read": "Each entry lists the exact command and the expected marker. Run them from the package root.",
+  "checks": {
+    "cpu_release_closure": {
+      "command": "cd project/pds_native_120; python tools/build.py verify",
+      "expect": "status PASS, memory_lanes 8, ram_sha256 c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d",
+      "result": {
+        "status": "PASS",
+        "design_sources": 43,
+        "hdl_files_with_includes": 96,
+        "modules": 43,
+        "external_source_dependencies": 0,
+        "memory_lanes": 8,
+        "image": {
+          "checked_bytes": 36444,
+          "ram_bytes": 65536,
+          "elf_sha256": "5c4ecd094efd2fea33f08d9f5ac8e79118584e85588a7bf18189bf37da0c270b",
+          "ram_sha256": "c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d"
+        },
+        "scope": "release hashes, include closure, local data and frozen firmware; not formal equivalence"
+      }
+    },
+    "cpu_board_capture_001": {
+      "command": "cd project/pds_native_120; python tools/check_board.py evidence/standalone-board-001",
+      "expect": "status PASS, coremark_per_mhz 5.346252494441123",
+      "result": {
+        "status": "PASS",
+        "board_verified": true,
+        "bitstream_sha256": "2e38db1c26bd6a1bcb9a3fe1d09ca6d70bf430d5ac50001f450664a50c81f9cb",
+        "cpu_hz": 120461538,
+        "iterations": 7000,
+        "ticks": 1309328358,
+        "crc": {
+          "seedcrc": 59893,
+          "crclist": 59156,
+          "crcmatrix": 8151,
+          "crcstate": 36410,
+          "crcfinal": 9653
+        },
+        "seconds": 10.869264827085306,
+        "coremark_per_mhz": 5.346252494441123,
+        "uart_sha256": "1d6d31cd8ec011b330c327fb1e116cbff3fb3ecbd538ce2daa75a3e832a522cf",
+        "performance_parity": true,
+        "sta_closed": null,
+        "build_record_available": false,
+        "full_semantic_modularization_complete": false,
+        "bitstream_relocated_to": "bitstream/current/pango_replica_core_120.sbit",
+        "bitstream_recorded_path": "build/standalone-001/generate_bitstream/pango_vexii_top.sbit"
+      }
+    },
+    "cpu120_snapshot": {
+      "command": "cd project/cpu120; python tools/build.py verify",
+      "expect": "status PASS; missing selected-release artifacts are reported instead of hidden",
+      "result": {
+        "status": "PASS",
+        "design_sources": 44,
+        "hdl_files_with_includes": 97,
+        "modules": 44,
+        "external_source_dependencies": 0,
+        "memory_lanes": 8,
+        "image": {
+          "checked_bytes": 36444,
+          "ram_bytes": 65536,
+          "elf_sha256": "5c4ecd094efd2fea33f08d9f5ac8e79118584e85588a7bf18189bf37da0c270b",
+          "ram_sha256": "c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d"
+        },
+        "selected_implementation": {
+          "binding_checked": false,
+          "reason": "selected release artifacts are not shipped with this snapshot",
+          "missing": [
+            "bitstream/current/pango_vexii_top.sbit",
+            "evidence/records/boardopt_20261101/board021_gshare10_route20/pango_vexii_top.rtr",
+            "evidence/records/boardopt_20261101/board021_gshare10_route20/multiseed_summary.csv"
+          ],
+          "bound_tag": "board021_gshare10_route20",
+          "bound_setup_wns_ns": 0.148,
+          "bound_sta_closed": true
+        },
+        "board_parameters": {
+          "status": "PASS",
+          "board": "MES2L676-100HP V1.2 / PG2L100H-6IFBG676",
+          "pins_checked": 13,
+          "input_mhz": 27.0,
+          "pfd_mhz": 27.0,
+          "vco_mhz": 1566.0,
+          "cpu_mhz": 120.46153846153847,
+          "board_verified": false,
+          "scope": "Checked integration parameters; not a board measurement, oscillator tolerance characterization or signal-integrity proof"
+        },
+        "scope": "release hashes, include closure, local data and frozen firmware; selected-artifact checks are reported separately; not area acceptance or formal equivalence"
+      }
+    },
+    "application_source_closure": {
+      "command": "python project/trash_sorting/tools/check_app_sources.py",
+      "expect": "PASS application source closure",
+      "result_text": [
+        "entry            : source/yolo/build_pre_pnr.tcl",
+        "design files     : 89 (.v/.sv: 85, .idf: 4)",
+        "constraints      : 1",
+        "include targets  : 53",
+        "readmem literals : 65 active, 43 never elaborated (bank >= 57)",
+        "firmware lanes   : 8",
+        "",
+        "PASS application source closure"
+      ]
+    },
+    "application_offline_smoke": {
+      "command": "run_smoke.ps1 with -ModelSim <win64 dir>",
+      "expect": "SMOKE_PASS 3/3",
+      "result": "SMOKE_PASS 3/3 (servo_pwm4_tb, trash_peripherals_tb, light_panel_tb) on 2026-11-04"
+    },
+    "firmware_rebuild_matches_frozen_image": {
+      "command": "python scripts/build.py firmware --iterations 7000, then python scripts/verify_image.py <elf> project/pds_native_120/firmware/image",
+      "expect": "ram_sha256 c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d",
+      "result": {
+        "checked_bytes": 36444,
+        "ram_bytes": 65536,
+        "ram_sha256": "c0166c5cf86143cacd3b50c46b1c7f9ba28796e5b8f4c9d5dcc5507d6a3ef31d",
+        "note": "Rebuilt from firmware/ with xpack riscv-none-elf-gcc 15.2.0-1. The ELF file hash differs (debug sections, build paths); the 64 KiB RAM image is bit-identical."
+      }
+    },
+    "independent_rebuild": {
+      "command": "copy project/pds_native_120 outside the repository, then tools/build.py build --name indep-001",
+      "expect": "build_complete with 8 memory lanes loaded",
+      "result": {
+        "status": "build_complete",
+        "purpose": "Independent rebuild from the packaged sources only, started from a copy of project/pds_native_120 placed outside the repository. No board test was run on this bitstream.",
+        "wall_seconds": 1252.03,
+        "bitstream": "build/indep-001/generate_bitstream/pango_vexii_top.sbit",
+        "bitstream_sha256": "f544b61ec250b1acfaff31acf242518e213502ad547b498c429b058ce283b61d",
+        "loaded_memory_lanes": 8,
+        "resources": {
+          "LUT": 8867,
+          "FF": 6658,
+          "DRM": 34,
+          "APM": 5,
+          "Distributed RAM": 72
+        },
+        "resources_available": {
+          "LUT": 66600,
+          "FF": 133200,
+          "DRM": 155,
+          "APM": 240,
+          "Distributed RAM": 19900
+        },
+        "final_sta": {
+          "Setup(Slow)": -1.532,
+          "Setup(Fast)": 2.128,
+          "Hold(Slow)": 0.043,
+          "Hold(Fast)": 0.031,
+          "Recovery(Slow)": 4.054,
+          "Recovery(Fast)": 5.562,
+          "Removal(Slow)": 0.305,
+          "Removal(Fast)": 0.213
+        },
+        "sta_closed": false,
+        "design_summary": "Some Constraints Violated.",
+        "setup_failing_endpoints": 1171,
+        "setup_tns_ns": -531.982,
+        "delta_vs_delivered": {
+          "LUT": -8,
+          "FF": 0,
+          "DRM": 0,
+          "APM": 0,
+          "Dist RAM": 0
+        },
+        "interpretation": "Resources reproduce within 8 LUT; FF/DRM/APM/DistRAM identical. Setup slack moves -1.426 -> -1.532 ns between two builds of the same netlist, which is the documented placement sampling spread, not a regression. 120 MHz still does not close.",
+        "board_verified": false
+      }
+    },
+    "two_board_runs_are_identical": {
+      "command": "sha256 of the two archived uart.log captures",
+      "expect": "identical",
+      "result": {
+        "board-run-001": "1d6d31cd8ec011b330c327fb1e116cbff3fb3ecbd538ce2daa75a3e832a522cf",
+        "board-run-002": "1d6d31cd8ec011b330c327fb1e116cbff3fb3ecbd538ce2daa75a3e832a522cf"
+      }
+    }
+  },
+  "excluded_from_package": [
+    ".git (local history)",
+    "build/ and project/*/build/ (PDS implementation databases)",
+    "__pycache__ and *.pyc",
+    "tools/local-tools.json (machine-specific tool paths)",
+    "license files"
+  ],
+  "not_reproducible_inside_this_package": [
+    "v3 27 MHz application bitstream: its place-and-route started from an ADF that is not shipped",
+    "AI side RTL simulation of the full 85-operator graph: tb_params.vh / frame.hex / cpu_oracle.* / parameters.npz were never packaged",
+    "reference (upstream) bitstream and its -1.604 ns timing report",
+    "1,000,000-cycle lockstep run: the reference DUT and its testbench are not shipped"
+  ],
+  "shell_note": "Commands are written for Windows PowerShell 5.1, which has no && separator. Use ; or run the two commands on separate lines."
+}

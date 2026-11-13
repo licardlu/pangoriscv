@@ -25,6 +25,9 @@
 
 module yolo_camera_top#(
 	parameter PERIPHERAL_TEST_MODE = 0          ,//0=live camera quiz; 1=fixed answer1 diagnostics
+    // Must match the packed four-class model and firmware (27 head channels).
+    parameter FOUR_BIN_CLASSES = 1,
+    parameter AI_FAST_CLOCK = 0, // 0=27, 1=74.25, 2=54 MHz; peripherals stay 27 MHz
 	parameter MEM_ROW_ADDR_WIDTH   = 15         ,
 	parameter MEM_COL_ADDR_WIDTH   = 10         ,
 	parameter MEM_BADDR_WIDTH      = 3          ,
@@ -124,6 +127,23 @@ module yolo_camera_top#(
     wire                        de_in_test          ;
     wire[15:0]                  i_rgb565   /*synthesis PAP_MARK_DEBUG="1"*/         ;
     wire                        de_re               ;
+    wire hs_o,vs_o,de_o;
+    localparam STATUS_HEIGHT=48;
+    localparam VIDEO_HEIGHT=720-STATUS_HEIGHT;
+    wire [11:0] display_y;
+    wire camera_read_de=de_re && display_y>=STATUS_HEIGHT;
+    reg [1:0] display_de_pipe,display_hs_pipe,display_vs_pipe;
+    // DDR pixels arrive two clocks after read enable. Keep full-screen DE
+    // during the independent status region, without reading camera pixels.
+    always @(posedge pix_clk) begin
+        if(!ddr_init_done) begin
+            display_de_pipe<=0;display_hs_pipe<=0;display_vs_pipe<=0;
+        end else begin
+            display_de_pipe<={display_de_pipe[0],de_re};
+            display_hs_pipe<={display_hs_pipe[0],hs_o};
+            display_vs_pipe<={display_vs_pipe[0],vs_o};
+        end
+    end
     wire [8:0]                  reg_idx1            ;
     wire [1:0]                  i2c_pins            ;
 //axi bus   
@@ -163,11 +183,13 @@ module yolo_camera_top#(
 /////////////////////////////////////////////////////////////////////////////////////
 //PLL
 
+    wire ai_clk54;
     pll u_pll (
         .clkin1   (  sys_clk    ),//27MHz
         .clkout0  (  pix_clk    ),//74.25MHz 720p60
         .clkout1  (  cfg_clk    ),//10MHz
         .clkout2  (  clk_25M    ),//25M
+        .clkout3  (  ai_clk54   ),//54MHz optional inference clock
         .lock (  locked     )
     );
 
@@ -328,7 +350,7 @@ assign     de_in_test      =    cam_de     ;
  assign    hdmi_int_led    = |i_rgb565;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //修改ddr读写模块v1
-    fram_buf fram_buf(
+    fram_buf #(.DISPLAY_V_NUM(VIDEO_HEIGHT)) fram_buf(
         .ddr_clk        (  core_clk             ),//input                         ddr_clk,
         .ddr_rstn       (  ddr_init_done        ),//input                         ddr_rstn,
         //data_in                                  
@@ -339,7 +361,7 @@ assign     de_in_test      =    cam_de     ;
         //data_out
         .vout_clk       (  pix_clk              ),//input                         vout_clk,
         .rd_fsync       (  vs_o               ),//input                         rd_fsync,
-        .rd_en          (  de_re                ),//input                         rd_en,
+        .rd_en          (  camera_read_de       ),//read only the video viewport
         .vout_de        (  de_o               ),//output                        vout_de,
         .vout_data      (  o_rgb565             ),//output [PIX_WIDTH- 1'b1 : 0]  vout_data,
         .init_done      (  init_done            ),//output reg                    init_done,
@@ -471,7 +493,7 @@ assign     de_in_test      =    cam_de     ;
         .txd_b    (                  )
      );
      // Preserve the native, independently refreshed DDR video and YOLO OSD.
-     // Full-width video below the compact header; no thumbnail or frame delay.
+     // Dedicated status y=0..47; full source field of view sampled below it.
      wire split_hs,split_vs,split_de;wire[23:0]split_rgb;
      wire [127:0] application_snapshot,panel_snapshot;
      wire panel_mailbox_busy;
@@ -480,12 +502,14 @@ assign     de_in_test      =    cam_de     ;
         .data(application_snapshot),.busy(panel_mailbox_busy),
         .dclk(pix_clk),.drst(!pix_reset[1]),.frame_start(vs_o),.snapshot(panel_snapshot));
      light_split_video #(
+        .HEADER_HEIGHT(STATUS_HEIGHT),
         .BG("../../extensions/business/application/assets/ui_light_bg.hex"),
         .PAL("../../extensions/business/application/assets/ui_light_palette.hex"),
         .STATUS("../../extensions/business/application/assets/ui_light_status.hex")
      ) split_display(
         .clk(pix_clk),.rst(!pix_reset[1]),
-        .hs_in(hs_o),.vs_in(vs_o),.de_in(de_o),.pixel_in(osd_px),
+        .hs_in(display_hs_pipe[1]),.vs_in(display_vs_pipe[1]),
+        .de_in(display_de_pipe[1]),.pixel_in(osd_px),
         .snapshot(panel_snapshot),
         .hs_out(split_hs),.vs_out(split_vs),.de_out(split_de),.rgb_out(split_rgb));
      always@(posedge pix_clk) begin
@@ -503,7 +527,8 @@ assign     de_in_test      =    cam_de     ;
         .hs_out         (  hs_o                 ),//output reg              hs_out,            
         .de_out         (  de_re                     ),//output reg              de_out, 
         .de_re          (                  ),
-        .x_act          (  x_act_w              ) //output reg [11:0]       x_act
+        .x_act          (  x_act_w              ), //output reg [11:0]       x_act
+        .y_act          (  display_y            )
     );  
 ////////////////////////////////////////////////////////////////////////////////////////////
 //ddr    
@@ -717,10 +742,11 @@ ddr3_test u_ddr3_test_h(
         else ddr_ref_rst <= {ddr_ref_rst[0],1'b1};
     assign ddr_resetn_ref = ddr_ref_rst[1];
 
-    // Retain this source package's existing sys_clk CPU/accelerator connection.
-    // Peripheral integration does not retune or replace the separate CPU120 build.
+    // Static clock choice; no runtime/fabric clock switching. UART firmware
+    // CPU_HZ must match. Pixel/DDR/camera PLL parameters are unchanged.
+    wire inference_clk=AI_FAST_CLOCK==2 ? ai_clk54 : AI_FAST_CLOCK==1 ? pix_clk : sys_clk;
     wire ai_ready=locked && ddr_init_done;
-    always @(posedge sys_clk or negedge ai_ready)
+    always @(posedge inference_clk or negedge ai_ready)
         if(!ai_ready) ai_reset<=0;else ai_reset<={ai_reset[0],1'b1};
     always @(posedge core_clk or negedge ai_ready)
         if(!ai_ready) ddr_reset<=0;else ddr_reset<={ddr_reset[0],1'b1};
@@ -753,16 +779,43 @@ ddr3_test u_ddr3_test_h(
     wire raw_result_commit,raw_result_valid;
     wire [7:0] raw_result_class_id;
     wire [3:0] raw_result_count;
+    wire business_result_commit,business_result_valid;
+    wire [7:0] business_result_class_id;
+    generate if(AI_FAST_CLOCK) begin: fast_result_crossing
+        result_event_cdc #(.W(9)) result_mailbox(
+            .sclk(inference_clk),.srst(!ai_reset[1]),
+            .event_in(raw_result_commit),.payload_in({raw_result_valid,raw_result_class_id}),
+            .overflow(),.dclk(sys_clk),.drst(!peripheral_reset[1]),
+            .event_out(business_result_commit),
+            .payload_out({business_result_valid,business_result_class_id}));
+    end else begin: same_clock_result
+        assign business_result_commit=raw_result_commit;
+        assign business_result_valid=raw_result_valid;
+        assign business_result_class_id=raw_result_class_id;
+    end endgenerate
     wire camera_bin_valid;
     wire [2:0] camera_bin_code;
     wire audio_busy,audio_playback_done;
-    yolo_class_to_bin camera_category(
-        .result_valid(raw_result_valid),.result_class_id(raw_result_class_id),
+    // Register the Boolean state in the business domain before synchronizing
+    // it: directly crossing a combinational decode of a multibit state can
+    // glitch when WAIT_ANSWER transitions to ANSWERED.
+    reg quiz_hold_source;
+    (* ASYNC_REG="TRUE" *) reg [1:0] quiz_hold_sync;
+    always @(posedge sys_clk) begin
+        if(!peripheral_reset[1]) quiz_hold_source<=1;
+        else quiz_hold_source<=!hdmi_ready_sync[1] || application_snapshot[2:0]!=0;
+    end
+    always @(posedge inference_clk) begin
+        if(!ai_reset[1]) quiz_hold_sync<=2'b11;
+        else quiz_hold_sync<={quiz_hold_sync[0],quiz_hold_source};
+    end
+    yolo_class_to_bin #(.FOUR_BIN_CLASSES(FOUR_BIN_CLASSES)) camera_category(
+        .result_valid(business_result_valid),.result_class_id(business_result_class_id),
         .bin_valid(camera_bin_valid),.bin_code(camera_bin_code));
     trash_peripherals #(.CLK_HZ(27000000),.DEBOUNCE_MS(20),.OPEN_MS(5000),
-        .TEST_MODE(PERIPHERAL_TEST_MODE),.SERVO_REVERSED_MASK(4'b0101)) application_peripherals(
+        .TEST_MODE(PERIPHERAL_TEST_MODE),.SERVO_REVERSED_MASK(4'b1111)) application_peripherals(
         .clk(sys_clk),.rst(!peripheral_reset[1]),.start_ready(hdmi_ready_sync[1]),.key_n(key_n),
-        .detect_event(raw_result_commit),.bin_valid(camera_bin_valid),.bin_code(camera_bin_code),
+        .detect_event(business_result_commit),.bin_valid(camera_bin_valid),.bin_code(camera_bin_code),
         .servo_pwm(logical_servo_pwm),.open_state(servo_open_state),
         .voice_valid(peripheral_voice_valid),.voice_asset_id(peripheral_voice_asset),
         .snapshot(application_snapshot));
@@ -772,7 +825,7 @@ ddr3_test u_ddr3_test_h(
         .audio_busy(audio_busy),.playback_done(audio_playback_done),
         .i2s_bclk(hdmi_audio_bclk),.i2s_lrclk(hdmi_audio_lrclk),.i2s_data(hdmi_audio_data));
     assign hdmi_audio_data1=1'b0;
-    wire vid_wr_en;
+    wire vid_wr_en,vid_rd_en;
     wire [7:0] vid_wr_addr,vid_rd_addr;
     wire [31:0] vid_wr_data,vid_rd_data;
     wire [27:0] ai_awaddr,ai_araddr;
@@ -784,23 +837,26 @@ ddr3_test u_ddr3_test_h(
     yolo_ai_client #(
         .PROGRAM_INIT_FILE("program.hex")
     ) ai(
-        .clk_sys(sys_clk),.core_clk(core_clk),.rstn(ai_reset[1]),.ddr_rstn(ddr_reset[1]),
+        .clk_sys(inference_clk),.core_clk(core_clk),.rstn(ai_reset[1]),.ddr_rstn(ddr_reset[1]),
         .uart_rxd(uart_rxd),.uart_txd(uart_txd),
         .vid_wr_en(vid_wr_en),.vid_wr_addr(vid_wr_addr),.vid_wr_data(vid_wr_data),
-        .vid_rd_addr(vid_rd_addr),.vid_rd_data(vid_rd_data),
+        .vid_rd_addr(vid_rd_addr),.vid_rd_en(vid_rd_en),.vid_rd_data(vid_rd_data),
         .d3_awaddr(ai_awaddr),.d3_awlen(ai_awlen),.d3_awvalid(ai_awvalid),
         .d3_awready(ai_awready),.d3_wdata(ai_wdata),.d3_wstrb(ai_wstrb),
         .d3_wvalid(ai_wvalid),.d3_wready(ai_wready),.d3_wusero_last(ai_wlast),
         .d3_araddr(ai_araddr),.d3_arlen(ai_arlen),.d3_arvalid(ai_arvalid),
         .d3_arready(ai_arready),.d3_rdata(shared_rdata),.d3_rvalid(ai_rvalid),
         .d3_rlast(ai_rlast),.d3_rready(ai_rready));
-    video_ai_frontend #(.RESULT_TTL(120),.GUIDE_ENABLE(0),.OSD_TEXT(1),.OSD_BORDER(4),.VIEW_X1(0),.VIEW_X2(1279)) frontend(
-        .cpu_clk(sys_clk),.cpu_rstn(ai_reset[1]),
+    video_ai_frontend #(.RESULT_TTL(120),.GUIDE_ENABLE(0),.OSD_TEXT(0),.OSD_BORDER(4),
+        .FOUR_BIN_CLASSES(FOUR_BIN_CLASSES),.GAME_TARGET_LOCK(FOUR_BIN_CLASSES),.VIEW_Y1(STATUS_HEIGHT),
+        .VIEW_HEIGHT(VIDEO_HEIGHT),.VIEW_X1(0),.VIEW_X2(1279)) frontend(
+        .cpu_clk(inference_clk),.cpu_rstn(ai_reset[1]),.quiz_hold(quiz_hold_sync[1]),
         .wr_en(vid_wr_en),.wr_addr(vid_wr_addr),.wr_data(vid_wr_data),
-        .rd_addr(vid_rd_addr),.rd_data(vid_rd_data),
+        .rd_addr(vid_rd_addr),.rd_en(vid_rd_en),.rd_data(vid_rd_data),
         .cam_clk(pclk_in_test),.cam_rstn(cam_reset[1]),
         .cam_vs(vs_in_test),.cam_de(de_in_test),.cam_pixel(i_rgb565),
-        .pix_clk(pix_clk),.pix_rstn(pix_reset[1]),.pix_vs(vs_o),.pix_de(de_o),
+        .pix_clk(pix_clk),.pix_rstn(pix_reset[1]),
+        .pix_vs(display_vs_pipe[1]),.pix_de(display_de_pipe[1]),
         .pix_in(disp_px),.pix_out(osd_px),
         .result_commit(raw_result_commit),.result_valid(raw_result_valid),
         .result_class_id(raw_result_class_id),.result_count(raw_result_count));

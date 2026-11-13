@@ -188,6 +188,24 @@ static inline int acc_memory_read64(uint32_t address, uint64_t *data, uint32_t l
     return 2;
 }
 
+/* -ffreestanding disables automatic memcpy builtins. A library call for every
+ * DDR word is costly on RV32. Explicit builtins keep this fixed-size copy
+ * inline. Alignment is checked before informing the compiler; byte-aligned
+ * callers remain supported, without aliasing casts or unaligned LW/SW. */
+static inline void acc_host_copy8(void *dst, const void *src)
+{
+#ifdef __GNUC__
+    if ((((uintptr_t)dst | (uintptr_t)src) & 3u) == 0) {
+        __builtin_memcpy(__builtin_assume_aligned(dst, 4),
+                         __builtin_assume_aligned(src, 4), 8);
+    } else {
+        __builtin_memcpy(dst, src, 8);
+    }
+#else
+    memcpy(dst, src, 8);
+#endif
+}
+
 static inline int acc_memory_write_bulk(uint32_t address,
                                         const void *src, uint32_t bytes,
                                         uint32_t limit)
@@ -202,7 +220,7 @@ static inline int acc_memory_write_bulk(uint32_t address,
         if (acc_wait_idle(limit)) return 1;
         acc_wr(ACC_BULK_ADDR, address + done);
         for (i = 0; i < chunk * 8u; i += 8) {
-            memcpy(&word, p + done + i, sizeof word);
+            acc_host_copy8(&word, p + done + i);
             acc_wr(ACC_BULK_WLO, (uint32_t)word);
             acc_wr(ACC_BULK_WHI, (uint32_t)(word >> 32));
         }
@@ -244,7 +262,7 @@ static inline int acc_memory_read_bulk(uint32_t address,
              * read.  The pair therefore belongs to one DDR word. */
             word = (uint64_t)acc_rd(ACC_BULK_RLO);
             word |= (uint64_t)acc_rd(ACC_BULK_RHI) << 32;
-            memcpy(p + done + i * 8u, &word, sizeof word);
+            acc_host_copy8(p + done + i * 8u, &word);
         }
         done += chunk * 8u;
     }

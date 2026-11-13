@@ -1,0 +1,34 @@
+{
+  "status": "REJECTED_NO_HELD_HANDS",
+  "checkpoint_sha256": "76bed4a11f5170669a5b93c10d0c91c8706a2c4704dcc1e354d89bb93895bc7f",
+  "held_hand_seen": 0,
+  "held_images": 15,
+  "held_correct": 12,
+  "held_correct_all_no_hand_fallback": true,
+  "empty_hand_false_selection": 7,
+  "empty_hand_images": 29,
+  "contextual_hand_TP_FP_GT": [
+    1,
+    9,
+    28
+  ],
+  "old_battery_top_correct": 8,
+  "old_battery_largest_correct": 4,
+  "old_battery_images": 9,
+  "public_val_AP50": {
+    "kitchen": 0.7647697126224423,
+    "recyclable": 0.7971541989330527,
+    "hazardous": 0.9230759347289544,
+    "other": 0.6075085904690192
+  },
+  "test_inference_performed": false,
+  "quantized": false,
+  "pds_started": false,
+  "board_programmed": false,
+  "integration_smoke": {
+    "invalid_first": "integration_smoke: source rewritten after import, teacher training batches0; do not use its AP",
+    "valid_second": "integration_smoke_002: train15/val4, batches4, per-bin anchor matches149/80/19/93, mean auxiliary loss.0145438",
+    "limitation": "Small integration run checks execution/serialization, not model effectiveness"
+  },
+  "conclusion": "Teacher keeps original waste capability on repeated old battery diagnostics, but initializing common features from original4 loses held-hand localization. Next experiment initializes024 instead."
+}

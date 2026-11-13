@@ -1,0 +1,57 @@
+{
+  "scope": "source edits and RTL simulation only; no PDS, routing or download",
+  "status": [
+    0,
+    0,
+    1280,
+    48
+  ],
+  "viewport": [
+    0,
+    48,
+    1280,
+    672
+  ],
+  "camera_source": [
+    0,
+    0,
+    1280,
+    720
+  ],
+  "source_row": "floor((screen_y-48)*719/671)",
+  "tests": [
+    "BBOX_OSD_RTL_PASS slow inference hold + empty timeout + no empty refresh + valid recovery + guide disabled + replacement",
+    "TEST_PASS yolo_result_commit accepted/staged/busy/empty + first valid + raw class + mapping",
+    "TEST_PASS four_bin_colors schema=0 all256 IDs, four bin/color pairs, no text, invalid IDs rejected without truncation",
+    "TEST_PASS four_bin_colors schema=1 all256 IDs, four bin/color pairs, no text, invalid IDs rejected without truncation",
+    "TEST_PASS light_panel compact header + all dynamic status sprites + ROM bounds",
+    "TEST_PASS status_viewport two complete frames 1843200 pixels, 1344 DDR rows, source0..719, full FOV, OSD alignment, variable DDR latency, status isolation, RGB/sync"
+  ],
+  "preview": "docs\\verification\\assets\\trash-status48-rtl.png",
+  "preview_kind": "real RTL render of artificial camera fixture; manually injected box, not model inference",
+  "sources": {
+    "project\\trash_sorting\\source\\yolo\\sources\\048_camera_snapshot.v": "dd71374dcd32b9896be71e38b9d2f460955df4439ae7a359eb36d1f4443480a7",
+    "project\\trash_sorting\\source\\yolo\\sources\\049_video_ai_frontend.v": "03d68769348ee434678df99d170eb5b3cc0f3ebbe17d79ca43f3fadd3fa8ac28",
+    "project\\trash_sorting\\source\\yolo\\sources\\055_fram_buf.v": "70b2ae95e0ee85ceb0cb22bdb34b41ab696b423fa1bdad2f2f349ea26a463799",
+    "project\\trash_sorting\\source\\yolo\\sources\\062_rd_buf.v": "bde6a6555afadba4d71aa5323c3cc728559ff64d65b66e88ca9c16708a770249",
+    "project\\trash_sorting\\source\\yolo\\sources\\065_sync_vg.v": "d2c7348e1cb418261f4365d3461cda2768d5b0922dc2a0f6db50a21cf465fb77",
+    "project\\trash_sorting\\source\\yolo\\portable\\052_yolo_camera_top.v": "b58a0ac91fc4182bed2ee7cb2d083f7134d911700eeea4c62c9b25ee49f599e9",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\rtl\\yolo_class_to_bin.v": "9074aa37e3dafc50b985920b16c6396fedf772d9dfc2cb956091adcaec1ed271",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\rtl\\ui_light_panel.sv": "07888505124e87fc90562c0334d3efca91b4ce8d39e3e44d0524e7491bdd353f",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\rtl\\light_split_video.sv": "0abf676eb58dad7ab1fb78c83e3b29df7be65876cb91cd753c2947397ed6cb81",
+    "project\\trash_sorting\\source\\yolo\\tb\\tb_bbox_osd.v": "b87ace1da5c4ef18456e1e5c9d34afe00ffcb2468a3c8ee3f3145299e9be2727",
+    "project\\trash_sorting\\source\\yolo\\tb\\tb_yolo_result_commit.v": "cef0526984ff435acea783ff98fa9e271f53ed90192006866ce04205030ff79a",
+    "project\\trash_sorting\\source\\yolo\\tb\\tb_four_bin_colors.sv": "ce96be7ea5e23c15426c00537c2403acb321e99a8726cae4e025e2887467baec",
+    "project\\trash_sorting\\source\\yolo\\tb\\tb_status_viewport.sv": "c0e2f41eb7f3abdb4d1dd85f71158952b0fb5a7855c6b683e7f1289f20f77cd1",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\tests\\light_panel_tb.sv": "33c7ee1d9ea251aaadc3c06889de8b5ba5f675185d47e3ddfa705d78f71d9b18",
+    "project\\trash_sorting\\tools\\test_four_bin_display.py": "a9aa94db0910ae38e147e0c52f867c90aa91b0e3cab533e9d7354de0a1edb5bd",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\tools\\light_ui_assets.py": "1a7901b49142c708a8b41b52e8930bffbd684f721d91da6836268668ed82cf7c",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\assets\\ui_light_bg.hex": "b592ab7db5f70848ab149f02ca9684ad138b6d69ddae1b8d028dbc1d4c312b7c",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\assets\\ui_light_palette.hex": "26f484dac4f5ebc785c0da53514acb5985cfca48e44895e8454dfc6698b24aa1",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\assets\\ui_light_status.hex": "8e8ffa60f2921f9c6f410cb629a9e1a1f3b797f4597963a84cdf30a248fda0b9",
+    "project\\trash_sorting\\source\\extensions\\business\\application\\assets\\ui_light_layout.json": "eb40de1c1ec1c800cc4aa2266445840d623a7362f102dca38505c0702cafe7f0"
+  },
+  "unchanged_release_sha256": "25f22997ed94facc95b58f1759fc0fbe60b3ac5a8b9335871b203078d71b4fbb",
+  "firmware_sha256": "5a97f667e2cacd852c57c9c9ba3f3eb9e041a9a9bffff86ed7960db5b6e01b1b",
+  "trained_candidate_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0"
+}

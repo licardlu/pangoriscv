@@ -1,5 +1,15 @@
+# Handoff SHA manifests bind exact bytes on every platform, including line endings.
+* -text
 # Imported release manifests bind exact bytes, including line endings.
 project/cpu120/** -text
 extensions/yolo/** -text
 extensions/ui_reference/** -text
 evidence/records/optimization/yolo120/** -text
+
+# Preserve byte identities of deployed firmware, model and implementation evidence.
+project/trash_sorting/source/** -text
+project/trash_sorting/releases/** -text
+project/trash_sorting/diagnostics/** -text
+project/trash_sorting/bitstream/** -text
+project/trash_sorting/training/candidates/** -text
+evidence/** -text

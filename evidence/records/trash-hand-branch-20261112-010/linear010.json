@@ -1,0 +1,164 @@
+{
+  "status": "OFFLINE_FLOAT_EVALUATED",
+  "base_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0",
+  "hand_sha256": "59a1587f1035ba63955819883821da1dd4a053b3f501f1e6682e64a3e3b1708f",
+  "frozen_state_tensors": 342,
+  "changed_frozen_tensors": [],
+  "parameter_and_bn_exact": true,
+  "unchanged_waste_forward_images": 140,
+  "policy_sha256": "471cece894c495b79280227fb6fd0604df5230d630a5fc92d1f1bfe0836af0d5",
+  "conf": 0.25,
+  "nms_iou": 0.45,
+  "max_detections_per_list": 32,
+  "extra_hand_head_macs": 3225600,
+  "hand_val": {
+    "images": 29,
+    "hand_seen_images": 28,
+    "selected_images": 14,
+    "TP": 28,
+    "FP": 1,
+    "GT": 29
+  },
+  "no_hand_val": {
+    "images": 31,
+    "hand_seen_images": 23,
+    "selected_images": 25,
+    "hand_false_detections": 23
+  },
+  "personal": {
+    "images": 80,
+    "hand_seen_images": 30,
+    "strict_correct": 37,
+    "accepted_correct": 62,
+    "largest_accepted_correct": 67,
+    "top_accepted_correct": 74,
+    "no_selection": 13
+  },
+  "personal_groups": {
+    "glass_latch_jar": {
+      "images": 5,
+      "hand_seen_images": 1,
+      "strict_correct": 5,
+      "accepted_correct": 5,
+      "largest_accepted_correct": 5,
+      "top_accepted_correct": 5,
+      "no_selection": 0
+    },
+    "glass_food_jar": {
+      "images": 6,
+      "hand_seen_images": 3,
+      "strict_correct": 5,
+      "accepted_correct": 5,
+      "largest_accepted_correct": 6,
+      "top_accepted_correct": 6,
+      "no_selection": 1
+    },
+    "plastic_food_box": {
+      "images": 7,
+      "hand_seen_images": 4,
+      "strict_correct": 5,
+      "accepted_correct": 5,
+      "largest_accepted_correct": 6,
+      "top_accepted_correct": 6,
+      "no_selection": 1
+    },
+    "glass_mug": {
+      "images": 3,
+      "hand_seen_images": 3,
+      "strict_correct": 3,
+      "accepted_correct": 3,
+      "largest_accepted_correct": 3,
+      "top_accepted_correct": 3,
+      "no_selection": 0
+    },
+    "cylindrical_batteries": {
+      "images": 9,
+      "hand_seen_images": 1,
+      "strict_correct": 4,
+      "accepted_correct": 4,
+      "largest_accepted_correct": 4,
+      "top_accepted_correct": 8,
+      "no_selection": 1
+    },
+    "cardboard_box": {
+      "images": 3,
+      "hand_seen_images": 1,
+      "strict_correct": 3,
+      "accepted_correct": 3,
+      "largest_accepted_correct": 3,
+      "top_accepted_correct": 3,
+      "no_selection": 0
+    },
+    "pear": {
+      "images": 7,
+      "hand_seen_images": 7,
+      "strict_correct": 3,
+      "accepted_correct": 3,
+      "largest_accepted_correct": 4,
+      "top_accepted_correct": 7,
+      "no_selection": 4
+    },
+    "composition_paper": {
+      "images": 4,
+      "hand_seen_images": 1,
+      "strict_correct": 4,
+      "accepted_correct": 4,
+      "largest_accepted_correct": 4,
+      "top_accepted_correct": 4,
+      "no_selection": 0
+    },
+    "white_medicine_bottle_a": {
+      "images": 7,
+      "hand_seen_images": 1,
+      "strict_correct": 0,
+      "accepted_correct": 7,
+      "largest_accepted_correct": 7,
+      "top_accepted_correct": 7,
+      "no_selection": 0
+    },
+    "white_medicine_bottle_b": {
+      "images": 6,
+      "hand_seen_images": 1,
+      "strict_correct": 0,
+      "accepted_correct": 5,
+      "largest_accepted_correct": 6,
+      "top_accepted_correct": 6,
+      "no_selection": 1
+    },
+    "brown_medicine_bottle": {
+      "images": 9,
+      "hand_seen_images": 3,
+      "strict_correct": 0,
+      "accepted_correct": 8,
+      "largest_accepted_correct": 9,
+      "top_accepted_correct": 9,
+      "no_selection": 1
+    },
+    "medicine_spray_bottle": {
+      "images": 5,
+      "hand_seen_images": 0,
+      "strict_correct": 0,
+      "accepted_correct": 5,
+      "largest_accepted_correct": 5,
+      "top_accepted_correct": 5,
+      "no_selection": 0
+    },
+    "used_tissues": {
+      "images": 9,
+      "hand_seen_images": 4,
+      "strict_correct": 5,
+      "accepted_correct": 5,
+      "largest_accepted_correct": 5,
+      "top_accepted_correct": 5,
+      "no_selection": 4
+    }
+  },
+  "limits": [
+    "CPU floating point, not Q15 or FPGA timing",
+    "Hand validation used for checkpoint selection",
+    "Personal 80 photos are repeated diagnostic images, not independent test",
+    "No held-object relation annotations; selected bucket is image-level only",
+    "False hand detections in personal images require visual review",
+    "Largest-box background mistakes remain the waste detector responsibility"
+  ]
+}

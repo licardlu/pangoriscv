@@ -3,7 +3,7 @@ module yolo_ai_client #(
     parameter PROGRAM_INIT_FILE="",DATA_INIT_FILE=""
 ) (
     input wire clk_sys,core_clk,rstn,ddr_rstn,uart_rxd,
-    output wire uart_txd,vid_wr_en,
+    output wire uart_txd,vid_wr_en,vid_rd_en,
     output wire [7:0] vid_wr_addr,vid_rd_addr,
     output wire [31:0] vid_wr_data,
     input wire [31:0] vid_rd_data,
@@ -73,7 +73,7 @@ module yolo_ai_client #(
         .m_wlast(acc_wlast),.m_wready(acc_wready),.m_bresp(acc_bresp),
         .m_bvalid(acc_bvalid),.m_bready(acc_bready),
         .vid_wr_en(vid_wr_en),.vid_wr_addr(vid_wr_addr),
-        .vid_wr_data(vid_wr_data),.vid_rd_addr(vid_rd_addr),
+        .vid_wr_data(vid_wr_data),.vid_rd_addr(vid_rd_addr),.vid_rd_en(vid_rd_en),
         .vid_rd_data(vid_rd_data),.dbg_st(acc_dbg_st),
         .dbg_anom(acc_dbg_anom),.dbg_snap(acc_dbg_snap));
 

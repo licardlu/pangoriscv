@@ -1,0 +1,96 @@
+{
+  "status": "VISUALLY_REVIEWED_TRAIN_EXCLUSIONS",
+  "scope": "Prepared public train only; no validation/test label changes",
+  "inventory_sha256": "bfda5d590b2658bbe2f105b716653d7bd92ff82c4475f3058a955617b4a73a03",
+  "reviewed_hazardous_training_images": 295,
+  "images": [
+    {
+      "review_id": 49,
+      "source": "codingbear",
+      "split": "train",
+      "group": 477,
+      "prepared_sha256": "1e1d2215dd8b52fcadf5c11a5619459c01dc64cc42129e3df32386edac78fb6f",
+      "prepared_image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_real_hand_game_20261112_024\\dataset\\images\\train\\codingbear_3dad36c65c9c06718460.jpg",
+      "original_image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\codingbear\\images\\train\\000598.jpg",
+      "original_labels": "2 0.49255952380952384 0.5052083333333333 0.1666666666666666 0.17410714285714288\n10 0.49367559523809523 0.5066964285714286 0.16443452380952372 0.16964285714285712\n",
+      "boxes": [
+        [
+          2,
+          0.49255952380952384,
+          0.5052083333333333,
+          0.16666666666666657,
+          0.17410714285714285
+        ],
+        [
+          3,
+          0.49367559523809523,
+          0.5066964285714286,
+          0.16443452380952372,
+          0.16964285714285715
+        ]
+      ],
+      "reason": "One visible flat yellow irregular object has nearly coincident battery (original2/red) and stone (original10/gray) annotations. No visually identifiable separate battery; exclude ambiguous image without inventing a replacement label."
+    },
+    {
+      "review_id": 70,
+      "source": "codingbear",
+      "split": "train",
+      "group": 1873,
+      "prepared_sha256": "5dffeac1a2da5f2df6e8c4e06d350770ff1df2de6f04c6df5e53137e15900937",
+      "prepared_image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_real_hand_game_20261112_024\\dataset\\images\\train\\codingbear_427d0a24b802ef55e845.jpg",
+      "original_image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\codingbear\\images\\val\\000579.jpg",
+      "original_labels": "2 0.4601934523809524 0.4732142857142857 0.19866071428571427 0.24553571428571425\n10 0.4579613095238096 0.46986607142857134 0.19270833333333343 0.2418154761904762\n",
+      "boxes": [
+        [
+          2,
+          0.4601934523809524,
+          0.4732142857142857,
+          0.1986607142857143,
+          0.2455357142857142
+        ],
+        [
+          3,
+          0.4579613095238096,
+          0.46986607142857134,
+          0.19270833333333337,
+          0.24181547619047616
+        ]
+      ],
+      "reason": "One visible flat yellow irregular object has nearly coincident battery (original2/red) and stone (original10/gray) annotations. No visually identifiable separate battery; exclude ambiguous image without inventing a replacement label."
+    },
+    {
+      "review_id": 226,
+      "source": "codingbear",
+      "split": "train",
+      "group": 1095,
+      "prepared_sha256": "3ac9304432049c4b2c63c21f3d781c7ac2c63380481e6abd8aa3246dcb7603bd",
+      "prepared_image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_real_hand_game_20261112_024\\dataset\\images\\train\\codingbear_0db2a752febd4ecded91.jpg",
+      "original_image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\codingbear\\images\\train\\001351.jpg",
+      "original_labels": "2 0.49293154761904756 0.5450148809523809 0.25223214285714285 0.24627976190476186\n10 0.4944196428571428 0.5427827380952381 0.2566964285714286 0.24032738095238093\n",
+      "boxes": [
+        [
+          2,
+          0.49293154761904756,
+          0.5450148809523809,
+          0.2522321428571428,
+          0.24627976190476186
+        ],
+        [
+          3,
+          0.4944196428571428,
+          0.5427827380952381,
+          0.2566964285714286,
+          0.24032738095238093
+        ]
+      ],
+      "reason": "One visible flat yellow irregular object has nearly coincident battery (original2/red) and stone (original10/gray) annotations. No visually identifiable separate battery; exclude ambiguous image without inventing a replacement label."
+    }
+  ],
+  "observations": [
+    "Reviewed seven contact sheets covering all 295 public hazardous training images and the nine enlarged examples in detail_01.jpg.",
+    "Review IDs 37/257/287 show yellow cylindrical batteries with visible end/logo; retain original hazardous labels.",
+    "Review IDs 69/98/194 show upright large cylindrical batteries; retain. Most reviewed batteries are on a small range of tray/table backgrounds.",
+    "Prepared train/val/test are frozen group assignments; original upstream folder names are not the prepared split.",
+    "No personal held-battery test images were inferred, relabeled, or used for this audit."
+  ]
+}

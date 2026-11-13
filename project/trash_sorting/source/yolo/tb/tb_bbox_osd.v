@@ -1,11 +1,12 @@
 `timescale 1ns/1ps
 module tb_bbox_osd;
+    wire quiz_hold=1'b0;
     reg cpu_clk=0,pix_clk=0,cam_clk=0;
     always #5 cpu_clk=~cpu_clk;
     always #7 pix_clk=~pix_clk;
     always #9 cam_clk=~cam_clk;
     reg cpu_rstn=0,pix_rstn=0,cam_rstn=0;
-    reg wr_en=0;
+    reg wr_en=0,rd_en=0;
     reg [7:0] wr_addr=0,rd_addr=0;
     reg [31:0] wr_data=0;
     wire [31:0] rd_data;
@@ -57,26 +58,26 @@ module tb_bbox_osd;
         wr(8'h84,0);wr(8'h88,{16'd100,16'd100});
         wr(8'h8c,{16'd199,16'd199});wr(8'h90,32'h80000000);wr(8'h94,1);
         repeat(5) @(negedge pix_clk);frame_start();
-        check_pixel(16'd100,16'd100,16'hfd20);
-        check_pixel(16'd199,16'd199,16'hfd20);
+        check_pixel(16'd100,16'd100,16'h07e0);
+        check_pixel(16'd199,16'd199,16'h07e0);
         check_pixel(16'd200,16'd100,pix_in);
         check_pixel(16'd480,16'd200,pix_in);
 
         // A slow inference has not reported an empty scene. Preserve the box
         // even when the gap between commits exceeds RESULT_TTL.
         repeat(12) empty_frame();
-        check_pixel(16'd100,16'd100,16'hfd20);
+        check_pixel(16'd100,16'd100,16'h07e0);
 
         // The first empty commit starts a timeout, without erasing the box.
         wr(8'h90,32'h0);wr(8'h94,1);
         repeat(5) @(negedge pix_clk);frame_start();
         repeat(4) empty_frame();
-        check_pixel(16'd100,16'd100,16'hfd20);
+        check_pixel(16'd100,16'd100,16'h07e0);
         check_pixel(16'd480,16'd200,pix_in);
         // A repeated empty commit advances, rather than resetting, the timer.
         wr(8'h94,1);
         repeat(5) @(negedge pix_clk);frame_start();
-        check_pixel(16'd100,16'd100,16'hfd20);
+        check_pixel(16'd100,16'd100,16'h07e0);
         // The sixth frame after the first empty result clears it completely.
         // The board wrapper selects 120 frames at 60 Hz for two seconds.
         empty_frame();
@@ -96,11 +97,11 @@ module tb_bbox_osd;
         wr(8'h90,32'h0);wr(8'h94,1);
         repeat(5) @(negedge pix_clk);frame_start();
         repeat(3) empty_frame();
-        check_pixel(16'd100,16'd100,16'hfd20);
+        check_pixel(16'd100,16'd100,16'h07e0);
         wr(8'h90,32'h80000000);wr(8'h94,1);
         repeat(5) @(negedge pix_clk);frame_start();
         repeat(12) empty_frame();
-        check_pixel(16'd100,16'd100,16'hfd20);
+        check_pixel(16'd100,16'd100,16'h07e0);
         // A replacement result atomically moves the box and changes its color.
         wr(8'h88,{16'd110,16'd150});wr(8'h8c,{16'd209,16'd249});
         wr(8'h90,32'h80000003);wr(8'h94,1);

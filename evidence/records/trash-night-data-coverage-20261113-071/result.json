@@ -1,0 +1,134 @@
+{
+  "status": "TRAIN_VAL_COVERAGE_AUDIT_NO_INFERENCE",
+  "manifest_sha256": "ac9cbdf121450342a95f61030c0745932ecabfd6e8ef9895c680b2a490470b2f",
+  "all_rows": 6425,
+  "splits": {
+    "train": {
+      "images": 3215,
+      "source_images": {
+        "sumn2u": 947,
+        "codingbear": 841,
+        "hagrid_hand_localisation": 588,
+        "reviewed_hand_context": 297,
+        "personal_handheld": 542
+      },
+      "boxes_by_class": {
+        "1": 1122,
+        "0": 982,
+        "3": 910,
+        "2": 293,
+        "4": 1628
+      },
+      "joint_waste_and_hand_images": 523
+    },
+    "val": {
+      "images": 1608,
+      "source_images": {
+        "sumn2u": 1221,
+        "codingbear": 287,
+        "hagrid_hand_localisation": 29,
+        "reviewed_hand_context": 21,
+        "personal_handheld": 50
+      },
+      "boxes_by_class": {
+        "1": 1755,
+        "0": 325,
+        "3": 257,
+        "2": 45,
+        "4": 107
+      },
+      "joint_waste_and_hand_images": 50
+    },
+    "test": {
+      "images": 1602,
+      "source_images": {
+        "sumn2u": 1232,
+        "codingbear": 340,
+        "hagrid_hand_localisation": 21,
+        "personal_handheld": 9
+      },
+      "boxes_by_class": {
+        "1": 1841,
+        "3": 216,
+        "0": 351,
+        "2": 58,
+        "4": 30
+      },
+      "joint_waste_and_hand_images": 9
+    }
+  },
+  "personal_unique": {
+    "train": {
+      "personal_plastic_food_box": {
+        "unique_images": 21,
+        "object_to_mean_hand_area_median": 1.2881355932203389,
+        "object_short_side_at_320_median_px": 175.2
+      },
+      "personal_metal_thermos": {
+        "unique_images": 6,
+        "object_to_mean_hand_area_median": 1.4920142337922109,
+        "object_short_side_at_320_median_px": 125.45454545454544
+      },
+      "personal_tissue_outer_container": {
+        "unique_images": 9,
+        "object_to_mean_hand_area_median": 2.2929527207850136,
+        "object_short_side_at_320_median_px": 190.90909090909093
+      },
+      "personal_used_tissue": {
+        "unique_images": 34,
+        "object_to_mean_hand_area_median": 0.571374703727645,
+        "object_short_side_at_320_median_px": 136.79999999999998
+      },
+      "personal_glass_latch_jar": {
+        "unique_images": 31,
+        "object_to_mean_hand_area_median": 1.2307017543859653,
+        "object_short_side_at_320_median_px": 163.2
+      },
+      "personal_spiral_notebook": {
+        "unique_images": 12,
+        "object_to_mean_hand_area_median": 2.998141359167593,
+        "object_short_side_at_320_median_px": 176.16161616161617
+      },
+      "personal_pear": {
+        "unique_images": 26,
+        "object_to_mean_hand_area_median": 0.35513034364666984,
+        "object_short_side_at_320_median_px": 102.79999999999998
+      },
+      "personal_empty_hand": {
+        "unique_images": 23,
+        "object_to_mean_hand_area_median": null,
+        "object_short_side_at_320_median_px": null
+      }
+    },
+    "val": {
+      "personal_glass_food_jar": {
+        "unique_images": 13,
+        "object_to_mean_hand_area_median": 0.883803466076696,
+        "object_short_side_at_320_median_px": 153.6
+      },
+      "personal_cardboard_box": {
+        "unique_images": 26,
+        "object_to_mean_hand_area_median": 3.758041464463702,
+        "object_short_side_at_320_median_px": 222.0
+      },
+      "personal_banana_peel": {
+        "unique_images": 11,
+        "object_to_mean_hand_area_median": 1.7860465116279063,
+        "object_short_side_at_320_median_px": 127.2
+      }
+    },
+    "test": {
+      "personal_cylindrical_battery": {
+        "unique_images": 9,
+        "object_to_mean_hand_area_median": 0.07646474677259182,
+        "object_short_side_at_320_median_px": 29.696969696969717
+      }
+    }
+  },
+  "limits": [
+    "Dataset coverage audit, not performance measurement",
+    "Repeated training exposures counted separately in splits; personal_unique deduplicated by original SHA",
+    "New red-bucket battery physical group is withheld, not new personal training evidence",
+    "Personal held validation contains green/blue groups only; does not validate held red/gray generalization"
+  ]
+}

@@ -60,7 +60,8 @@ def transact(port,command,address=0,payload=b""):
     return parse_reply(header+body)
 
 
-def parse_detections(raw):
+def parse_detections(raw,names=None):
+    names=NAMES if names is None else names
     if len(raw)<4:
         raise ValueError("Malformed detection payload")
     count=struct.unpack_from("<I",raw)[0]
@@ -69,12 +70,12 @@ def parse_detections(raw):
     results=[]
     for i in range(count):
         x1,y1,x2,y2,score,category=struct.unpack_from("<5fI",raw,4+i*24)
-        if category>=len(NAMES):
+        if category>=len(names):
             raise ValueError(f"Invalid detection category {category}")
         if (not all(math.isfinite(v) for v in (x1,y1,x2,y2,score)) or
             not 0<=score<=1 or x2<x1 or y2<y1):
             raise ValueError("Invalid detection coordinates or score")
-        results.append(dict(category=NAMES[category],score=score,box=[x1,y1,x2,y2]))
+        results.append(dict(category=names[category],score=score,box=[x1,y1,x2,y2]))
     return results
 
 

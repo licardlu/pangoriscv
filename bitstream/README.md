@@ -1,6 +1,6 @@
 # 位流目录
 
-本目录只有一份 CPU 位流，**没有**完整视觉应用的位流（那个在 `project/trash_sorting/prebuilt/full_v3_27mhz/`）。
+本目录只有一份 CPU 位流。最新完整视觉应用在 [`project/trash_sorting/bitstream/full_54mhz_20261113/`](../project/trash_sorting/bitstream/full_54mhz_20261113/README.md)，已实际SRAM下载，含配套四桶模型。`prebuilt/full_v3_27mhz/`为历史版本，不是当前交付。
 
 | 文件 | 说明 |
 | --- | --- |

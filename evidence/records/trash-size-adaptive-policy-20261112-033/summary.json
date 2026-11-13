@@ -1,0 +1,101 @@
+{
+  "status": "CODE_AND_OFFLINE_VALIDATED_NOT_DEPLOYED",
+  "policy": "hand_size_adaptive_contact_v2",
+  "policy_sha256": "d7e366e0a49b2bacae80fff42e3c56ddea67e727ae34873fd044c7835c53d799",
+  "scale": "Arithmetic mean of clipped valid hand areas within the same frame",
+  "small": "Object area <= mean: contact + center in expanded hand ROI + >=75% of object in ROI",
+  "large": "Object area > mean: contact without ROI containment; submit full original detected box",
+  "missing_hand": "Maximum valid clipped object area; confidence breaks equal areas only",
+  "float024": {
+    "reviewed_hand": {
+      "images": 29,
+      "selected": 0,
+      "hand_seen_images": 29,
+      "empty_hand_false_selection": 0
+    },
+    "reviewed_hand_negative": {
+      "images": 31,
+      "selected": 31,
+      "hand_seen_images": 0
+    },
+    "reviewed_hand_context": {
+      "images": 21,
+      "selected": 0,
+      "hand_seen_images": 21
+    },
+    "personal_handheld": {
+      "images": 15,
+      "selected": 11,
+      "hand_seen_images": 11,
+      "subject_and_bucket_correct": 11,
+      "no_hand_fallback_images": 4,
+      "no_hand_fallback_subject_and_bucket_correct": 4,
+      "oracle_hand_subject_and_bucket_correct": 12,
+      "reference_subject_and_bucket_correct": 11,
+      "reference_oracle_subject_and_bucket_correct": 12,
+      "hand_present_images": 11,
+      "hand_present_subject_and_bucket_correct": 7
+    },
+    "personal": {
+      "images": 80,
+      "selected": 80,
+      "hand_seen_images": 0,
+      "accepted_bucket_correct": 66
+    }
+  },
+  "q15_027": {
+    "reviewed_hand": {
+      "images": 29,
+      "hand_seen_images": 29,
+      "selected_images": 0,
+      "TP": 29,
+      "FP": 2,
+      "GT": 29,
+      "empty_hand_false_selection": 0
+    },
+    "reviewed_hand_negative": {
+      "images": 31,
+      "hand_seen_images": 0,
+      "selected_images": 31,
+      "TP": 0,
+      "FP": 0,
+      "GT": 0
+    },
+    "reviewed_hand_context": {
+      "images": 21,
+      "hand_seen_images": 21,
+      "selected_images": 0,
+      "TP": 17,
+      "FP": 8,
+      "GT": 28
+    },
+    "personal_handheld": {
+      "images": 15,
+      "hand_seen_images": 9,
+      "selected_images": 10,
+      "TP": 7,
+      "FP": 2,
+      "GT": 15,
+      "subject_and_bucket_correct": 9,
+      "no_hand_fallback_images": 6,
+      "no_hand_fallback_subject_and_bucket_correct": 4,
+      "base_subject_detected_iou050": 10,
+      "hand_present_images": 9,
+      "hand_present_subject_and_bucket_correct": 5
+    }
+  },
+  "model_accuracy_improvement_claimed": false,
+  "training_evaluation_unit_tests": 13,
+  "build_gate_unit_tests": 14,
+  "directed_C_test_pass": true,
+  "initial_firmware_note": "First033 compile had stale v1 manifest policy label;002 compiles correct metadata, binary unchanged. First replay used historical ROI field names;002 names reference policy correctly.",
+  "new_model_test_inference_used": false,
+  "pds_started": false,
+  "board_programmed": false,
+  "limits": [
+    "Same-frame box area is a scale heuristic, not a physical hand/object size measurement",
+    "Contact and ROI do not prove grasping, and cannot recover an undetected object",
+    "Held validation15 contains only blue-bin glass jar and cardboard box; not four-bin field accuracy",
+    "Current027 numerical predictions already passed arithmetic checks; replay does not rerun FPGA or establish timing"
+  ]
+}

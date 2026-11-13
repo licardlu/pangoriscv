@@ -15,7 +15,7 @@ module trash_peripherals_tb;
     always @(open_state) if(open_state!=0)opened_at=$time;
     // Active configuration: camera answers 1 green,2 red,3 gray,4 blue.
     trash_peripherals #(.CLK_HZ(10000),.DEBOUNCE_MS(2),.OPEN_MS(5000),
-        .TEST_MODE(0),.SERVO_REVERSED_MASK(4'b0000)) dut(.*);
+        .TEST_MODE(0),.SERVO_REVERSED_MASK(4'b1111)) dut(.*);
     always @(negedge clk) if(voice_valid) begin
         voice_count=voice_count+1;last_asset=voice_asset_id;
     end
@@ -32,8 +32,8 @@ module trash_peripherals_tb;
             for(monitor_channel=0;monitor_channel<4;monitor_channel=monitor_channel+1) begin
                 if(servo_pwm[monitor_channel])pulse_count[monitor_channel]=pulse_count[monitor_channel]+1;
                 else if(pulse_count[monitor_channel]!=0) begin
-                    if(pulse_count[monitor_channel]!=
-                        ((open_state[monitor_channel]^((4'b0000>>monitor_channel)&1))?15:5))
+                    if((!open_state[monitor_channel] && pulse_count[monitor_channel]!=15) ||
+                        pulse_count[monitor_channel]<5 || pulse_count[monitor_channel]>15)
                         $fatal(1,"Wrong pulse width channel=%0d open=%b cycles=%0d",
                             monitor_channel,open_state[monitor_channel],pulse_count[monitor_channel]);
                     pulse_count[monitor_channel]=0;
@@ -50,7 +50,7 @@ module trash_peripherals_tb;
                 for(ch=0;ch<4;ch=ch+1)if(servo_pwm[ch])high_count[ch]=high_count[ch]+1;
             end
             for(ch=0;ch<4;ch=ch+1)
-                if(high_count[ch]!=((((expected_open>>ch)&1)^((4'b0000>>ch)&1))?15:5))
+                if(high_count[ch]!=((((expected_open>>ch)&1)^((4'b1111>>ch)&1))?15:5))
                     $fatal(1,"Frame pulse channel=%0d count=%0d",ch,high_count[ch]);
         end
     endtask
@@ -90,9 +90,10 @@ module trash_peripherals_tb;
                 @(negedge clk);bin_code=(answer==4)?1:4;detect_event=1;
                 @(negedge clk);detect_event=0;
                 if(snapshot[105:104]!=(answer-1))$fatal(1,"Camera changed latched answer");
+                repeat(10200)@(negedge clk); // 51 frames: opening has reached 90 degrees
                 measure_frame(1<<(answer-1));
                 wait(open_state==0);
-                if($time-opened_at!=500000)$fatal(1,"Lid did not hold for exactly five seconds");
+                if($time-opened_at!=700000)$fatal(1,"Opening + hold + closing did not last seven seconds");
                 repeat(400)@(negedge clk);
                 if(voice_count!=baseline+2 || snapshot[2:0]!=0)
                     $fatal(1,"Mode0 must wait for next detection after closing");
@@ -100,8 +101,8 @@ module trash_peripherals_tb;
                 key_n[choice-1]=1;repeat(30)@(negedge clk);target=-1;
             end
         end
-        $display("TEST_PASS trash_peripherals camera mode0 all16 answer/key pairs, green/red/gray/blue, closed0.5ms/open1.5ms, 50Hz, exact5s close, locked answer, no stale re-prompt, debounce/hold/UI/audio events");
+        $display("TEST_PASS trash_peripherals camera mode0 all16 answer/key pairs, green/red/gray/blue, physical mask1111 ALL4 closed1.5ms/open0.5ms, 50Hz, 1s open + 5s hold + 1s close, locked answer, no stale re-prompt, debounce/hold/UI/audio events");
         $finish;
     end
-    initial begin #12000000;$fatal(1,"peripherals timeout");end
+    initial begin #20000000;$fatal(1,"peripherals timeout");end
 endmodule

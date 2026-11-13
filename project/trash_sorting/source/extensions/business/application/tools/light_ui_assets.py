@@ -1,4 +1,4 @@
-"""Compact 1280x112 header at 2x; lower 1280x608 belongs to live video."""
+"""Dedicated 1280x48 status strip; full source view samples into 1280x672."""
 from pathlib import Path
 import json
 from PIL import Image, ImageDraw, ImageFont
@@ -8,22 +8,24 @@ OUT = ROOT / 'assets'
 FONT = 'C:/Windows/Fonts/msyh.ttc'
 COLORS = ['f4f8f6', 'ffffff', '17483f', '52756b', '158263', 'e4f1eb',
           'd0e4da', 'edf3f3', '397eb5', 'e8f2fb', 'dc6979', 'fceef0',
-          'c99a35', 'fff4d8', '8ba49b', 'bfd3ca']
+          '0000ff', 'e02020', '848284', '008547']
 PALETTE = ['#' + value for value in COLORS]
 LAYOUT = {
-    'screen': [1280, 720], 'header': [0, 0, 1280, 112],
-    'camera': [0, 112, 1280, 608], 'camera_source': [0, 112, 1280, 608],
-    'title': [32, 20], 'tagline': [32, 66],
-    'status_card': [640, 20, 608, 72], 'status_text': [660, 56, 556, 24],
-    'background_rom': {'width': 640, 'height': 56, 'words': 4480},
+    'screen': [1280, 720], 'header': [0, 0, 1280, 48],
+    'camera': [0, 48, 1280, 672], 'camera_source': [0, 0, 1280, 720],
+    'source_row': 'floor((screen_y-48)*719/671)',
+    'title': [16, 14],
+    'status_card': [216, 6, 588, 36], 'status_text': [232, 12, 556, 24],
+    'key_legend': [832, 14],
+    'background_rom': {'width': 640, 'height': 24, 'words': 1920},
     'status_rom': {'width': 360, 'row_height': 12, 'states': 9,
                    'text_area': [0, 0, 278, 12], 'words_per_state': 540},
 }
-STATUS = ['等待放入一件垃圾', '请按键：1绿厨余 2红有害 3灰其他 4蓝回收',
+STATUS = ['等待放入一件垃圾', '已识别，请按答案键（1—4）',
           '请根据识别结果投放垃圾', '请移走垃圾，开始下一轮',
           '音乐准备中，请稍候', '正在通过外接音箱播放',
-          '设备异常，请检查设备', '回答正确，桶盖已打开',
-          '回答错误，请再接再厉']
+          '设备异常，请检查设备', '回答正确，请投放后等待关盖',
+          '回答错误，仍打开正确的垃圾桶']
 
 def font(size):
     return ImageFont.truetype(FONT, size)
@@ -55,12 +57,13 @@ def emit(image, path):
 
 def main():
     OUT.mkdir(exist_ok=True)
-    image = Image.new('RGB', (640, 56), PALETTE[0])
+    image = Image.new('RGB', (640, 24), PALETTE[0])
     draw = ImageDraw.Draw(image)
-    text(draw, 32, 20, '青禾 · 垃圾分类', 32)
-    text(draw, 32, 66, '看见绿色，让每一次选择都有意义', 18, 3)
-    rect(draw, LAYOUT['status_card'], 5)
-    text(draw, 660, 30, '当前状态', 16, 3)
+    text(draw, 16, 14, '青禾 · 垃圾分类', 22)
+    rect(draw, LAYOUT['status_card'], 5, radius=8)
+    for x, value, color in [(832, '1 厨余', 15), (944, '2 有害', 13),
+                            (1056, '3 其他', 14), (1168, '4 回收', 12)]:
+        text(draw, x, 14, value, 20, color)
     emit(image, OUT / 'ui_light_bg.hex')
     (OUT / 'ui_light_palette.hex').write_text('\n'.join(COLORS) + '\n', encoding='ascii')
     sprites = Image.new('RGB', (360, 12 * len(STATUS)), PALETTE[5])
@@ -73,13 +76,13 @@ def main():
                 fill=PALETTE[10 if i == 6 else 4])
     emit(sprites, OUT / 'ui_light_status.hex')
     preview = Image.new('RGB', (1280, 720), PALETTE[7])
-    preview.paste(indexed(image).convert('RGB').resize((1280, 112), Image.Resampling.NEAREST), (0, 0))
+    preview.paste(indexed(image).convert('RGB').resize((1280, 48), Image.Resampling.NEAREST), (0, 0))
     prompt = indexed(sprites).convert('RGB').crop((0, 12, 278, 24))
-    preview.paste(prompt.resize((556, 24), Image.Resampling.NEAREST), (660, 56))
+    preview.paste(prompt.resize((556, 24), Image.Resampling.NEAREST), (232, 12))
     preview.save(OUT / 'ui_light_preview.png')
-    preview.crop((0, 0, 1280, 112)).save(OUT / 'ui_light_header.png')
+    preview.crop((0, 0, 1280, 48)).save(OUT / 'ui_light_header.png')
     (OUT / 'ui_light_layout.json').write_text(json.dumps(LAYOUT, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('LIGHT_UI_ASSETS_PASS header=1280x112 camera=1280x608 ROM=640x56x4bpp')
+    print('LIGHT_UI_ASSETS_PASS status=1280x48 viewport=1280x672 source=1280x720 ROM=640x24x4bpp')
 
 if __name__ == '__main__':
     main()

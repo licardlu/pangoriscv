@@ -2,7 +2,7 @@
 // Keys/bin codes: 1 green, 2 red, 3 gray, 4 blue.
 // TEST_MODE=1: fixed correct answer is key 1 / green. Every answer opens the
 // correct green lid, with correct/wrong audio selected by the answer key.
-// When that servo actually closes after five seconds, prompt again.
+// Prompt again only after the opening, five-second hold AND closing finish.
 // TEST_MODE=0: camera bin 1..4 supplies the correct answer for each session.
 module trash_quiz_controller #(
     parameter integer TEST_MODE = 0

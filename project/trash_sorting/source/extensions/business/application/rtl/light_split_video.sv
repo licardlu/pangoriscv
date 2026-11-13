@@ -1,9 +1,9 @@
-// 1280x720: compact header above a full-width native live-video viewport.
-// Source x=0..1279,y=HEADER_HEIGHT..719 passes through with its YOLO OSD.
-// Header covers the first source rows; no scaling or frame RAM is required.
+// 1280x720: independent status strip above a full-width video viewport.
+// The upstream DDR reader samples the full source height into the video rows;
+// no camera pixels are read beneath the dedicated status region.
 // HS/VS/DE, selection and both RGB paths have two clocks of latency.
 module light_split_video #(
-    parameter integer HEADER_HEIGHT = 112,
+    parameter integer HEADER_HEIGHT = 48,
     parameter BG = "ui_light_bg.hex",
     parameter PAL = "ui_light_palette.hex",
     parameter STATUS = "ui_light_status.hex"

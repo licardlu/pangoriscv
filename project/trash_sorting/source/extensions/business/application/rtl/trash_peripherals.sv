@@ -4,7 +4,8 @@ module trash_peripherals #(
     parameter integer DEBOUNCE_MS=20,
     parameter integer OPEN_MS=5000,
     parameter integer TEST_MODE=0,
-    parameter logic [3:0] SERVO_REVERSED_MASK=4'b0000
+    parameter logic [3:0] SERVO_REVERSED_MASK=4'b0000,
+    parameter integer SERVO_MOVE_FRAMES=50
 )(
     input wire clk,rst,start_ready,
     input wire [3:0] key_n,
@@ -24,6 +25,6 @@ module trash_peripherals #(
         .bin_valid(bin_valid),.bin_code(bin_code),.servo_trigger(servo_trigger),
         .voice_valid(voice_valid),.voice_asset_id(voice_asset_id),.snapshot(snapshot));
     servo_pwm4 #(.CLK_HZ(CLK_HZ),.OPEN_FRAMES((OPEN_MS*50+999)/1000),
-        .REVERSED_MASK(SERVO_REVERSED_MASK)) servos(
+        .REVERSED_MASK(SERVO_REVERSED_MASK),.MOVE_FRAMES(SERVO_MOVE_FRAMES)) servos(
         .clk(clk),.rst(rst),.trigger(servo_trigger),.pwm(servo_pwm),.open_state(open_state));
 endmodule

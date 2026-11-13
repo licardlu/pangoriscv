@@ -1,0 +1,88 @@
+{
+  "accepted_baseline": {
+    "frames": 10,
+    "mean_seconds": 3.7976560296294783,
+    "median_seconds": 3.797000000005937,
+    "minimum_seconds": 3.7875602962962964,
+    "maximum_seconds": 3.812999999994645,
+    "fps": 0.2633203197440622,
+    "stages_mean_seconds": {
+      "capture": 0.4608423777777778,
+      "forward": 3.267489425925926,
+      "decode": 0.06115664444444444,
+      "display": 1.1355555555555556e-05
+    },
+    "operators_by_kind_mean_seconds": {
+      "YOLO_CONV": 1.012913011111111,
+      "YOLO_ADD": 0.5659068037037037,
+      "YOLO_CONCAT": 0.8315869222222222,
+      "YOLO_POOL": 0.21804312962962963,
+      "YOLO_UPSAMPLE": 0.0731175925925926,
+      "YOLO_HEAD": 0.5657632333333333
+    }
+  },
+  "candidate_legacy": {
+    "frames": 10,
+    "mean_seconds": 3.8393943111191904,
+    "median_seconds": 3.8375225185244557,
+    "minimum_seconds": 3.8280000000086147,
+    "maximum_seconds": 3.8590000000112923,
+    "fps": 0.2604577490527401,
+    "stages_mean_seconds": {
+      "capture": 0.4743930444444444,
+      "forward": 3.2956575444444445,
+      "decode": 0.06400473333333334,
+      "display": 1.17e-05
+    },
+    "operators_by_kind_mean_seconds": {
+      "YOLO_CONV": 1.0131284333333335,
+      "YOLO_ADD": 0.5756261259259259,
+      "YOLO_CONCAT": 0.8382020185185186,
+      "YOLO_POOL": 0.21695285925925925,
+      "YOLO_UPSAMPLE": 0.07329025925925926,
+      "YOLO_HEAD": 0.5782969851851851
+    }
+  },
+  "candidate_stream": {
+    "frames": 10,
+    "mean_seconds": 3.726462351852329,
+    "median_seconds": 3.7295982592576293,
+    "minimum_seconds": 3.712427,
+    "maximum_seconds": 3.735000000000582,
+    "fps": 0.26835102721564474,
+    "stages_mean_seconds": {
+      "capture": 0.3594640259259259,
+      "forward": 3.2968755666666665,
+      "decode": 0.06479311851851852,
+      "display": 1.1685185185185185e-05
+    },
+    "operators_by_kind_mean_seconds": {
+      "YOLO_CONV": 1.0131443777777778,
+      "YOLO_ADD": 0.5767431370370371,
+      "YOLO_CONCAT": 0.8388373518518519,
+      "YOLO_POOL": 0.21717304814814814,
+      "YOLO_UPSAMPLE": 0.0732800962962963,
+      "YOLO_HEAD": 0.5775368111111111
+    }
+  },
+  "same_bitstream_delay_reduction_percent": 2.941400390676241,
+  "same_bitstream_speedup": 1.0303054072747375,
+  "versus_accepted_release_delay_reduction_percent": 1.8746741996034655,
+  "input_equivalence": {
+    "legacy_crc32": "0x6cf726b2",
+    "stream_crc32": "0x6cf726b2",
+    "passed": true,
+    "legacy_preprocessing_seconds": 0.4280585925925926,
+    "stream_preprocessing_seconds": 0.311083,
+    "scope": "same immutable snapshot, all 819200 bytes including letterbox and channel padding"
+  },
+  "autonomous_stream_verified": true,
+  "candidate_bitstream_sha256": "3283acacba0097054f046475fae4dc3876215d720619b868b5a63a70954facc4",
+  "accepted_bitstream_sha256": "dbe3c1e879c2ccf08a8d8d4dd5c295226302186212ad2da0296be67d127091cb",
+  "physical_candidate_verified": true,
+  "model_sha256": "895909cff31974f11e0a6639f7f6a7cdcce55aacc3a673196fb0d1d9c85cb18a",
+  "conditions": "Sequential warmup+10 measured camera frames/mode, same candidate bitstream flags63; live scenes not locked; no statistical confidence interval; input equivalence separately checked on same frozen camera snapshot",
+  "frozen_snapshot_preprocessing_reduction_percent": 27.327004904659123,
+  "physical_user_reply": "正常",
+  "release_promoted": true
+}

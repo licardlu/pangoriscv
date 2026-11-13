@@ -1,0 +1,1599 @@
+train: weights=D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\training\candidates\four_bins_20261111\four_bins_yolov5n_320.pt, cfg=, data=D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\data.yaml, hyp=D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081\training_hyp.yaml, epochs=3, batch_size=16, imgsz=320, rect=False, resume=False, nosave=False, noval=False, noautoanchor=True, noplots=False, evolve=None, bucket=, cache=ram, image_weights=False, device=cpu, multi_scale=False, single_cls=False, optimizer=AdamW, sync_bn=False, workers=0, project=D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs, name=subject_four_081, exist_ok=True, quad=False, cos_lr=True, label_smoothing=0.0, patience=8, freeze=[10], save_period=5, seed=20261111, local_rank=-1, entity=None, upload_dataset=False, bbox_interval=-1, artifact_alias=latest, freeze_bn=True, preserve_teacher=True
+YOLOv5  2026-11-11 Python-3.9.23 torch-1.12.0+cpu CPU
+
+hyperparameters: anchor_t=4.0, box=0.05, cls=0.5, cls_pw=1.0, copy_paste=0.0, degrees=8.0, fl_gamma=0.0, fliplr=0.5, flipud=0.0, hsv_h=0.015, hsv_s=0.4, hsv_v=0.3, iou_t=0.2, lr0=0.0002, lrf=0.1, mixup=0.0, momentum=0.937, mosaic=0.5, obj=1.0, obj_pw=1.0, perspective=0.0, scale=0.35, shear=0.0, translate=0.1, warmup_bias_lr=0.01, warmup_epochs=1.0, warmup_momentum=0.8, weight_decay=0.0005
+ClearML: run 'pip install clearml' to automatically track, visualize and remotely train YOLOv5  in ClearML
+Comet: run 'pip install comet_ml' to automatically track and visualize YOLOv5  runs in Comet
+
+                 from  n    params  module                                  arguments                     
+  0                -1  1      1760  models.common.Conv                      [3, 16, 6, 2, 2]              
+  1                -1  1      4672  models.common.Conv                      [16, 32, 3, 2]                
+  2                -1  1      4800  models.common.C3                        [32, 32, 1]                   
+  3                -1  1     18560  models.common.Conv                      [32, 64, 3, 2]                
+  4                -1  2     29184  models.common.C3                        [64, 64, 2]                   
+  5                -1  1     73984  models.common.Conv                      [64, 128, 3, 2]               
+  6                -1  3    156928  models.common.C3                        [128, 128, 3]                 
+  7                -1  1    295424  models.common.Conv                      [128, 256, 3, 2]              
+  8                -1  1    296448  models.common.C3                        [256, 256, 1]                 
+  9                -1  1    164608  models.common.SPPF                      [256, 256, 5]                 
+ 10                -1  1     33024  models.common.Conv                      [256, 128, 1, 1]              
+ 11                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
+ 12           [-1, 6]  1         0  models.common.Concat                    [1]                           
+ 13                -1  1     90880  models.common.C3                        [256, 128, 1, False]          
+ 14                -1  1      8320  models.common.Conv                      [128, 64, 1, 1]               
+ 15                -1  1         0  torch.nn.modules.upsampling.Upsample    [None, 2, 'nearest']          
+ 16           [-1, 4]  1         0  models.common.Concat                    [1]                           
+ 17                -1  1     22912  models.common.C3                        [128, 64, 1, False]           
+ 18                -1  1     36992  models.common.Conv                      [64, 64, 3, 2]                
+ 19          [-1, 14]  1         0  models.common.Concat                    [1]                           
+ 20                -1  1     74496  models.common.C3                        [128, 128, 1, False]          
+ 21                -1  1    147712  models.common.Conv                      [128, 128, 3, 2]              
+ 22          [-1, 10]  1         0  models.common.Concat                    [1]                           
+ 23                -1  1    296448  models.common.C3                        [256, 256, 1, False]          
+ 24      [17, 20, 23]  1     12177  models.yolo.Detect                      [4, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [64, 128, 256]]
+Model summary: 214 layers, 1769329 parameters, 1769329 gradients, 4.2 GFLOPs
+
+Transferred 349/349 items from D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\training\candidates\four_bins_20261111\four_bins_yolov5n_320.pt
+freezing model.0.conv.weight
+freezing model.0.bn.weight
+freezing model.0.bn.bias
+freezing model.1.conv.weight
+freezing model.1.bn.weight
+freezing model.1.bn.bias
+freezing model.2.cv1.conv.weight
+freezing model.2.cv1.bn.weight
+freezing model.2.cv1.bn.bias
+freezing model.2.cv2.conv.weight
+freezing model.2.cv2.bn.weight
+freezing model.2.cv2.bn.bias
+freezing model.2.cv3.conv.weight
+freezing model.2.cv3.bn.weight
+freezing model.2.cv3.bn.bias
+freezing model.2.m.0.cv1.conv.weight
+freezing model.2.m.0.cv1.bn.weight
+freezing model.2.m.0.cv1.bn.bias
+freezing model.2.m.0.cv2.conv.weight
+freezing model.2.m.0.cv2.bn.weight
+freezing model.2.m.0.cv2.bn.bias
+freezing model.3.conv.weight
+freezing model.3.bn.weight
+freezing model.3.bn.bias
+freezing model.4.cv1.conv.weight
+freezing model.4.cv1.bn.weight
+freezing model.4.cv1.bn.bias
+freezing model.4.cv2.conv.weight
+freezing model.4.cv2.bn.weight
+freezing model.4.cv2.bn.bias
+freezing model.4.cv3.conv.weight
+freezing model.4.cv3.bn.weight
+freezing model.4.cv3.bn.bias
+freezing model.4.m.0.cv1.conv.weight
+freezing model.4.m.0.cv1.bn.weight
+freezing model.4.m.0.cv1.bn.bias
+freezing model.4.m.0.cv2.conv.weight
+freezing model.4.m.0.cv2.bn.weight
+freezing model.4.m.0.cv2.bn.bias
+freezing model.4.m.1.cv1.conv.weight
+freezing model.4.m.1.cv1.bn.weight
+freezing model.4.m.1.cv1.bn.bias
+freezing model.4.m.1.cv2.conv.weight
+freezing model.4.m.1.cv2.bn.weight
+freezing model.4.m.1.cv2.bn.bias
+freezing model.5.conv.weight
+freezing model.5.bn.weight
+freezing model.5.bn.bias
+freezing model.6.cv1.conv.weight
+freezing model.6.cv1.bn.weight
+freezing model.6.cv1.bn.bias
+freezing model.6.cv2.conv.weight
+freezing model.6.cv2.bn.weight
+freezing model.6.cv2.bn.bias
+freezing model.6.cv3.conv.weight
+freezing model.6.cv3.bn.weight
+freezing model.6.cv3.bn.bias
+freezing model.6.m.0.cv1.conv.weight
+freezing model.6.m.0.cv1.bn.weight
+freezing model.6.m.0.cv1.bn.bias
+freezing model.6.m.0.cv2.conv.weight
+freezing model.6.m.0.cv2.bn.weight
+freezing model.6.m.0.cv2.bn.bias
+freezing model.6.m.1.cv1.conv.weight
+freezing model.6.m.1.cv1.bn.weight
+freezing model.6.m.1.cv1.bn.bias
+freezing model.6.m.1.cv2.conv.weight
+freezing model.6.m.1.cv2.bn.weight
+freezing model.6.m.1.cv2.bn.bias
+freezing model.6.m.2.cv1.conv.weight
+freezing model.6.m.2.cv1.bn.weight
+freezing model.6.m.2.cv1.bn.bias
+freezing model.6.m.2.cv2.conv.weight
+freezing model.6.m.2.cv2.bn.weight
+freezing model.6.m.2.cv2.bn.bias
+freezing model.7.conv.weight
+freezing model.7.bn.weight
+freezing model.7.bn.bias
+freezing model.8.cv1.conv.weight
+freezing model.8.cv1.bn.weight
+freezing model.8.cv1.bn.bias
+freezing model.8.cv2.conv.weight
+freezing model.8.cv2.bn.weight
+freezing model.8.cv2.bn.bias
+freezing model.8.cv3.conv.weight
+freezing model.8.cv3.bn.weight
+freezing model.8.cv3.bn.bias
+freezing model.8.m.0.cv1.conv.weight
+freezing model.8.m.0.cv1.bn.weight
+freezing model.8.m.0.cv1.bn.bias
+freezing model.8.m.0.cv2.conv.weight
+freezing model.8.m.0.cv2.bn.weight
+freezing model.8.m.0.cv2.bn.bias
+freezing model.9.cv1.conv.weight
+freezing model.9.cv1.bn.weight
+freezing model.9.cv1.bn.bias
+freezing model.9.cv2.conv.weight
+freezing model.9.cv2.bn.weight
+freezing model.9.cv2.bn.bias
+optimizer: AdamW(lr=0.0002) with parameter groups 57 weight(decay=0.0), 60 weight(decay=0.0005), 60 bias
+
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train...:   0%|          | 0/2960 00:00
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1 images, 0 backgrounds, 0 corrupt:   0%|          | 1/2960 00:05
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 7 images, 0 backgrounds, 0 corrupt:   0%|          | 7/2960 00:05
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 281 images, 0 backgrounds, 0 corrupt:   9%|��         | 281/2960 00:05
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 406 images, 0 backgrounds, 0 corrupt:  14%|����        | 406/2960 00:05
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 506 images, 0 backgrounds, 0 corrupt:  17%|����        | 506/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 588 images, 0 backgrounds, 0 corrupt:  20%|����        | 588/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 660 images, 0 backgrounds, 0 corrupt:  22%|������       | 660/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 726 images, 0 backgrounds, 0 corrupt:  25%|������       | 726/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 788 images, 0 backgrounds, 0 corrupt:  27%|������       | 788/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 847 images, 0 backgrounds, 0 corrupt:  29%|������       | 847/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 908 images, 0 backgrounds, 0 corrupt:  31%|������       | 908/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 975 images, 0 backgrounds, 0 corrupt:  33%|��������      | 975/2960 00:06
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1036 images, 0 backgrounds, 0 corrupt:  35%|��������      | 1036/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1100 images, 0 backgrounds, 0 corrupt:  37%|��������      | 1100/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1164 images, 0 backgrounds, 0 corrupt:  39%|��������      | 1164/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1228 images, 0 backgrounds, 0 corrupt:  41%|����������     | 1228/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1290 images, 0 backgrounds, 0 corrupt:  44%|����������     | 1290/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1355 images, 0 backgrounds, 0 corrupt:  46%|����������     | 1355/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1422 images, 0 backgrounds, 0 corrupt:  48%|����������     | 1422/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1621 images, 147 backgrounds, 0 corrupt:  55%|������������    | 1621/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1724 images, 147 backgrounds, 0 corrupt:  58%|������������    | 1724/2960 00:07
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1817 images, 147 backgrounds, 0 corrupt:  61%|��������������   | 1817/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1899 images, 154 backgrounds, 0 corrupt:  64%|��������������   | 1899/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 1979 images, 170 backgrounds, 0 corrupt:  67%|��������������   | 1979/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2059 images, 170 backgrounds, 0 corrupt:  70%|��������������   | 2059/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2136 images, 170 backgrounds, 0 corrupt:  72%|����������������  | 2136/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2209 images, 170 backgrounds, 0 corrupt:  75%|����������������  | 2209/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2282 images, 170 backgrounds, 0 corrupt:  77%|����������������  | 2282/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2353 images, 170 backgrounds, 0 corrupt:  79%|����������������  | 2353/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2425 images, 170 backgrounds, 0 corrupt:  82%|������������������ | 2425/2960 00:08
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2496 images, 170 backgrounds, 0 corrupt:  84%|������������������ | 2496/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2566 images, 170 backgrounds, 0 corrupt:  87%|������������������ | 2566/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2635 images, 170 backgrounds, 0 corrupt:  89%|������������������ | 2635/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2704 images, 170 backgrounds, 0 corrupt:  91%|��������������������| 2704/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2772 images, 170 backgrounds, 0 corrupt:  94%|��������������������| 2772/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2839 images, 170 backgrounds, 0 corrupt:  96%|��������������������| 2839/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2905 images, 170 backgrounds, 0 corrupt:  98%|��������������������| 2905/2960 00:09
+train: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train... 2960 images, 170 backgrounds, 0 corrupt: 100%|��������������������| 2960/2960 00:09
+train: New cache created: D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\train.cache
+
+  0%|          | 0/2960 00:00
+train: Caching images (0.0GB ram):   4%|��         | 130/2960 00:00
+train: Caching images (0.1GB ram):  10%|��         | 287/2960 00:00
+train: Caching images (0.1GB ram):  15%|����        | 439/2960 00:00
+train: Caching images (0.1GB ram):  20%|����        | 601/2960 00:00
+train: Caching images (0.2GB ram):  26%|������       | 756/2960 00:00
+train: Caching images (0.2GB ram):  31%|������       | 908/2960 00:00
+train: Caching images (0.3GB ram):  36%|��������      | 1058/2960 00:00
+train: Caching images (0.3GB ram):  41%|��������      | 1208/2960 00:00
+train: Caching images (0.3GB ram):  46%|����������     | 1358/2960 00:00
+train: Caching images (0.4GB ram):  53%|������������    | 1579/2960 00:01
+train: Caching images (0.4GB ram):  59%|������������    | 1749/2960 00:01
+train: Caching images (0.5GB ram):  64%|��������������   | 1904/2960 00:01
+train: Caching images (0.5GB ram):  69%|��������������   | 2055/2960 00:01
+train: Caching images (0.6GB ram):  77%|����������������  | 2288/2960 00:01
+train: Caching images (0.6GB ram):  85%|������������������ | 2521/2960 00:01
+train: Caching images (0.7GB ram):  92%|��������������������| 2738/2960 00:01
+train: Caching images (0.8GB ram): 100%|��������������������| 2959/2960 00:01
+train: Caching images (0.8GB ram): 100%|��������������������| 2960/2960 00:01
+
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val...:   0%|          | 0/1587 00:00
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1 images, 0 backgrounds, 0 corrupt:   0%|          | 1/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 83 images, 0 backgrounds, 0 corrupt:   5%|��         | 83/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 166 images, 0 backgrounds, 0 corrupt:  10%|��         | 166/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 239 images, 0 backgrounds, 0 corrupt:  15%|����        | 239/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 325 images, 29 backgrounds, 0 corrupt:  20%|����        | 325/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 399 images, 29 backgrounds, 0 corrupt:  25%|������       | 399/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 471 images, 29 backgrounds, 0 corrupt:  30%|������       | 471/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 542 images, 29 backgrounds, 0 corrupt:  34%|��������      | 542/1587 00:04
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 612 images, 29 backgrounds, 0 corrupt:  39%|��������      | 612/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 684 images, 29 backgrounds, 0 corrupt:  43%|����������     | 684/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 753 images, 29 backgrounds, 0 corrupt:  47%|����������     | 753/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 820 images, 29 backgrounds, 0 corrupt:  52%|������������    | 820/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 884 images, 29 backgrounds, 0 corrupt:  56%|������������    | 884/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 961 images, 29 backgrounds, 0 corrupt:  61%|������������    | 961/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1028 images, 29 backgrounds, 0 corrupt:  65%|��������������   | 1028/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1096 images, 29 backgrounds, 0 corrupt:  69%|��������������   | 1096/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1163 images, 29 backgrounds, 0 corrupt:  73%|����������������  | 1163/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1228 images, 29 backgrounds, 0 corrupt:  77%|����������������  | 1228/1587 00:05
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1298 images, 29 backgrounds, 0 corrupt:  82%|������������������ | 1298/1587 00:06
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1365 images, 29 backgrounds, 0 corrupt:  86%|������������������ | 1365/1587 00:06
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1430 images, 29 backgrounds, 0 corrupt:  90%|������������������ | 1430/1587 00:06
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1499 images, 29 backgrounds, 0 corrupt:  94%|��������������������| 1499/1587 00:06
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1579 images, 29 backgrounds, 0 corrupt:  99%|��������������������| 1579/1587 00:06
+val: Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val... 1587 images, 29 backgrounds, 0 corrupt: 100%|��������������������| 1587/1587 00:06
+val: New cache created: D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\dataset\labels\val.cache
+
+  0%|          | 0/1587 00:00
+val: Caching images (0.0GB ram):   7%|��         | 111/1587 00:00
+val: Caching images (0.1GB ram):  18%|����        | 278/1587 00:00
+val: Caching images (0.1GB ram):  28%|������       | 442/1587 00:00
+val: Caching images (0.2GB ram):  38%|��������      | 597/1587 00:00
+val: Caching images (0.2GB ram):  48%|����������     | 766/1587 00:00
+val: Caching images (0.3GB ram):  59%|������������    | 929/1587 00:00
+val: Caching images (0.3GB ram):  69%|��������������   | 1088/1587 00:00
+val: Caching images (0.3GB ram):  78%|����������������  | 1236/1587 00:00
+val: Caching images (0.4GB ram):  88%|������������������ | 1404/1587 00:00
+val: Caching images (0.4GB ram):  98%|��������������������| 1562/1587 00:01
+val: Caching images (0.4GB ram): 100%|��������������������| 1587/1587 00:01
+Plotting labels to D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081\labels.jpg... 
+Image sizes 320 train, 320 val
+Using 0 dataloader workers
+Logging results to D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081
+Starting training for 3 epochs...
+
+      Epoch    GPU_mem   box_loss   obj_loss   cls_loss  Instances       Size
+
+  0%|          | 0/185 00:00
+        0/2         0G    0.03546    0.01325    0.01736         30        320:   0%|          | 0/185 00:01
+        0/2         0G    0.03546    0.01325    0.01736         30        320:   1%|          | 1/185 00:01
+        0/2         0G    0.03478    0.01267    0.01526         25        320:   1%|          | 1/185 00:02
+        0/2         0G    0.03478    0.01267    0.01526         25        320:   1%|          | 2/185 00:02
+        0/2         0G    0.03461    0.01421    0.01376         41        320:   1%|          | 2/185 00:04
+        0/2         0G    0.03461    0.01421    0.01376         41        320:   2%|��         | 3/185 00:04
+        0/2         0G    0.03463    0.01374    0.01821         30        320:   2%|��         | 3/185 00:05
+        0/2         0G    0.03463    0.01374    0.01821         30        320:   2%|��         | 4/185 00:05
+        0/2         0G    0.03377    0.01352    0.01922         24        320:   2%|��         | 4/185 00:07
+        0/2         0G    0.03377    0.01352    0.01922         24        320:   3%|��         | 5/185 00:07
+        0/2         0G    0.03466    0.01372    0.02056         36        320:   3%|��         | 5/185 00:08
+        0/2         0G    0.03466    0.01372    0.02056         36        320:   3%|��         | 6/185 00:08
+        0/2         0G    0.03495    0.01353    0.02011         36        320:   3%|��         | 6/185 00:10
+        0/2         0G    0.03495    0.01353    0.02011         36        320:   4%|��         | 7/185 00:10
+        0/2         0G     0.0346    0.01316    0.02059         30        320:   4%|��         | 7/185 00:11
+        0/2         0G     0.0346    0.01316    0.02059         30        320:   4%|��         | 8/185 00:11
+        0/2         0G    0.03438    0.01301       0.02         32        320:   4%|��         | 8/185 00:13
+        0/2         0G    0.03438    0.01301       0.02         32        320:   5%|��         | 9/185 00:13
+        0/2         0G    0.03374    0.01266    0.02128         29        320:   5%|��         | 9/185 00:14
+        0/2         0G    0.03374    0.01266    0.02128         29        320:   5%|��         | 10/185 00:14
+        0/2         0G    0.03317    0.01238    0.02066         27        320:   5%|��         | 10/185 00:16
+        0/2         0G    0.03317    0.01238    0.02066         27        320:   6%|��         | 11/185 00:16
+        0/2         0G    0.03339    0.01319    0.01951         52        320:   6%|��         | 11/185 00:17
+        0/2         0G    0.03339    0.01319    0.01951         52        320:   6%|��         | 12/185 00:17
+        0/2         0G    0.03395    0.01356    0.01902         42        320:   6%|��         | 12/185 00:19
+        0/2         0G    0.03395    0.01356    0.01902         42        320:   7%|��         | 13/185 00:19
+        0/2         0G    0.03361    0.01329    0.01864         27        320:   7%|��         | 13/185 00:20
+        0/2         0G    0.03361    0.01329    0.01864         27        320:   8%|��         | 14/185 00:20
+        0/2         0G     0.0334    0.01299    0.01981         21        320:   8%|��         | 14/185 00:22
+        0/2         0G     0.0334    0.01299    0.01981         21        320:   8%|��         | 15/185 00:22
+        0/2         0G    0.03346    0.01279    0.01981         26        320:   8%|��         | 15/185 00:23
+        0/2         0G    0.03346    0.01279    0.01981         26        320:   9%|��         | 16/185 00:23
+        0/2         0G    0.03333    0.01272    0.01938         27        320:   9%|��         | 16/185 00:25
+        0/2         0G    0.03333    0.01272    0.01938         27        320:   9%|��         | 17/185 00:25
+        0/2         0G     0.0335    0.01288    0.01911         42        320:   9%|��         | 17/185 00:26
+        0/2         0G     0.0335    0.01288    0.01911         42        320:  10%|��         | 18/185 00:26
+        0/2         0G    0.03496     0.0134    0.01862         70        320:  10%|��         | 18/185 00:28
+        0/2         0G    0.03496     0.0134    0.01862         70        320:  10%|��         | 19/185 00:28
+        0/2         0G    0.03516    0.01354    0.01828         46        320:  10%|��         | 19/185 00:29
+        0/2         0G    0.03516    0.01354    0.01828         46        320:  11%|��         | 20/185 00:29
+        0/2         0G    0.03505    0.01348    0.01854         24        320:  11%|��         | 20/185 00:31
+        0/2         0G    0.03505    0.01348    0.01854         24        320:  11%|����        | 21/185 00:31
+        0/2         0G    0.03484    0.01353    0.01808         47        320:  11%|����        | 21/185 00:32
+        0/2         0G    0.03484    0.01353    0.01808         47        320:  12%|����        | 22/185 00:32
+        0/2         0G    0.03505    0.01375    0.01819         45        320:  12%|����        | 22/185 00:34
+        0/2         0G    0.03505    0.01375    0.01819         45        320:  12%|����        | 23/185 00:34
+        0/2         0G    0.03577    0.01387     0.0182         48        320:  12%|����        | 23/185 00:35
+        0/2         0G    0.03577    0.01387     0.0182         48        320:  13%|����        | 24/185 00:35
+        0/2         0G    0.03607    0.01399    0.01795         40        320:  13%|����        | 24/185 00:37
+        0/2         0G    0.03607    0.01399    0.01795         40        320:  14%|����        | 25/185 00:37
+        0/2         0G    0.03617    0.01405    0.01742         42        320:  14%|����        | 25/185 00:38
+        0/2         0G    0.03617    0.01405    0.01742         42        320:  14%|����        | 26/185 00:38
+        0/2         0G      0.036    0.01393    0.01707         26        320:  14%|����        | 26/185 00:40
+        0/2         0G      0.036    0.01393    0.01707         26        320:  15%|����        | 27/185 00:40
+        0/2         0G     0.0368    0.01425     0.0169         59        320:  15%|����        | 27/185 00:41
+        0/2         0G     0.0368    0.01425     0.0169         59        320:  15%|����        | 28/185 00:41
+        0/2         0G    0.03688    0.01425    0.01686         32        320:  15%|����        | 28/185 00:43
+        0/2         0G    0.03688    0.01425    0.01686         32        320:  16%|����        | 29/185 00:43
+        0/2         0G    0.03655    0.01411    0.01694         28        320:  16%|����        | 29/185 00:44
+        0/2         0G    0.03655    0.01411    0.01694         28        320:  16%|����        | 30/185 00:44
+        0/2         0G    0.03655    0.01404    0.01721         28        320:  16%|����        | 30/185 00:46
+        0/2         0G    0.03655    0.01404    0.01721         28        320:  17%|����        | 31/185 00:46
+        0/2         0G    0.03641    0.01385    0.01725         22        320:  17%|����        | 31/185 00:47
+        0/2         0G    0.03641    0.01385    0.01725         22        320:  17%|����        | 32/185 00:47
+        0/2         0G     0.0363    0.01395    0.01761         41        320:  17%|����        | 32/185 00:48
+        0/2         0G     0.0363    0.01395    0.01761         41        320:  18%|����        | 33/185 00:48
+        0/2         0G    0.03624     0.0138    0.01775         21        320:  18%|����        | 33/185 00:50
+        0/2         0G    0.03624     0.0138    0.01775         21        320:  18%|����        | 34/185 00:50
+        0/2         0G    0.03597    0.01366    0.01798         24        320:  18%|����        | 34/185 00:51
+        0/2         0G    0.03597    0.01366    0.01798         24        320:  19%|����        | 35/185 00:51
+        0/2         0G    0.03568    0.01354    0.01782         25        320:  19%|����        | 35/185 00:53
+        0/2         0G    0.03568    0.01354    0.01782         25        320:  19%|����        | 36/185 00:53
+        0/2         0G    0.03546     0.0135    0.01782         33        320:  19%|����        | 36/185 00:54
+        0/2         0G    0.03546     0.0135    0.01782         33        320:  20%|����        | 37/185 00:54
+        0/2         0G    0.03538    0.01344    0.01798         33        320:  20%|����        | 37/185 00:56
+        0/2         0G    0.03538    0.01344    0.01798         33        320:  21%|����        | 38/185 00:56
+        0/2         0G    0.03527    0.01333    0.01795         24        320:  21%|����        | 38/185 00:57
+        0/2         0G    0.03527    0.01333    0.01795         24        320:  21%|����        | 39/185 00:57
+        0/2         0G    0.03544    0.01333    0.01774         35        320:  21%|����        | 39/185 00:59
+        0/2         0G    0.03544    0.01333    0.01774         35        320:  22%|������       | 40/185 00:59
+        0/2         0G    0.03549    0.01329    0.01759         33        320:  22%|������       | 40/185 01:00
+        0/2         0G    0.03549    0.01329    0.01759         33        320:  22%|������       | 41/185 01:00
+        0/2         0G    0.03554    0.01332    0.01758         39        320:  22%|������       | 41/185 01:02
+        0/2         0G    0.03554    0.01332    0.01758         39        320:  23%|������       | 42/185 01:02
+        0/2         0G    0.03539    0.01324    0.01757         27        320:  23%|������       | 42/185 01:03
+        0/2         0G    0.03539    0.01324    0.01757         27        320:  23%|������       | 43/185 01:03
+        0/2         0G    0.03526    0.01318     0.0176         29        320:  23%|������       | 43/185 01:04
+        0/2         0G    0.03526    0.01318     0.0176         29        320:  24%|������       | 44/185 01:04
+        0/2         0G    0.03523    0.01312    0.01759         26        320:  24%|������       | 44/185 01:06
+        0/2         0G    0.03523    0.01312    0.01759         26        320:  24%|������       | 45/185 01:06
+        0/2         0G    0.03524    0.01316    0.01778         38        320:  24%|������       | 45/185 01:07
+        0/2         0G    0.03524    0.01316    0.01778         38        320:  25%|������       | 46/185 01:07
+        0/2         0G    0.03517    0.01311    0.01783         33        320:  25%|������       | 46/185 01:09
+        0/2         0G    0.03517    0.01311    0.01783         33        320:  25%|������       | 47/185 01:09
+        0/2         0G    0.03507    0.01308    0.01775         29        320:  25%|������       | 47/185 01:10
+        0/2         0G    0.03507    0.01308    0.01775         29        320:  26%|������       | 48/185 01:10
+        0/2         0G    0.03501    0.01297    0.01791         26        320:  26%|������       | 48/185 01:12
+        0/2         0G    0.03501    0.01297    0.01791         26        320:  26%|������       | 49/185 01:12
+        0/2         0G    0.03482    0.01292    0.01785         31        320:  26%|������       | 49/185 01:13
+        0/2         0G    0.03482    0.01292    0.01785         31        320:  27%|������       | 50/185 01:13
+        0/2         0G    0.03488      0.013    0.01775         40        320:  27%|������       | 50/185 01:15
+        0/2         0G    0.03488      0.013    0.01775         40        320:  28%|������       | 51/185 01:15
+        0/2         0G    0.03486    0.01296    0.01748         26        320:  28%|������       | 51/185 01:16
+        0/2         0G    0.03486    0.01296    0.01748         26        320:  28%|������       | 52/185 01:16
+        0/2         0G      0.035    0.01286    0.01748         23        320:  28%|������       | 52/185 01:18
+        0/2         0G      0.035    0.01286    0.01748         23        320:  29%|������       | 53/185 01:18
+        0/2         0G    0.03516    0.01289    0.01732         41        320:  29%|������       | 53/185 01:19
+        0/2         0G    0.03516    0.01289    0.01732         41        320:  29%|������       | 54/185 01:19
+        0/2         0G    0.03521     0.0129    0.01737         33        320:  29%|������       | 54/185 01:20
+        0/2         0G    0.03521     0.0129    0.01737         33        320:  30%|������       | 55/185 01:20
+        0/2         0G    0.03527     0.0129    0.01738         30        320:  30%|������       | 55/185 01:22
+        0/2         0G    0.03527     0.0129    0.01738         30        320:  30%|������       | 56/185 01:22
+        0/2         0G    0.03528    0.01288     0.0174         24        320:  30%|������       | 56/185 01:23
+        0/2         0G    0.03528    0.01288     0.0174         24        320:  31%|������       | 57/185 01:23
+        0/2         0G    0.03528    0.01285    0.01742         24        320:  31%|������       | 57/185 01:25
+        0/2         0G    0.03528    0.01285    0.01742         24        320:  31%|��������      | 58/185 01:25
+        0/2         0G    0.03522    0.01282    0.01744         27        320:  31%|��������      | 58/185 01:26
+        0/2         0G    0.03522    0.01282    0.01744         27        320:  32%|��������      | 59/185 01:26
+        0/2         0G    0.03513    0.01279    0.01749         32        320:  32%|��������      | 59/185 01:28
+        0/2         0G    0.03513    0.01279    0.01749         32        320:  32%|��������      | 60/185 01:28
+        0/2         0G    0.03512    0.01275    0.01734         29        320:  32%|��������      | 60/185 01:29
+        0/2         0G    0.03512    0.01275    0.01734         29        320:  33%|��������      | 61/185 01:29
+        0/2         0G    0.03513    0.01269    0.01729         24        320:  33%|��������      | 61/185 01:30
+        0/2         0G    0.03513    0.01269    0.01729         24        320:  34%|��������      | 62/185 01:30
+        0/2         0G    0.03506    0.01269    0.01725         34        320:  34%|��������      | 62/185 01:32
+        0/2         0G    0.03506    0.01269    0.01725         34        320:  34%|��������      | 63/185 01:32
+        0/2         0G    0.03505    0.01282    0.01718         52        320:  34%|��������      | 63/185 01:33
+        0/2         0G    0.03505    0.01282    0.01718         52        320:  35%|��������      | 64/185 01:33
+        0/2         0G    0.03493    0.01273    0.01698         16        320:  35%|��������      | 64/185 01:35
+        0/2         0G    0.03493    0.01273    0.01698         16        320:  35%|��������      | 65/185 01:35
+        0/2         0G    0.03487    0.01271    0.01694         32        320:  35%|��������      | 65/185 01:36
+        0/2         0G    0.03487    0.01271    0.01694         32        320:  36%|��������      | 66/185 01:36
+        0/2         0G    0.03492    0.01272    0.01691         30        320:  36%|��������      | 66/185 01:38
+        0/2         0G    0.03492    0.01272    0.01691         30        320:  36%|��������      | 67/185 01:38
+        0/2         0G    0.03489    0.01272    0.01709         32        320:  36%|��������      | 67/185 01:39
+        0/2         0G    0.03489    0.01272    0.01709         32        320:  37%|��������      | 68/185 01:39
+        0/2         0G    0.03484    0.01266    0.01711         20        320:  37%|��������      | 68/185 01:41
+        0/2         0G    0.03484    0.01266    0.01711         20        320:  37%|��������      | 69/185 01:41
+        0/2         0G    0.03522    0.01286    0.01705         65        320:  37%|��������      | 69/185 01:42
+        0/2         0G    0.03522    0.01286    0.01705         65        320:  38%|��������      | 70/185 01:42
+        0/2         0G    0.03519    0.01286     0.0172         33        320:  38%|��������      | 70/185 01:44
+        0/2         0G    0.03519    0.01286     0.0172         33        320:  38%|��������      | 71/185 01:44
+        0/2         0G    0.03515    0.01286    0.01728         31        320:  38%|��������      | 71/185 01:45
+        0/2         0G    0.03515    0.01286    0.01728         31        320:  39%|��������      | 72/185 01:45
+        0/2         0G    0.03506    0.01283    0.01721         25        320:  39%|��������      | 72/185 01:46
+        0/2         0G    0.03506    0.01283    0.01721         25        320:  39%|��������      | 73/185 01:46
+        0/2         0G    0.03499    0.01278    0.01719         24        320:  39%|��������      | 73/185 01:48
+        0/2         0G    0.03499    0.01278    0.01719         24        320:  40%|��������      | 74/185 01:48
+        0/2         0G    0.03516     0.0128    0.01729         28        320:  40%|��������      | 74/185 01:49
+        0/2         0G    0.03516     0.0128    0.01729         28        320:  41%|��������      | 75/185 01:49
+        0/2         0G    0.03517    0.01277    0.01732         30        320:  41%|��������      | 75/185 01:51
+        0/2         0G    0.03517    0.01277    0.01732         30        320:  41%|��������      | 76/185 01:51
+        0/2         0G    0.03526    0.01276     0.0172         31        320:  41%|��������      | 76/185 01:52
+        0/2         0G    0.03526    0.01276     0.0172         31        320:  42%|����������     | 77/185 01:52
+        0/2         0G     0.0352    0.01273    0.01717         25        320:  42%|����������     | 77/185 01:54
+        0/2         0G     0.0352    0.01273    0.01717         25        320:  42%|����������     | 78/185 01:54
+        0/2         0G    0.03528    0.01273    0.01728         29        320:  42%|����������     | 78/185 01:55
+        0/2         0G    0.03528    0.01273    0.01728         29        320:  43%|����������     | 79/185 01:55
+        0/2         0G    0.03522    0.01269    0.01731         24        320:  43%|����������     | 79/185 01:57
+        0/2         0G    0.03522    0.01269    0.01731         24        320:  43%|����������     | 80/185 01:57
+        0/2         0G    0.03518    0.01265    0.01733         25        320:  43%|����������     | 80/185 01:58
+        0/2         0G    0.03518    0.01265    0.01733         25        320:  44%|����������     | 81/185 01:58
+        0/2         0G    0.03513    0.01261    0.01716         18        320:  44%|����������     | 81/185 01:59
+        0/2         0G    0.03513    0.01261    0.01716         18        320:  44%|����������     | 82/185 01:59
+        0/2         0G    0.03505     0.0126    0.01715         32        320:  44%|����������     | 82/185 02:01
+        0/2         0G    0.03505     0.0126    0.01715         32        320:  45%|����������     | 83/185 02:01
+        0/2         0G    0.03493    0.01253    0.01709         18        320:  45%|����������     | 83/185 02:02
+        0/2         0G    0.03493    0.01253    0.01709         18        320:  45%|����������     | 84/185 02:02
+        0/2         0G    0.03496    0.01258    0.01699         49        320:  45%|����������     | 84/185 02:04
+        0/2         0G    0.03496    0.01258    0.01699         49        320:  46%|����������     | 85/185 02:04
+        0/2         0G    0.03484    0.01254    0.01694         28        320:  46%|����������     | 85/185 02:05
+        0/2         0G    0.03484    0.01254    0.01694         28        320:  46%|����������     | 86/185 02:05
+        0/2         0G    0.03481    0.01248    0.01681         21        320:  46%|����������     | 86/185 02:07
+        0/2         0G    0.03481    0.01248    0.01681         21        320:  47%|����������     | 87/185 02:07
+        0/2         0G    0.03477    0.01244    0.01676         24        320:  47%|����������     | 87/185 02:08
+        0/2         0G    0.03477    0.01244    0.01676         24        320:  48%|����������     | 88/185 02:08
+        0/2         0G    0.03492     0.0125    0.01671         42        320:  48%|����������     | 88/185 02:10
+        0/2         0G    0.03492     0.0125    0.01671         42        320:  48%|����������     | 89/185 02:10
+        0/2         0G    0.03485    0.01247    0.01673         31        320:  48%|����������     | 89/185 02:11
+        0/2         0G    0.03485    0.01247    0.01673         31        320:  49%|����������     | 90/185 02:11
+        0/2         0G    0.03478    0.01246    0.01671         32        320:  49%|����������     | 90/185 02:13
+        0/2         0G    0.03478    0.01246    0.01671         32        320:  49%|����������     | 91/185 02:13
+        0/2         0G    0.03476    0.01247    0.01679         34        320:  49%|����������     | 91/185 02:14
+        0/2         0G    0.03476    0.01247    0.01679         34        320:  50%|����������     | 92/185 02:14
+        0/2         0G    0.03474    0.01248    0.01679         36        320:  50%|����������     | 92/185 02:16
+        0/2         0G    0.03474    0.01248    0.01679         36        320:  50%|����������     | 93/185 02:16
+        0/2         0G    0.03471    0.01249    0.01677         34        320:  50%|����������     | 93/185 02:17
+        0/2         0G    0.03471    0.01249    0.01677         34        320:  51%|����������     | 94/185 02:17
+        0/2         0G    0.03478    0.01247    0.01686         27        320:  51%|����������     | 94/185 02:18
+        0/2         0G    0.03478    0.01247    0.01686         27        320:  51%|������������    | 95/185 02:18
+        0/2         0G    0.03469    0.01243    0.01686         23        320:  51%|������������    | 95/185 02:20
+        0/2         0G    0.03469    0.01243    0.01686         23        320:  52%|������������    | 96/185 02:20
+        0/2         0G    0.03464     0.0124    0.01689         28        320:  52%|������������    | 96/185 02:21
+        0/2         0G    0.03464     0.0124    0.01689         28        320:  52%|������������    | 97/185 02:21
+        0/2         0G     0.0346    0.01239    0.01677         27        320:  52%|������������    | 97/185 02:23
+        0/2         0G     0.0346    0.01239    0.01677         27        320:  53%|������������    | 98/185 02:23
+        0/2         0G    0.03462    0.01238    0.01678         29        320:  53%|������������    | 98/185 02:24
+        0/2         0G    0.03462    0.01238    0.01678         29        320:  54%|������������    | 99/185 02:24
+        0/2         0G    0.03461    0.01235    0.01678         23        320:  54%|������������    | 99/185 02:26
+        0/2         0G    0.03461    0.01235    0.01678         23        320:  54%|������������    | 100/185 02:26
+        0/2         0G     0.0346    0.01235    0.01669         34        320:  54%|������������    | 100/185 02:27
+        0/2         0G     0.0346    0.01235    0.01669         34        320:  55%|������������    | 101/185 02:27
+        0/2         0G    0.03464    0.01236    0.01664         40        320:  55%|������������    | 101/185 02:29
+        0/2         0G    0.03464    0.01236    0.01664         40        320:  55%|������������    | 102/185 02:29
+        0/2         0G    0.03464    0.01233    0.01666         22        320:  55%|������������    | 102/185 02:30
+        0/2         0G    0.03464    0.01233    0.01666         22        320:  56%|������������    | 103/185 02:30
+        0/2         0G    0.03462    0.01232    0.01669         27        320:  56%|������������    | 103/185 02:32
+        0/2         0G    0.03462    0.01232    0.01669         27        320:  56%|������������    | 104/185 02:32
+        0/2         0G    0.03458    0.01231    0.01672         28        320:  56%|������������    | 104/185 02:33
+        0/2         0G    0.03458    0.01231    0.01672         28        320:  57%|������������    | 105/185 02:33
+        0/2         0G    0.03455     0.0123    0.01665         32        320:  57%|������������    | 105/185 02:34
+        0/2         0G    0.03455     0.0123    0.01665         32        320:  57%|������������    | 106/185 02:34
+        0/2         0G    0.03462    0.01234    0.01662         40        320:  57%|������������    | 106/185 02:36
+        0/2         0G    0.03462    0.01234    0.01662         40        320:  58%|������������    | 107/185 02:36
+        0/2         0G    0.03461    0.01233    0.01663         32        320:  58%|������������    | 107/185 02:37
+        0/2         0G    0.03461    0.01233    0.01663         32        320:  58%|������������    | 108/185 02:37
+        0/2         0G    0.03467    0.01236    0.01654         32        320:  58%|������������    | 108/185 02:39
+        0/2         0G    0.03467    0.01236    0.01654         32        320:  59%|������������    | 109/185 02:39
+        0/2         0G    0.03469    0.01236    0.01653         34        320:  59%|������������    | 109/185 02:40
+        0/2         0G    0.03469    0.01236    0.01653         34        320:  59%|������������    | 110/185 02:40
+        0/2         0G    0.03474     0.0124     0.0165         39        320:  59%|������������    | 110/185 02:42
+        0/2         0G    0.03474     0.0124     0.0165         39        320:  60%|������������    | 111/185 02:42
+        0/2         0G    0.03479    0.01242    0.01649         42        320:  60%|������������    | 111/185 02:43
+        0/2         0G    0.03479    0.01242    0.01649         42        320:  61%|������������    | 112/185 02:43
+        0/2         0G    0.03484    0.01244    0.01644         40        320:  61%|������������    | 112/185 02:45
+        0/2         0G    0.03484    0.01244    0.01644         40        320:  61%|������������    | 113/185 02:45
+        0/2         0G    0.03484    0.01244    0.01639         38        320:  61%|������������    | 113/185 02:46
+        0/2         0G    0.03484    0.01244    0.01639         38        320:  62%|��������������   | 114/185 02:46
+        0/2         0G    0.03476    0.01242    0.01638         25        320:  62%|��������������   | 114/185 02:48
+        0/2         0G    0.03476    0.01242    0.01638         25        320:  62%|��������������   | 115/185 02:48
+        0/2         0G    0.03473     0.0124    0.01641         30        320:  62%|��������������   | 115/185 02:49
+        0/2         0G    0.03473     0.0124    0.01641         30        320:  63%|��������������   | 116/185 02:49
+        0/2         0G     0.0347    0.01239    0.01634         31        320:  63%|��������������   | 116/185 02:51
+        0/2         0G     0.0347    0.01239    0.01634         31        320:  63%|��������������   | 117/185 02:51
+        0/2         0G    0.03469    0.01239    0.01629         32        320:  63%|��������������   | 117/185 02:52
+        0/2         0G    0.03469    0.01239    0.01629         32        320:  64%|��������������   | 118/185 02:52
+        0/2         0G    0.03474    0.01243    0.01627         48        320:  64%|��������������   | 118/185 02:53
+        0/2         0G    0.03474    0.01243    0.01627         48        320:  64%|��������������   | 119/185 02:53
+        0/2         0G    0.03474    0.01243    0.01625         30        320:  64%|��������������   | 119/185 02:55
+        0/2         0G    0.03474    0.01243    0.01625         30        320:  65%|��������������   | 120/185 02:55
+        0/2         0G    0.03474    0.01243    0.01624         32        320:  65%|��������������   | 120/185 02:56
+        0/2         0G    0.03474    0.01243    0.01624         32        320:  65%|��������������   | 121/185 02:56
+        0/2         0G    0.03474    0.01243    0.01619         34        320:  65%|��������������   | 121/185 02:58
+        0/2         0G    0.03474    0.01243    0.01619         34        320:  66%|��������������   | 122/185 02:58
+        0/2         0G    0.03473    0.01245    0.01617         41        320:  66%|��������������   | 122/185 02:59
+        0/2         0G    0.03473    0.01245    0.01617         41        320:  66%|��������������   | 123/185 02:59
+        0/2         0G    0.03472    0.01246    0.01614         35        320:  66%|��������������   | 123/185 03:01
+        0/2         0G    0.03472    0.01246    0.01614         35        320:  67%|��������������   | 124/185 03:01
+        0/2         0G    0.03472    0.01246    0.01612         30        320:  67%|��������������   | 124/185 03:02
+        0/2         0G    0.03472    0.01246    0.01612         30        320:  68%|��������������   | 125/185 03:02
+        0/2         0G    0.03468    0.01245     0.0161         31        320:  68%|��������������   | 125/185 03:04
+        0/2         0G    0.03468    0.01245     0.0161         31        320:  68%|��������������   | 126/185 03:04
+        0/2         0G    0.03462    0.01243    0.01608         25        320:  68%|��������������   | 126/185 03:05
+        0/2         0G    0.03462    0.01243    0.01608         25        320:  69%|��������������   | 127/185 03:05
+        0/2         0G    0.03459    0.01245    0.01604         39        320:  69%|��������������   | 127/185 03:06
+        0/2         0G    0.03459    0.01245    0.01604         39        320:  69%|��������������   | 128/185 03:06
+        0/2         0G    0.03461    0.01244    0.01601         26        320:  69%|��������������   | 128/185 03:08
+        0/2         0G    0.03461    0.01244    0.01601         26        320:  70%|��������������   | 129/185 03:08
+        0/2         0G    0.03461    0.01244      0.016         32        320:  70%|��������������   | 129/185 03:09
+        0/2         0G    0.03461    0.01244      0.016         32        320:  70%|��������������   | 130/185 03:09
+        0/2         0G    0.03454    0.01239    0.01596         23        320:  70%|��������������   | 130/185 03:11
+        0/2         0G    0.03454    0.01239    0.01596         23        320:  71%|��������������   | 131/185 03:11
+        0/2         0G    0.03447    0.01236    0.01594         21        320:  71%|��������������   | 131/185 03:12
+        0/2         0G    0.03447    0.01236    0.01594         21        320:  71%|����������������  | 132/185 03:12
+        0/2         0G    0.03456    0.01239    0.01593         45        320:  71%|����������������  | 132/185 03:14
+        0/2         0G    0.03456    0.01239    0.01593         45        320:  72%|����������������  | 133/185 03:14
+        0/2         0G    0.03454    0.01237    0.01597         27        320:  72%|����������������  | 133/185 03:15
+        0/2         0G    0.03454    0.01237    0.01597         27        320:  72%|����������������  | 134/185 03:15
+        0/2         0G    0.03453    0.01239    0.01596         40        320:  72%|����������������  | 134/185 03:17
+        0/2         0G    0.03453    0.01239    0.01596         40        320:  73%|����������������  | 135/185 03:17
+        0/2         0G    0.03448    0.01237    0.01594         23        320:  73%|����������������  | 135/185 03:18
+        0/2         0G    0.03448    0.01237    0.01594         23        320:  74%|����������������  | 136/185 03:18
+        0/2         0G    0.03445    0.01238    0.01588         45        320:  74%|����������������  | 136/185 03:19
+        0/2         0G    0.03445    0.01238    0.01588         45        320:  74%|����������������  | 137/185 03:19
+        0/2         0G    0.03439    0.01235    0.01594         20        320:  74%|����������������  | 137/185 03:21
+        0/2         0G    0.03439    0.01235    0.01594         20        320:  75%|����������������  | 138/185 03:21
+        0/2         0G     0.0343    0.01233    0.01605         25        320:  75%|����������������  | 138/185 03:22
+        0/2         0G     0.0343    0.01233    0.01605         25        320:  75%|����������������  | 139/185 03:22
+        0/2         0G    0.03424    0.01233    0.01601         30        320:  75%|����������������  | 139/185 03:24
+        0/2         0G    0.03424    0.01233    0.01601         30        320:  76%|����������������  | 140/185 03:24
+        0/2         0G     0.0343    0.01235    0.01596         38        320:  76%|����������������  | 140/185 03:25
+        0/2         0G     0.0343    0.01235    0.01596         38        320:  76%|����������������  | 141/185 03:25
+        0/2         0G    0.03431    0.01237    0.01594         42        320:  76%|����������������  | 141/185 03:27
+        0/2         0G    0.03431    0.01237    0.01594         42        320:  77%|����������������  | 142/185 03:27
+        0/2         0G     0.0343    0.01238    0.01598         30        320:  77%|����������������  | 142/185 03:28
+        0/2         0G     0.0343    0.01238    0.01598         30        320:  77%|����������������  | 143/185 03:28
+        0/2         0G     0.0343    0.01239    0.01597         34        320:  77%|����������������  | 143/185 03:30
+        0/2         0G     0.0343    0.01239    0.01597         34        320:  78%|����������������  | 144/185 03:30
+        0/2         0G    0.03428    0.01236    0.01591         22        320:  78%|����������������  | 144/185 03:31
+        0/2         0G    0.03428    0.01236    0.01591         22        320:  78%|����������������  | 145/185 03:31
+        0/2         0G    0.03427    0.01237    0.01589         35        320:  78%|����������������  | 145/185 03:32
+        0/2         0G    0.03427    0.01237    0.01589         35        320:  79%|����������������  | 146/185 03:32
+        0/2         0G    0.03427    0.01237    0.01584         29        320:  79%|����������������  | 146/185 03:34
+        0/2         0G    0.03427    0.01237    0.01584         29        320:  79%|����������������  | 147/185 03:34
+        0/2         0G    0.03424    0.01236     0.0158         25        320:  79%|����������������  | 147/185 03:35
+        0/2         0G    0.03424    0.01236     0.0158         25        320:  80%|����������������  | 148/185 03:35
+        0/2         0G    0.03425    0.01236    0.01582         33        320:  80%|����������������  | 148/185 03:37
+        0/2         0G    0.03425    0.01236    0.01582         33        320:  81%|����������������  | 149/185 03:37
+        0/2         0G    0.03421    0.01233    0.01581         20        320:  81%|����������������  | 149/185 03:38
+        0/2         0G    0.03421    0.01233    0.01581         20        320:  81%|����������������  | 150/185 03:38
+        0/2         0G    0.03415     0.0123    0.01586         19        320:  81%|����������������  | 150/185 03:40
+        0/2         0G    0.03415     0.0123    0.01586         19        320:  82%|������������������ | 151/185 03:40
+        0/2         0G    0.03417    0.01228    0.01583         25        320:  82%|������������������ | 151/185 03:41
+        0/2         0G    0.03417    0.01228    0.01583         25        320:  82%|������������������ | 152/185 03:41
+        0/2         0G    0.03412    0.01225    0.01589         21        320:  82%|������������������ | 152/185 03:42
+        0/2         0G    0.03412    0.01225    0.01589         21        320:  83%|������������������ | 153/185 03:42
+        0/2         0G    0.03412    0.01226    0.01591         33        320:  83%|������������������ | 153/185 03:44
+        0/2         0G    0.03412    0.01226    0.01591         33        320:  83%|������������������ | 154/185 03:44
+        0/2         0G    0.03408    0.01224    0.01603         22        320:  83%|������������������ | 154/185 03:45
+        0/2         0G    0.03408    0.01224    0.01603         22        320:  84%|������������������ | 155/185 03:45
+        0/2         0G    0.03406    0.01222    0.01599         21        320:  84%|������������������ | 155/185 03:47
+        0/2         0G    0.03406    0.01222    0.01599         21        320:  84%|������������������ | 156/185 03:47
+        0/2         0G    0.03406    0.01222    0.01599         28        320:  84%|������������������ | 156/185 03:48
+        0/2         0G    0.03406    0.01222    0.01599         28        320:  85%|������������������ | 157/185 03:48
+        0/2         0G    0.03409    0.01222      0.016         32        320:  85%|������������������ | 157/185 03:50
+        0/2         0G    0.03409    0.01222      0.016         32        320:  85%|������������������ | 158/185 03:50
+        0/2         0G    0.03406    0.01221    0.01597         25        320:  85%|������������������ | 158/185 03:51
+        0/2         0G    0.03406    0.01221    0.01597         25        320:  86%|������������������ | 159/185 03:51
+        0/2         0G    0.03404    0.01222    0.01609         39        320:  86%|������������������ | 159/185 03:52
+        0/2         0G    0.03404    0.01222    0.01609         39        320:  86%|������������������ | 160/185 03:52
+        0/2         0G    0.03408    0.01222    0.01608         37        320:  86%|������������������ | 160/185 03:54
+        0/2         0G    0.03408    0.01222    0.01608         37        320:  87%|������������������ | 161/185 03:54
+        0/2         0G    0.03404     0.0122    0.01612         22        320:  87%|������������������ | 161/185 03:56
+        0/2         0G    0.03404     0.0122    0.01612         22        320:  88%|������������������ | 162/185 03:56
+        0/2         0G    0.03399    0.01219    0.01608         29        320:  88%|������������������ | 162/185 03:57
+        0/2         0G    0.03399    0.01219    0.01608         29        320:  88%|������������������ | 163/185 03:57
+        0/2         0G    0.03401    0.01218    0.01619         30        320:  88%|������������������ | 163/185 03:58
+        0/2         0G    0.03401    0.01218    0.01619         30        320:  89%|������������������ | 164/185 03:58
+        0/2         0G    0.03397    0.01216    0.01619         25        320:  89%|������������������ | 164/185 04:00
+        0/2         0G    0.03397    0.01216    0.01619         25        320:  89%|������������������ | 165/185 04:00
+        0/2         0G    0.03395    0.01215    0.01618         22        320:  89%|������������������ | 165/185 04:01
+        0/2         0G    0.03395    0.01215    0.01618         22        320:  90%|������������������ | 166/185 04:01
+        0/2         0G    0.03395    0.01215     0.0162         32        320:  90%|������������������ | 166/185 04:03
+        0/2         0G    0.03395    0.01215     0.0162         32        320:  90%|������������������ | 167/185 04:03
+        0/2         0G    0.03396    0.01218    0.01615         46        320:  90%|������������������ | 167/185 04:04
+        0/2         0G    0.03396    0.01218    0.01615         46        320:  91%|������������������ | 168/185 04:04
+        0/2         0G    0.03401    0.01217    0.01625         27        320:  91%|������������������ | 168/185 04:06
+        0/2         0G    0.03401    0.01217    0.01625         27        320:  91%|��������������������| 169/185 04:06
+        0/2         0G    0.03399    0.01217    0.01626         39        320:  91%|��������������������| 169/185 04:07
+        0/2         0G    0.03399    0.01217    0.01626         39        320:  92%|��������������������| 170/185 04:07
+        0/2         0G    0.03398    0.01217     0.0163         30        320:  92%|��������������������| 170/185 04:08
+        0/2         0G    0.03398    0.01217     0.0163         30        320:  92%|��������������������| 171/185 04:08
+        0/2         0G      0.034    0.01217    0.01628         32        320:  92%|��������������������| 171/185 04:10
+        0/2         0G      0.034    0.01217    0.01628         32        320:  93%|��������������������| 172/185 04:10
+        0/2         0G    0.03396    0.01216    0.01625         27        320:  93%|��������������������| 172/185 04:11
+        0/2         0G    0.03396    0.01216    0.01625         27        320:  94%|��������������������| 173/185 04:11
+        0/2         0G    0.03399    0.01216     0.0162         38        320:  94%|��������������������| 173/185 04:13
+        0/2         0G    0.03399    0.01216     0.0162         38        320:  94%|��������������������| 174/185 04:13
+        0/2         0G    0.03396    0.01214    0.01617         25        320:  94%|��������������������| 174/185 04:14
+        0/2         0G    0.03396    0.01214    0.01617         25        320:  95%|��������������������| 175/185 04:14
+        0/2         0G    0.03396    0.01214    0.01618         37        320:  95%|��������������������| 175/185 04:16
+        0/2         0G    0.03396    0.01214    0.01618         37        320:  95%|��������������������| 176/185 04:16
+        0/2         0G    0.03396    0.01211    0.01625         20        320:  95%|��������������������| 176/185 04:17
+        0/2         0G    0.03396    0.01211    0.01625         20        320:  96%|��������������������| 177/185 04:17
+        0/2         0G    0.03394    0.01211    0.01626         27        320:  96%|��������������������| 177/185 04:18
+        0/2         0G    0.03394    0.01211    0.01626         27        320:  96%|��������������������| 178/185 04:18
+        0/2         0G    0.03394    0.01211    0.01634         27        320:  96%|��������������������| 178/185 04:20
+        0/2         0G    0.03394    0.01211    0.01634         27        320:  97%|��������������������| 179/185 04:20
+        0/2         0G    0.03397    0.01212    0.01629         36        320:  97%|��������������������| 179/185 04:21
+        0/2         0G    0.03397    0.01212    0.01629         36        320:  97%|��������������������| 180/185 04:21
+        0/2         0G    0.03394    0.01212    0.01626         33        320:  97%|��������������������| 180/185 04:23
+        0/2         0G    0.03394    0.01212    0.01626         33        320:  98%|��������������������| 181/185 04:23
+        0/2         0G    0.03391    0.01211    0.01628         22        320:  98%|��������������������| 181/185 04:24
+        0/2         0G    0.03391    0.01211    0.01628         22        320:  98%|��������������������| 182/185 04:24
+        0/2         0G    0.03388    0.01211    0.01625         35        320:  98%|��������������������| 182/185 04:26
+        0/2         0G    0.03388    0.01211    0.01625         35        320:  99%|��������������������| 183/185 04:26
+        0/2         0G     0.0339    0.01211    0.01626         33        320:  99%|��������������������| 183/185 04:27
+        0/2         0G     0.0339    0.01211    0.01626         33        320:  99%|��������������������| 184/185 04:27
+        0/2         0G     0.0339    0.01211    0.01628         32        320:  99%|��������������������| 184/185 04:29
+        0/2         0G     0.0339    0.01211    0.01628         32        320: 100%|��������������������| 185/185 04:29
+        0/2         0G     0.0339    0.01211    0.01628         32        320: 100%|��������������������| 185/185 04:29
+
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   0%|          | 0/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   2%|��         | 1/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   4%|��         | 2/50 00:01
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   6%|��         | 3/50 00:02
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   8%|��         | 4/50 00:04
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  10%|��         | 5/50 00:05
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  12%|����        | 6/50 00:06
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  14%|����        | 7/50 00:07
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  16%|����        | 8/50 00:08
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  18%|����        | 9/50 00:10
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  20%|����        | 10/50 00:11
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  22%|������       | 11/50 00:12
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  24%|������       | 12/50 00:13
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  26%|������       | 13/50 00:15
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  28%|������       | 14/50 00:16
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  30%|������       | 15/50 00:17
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  32%|��������      | 16/50 00:18
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  34%|��������      | 17/50 00:19
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  36%|��������      | 18/50 00:21
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  38%|��������      | 19/50 00:22
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  40%|��������      | 20/50 00:23
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  42%|����������     | 21/50 00:24
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  44%|����������     | 22/50 00:26
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  46%|����������     | 23/50 00:27
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  48%|����������     | 24/50 00:28
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  50%|����������     | 25/50 00:29
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  52%|������������    | 26/50 00:31
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  54%|������������    | 27/50 00:32
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  56%|������������    | 28/50 00:33
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  58%|������������    | 29/50 00:34
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  60%|������������    | 30/50 00:35
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  62%|��������������   | 31/50 00:37
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  64%|��������������   | 32/50 00:38
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  66%|��������������   | 33/50 00:39
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  68%|��������������   | 34/50 00:40
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  70%|��������������   | 35/50 00:41
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  72%|����������������  | 36/50 00:43
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  74%|����������������  | 37/50 00:44
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  76%|����������������  | 38/50 00:45
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  78%|����������������  | 39/50 00:46
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  80%|����������������  | 40/50 00:47
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  82%|������������������ | 41/50 00:49
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  84%|������������������ | 42/50 00:50
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  86%|������������������ | 43/50 00:51
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  88%|������������������ | 44/50 00:52
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  90%|������������������ | 45/50 00:53
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  92%|��������������������| 46/50 00:55
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  94%|��������������������| 47/50 00:56
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  96%|��������������������| 48/50 00:57
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  98%|��������������������| 49/50 00:58
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:59
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:59
+                   all       1587       2382      0.742      0.713      0.772      0.536
+EPOCH_RESULT {"epoch": 1, "epochs": 3, "elapsed_s": 353.98505091667175, "precision": 0.7416692208702985, "recall": 0.7127543670228633, "mAP50": 0.7724374516028338, "mAP50_95": 0.5355012701972235, "best_fitness": 0.5591948883377845, "fitness": 0.5591948883377845, "teacher_preservation": {"batches": 185, "mean_preservation_loss": 0.006592421695539677, "matched_anchors_by_class": {"0": 12911, "2": 8698, "3": 10501, "1": 12881}, "strength": 5.0, "validation_teacher_used": false}}
+
+      Epoch    GPU_mem   box_loss   obj_loss   cls_loss  Instances       Size
+
+  0%|          | 0/185 00:00
+        1/2         0G    0.02583    0.01131   0.007564         27        320:   0%|          | 0/185 00:01
+        1/2         0G    0.02583    0.01131   0.007564         27        320:   1%|          | 1/185 00:01
+        1/2         0G    0.02455   0.009844    0.01287         26        320:   1%|          | 1/185 00:02
+        1/2         0G    0.02455   0.009844    0.01287         26        320:   1%|          | 2/185 00:02
+        1/2         0G    0.02829   0.009056    0.01586         22        320:   1%|          | 2/185 00:04
+        1/2         0G    0.02829   0.009056    0.01586         22        320:   2%|��         | 3/185 00:04
+        1/2         0G    0.03109   0.009453    0.01674         26        320:   2%|��         | 3/185 00:05
+        1/2         0G    0.03109   0.009453    0.01674         26        320:   2%|��         | 4/185 00:05
+        1/2         0G    0.03154    0.01017    0.01838         36        320:   2%|��         | 4/185 00:07
+        1/2         0G    0.03154    0.01017    0.01838         36        320:   3%|��         | 5/185 00:07
+        1/2         0G    0.03085    0.01059    0.01788         38        320:   3%|��         | 5/185 00:08
+        1/2         0G    0.03085    0.01059    0.01788         38        320:   3%|��         | 6/185 00:08
+        1/2         0G    0.03099    0.01071    0.01749         28        320:   3%|��         | 6/185 00:09
+        1/2         0G    0.03099    0.01071    0.01749         28        320:   4%|��         | 7/185 00:09
+        1/2         0G    0.03064    0.01052    0.01734         27        320:   4%|��         | 7/185 00:11
+        1/2         0G    0.03064    0.01052    0.01734         27        320:   4%|��         | 8/185 00:11
+        1/2         0G     0.0308    0.01056    0.01847         33        320:   4%|��         | 8/185 00:12
+        1/2         0G     0.0308    0.01056    0.01847         33        320:   5%|��         | 9/185 00:12
+        1/2         0G    0.03103    0.01038    0.01797         24        320:   5%|��         | 9/185 00:14
+        1/2         0G    0.03103    0.01038    0.01797         24        320:   5%|��         | 10/185 00:14
+        1/2         0G    0.03233    0.01084    0.01696         41        320:   5%|��         | 10/185 00:15
+        1/2         0G    0.03233    0.01084    0.01696         41        320:   6%|��         | 11/185 00:15
+        1/2         0G    0.03285    0.01083     0.0172         27        320:   6%|��         | 11/185 00:17
+        1/2         0G    0.03285    0.01083     0.0172         27        320:   6%|��         | 12/185 00:17
+        1/2         0G    0.03242    0.01066    0.01673         19        320:   6%|��         | 12/185 00:18
+        1/2         0G    0.03242    0.01066    0.01673         19        320:   7%|��         | 13/185 00:18
+        1/2         0G    0.03232    0.01074    0.01626         28        320:   7%|��         | 13/185 00:19
+        1/2         0G    0.03232    0.01074    0.01626         28        320:   8%|��         | 14/185 00:19
+        1/2         0G    0.03265    0.01071    0.01604         30        320:   8%|��         | 14/185 00:21
+        1/2         0G    0.03265    0.01071    0.01604         30        320:   8%|��         | 15/185 00:21
+        1/2         0G    0.03439    0.01189    0.01573         72        320:   8%|��         | 15/185 00:22
+        1/2         0G    0.03439    0.01189    0.01573         72        320:   9%|��         | 16/185 00:22
+        1/2         0G     0.0343    0.01177    0.01565         25        320:   9%|��         | 16/185 00:24
+        1/2         0G     0.0343    0.01177    0.01565         25        320:   9%|��         | 17/185 00:24
+        1/2         0G    0.03405    0.01182    0.01546         37        320:   9%|��         | 17/185 00:25
+        1/2         0G    0.03405    0.01182    0.01546         37        320:  10%|��         | 18/185 00:25
+        1/2         0G    0.03372    0.01171    0.01529         29        320:  10%|��         | 18/185 00:27
+        1/2         0G    0.03372    0.01171    0.01529         29        320:  10%|��         | 19/185 00:27
+        1/2         0G    0.03395     0.0119    0.01519         42        320:  10%|��         | 19/185 00:28
+        1/2         0G    0.03395     0.0119    0.01519         42        320:  11%|��         | 20/185 00:28
+        1/2         0G    0.03404    0.01198    0.01501         33        320:  11%|��         | 20/185 00:29
+        1/2         0G    0.03404    0.01198    0.01501         33        320:  11%|����        | 21/185 00:29
+        1/2         0G    0.03359    0.01192    0.01484         35        320:  11%|����        | 21/185 00:31
+        1/2         0G    0.03359    0.01192    0.01484         35        320:  12%|����        | 22/185 00:31
+        1/2         0G    0.03331    0.01176    0.01475         22        320:  12%|����        | 22/185 00:32
+        1/2         0G    0.03331    0.01176    0.01475         22        320:  12%|����        | 23/185 00:32
+        1/2         0G    0.03395    0.01184    0.01549         35        320:  12%|����        | 23/185 00:34
+        1/2         0G    0.03395    0.01184    0.01549         35        320:  13%|����        | 24/185 00:34
+        1/2         0G    0.03426    0.01178    0.01543         28        320:  13%|����        | 24/185 00:35
+        1/2         0G    0.03426    0.01178    0.01543         28        320:  14%|����        | 25/185 00:35
+        1/2         0G    0.03419    0.01189    0.01551         42        320:  14%|����        | 25/185 00:37
+        1/2         0G    0.03419    0.01189    0.01551         42        320:  14%|����        | 26/185 00:37
+        1/2         0G    0.03419    0.01194    0.01522         27        320:  14%|����        | 26/185 00:38
+        1/2         0G    0.03419    0.01194    0.01522         27        320:  15%|����        | 27/185 00:38
+        1/2         0G    0.03439    0.01212    0.01515         43        320:  15%|����        | 27/185 00:39
+        1/2         0G    0.03439    0.01212    0.01515         43        320:  15%|����        | 28/185 00:39
+        1/2         0G    0.03436    0.01221     0.0151         33        320:  15%|����        | 28/185 00:41
+        1/2         0G    0.03436    0.01221     0.0151         33        320:  16%|����        | 29/185 00:41
+        1/2         0G    0.03482    0.01226    0.01482         36        320:  16%|����        | 29/185 00:42
+        1/2         0G    0.03482    0.01226    0.01482         36        320:  16%|����        | 30/185 00:42
+        1/2         0G    0.03487    0.01226    0.01465         30        320:  16%|����        | 30/185 00:44
+        1/2         0G    0.03487    0.01226    0.01465         30        320:  17%|����        | 31/185 00:44
+        1/2         0G    0.03464    0.01217      0.015         30        320:  17%|����        | 31/185 00:45
+        1/2         0G    0.03464    0.01217      0.015         30        320:  17%|����        | 32/185 00:45
+        1/2         0G    0.03444    0.01216    0.01482         28        320:  17%|����        | 32/185 00:47
+        1/2         0G    0.03444    0.01216    0.01482         28        320:  18%|����        | 33/185 00:47
+        1/2         0G    0.03425    0.01203    0.01482         22        320:  18%|����        | 33/185 00:48
+        1/2         0G    0.03425    0.01203    0.01482         22        320:  18%|����        | 34/185 00:48
+        1/2         0G    0.03443    0.01219    0.01478         47        320:  18%|����        | 34/185 00:49
+        1/2         0G    0.03443    0.01219    0.01478         47        320:  19%|����        | 35/185 00:49
+        1/2         0G    0.03471    0.01231    0.01449         39        320:  19%|����        | 35/185 00:51
+        1/2         0G    0.03471    0.01231    0.01449         39        320:  19%|����        | 36/185 00:51
+        1/2         0G    0.03467    0.01229    0.01467         35        320:  19%|����        | 36/185 00:52
+        1/2         0G    0.03467    0.01229    0.01467         35        320:  20%|����        | 37/185 00:52
+        1/2         0G    0.03471    0.01232    0.01469         35        320:  20%|����        | 37/185 00:54
+        1/2         0G    0.03471    0.01232    0.01469         35        320:  21%|����        | 38/185 00:54
+        1/2         0G    0.03452    0.01227    0.01472         26        320:  21%|����        | 38/185 00:55
+        1/2         0G    0.03452    0.01227    0.01472         26        320:  21%|����        | 39/185 00:55
+        1/2         0G    0.03438     0.0122    0.01467         25        320:  21%|����        | 39/185 00:57
+        1/2         0G    0.03438     0.0122    0.01467         25        320:  22%|������       | 40/185 00:57
+        1/2         0G    0.03457     0.0122    0.01463         30        320:  22%|������       | 40/185 00:58
+        1/2         0G    0.03457     0.0122    0.01463         30        320:  22%|������       | 41/185 00:58
+        1/2         0G    0.03452    0.01222    0.01471         33        320:  22%|������       | 41/185 01:00
+        1/2         0G    0.03452    0.01222    0.01471         33        320:  23%|������       | 42/185 01:00
+        1/2         0G    0.03441     0.0122    0.01481         33        320:  23%|������       | 42/185 01:01
+        1/2         0G    0.03441     0.0122    0.01481         33        320:  23%|������       | 43/185 01:01
+        1/2         0G    0.03441    0.01215    0.01459         24        320:  23%|������       | 43/185 01:02
+        1/2         0G    0.03441    0.01215    0.01459         24        320:  24%|������       | 44/185 01:02
+        1/2         0G    0.03425    0.01212    0.01487         31        320:  24%|������       | 44/185 01:04
+        1/2         0G    0.03425    0.01212    0.01487         31        320:  24%|������       | 45/185 01:04
+        1/2         0G    0.03415     0.0121    0.01488         27        320:  24%|������       | 45/185 01:05
+        1/2         0G    0.03415     0.0121    0.01488         27        320:  25%|������       | 46/185 01:05
+        1/2         0G    0.03407    0.01209    0.01504         30        320:  25%|������       | 46/185 01:07
+        1/2         0G    0.03407    0.01209    0.01504         30        320:  25%|������       | 47/185 01:07
+        1/2         0G    0.03407    0.01208    0.01508         33        320:  25%|������       | 47/185 01:08
+        1/2         0G    0.03407    0.01208    0.01508         33        320:  26%|������       | 48/185 01:08
+        1/2         0G      0.034    0.01204    0.01496         28        320:  26%|������       | 48/185 01:10
+        1/2         0G      0.034    0.01204    0.01496         28        320:  26%|������       | 49/185 01:10
+        1/2         0G    0.03409    0.01213     0.0148         42        320:  26%|������       | 49/185 01:11
+        1/2         0G    0.03409    0.01213     0.0148         42        320:  27%|������       | 50/185 01:11
+        1/2         0G    0.03423    0.01214    0.01474         31        320:  27%|������       | 50/185 01:12
+        1/2         0G    0.03423    0.01214    0.01474         31        320:  28%|������       | 51/185 01:12
+        1/2         0G    0.03428    0.01214    0.01475         31        320:  28%|������       | 51/185 01:14
+        1/2         0G    0.03428    0.01214    0.01475         31        320:  28%|������       | 52/185 01:14
+        1/2         0G    0.03435    0.01218    0.01467         39        320:  28%|������       | 52/185 01:15
+        1/2         0G    0.03435    0.01218    0.01467         39        320:  29%|������       | 53/185 01:15
+        1/2         0G    0.03431    0.01216    0.01477         27        320:  29%|������       | 53/185 01:17
+        1/2         0G    0.03431    0.01216    0.01477         27        320:  29%|������       | 54/185 01:17
+        1/2         0G    0.03445    0.01213    0.01471         26        320:  29%|������       | 54/185 01:18
+        1/2         0G    0.03445    0.01213    0.01471         26        320:  30%|������       | 55/185 01:18
+        1/2         0G    0.03439    0.01213     0.0147         37        320:  30%|������       | 55/185 01:20
+        1/2         0G    0.03439    0.01213     0.0147         37        320:  30%|������       | 56/185 01:20
+        1/2         0G    0.03454    0.01226    0.01455         54        320:  30%|������       | 56/185 01:21
+        1/2         0G    0.03454    0.01226    0.01455         54        320:  31%|������       | 57/185 01:21
+        1/2         0G    0.03447    0.01224    0.01459         28        320:  31%|������       | 57/185 01:22
+        1/2         0G    0.03447    0.01224    0.01459         28        320:  31%|��������      | 58/185 01:22
+        1/2         0G    0.03444    0.01227    0.01457         41        320:  31%|��������      | 58/185 01:24
+        1/2         0G    0.03444    0.01227    0.01457         41        320:  32%|��������      | 59/185 01:24
+        1/2         0G    0.03444    0.01228    0.01443         30        320:  32%|��������      | 59/185 01:25
+        1/2         0G    0.03444    0.01228    0.01443         30        320:  32%|��������      | 60/185 01:25
+        1/2         0G    0.03441     0.0123    0.01433         31        320:  32%|��������      | 60/185 01:27
+        1/2         0G    0.03441     0.0123    0.01433         31        320:  33%|��������      | 61/185 01:27
+        1/2         0G    0.03449    0.01235    0.01425         40        320:  33%|��������      | 61/185 01:28
+        1/2         0G    0.03449    0.01235    0.01425         40        320:  34%|��������      | 62/185 01:28
+        1/2         0G    0.03451    0.01236    0.01425         30        320:  34%|��������      | 62/185 01:29
+        1/2         0G    0.03451    0.01236    0.01425         30        320:  34%|��������      | 63/185 01:29
+        1/2         0G    0.03444    0.01231    0.01421         24        320:  34%|��������      | 63/185 01:31
+        1/2         0G    0.03444    0.01231    0.01421         24        320:  35%|��������      | 64/185 01:31
+        1/2         0G    0.03438    0.01232    0.01415         36        320:  35%|��������      | 64/185 01:32
+        1/2         0G    0.03438    0.01232    0.01415         36        320:  35%|��������      | 65/185 01:32
+        1/2         0G    0.03436    0.01232    0.01419         38        320:  35%|��������      | 65/185 01:34
+        1/2         0G    0.03436    0.01232    0.01419         38        320:  36%|��������      | 66/185 01:34
+        1/2         0G    0.03425    0.01231    0.01432         32        320:  36%|��������      | 66/185 01:35
+        1/2         0G    0.03425    0.01231    0.01432         32        320:  36%|��������      | 67/185 01:35
+        1/2         0G    0.03424    0.01232    0.01443         34        320:  36%|��������      | 67/185 01:37
+        1/2         0G    0.03424    0.01232    0.01443         34        320:  37%|��������      | 68/185 01:37
+        1/2         0G    0.03427    0.01235    0.01442         38        320:  37%|��������      | 68/185 01:38
+        1/2         0G    0.03427    0.01235    0.01442         38        320:  37%|��������      | 69/185 01:38
+        1/2         0G     0.0342    0.01236    0.01445         38        320:  37%|��������      | 69/185 01:39
+        1/2         0G     0.0342    0.01236    0.01445         38        320:  38%|��������      | 70/185 01:39
+        1/2         0G    0.03407    0.01233    0.01433         30        320:  38%|��������      | 70/185 01:41
+        1/2         0G    0.03407    0.01233    0.01433         30        320:  38%|��������      | 71/185 01:41
+        1/2         0G    0.03406    0.01235    0.01439         33        320:  38%|��������      | 71/185 01:42
+        1/2         0G    0.03406    0.01235    0.01439         33        320:  39%|��������      | 72/185 01:42
+        1/2         0G    0.03396    0.01231    0.01436         20        320:  39%|��������      | 72/185 01:44
+        1/2         0G    0.03396    0.01231    0.01436         20        320:  39%|��������      | 73/185 01:44
+        1/2         0G    0.03402     0.0123    0.01434         26        320:  39%|��������      | 73/185 01:45
+        1/2         0G    0.03402     0.0123    0.01434         26        320:  40%|��������      | 74/185 01:45
+        1/2         0G    0.03398     0.0123    0.01424         35        320:  40%|��������      | 74/185 01:46
+        1/2         0G    0.03398     0.0123    0.01424         35        320:  41%|��������      | 75/185 01:46
+        1/2         0G    0.03401    0.01232     0.0143         29        320:  41%|��������      | 75/185 01:48
+        1/2         0G    0.03401    0.01232     0.0143         29        320:  41%|��������      | 76/185 01:48
+        1/2         0G    0.03401    0.01231    0.01426         34        320:  41%|��������      | 76/185 01:49
+        1/2         0G    0.03401    0.01231    0.01426         34        320:  42%|����������     | 77/185 01:49
+        1/2         0G    0.03394    0.01226    0.01417         24        320:  42%|����������     | 77/185 01:51
+        1/2         0G    0.03394    0.01226    0.01417         24        320:  42%|����������     | 78/185 01:51
+        1/2         0G    0.03389    0.01224    0.01416         31        320:  42%|����������     | 78/185 01:52
+        1/2         0G    0.03389    0.01224    0.01416         31        320:  43%|����������     | 79/185 01:52
+        1/2         0G    0.03391    0.01223    0.01419         26        320:  43%|����������     | 79/185 01:54
+        1/2         0G    0.03391    0.01223    0.01419         26        320:  43%|����������     | 80/185 01:54
+        1/2         0G    0.03394     0.0122    0.01413         27        320:  43%|����������     | 80/185 01:55
+        1/2         0G    0.03394     0.0122    0.01413         27        320:  44%|����������     | 81/185 01:55
+        1/2         0G    0.03394    0.01221    0.01413         31        320:  44%|����������     | 81/185 01:56
+        1/2         0G    0.03394    0.01221    0.01413         31        320:  44%|����������     | 82/185 01:56
+        1/2         0G    0.03387    0.01218    0.01428         26        320:  44%|����������     | 82/185 01:58
+        1/2         0G    0.03387    0.01218    0.01428         26        320:  45%|����������     | 83/185 01:58
+        1/2         0G    0.03389    0.01218    0.01417         31        320:  45%|����������     | 83/185 01:59
+        1/2         0G    0.03389    0.01218    0.01417         31        320:  45%|����������     | 84/185 01:59
+        1/2         0G     0.0338    0.01214    0.01414         24        320:  45%|����������     | 84/185 02:01
+        1/2         0G     0.0338    0.01214    0.01414         24        320:  46%|����������     | 85/185 02:01
+        1/2         0G    0.03379     0.0121    0.01419         26        320:  46%|����������     | 85/185 02:02
+        1/2         0G    0.03379     0.0121    0.01419         26        320:  46%|����������     | 86/185 02:02
+        1/2         0G    0.03377    0.01209    0.01416         27        320:  46%|����������     | 86/185 02:03
+        1/2         0G    0.03377    0.01209    0.01416         27        320:  47%|����������     | 87/185 02:03
+        1/2         0G     0.0337    0.01204    0.01416         19        320:  47%|����������     | 87/185 02:05
+        1/2         0G     0.0337    0.01204    0.01416         19        320:  48%|����������     | 88/185 02:05
+        1/2         0G    0.03365    0.01202    0.01416         27        320:  48%|����������     | 88/185 02:06
+        1/2         0G    0.03365    0.01202    0.01416         27        320:  48%|����������     | 89/185 02:06
+        1/2         0G     0.0336    0.01199    0.01418         22        320:  48%|����������     | 89/185 02:08
+        1/2         0G     0.0336    0.01199    0.01418         22        320:  49%|����������     | 90/185 02:08
+        1/2         0G    0.03351    0.01196    0.01409         23        320:  49%|����������     | 90/185 02:09
+        1/2         0G    0.03351    0.01196    0.01409         23        320:  49%|����������     | 91/185 02:09
+        1/2         0G     0.0335    0.01195    0.01418         32        320:  49%|����������     | 91/185 02:11
+        1/2         0G     0.0335    0.01195    0.01418         32        320:  50%|����������     | 92/185 02:11
+        1/2         0G    0.03339    0.01191    0.01408         25        320:  50%|����������     | 92/185 02:12
+        1/2         0G    0.03339    0.01191    0.01408         25        320:  50%|����������     | 93/185 02:12
+        1/2         0G    0.03335    0.01192      0.014         31        320:  50%|����������     | 93/185 02:13
+        1/2         0G    0.03335    0.01192      0.014         31        320:  51%|����������     | 94/185 02:13
+        1/2         0G    0.03332    0.01193    0.01399         37        320:  51%|����������     | 94/185 02:15
+        1/2         0G    0.03332    0.01193    0.01399         37        320:  51%|������������    | 95/185 02:15
+        1/2         0G    0.03331    0.01194    0.01396         33        320:  51%|������������    | 95/185 02:16
+        1/2         0G    0.03331    0.01194    0.01396         33        320:  52%|������������    | 96/185 02:16
+        1/2         0G    0.03334    0.01194    0.01406         32        320:  52%|������������    | 96/185 02:18
+        1/2         0G    0.03334    0.01194    0.01406         32        320:  52%|������������    | 97/185 02:18
+        1/2         0G    0.03331    0.01195    0.01406         34        320:  52%|������������    | 97/185 02:19
+        1/2         0G    0.03331    0.01195    0.01406         34        320:  53%|������������    | 98/185 02:19
+        1/2         0G    0.03327    0.01197    0.01401         37        320:  53%|������������    | 98/185 02:20
+        1/2         0G    0.03327    0.01197    0.01401         37        320:  54%|������������    | 99/185 02:20
+        1/2         0G    0.03321    0.01196    0.01395         25        320:  54%|������������    | 99/185 02:22
+        1/2         0G    0.03321    0.01196    0.01395         25        320:  54%|������������    | 100/185 02:22
+        1/2         0G    0.03331    0.01199    0.01395         42        320:  54%|������������    | 100/185 02:23
+        1/2         0G    0.03331    0.01199    0.01395         42        320:  55%|������������    | 101/185 02:23
+        1/2         0G    0.03329    0.01202    0.01402         43        320:  55%|������������    | 101/185 02:25
+        1/2         0G    0.03329    0.01202    0.01402         43        320:  55%|������������    | 102/185 02:25
+        1/2         0G    0.03333    0.01201    0.01398         25        320:  55%|������������    | 102/185 02:26
+        1/2         0G    0.03333    0.01201    0.01398         25        320:  56%|������������    | 103/185 02:26
+        1/2         0G     0.0333    0.01201    0.01392         38        320:  56%|������������    | 103/185 02:27
+        1/2         0G     0.0333    0.01201    0.01392         38        320:  56%|������������    | 104/185 02:27
+        1/2         0G    0.03328    0.01203    0.01394         39        320:  56%|������������    | 104/185 02:29
+        1/2         0G    0.03328    0.01203    0.01394         39        320:  57%|������������    | 105/185 02:29
+        1/2         0G    0.03321    0.01203    0.01389         28        320:  57%|������������    | 105/185 02:30
+        1/2         0G    0.03321    0.01203    0.01389         28        320:  57%|������������    | 106/185 02:30
+        1/2         0G    0.03319    0.01203    0.01387         34        320:  57%|������������    | 106/185 02:32
+        1/2         0G    0.03319    0.01203    0.01387         34        320:  58%|������������    | 107/185 02:32
+        1/2         0G     0.0332    0.01202    0.01388         27        320:  58%|������������    | 107/185 02:33
+        1/2         0G     0.0332    0.01202    0.01388         27        320:  58%|������������    | 108/185 02:33
+        1/2         0G    0.03317      0.012    0.01394         27        320:  58%|������������    | 108/185 02:34
+        1/2         0G    0.03317      0.012    0.01394         27        320:  59%|������������    | 109/185 02:34
+        1/2         0G    0.03327    0.01207    0.01392         45        320:  59%|������������    | 109/185 02:36
+        1/2         0G    0.03327    0.01207    0.01392         45        320:  59%|������������    | 110/185 02:36
+        1/2         0G    0.03324    0.01206    0.01396         28        320:  59%|������������    | 110/185 02:37
+        1/2         0G    0.03324    0.01206    0.01396         28        320:  60%|������������    | 111/185 02:37
+        1/2         0G    0.03323    0.01206    0.01402         31        320:  60%|������������    | 111/185 02:39
+        1/2         0G    0.03323    0.01206    0.01402         31        320:  61%|������������    | 112/185 02:39
+        1/2         0G    0.03317    0.01206    0.01401         29        320:  61%|������������    | 112/185 02:40
+        1/2         0G    0.03317    0.01206    0.01401         29        320:  61%|������������    | 113/185 02:40
+        1/2         0G    0.03312    0.01203    0.01418         25        320:  61%|������������    | 113/185 02:41
+        1/2         0G    0.03312    0.01203    0.01418         25        320:  62%|��������������   | 114/185 02:41
+        1/2         0G    0.03312      0.012    0.01424         26        320:  62%|��������������   | 114/185 02:43
+        1/2         0G    0.03312      0.012    0.01424         26        320:  62%|��������������   | 115/185 02:43
+        1/2         0G    0.03312      0.012    0.01426         39        320:  62%|��������������   | 115/185 02:44
+        1/2         0G    0.03312      0.012    0.01426         39        320:  63%|��������������   | 116/185 02:44
+        1/2         0G    0.03307    0.01198    0.01424         24        320:  63%|��������������   | 116/185 02:46
+        1/2         0G    0.03307    0.01198    0.01424         24        320:  63%|��������������   | 117/185 02:46
+        1/2         0G    0.03308    0.01198    0.01423         29        320:  63%|��������������   | 117/185 02:47
+        1/2         0G    0.03308    0.01198    0.01423         29        320:  64%|��������������   | 118/185 02:47
+        1/2         0G    0.03305    0.01197     0.0142         35        320:  64%|��������������   | 118/185 02:48
+        1/2         0G    0.03305    0.01197     0.0142         35        320:  64%|��������������   | 119/185 02:48
+        1/2         0G    0.03296    0.01194    0.01422         21        320:  64%|��������������   | 119/185 02:50
+        1/2         0G    0.03296    0.01194    0.01422         21        320:  65%|��������������   | 120/185 02:50
+        1/2         0G    0.03303    0.01192    0.01417         22        320:  65%|��������������   | 120/185 02:51
+        1/2         0G    0.03303    0.01192    0.01417         22        320:  65%|��������������   | 121/185 02:51
+        1/2         0G    0.03305    0.01192    0.01415         27        320:  65%|��������������   | 121/185 02:53
+        1/2         0G    0.03305    0.01192    0.01415         27        320:  66%|��������������   | 122/185 02:53
+        1/2         0G    0.03312    0.01191    0.01419         32        320:  66%|��������������   | 122/185 02:54
+        1/2         0G    0.03312    0.01191    0.01419         32        320:  66%|��������������   | 123/185 02:54
+        1/2         0G    0.03309    0.01191    0.01416         32        320:  66%|��������������   | 123/185 02:56
+        1/2         0G    0.03309    0.01191    0.01416         32        320:  67%|��������������   | 124/185 02:56
+        1/2         0G    0.03312    0.01194    0.01416         39        320:  67%|��������������   | 124/185 02:57
+        1/2         0G    0.03312    0.01194    0.01416         39        320:  68%|��������������   | 125/185 02:57
+        1/2         0G    0.03308    0.01196     0.0142         33        320:  68%|��������������   | 125/185 02:58
+        1/2         0G    0.03308    0.01196     0.0142         33        320:  68%|��������������   | 126/185 02:58
+        1/2         0G      0.033    0.01193    0.01425         21        320:  68%|��������������   | 126/185 03:00
+        1/2         0G      0.033    0.01193    0.01425         21        320:  69%|��������������   | 127/185 03:00
+        1/2         0G    0.03298    0.01193    0.01427         29        320:  69%|��������������   | 127/185 03:01
+        1/2         0G    0.03298    0.01193    0.01427         29        320:  69%|��������������   | 128/185 03:01
+        1/2         0G      0.033    0.01194    0.01426         28        320:  69%|��������������   | 128/185 03:03
+        1/2         0G      0.033    0.01194    0.01426         28        320:  70%|��������������   | 129/185 03:03
+        1/2         0G    0.03303    0.01194    0.01432         31        320:  70%|��������������   | 129/185 03:04
+        1/2         0G    0.03303    0.01194    0.01432         31        320:  70%|��������������   | 130/185 03:04
+        1/2         0G    0.03299    0.01193    0.01426         28        320:  70%|��������������   | 130/185 03:05
+        1/2         0G    0.03299    0.01193    0.01426         28        320:  71%|��������������   | 131/185 03:05
+        1/2         0G    0.03307    0.01197    0.01423         39        320:  71%|��������������   | 131/185 03:07
+        1/2         0G    0.03307    0.01197    0.01423         39        320:  71%|����������������  | 132/185 03:07
+        1/2         0G    0.03305    0.01195    0.01423         22        320:  71%|����������������  | 132/185 03:08
+        1/2         0G    0.03305    0.01195    0.01423         22        320:  72%|����������������  | 133/185 03:08
+        1/2         0G    0.03309    0.01195    0.01424         28        320:  72%|����������������  | 133/185 03:10
+        1/2         0G    0.03309    0.01195    0.01424         28        320:  72%|����������������  | 134/185 03:10
+        1/2         0G    0.03305    0.01195    0.01426         26        320:  72%|����������������  | 134/185 03:11
+        1/2         0G    0.03305    0.01195    0.01426         26        320:  73%|����������������  | 135/185 03:11
+        1/2         0G    0.03303    0.01193    0.01424         25        320:  73%|����������������  | 135/185 03:13
+        1/2         0G    0.03303    0.01193    0.01424         25        320:  74%|����������������  | 136/185 03:13
+        1/2         0G    0.03302    0.01195    0.01426         35        320:  74%|����������������  | 136/185 03:14
+        1/2         0G    0.03302    0.01195    0.01426         35        320:  74%|����������������  | 137/185 03:14
+        1/2         0G    0.03304    0.01194    0.01429         29        320:  74%|����������������  | 137/185 03:15
+        1/2         0G    0.03304    0.01194    0.01429         29        320:  75%|����������������  | 138/185 03:15
+        1/2         0G    0.03304    0.01195    0.01426         35        320:  75%|����������������  | 138/185 03:17
+        1/2         0G    0.03304    0.01195    0.01426         35        320:  75%|����������������  | 139/185 03:17
+        1/2         0G    0.03301    0.01196     0.0142         33        320:  75%|����������������  | 139/185 03:18
+        1/2         0G    0.03301    0.01196     0.0142         33        320:  76%|����������������  | 140/185 03:18
+        1/2         0G    0.03303    0.01197    0.01422         31        320:  76%|����������������  | 140/185 03:20
+        1/2         0G    0.03303    0.01197    0.01422         31        320:  76%|����������������  | 141/185 03:20
+        1/2         0G    0.03304    0.01195     0.0142         20        320:  76%|����������������  | 141/185 03:21
+        1/2         0G    0.03304    0.01195     0.0142         20        320:  77%|����������������  | 142/185 03:21
+        1/2         0G    0.03305    0.01196    0.01417         38        320:  77%|����������������  | 142/185 03:22
+        1/2         0G    0.03305    0.01196    0.01417         38        320:  77%|����������������  | 143/185 03:22
+        1/2         0G    0.03303    0.01195    0.01414         31        320:  77%|����������������  | 143/185 03:24
+        1/2         0G    0.03303    0.01195    0.01414         31        320:  78%|����������������  | 144/185 03:24
+        1/2         0G    0.03302    0.01194    0.01417         28        320:  78%|����������������  | 144/185 03:25
+        1/2         0G    0.03302    0.01194    0.01417         28        320:  78%|����������������  | 145/185 03:25
+        1/2         0G    0.03303    0.01194    0.01425         25        320:  78%|����������������  | 145/185 03:27
+        1/2         0G    0.03303    0.01194    0.01425         25        320:  79%|����������������  | 146/185 03:27
+        1/2         0G    0.03311    0.01195    0.01431         39        320:  79%|����������������  | 146/185 03:28
+        1/2         0G    0.03311    0.01195    0.01431         39        320:  79%|����������������  | 147/185 03:28
+        1/2         0G    0.03306    0.01193    0.01426         25        320:  79%|����������������  | 147/185 03:30
+        1/2         0G    0.03306    0.01193    0.01426         25        320:  80%|����������������  | 148/185 03:30
+        1/2         0G    0.03302     0.0119    0.01425         20        320:  80%|����������������  | 148/185 03:31
+        1/2         0G    0.03302     0.0119    0.01425         20        320:  81%|����������������  | 149/185 03:31
+        1/2         0G    0.03298    0.01187    0.01423         22        320:  81%|����������������  | 149/185 03:32
+        1/2         0G    0.03298    0.01187    0.01423         22        320:  81%|����������������  | 150/185 03:32
+        1/2         0G    0.03304    0.01187    0.01421         34        320:  81%|����������������  | 150/185 03:34
+        1/2         0G    0.03304    0.01187    0.01421         34        320:  82%|������������������ | 151/185 03:34
+        1/2         0G    0.03305    0.01186    0.01418         30        320:  82%|������������������ | 151/185 03:35
+        1/2         0G    0.03305    0.01186    0.01418         30        320:  82%|������������������ | 152/185 03:35
+        1/2         0G    0.03307    0.01188    0.01416         37        320:  82%|������������������ | 152/185 03:37
+        1/2         0G    0.03307    0.01188    0.01416         37        320:  83%|������������������ | 153/185 03:37
+        1/2         0G    0.03308    0.01188    0.01413         30        320:  83%|������������������ | 153/185 03:38
+        1/2         0G    0.03308    0.01188    0.01413         30        320:  83%|������������������ | 154/185 03:38
+        1/2         0G    0.03308    0.01189     0.0141         34        320:  83%|������������������ | 154/185 03:39
+        1/2         0G    0.03308    0.01189     0.0141         34        320:  84%|������������������ | 155/185 03:39
+        1/2         0G    0.03305     0.0119     0.0141         27        320:  84%|������������������ | 155/185 03:41
+        1/2         0G    0.03305     0.0119     0.0141         27        320:  84%|������������������ | 156/185 03:41
+        1/2         0G    0.03311    0.01191    0.01406         28        320:  84%|������������������ | 156/185 03:42
+        1/2         0G    0.03311    0.01191    0.01406         28        320:  85%|������������������ | 157/185 03:42
+        1/2         0G    0.03311    0.01192    0.01407         30        320:  85%|������������������ | 157/185 03:44
+        1/2         0G    0.03311    0.01192    0.01407         30        320:  85%|������������������ | 158/185 03:44
+        1/2         0G    0.03307    0.01191    0.01406         26        320:  85%|������������������ | 158/185 03:45
+        1/2         0G    0.03307    0.01191    0.01406         26        320:  86%|������������������ | 159/185 03:45
+        1/2         0G    0.03309     0.0119    0.01407         28        320:  86%|������������������ | 159/185 03:46
+        1/2         0G    0.03309     0.0119    0.01407         28        320:  86%|������������������ | 160/185 03:46
+        1/2         0G    0.03308    0.01188    0.01407         25        320:  86%|������������������ | 160/185 03:48
+        1/2         0G    0.03308    0.01188    0.01407         25        320:  87%|������������������ | 161/185 03:48
+        1/2         0G    0.03302    0.01186    0.01407         18        320:  87%|������������������ | 161/185 03:49
+        1/2         0G    0.03302    0.01186    0.01407         18        320:  88%|������������������ | 162/185 03:49
+        1/2         0G    0.03301    0.01187     0.0141         35        320:  88%|������������������ | 162/185 03:51
+        1/2         0G    0.03301    0.01187     0.0141         35        320:  88%|������������������ | 163/185 03:51
+        1/2         0G    0.03295    0.01184    0.01417         20        320:  88%|������������������ | 163/185 03:52
+        1/2         0G    0.03295    0.01184    0.01417         20        320:  89%|������������������ | 164/185 03:52
+        1/2         0G    0.03295    0.01182    0.01425         24        320:  89%|������������������ | 164/185 03:53
+        1/2         0G    0.03295    0.01182    0.01425         24        320:  89%|������������������ | 165/185 03:53
+        1/2         0G    0.03294    0.01182     0.0143         35        320:  89%|������������������ | 165/185 03:55
+        1/2         0G    0.03294    0.01182     0.0143         35        320:  90%|������������������ | 166/185 03:55
+        1/2         0G     0.0329    0.01179    0.01433         22        320:  90%|������������������ | 166/185 03:56
+        1/2         0G     0.0329    0.01179    0.01433         22        320:  90%|������������������ | 167/185 03:56
+        1/2         0G    0.03288    0.01178    0.01439         23        320:  90%|������������������ | 167/185 03:58
+        1/2         0G    0.03288    0.01178    0.01439         23        320:  91%|������������������ | 168/185 03:58
+        1/2         0G    0.03286    0.01176    0.01439         25        320:  91%|������������������ | 168/185 03:59
+        1/2         0G    0.03286    0.01176    0.01439         25        320:  91%|��������������������| 169/185 03:59
+        1/2         0G     0.0329    0.01179    0.01437         42        320:  91%|��������������������| 169/185 04:01
+        1/2         0G     0.0329    0.01179    0.01437         42        320:  92%|��������������������| 170/185 04:01
+        1/2         0G    0.03287    0.01179    0.01432         35        320:  92%|��������������������| 170/185 04:02
+        1/2         0G    0.03287    0.01179    0.01432         35        320:  92%|��������������������| 171/185 04:02
+        1/2         0G    0.03292    0.01181    0.01427         37        320:  92%|��������������������| 171/185 04:03
+        1/2         0G    0.03292    0.01181    0.01427         37        320:  93%|��������������������| 172/185 04:03
+        1/2         0G    0.03287     0.0118    0.01428         27        320:  93%|��������������������| 172/185 04:05
+        1/2         0G    0.03287     0.0118    0.01428         27        320:  94%|��������������������| 173/185 04:05
+        1/2         0G    0.03293    0.01184    0.01428         48        320:  94%|��������������������| 173/185 04:06
+        1/2         0G    0.03293    0.01184    0.01428         48        320:  94%|��������������������| 174/185 04:06
+        1/2         0G    0.03289    0.01182    0.01432         29        320:  94%|��������������������| 174/185 04:08
+        1/2         0G    0.03289    0.01182    0.01432         29        320:  95%|��������������������| 175/185 04:08
+        1/2         0G    0.03286     0.0118    0.01433         23        320:  95%|��������������������| 175/185 04:09
+        1/2         0G    0.03286     0.0118    0.01433         23        320:  95%|��������������������| 176/185 04:09
+        1/2         0G    0.03283    0.01179    0.01441         24        320:  95%|��������������������| 176/185 04:10
+        1/2         0G    0.03283    0.01179    0.01441         24        320:  96%|��������������������| 177/185 04:10
+        1/2         0G    0.03285    0.01182    0.01443         43        320:  96%|��������������������| 177/185 04:12
+        1/2         0G    0.03285    0.01182    0.01443         43        320:  96%|��������������������| 178/185 04:12
+        1/2         0G    0.03283    0.01183    0.01449         31        320:  96%|��������������������| 178/185 04:13
+        1/2         0G    0.03283    0.01183    0.01449         31        320:  97%|��������������������| 179/185 04:13
+        1/2         0G    0.03279     0.0118    0.01447         21        320:  97%|��������������������| 179/185 04:15
+        1/2         0G    0.03279     0.0118    0.01447         21        320:  97%|��������������������| 180/185 04:15
+        1/2         0G    0.03285    0.01181     0.0145         30        320:  97%|��������������������| 180/185 04:16
+        1/2         0G    0.03285    0.01181     0.0145         30        320:  98%|��������������������| 181/185 04:16
+        1/2         0G    0.03286     0.0118    0.01446         27        320:  98%|��������������������| 181/185 04:18
+        1/2         0G    0.03286     0.0118    0.01446         27        320:  98%|��������������������| 182/185 04:18
+        1/2         0G     0.0329    0.01184    0.01445         41        320:  98%|��������������������| 182/185 04:19
+        1/2         0G     0.0329    0.01184    0.01445         41        320:  99%|��������������������| 183/185 04:19
+        1/2         0G    0.03294    0.01187    0.01442         48        320:  99%|��������������������| 183/185 04:20
+        1/2         0G    0.03294    0.01187    0.01442         48        320:  99%|��������������������| 184/185 04:20
+        1/2         0G    0.03293    0.01188    0.01439         34        320:  99%|��������������������| 184/185 04:22
+        1/2         0G    0.03293    0.01188    0.01439         34        320: 100%|��������������������| 185/185 04:22
+        1/2         0G    0.03293    0.01188    0.01439         34        320: 100%|��������������������| 185/185 04:22
+
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   0%|          | 0/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   2%|��         | 1/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   4%|��         | 2/50 00:01
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   6%|��         | 3/50 00:02
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   8%|��         | 4/50 00:03
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  10%|��         | 5/50 00:05
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  12%|����        | 6/50 00:06
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  14%|����        | 7/50 00:07
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  16%|����        | 8/50 00:08
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  18%|����        | 9/50 00:09
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  20%|����        | 10/50 00:11
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  22%|������       | 11/50 00:12
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  24%|������       | 12/50 00:13
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  26%|������       | 13/50 00:14
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  28%|������       | 14/50 00:15
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  30%|������       | 15/50 00:17
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  32%|��������      | 16/50 00:18
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  34%|��������      | 17/50 00:19
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  36%|��������      | 18/50 00:20
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  38%|��������      | 19/50 00:21
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  40%|��������      | 20/50 00:23
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  42%|����������     | 21/50 00:24
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  44%|����������     | 22/50 00:25
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  46%|����������     | 23/50 00:26
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  48%|����������     | 24/50 00:28
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  50%|����������     | 25/50 00:29
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  52%|������������    | 26/50 00:30
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  54%|������������    | 27/50 00:31
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  56%|������������    | 28/50 00:32
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  58%|������������    | 29/50 00:34
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  60%|������������    | 30/50 00:35
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  62%|��������������   | 31/50 00:36
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  64%|��������������   | 32/50 00:37
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  66%|��������������   | 33/50 00:38
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  68%|��������������   | 34/50 00:40
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  70%|��������������   | 35/50 00:41
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  72%|����������������  | 36/50 00:42
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  74%|����������������  | 37/50 00:43
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  76%|����������������  | 38/50 00:44
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  78%|����������������  | 39/50 00:45
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  80%|����������������  | 40/50 00:47
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  82%|������������������ | 41/50 00:48
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  84%|������������������ | 42/50 00:49
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  86%|������������������ | 43/50 00:50
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  88%|������������������ | 44/50 00:52
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  90%|������������������ | 45/50 00:53
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  92%|��������������������| 46/50 00:54
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  94%|��������������������| 47/50 00:55
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  96%|��������������������| 48/50 00:56
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  98%|��������������������| 49/50 00:57
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:58
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:58
+                   all       1587       2382      0.746      0.709      0.771      0.514
+EPOCH_RESULT {"epoch": 2, "epochs": 3, "elapsed_s": 675.3008298873901, "precision": 0.7457681409969024, "recall": 0.7085135099650235, "mAP50": 0.770534185284773, "mAP50_95": 0.5141552194440547, "best_fitness": 0.5591948883377845, "fitness": 0.5397931160281266, "teacher_preservation": {"batches": 185, "mean_preservation_loss": 0.0059688281953787885, "matched_anchors_by_class": {"0": 12815, "2": 9311, "3": 10907, "1": 12989}, "strength": 5.0, "validation_teacher_used": false}}
+
+      Epoch    GPU_mem   box_loss   obj_loss   cls_loss  Instances       Size
+
+  0%|          | 0/185 00:00
+        2/2         0G    0.03484    0.01655    0.02248         38        320:   0%|          | 0/185 00:01
+        2/2         0G    0.03484    0.01655    0.02248         38        320:   1%|          | 1/185 00:01
+        2/2         0G    0.03201    0.01316    0.02168         27        320:   1%|          | 1/185 00:02
+        2/2         0G    0.03201    0.01316    0.02168         27        320:   1%|          | 2/185 00:02
+        2/2         0G    0.03012    0.01173    0.01986         23        320:   1%|          | 2/185 00:04
+        2/2         0G    0.03012    0.01173    0.01986         23        320:   2%|��         | 3/185 00:04
+        2/2         0G    0.03125    0.01161    0.01789         27        320:   2%|��         | 3/185 00:05
+        2/2         0G    0.03125    0.01161    0.01789         27        320:   2%|��         | 4/185 00:05
+        2/2         0G    0.03005    0.01129    0.01853         27        320:   2%|��         | 4/185 00:07
+        2/2         0G    0.03005    0.01129    0.01853         27        320:   3%|��         | 5/185 00:07
+        2/2         0G    0.03173    0.01197    0.01684         35        320:   3%|��         | 5/185 00:08
+        2/2         0G    0.03173    0.01197    0.01684         35        320:   3%|��         | 6/185 00:08
+        2/2         0G     0.0316    0.01182    0.01647         27        320:   3%|��         | 6/185 00:09
+        2/2         0G     0.0316    0.01182    0.01647         27        320:   4%|��         | 7/185 00:09
+        2/2         0G    0.03241    0.01192    0.01615         34        320:   4%|��         | 7/185 00:11
+        2/2         0G    0.03241    0.01192    0.01615         34        320:   4%|��         | 8/185 00:11
+        2/2         0G    0.03286    0.01198    0.01618         33        320:   4%|��         | 8/185 00:12
+        2/2         0G    0.03286    0.01198    0.01618         33        320:   5%|��         | 9/185 00:12
+        2/2         0G    0.03262    0.01167    0.01579         27        320:   5%|��         | 9/185 00:14
+        2/2         0G    0.03262    0.01167    0.01579         27        320:   5%|��         | 10/185 00:14
+        2/2         0G    0.03176    0.01145    0.01631         22        320:   5%|��         | 10/185 00:15
+        2/2         0G    0.03176    0.01145    0.01631         22        320:   6%|��         | 11/185 00:15
+        2/2         0G    0.03226    0.01174    0.01552         35        320:   6%|��         | 11/185 00:17
+        2/2         0G    0.03226    0.01174    0.01552         35        320:   6%|��         | 12/185 00:17
+        2/2         0G    0.03212    0.01178    0.01555         28        320:   6%|��         | 12/185 00:18
+        2/2         0G    0.03212    0.01178    0.01555         28        320:   7%|��         | 13/185 00:18
+        2/2         0G    0.03187    0.01176    0.01614         26        320:   7%|��         | 13/185 00:19
+        2/2         0G    0.03187    0.01176    0.01614         26        320:   8%|��         | 14/185 00:19
+        2/2         0G    0.03179    0.01181    0.01616         33        320:   8%|��         | 14/185 00:21
+        2/2         0G    0.03179    0.01181    0.01616         33        320:   8%|��         | 15/185 00:21
+        2/2         0G    0.03189    0.01173    0.01629         31        320:   8%|��         | 15/185 00:22
+        2/2         0G    0.03189    0.01173    0.01629         31        320:   9%|��         | 16/185 00:22
+        2/2         0G     0.0319    0.01163    0.01638         24        320:   9%|��         | 16/185 00:24
+        2/2         0G     0.0319    0.01163    0.01638         24        320:   9%|��         | 17/185 00:24
+        2/2         0G    0.03189    0.01155    0.01609         25        320:   9%|��         | 17/185 00:25
+        2/2         0G    0.03189    0.01155    0.01609         25        320:  10%|��         | 18/185 00:25
+        2/2         0G    0.03146    0.01141    0.01608         28        320:  10%|��         | 18/185 00:27
+        2/2         0G    0.03146    0.01141    0.01608         28        320:  10%|��         | 19/185 00:27
+        2/2         0G    0.03106    0.01127     0.0163         19        320:  10%|��         | 19/185 00:28
+        2/2         0G    0.03106    0.01127     0.0163         19        320:  11%|��         | 20/185 00:28
+        2/2         0G    0.03173    0.01145    0.01658         34        320:  11%|��         | 20/185 00:30
+        2/2         0G    0.03173    0.01145    0.01658         34        320:  11%|����        | 21/185 00:30
+        2/2         0G    0.03201    0.01149    0.01636         32        320:  11%|����        | 21/185 00:31
+        2/2         0G    0.03201    0.01149    0.01636         32        320:  12%|����        | 22/185 00:31
+        2/2         0G    0.03182    0.01135    0.01603         24        320:  12%|����        | 22/185 00:33
+        2/2         0G    0.03182    0.01135    0.01603         24        320:  12%|����        | 23/185 00:33
+        2/2         0G    0.03188    0.01142     0.0164         34        320:  12%|����        | 23/185 00:34
+        2/2         0G    0.03188    0.01142     0.0164         34        320:  13%|����        | 24/185 00:34
+        2/2         0G    0.03187    0.01137    0.01598         23        320:  13%|����        | 24/185 00:36
+        2/2         0G    0.03187    0.01137    0.01598         23        320:  14%|����        | 25/185 00:36
+        2/2         0G    0.03177    0.01133    0.01616         25        320:  14%|����        | 25/185 00:37
+        2/2         0G    0.03177    0.01133    0.01616         25        320:  14%|����        | 26/185 00:37
+        2/2         0G    0.03172    0.01134    0.01654         27        320:  14%|����        | 26/185 00:39
+        2/2         0G    0.03172    0.01134    0.01654         27        320:  15%|����        | 27/185 00:39
+        2/2         0G    0.03162     0.0113    0.01664         32        320:  15%|����        | 27/185 00:40
+        2/2         0G    0.03162     0.0113    0.01664         32        320:  15%|����        | 28/185 00:40
+        2/2         0G     0.0319     0.0114    0.01626         35        320:  15%|����        | 28/185 00:42
+        2/2         0G     0.0319     0.0114    0.01626         35        320:  16%|����        | 29/185 00:42
+        2/2         0G    0.03169    0.01141    0.01614         28        320:  16%|����        | 29/185 00:43
+        2/2         0G    0.03169    0.01141    0.01614         28        320:  16%|����        | 30/185 00:43
+        2/2         0G    0.03183    0.01148    0.01638         34        320:  16%|����        | 30/185 00:45
+        2/2         0G    0.03183    0.01148    0.01638         34        320:  17%|����        | 31/185 00:45
+        2/2         0G    0.03206     0.0114    0.01613         28        320:  17%|����        | 31/185 00:46
+        2/2         0G    0.03206     0.0114    0.01613         28        320:  17%|����        | 32/185 00:46
+        2/2         0G    0.03217     0.0115    0.01613         37        320:  17%|����        | 32/185 00:47
+        2/2         0G    0.03217     0.0115    0.01613         37        320:  18%|����        | 33/185 00:47
+        2/2         0G    0.03214    0.01143    0.01595         24        320:  18%|����        | 33/185 00:49
+        2/2         0G    0.03214    0.01143    0.01595         24        320:  18%|����        | 34/185 00:49
+        2/2         0G    0.03199     0.0114    0.01602         26        320:  18%|����        | 34/185 00:50
+        2/2         0G    0.03199     0.0114    0.01602         26        320:  19%|����        | 35/185 00:50
+        2/2         0G    0.03234    0.01159    0.01586         48        320:  19%|����        | 35/185 00:52
+        2/2         0G    0.03234    0.01159    0.01586         48        320:  19%|����        | 36/185 00:52
+        2/2         0G    0.03227    0.01154    0.01572         23        320:  19%|����        | 36/185 00:53
+        2/2         0G    0.03227    0.01154    0.01572         23        320:  20%|����        | 37/185 00:53
+        2/2         0G    0.03217    0.01146    0.01566         23        320:  20%|����        | 37/185 00:55
+        2/2         0G    0.03217    0.01146    0.01566         23        320:  21%|����        | 38/185 00:55
+        2/2         0G    0.03233    0.01156    0.01577         36        320:  21%|����        | 38/185 00:56
+        2/2         0G    0.03233    0.01156    0.01577         36        320:  21%|����        | 39/185 00:56
+        2/2         0G    0.03265    0.01177    0.01573         47        320:  21%|����        | 39/185 00:58
+        2/2         0G    0.03265    0.01177    0.01573         47        320:  22%|������       | 40/185 00:58
+        2/2         0G     0.0328    0.01177     0.0155         30        320:  22%|������       | 40/185 00:59
+        2/2         0G     0.0328    0.01177     0.0155         30        320:  22%|������       | 41/185 00:59
+        2/2         0G    0.03255    0.01168    0.01543         20        320:  22%|������       | 41/185 01:00
+        2/2         0G    0.03255    0.01168    0.01543         20        320:  23%|������       | 42/185 01:00
+        2/2         0G    0.03317    0.01192    0.01532         66        320:  23%|������       | 42/185 01:02
+        2/2         0G    0.03317    0.01192    0.01532         66        320:  23%|������       | 43/185 01:02
+        2/2         0G    0.03336     0.0119    0.01517         35        320:  23%|������       | 43/185 01:03
+        2/2         0G    0.03336     0.0119    0.01517         35        320:  24%|������       | 44/185 01:03
+        2/2         0G    0.03332    0.01195    0.01509         40        320:  24%|������       | 44/185 01:05
+        2/2         0G    0.03332    0.01195    0.01509         40        320:  24%|������       | 45/185 01:05
+        2/2         0G    0.03332    0.01187    0.01505         25        320:  24%|������       | 45/185 01:06
+        2/2         0G    0.03332    0.01187    0.01505         25        320:  25%|������       | 46/185 01:06
+        2/2         0G    0.03334    0.01186    0.01502         27        320:  25%|������       | 46/185 01:08
+        2/2         0G    0.03334    0.01186    0.01502         27        320:  25%|������       | 47/185 01:08
+        2/2         0G    0.03327    0.01177    0.01544         18        320:  25%|������       | 47/185 01:09
+        2/2         0G    0.03327    0.01177    0.01544         18        320:  26%|������       | 48/185 01:09
+        2/2         0G     0.0334    0.01178    0.01538         28        320:  26%|������       | 48/185 01:10
+        2/2         0G     0.0334    0.01178    0.01538         28        320:  26%|������       | 49/185 01:10
+        2/2         0G    0.03349    0.01192    0.01533         46        320:  26%|������       | 49/185 01:12
+        2/2         0G    0.03349    0.01192    0.01533         46        320:  27%|������       | 50/185 01:12
+        2/2         0G    0.03345    0.01184    0.01523         24        320:  27%|������       | 50/185 01:14
+        2/2         0G    0.03345    0.01184    0.01523         24        320:  28%|������       | 51/185 01:14
+        2/2         0G    0.03345    0.01181    0.01514         30        320:  28%|������       | 51/185 01:16
+        2/2         0G    0.03345    0.01181    0.01514         30        320:  28%|������       | 52/185 01:16
+        2/2         0G    0.03346    0.01194    0.01521         44        320:  28%|������       | 52/185 01:17
+        2/2         0G    0.03346    0.01194    0.01521         44        320:  29%|������       | 53/185 01:17
+        2/2         0G    0.03339    0.01195    0.01506         35        320:  29%|������       | 53/185 01:19
+        2/2         0G    0.03339    0.01195    0.01506         35        320:  29%|������       | 54/185 01:19
+        2/2         0G    0.03326    0.01188    0.01502         20        320:  29%|������       | 54/185 01:21
+        2/2         0G    0.03326    0.01188    0.01502         20        320:  30%|������       | 55/185 01:21
+        2/2         0G    0.03319    0.01189    0.01504         33        320:  30%|������       | 55/185 01:22
+        2/2         0G    0.03319    0.01189    0.01504         33        320:  30%|������       | 56/185 01:22
+        2/2         0G    0.03306    0.01182    0.01507         23        320:  30%|������       | 56/185 01:24
+        2/2         0G    0.03306    0.01182    0.01507         23        320:  31%|������       | 57/185 01:24
+        2/2         0G    0.03334    0.01201    0.01499         55        320:  31%|������       | 57/185 01:25
+        2/2         0G    0.03334    0.01201    0.01499         55        320:  31%|��������      | 58/185 01:25
+        2/2         0G    0.03337    0.01203    0.01508         29        320:  31%|��������      | 58/185 01:27
+        2/2         0G    0.03337    0.01203    0.01508         29        320:  32%|��������      | 59/185 01:27
+        2/2         0G    0.03333    0.01199    0.01505         25        320:  32%|��������      | 59/185 01:28
+        2/2         0G    0.03333    0.01199    0.01505         25        320:  32%|��������      | 60/185 01:28
+        2/2         0G    0.03321    0.01195     0.0151         30        320:  32%|��������      | 60/185 01:30
+        2/2         0G    0.03321    0.01195     0.0151         30        320:  33%|��������      | 61/185 01:30
+        2/2         0G    0.03311    0.01193    0.01506         29        320:  33%|��������      | 61/185 01:31
+        2/2         0G    0.03311    0.01193    0.01506         29        320:  34%|��������      | 62/185 01:31
+        2/2         0G    0.03315    0.01197    0.01502         36        320:  34%|��������      | 62/185 01:33
+        2/2         0G    0.03315    0.01197    0.01502         36        320:  34%|��������      | 63/185 01:33
+        2/2         0G    0.03316    0.01193    0.01495         30        320:  34%|��������      | 63/185 01:34
+        2/2         0G    0.03316    0.01193    0.01495         30        320:  35%|��������      | 64/185 01:34
+        2/2         0G     0.0332    0.01196    0.01497         35        320:  35%|��������      | 64/185 01:36
+        2/2         0G     0.0332    0.01196    0.01497         35        320:  35%|��������      | 65/185 01:36
+        2/2         0G     0.0331    0.01192    0.01509         25        320:  35%|��������      | 65/185 01:37
+        2/2         0G     0.0331    0.01192    0.01509         25        320:  36%|��������      | 66/185 01:37
+        2/2         0G    0.03318     0.0119    0.01513         21        320:  36%|��������      | 66/185 01:39
+        2/2         0G    0.03318     0.0119    0.01513         21        320:  36%|��������      | 67/185 01:39
+        2/2         0G    0.03321    0.01192     0.0151         34        320:  36%|��������      | 67/185 01:40
+        2/2         0G    0.03321    0.01192     0.0151         34        320:  37%|��������      | 68/185 01:40
+        2/2         0G    0.03359     0.0122    0.01499         73        320:  37%|��������      | 68/185 01:42
+        2/2         0G    0.03359     0.0122    0.01499         73        320:  37%|��������      | 69/185 01:42
+        2/2         0G    0.03361    0.01218    0.01499         31        320:  37%|��������      | 69/185 01:43
+        2/2         0G    0.03361    0.01218    0.01499         31        320:  38%|��������      | 70/185 01:43
+        2/2         0G    0.03355    0.01215    0.01502         24        320:  38%|��������      | 70/185 01:45
+        2/2         0G    0.03355    0.01215    0.01502         24        320:  38%|��������      | 71/185 01:45
+        2/2         0G    0.03359    0.01214    0.01501         33        320:  38%|��������      | 71/185 01:46
+        2/2         0G    0.03359    0.01214    0.01501         33        320:  39%|��������      | 72/185 01:46
+        2/2         0G    0.03358    0.01211    0.01507         24        320:  39%|��������      | 72/185 01:48
+        2/2         0G    0.03358    0.01211    0.01507         24        320:  39%|��������      | 73/185 01:48
+        2/2         0G    0.03358    0.01212    0.01511         38        320:  39%|��������      | 73/185 01:49
+        2/2         0G    0.03358    0.01212    0.01511         38        320:  40%|��������      | 74/185 01:49
+        2/2         0G     0.0335    0.01211    0.01511         33        320:  40%|��������      | 74/185 01:51
+        2/2         0G     0.0335    0.01211    0.01511         33        320:  41%|��������      | 75/185 01:51
+        2/2         0G    0.03343     0.0121    0.01498         27        320:  41%|��������      | 75/185 01:52
+        2/2         0G    0.03343     0.0121    0.01498         27        320:  41%|��������      | 76/185 01:52
+        2/2         0G    0.03339     0.0121    0.01499         36        320:  41%|��������      | 76/185 01:54
+        2/2         0G    0.03339     0.0121    0.01499         36        320:  42%|����������     | 77/185 01:54
+        2/2         0G    0.03336    0.01211    0.01506         26        320:  42%|����������     | 77/185 01:55
+        2/2         0G    0.03336    0.01211    0.01506         26        320:  42%|����������     | 78/185 01:55
+        2/2         0G     0.0333    0.01209    0.01495         29        320:  42%|����������     | 78/185 01:57
+        2/2         0G     0.0333    0.01209    0.01495         29        320:  43%|����������     | 79/185 01:57
+        2/2         0G    0.03325    0.01208     0.0149         30        320:  43%|����������     | 79/185 01:58
+        2/2         0G    0.03325    0.01208     0.0149         30        320:  43%|����������     | 80/185 01:58
+        2/2         0G    0.03313    0.01201      0.015         18        320:  43%|����������     | 80/185 01:59
+        2/2         0G    0.03313    0.01201      0.015         18        320:  44%|����������     | 81/185 01:59
+        2/2         0G    0.03323    0.01205    0.01491         45        320:  44%|����������     | 81/185 02:01
+        2/2         0G    0.03323    0.01205    0.01491         45        320:  44%|����������     | 82/185 02:01
+        2/2         0G    0.03316    0.01204     0.0149         30        320:  44%|����������     | 82/185 02:02
+        2/2         0G    0.03316    0.01204     0.0149         30        320:  45%|����������     | 83/185 02:02
+        2/2         0G    0.03318    0.01205    0.01482         28        320:  45%|����������     | 83/185 02:04
+        2/2         0G    0.03318    0.01205    0.01482         28        320:  45%|����������     | 84/185 02:04
+        2/2         0G    0.03314    0.01204    0.01485         27        320:  45%|����������     | 84/185 02:05
+        2/2         0G    0.03314    0.01204    0.01485         27        320:  46%|����������     | 85/185 02:05
+        2/2         0G    0.03308    0.01201    0.01491         25        320:  46%|����������     | 85/185 02:07
+        2/2         0G    0.03308    0.01201    0.01491         25        320:  46%|����������     | 86/185 02:07
+        2/2         0G    0.03307    0.01203     0.0149         39        320:  46%|����������     | 86/185 02:08
+        2/2         0G    0.03307    0.01203     0.0149         39        320:  47%|����������     | 87/185 02:08
+        2/2         0G    0.03308    0.01202    0.01488         31        320:  47%|����������     | 87/185 02:10
+        2/2         0G    0.03308    0.01202    0.01488         31        320:  48%|����������     | 88/185 02:10
+        2/2         0G    0.03307    0.01201    0.01489         28        320:  48%|����������     | 88/185 02:11
+        2/2         0G    0.03307    0.01201    0.01489         28        320:  48%|����������     | 89/185 02:11
+        2/2         0G    0.03311    0.01203    0.01484         30        320:  48%|����������     | 89/185 02:12
+        2/2         0G    0.03311    0.01203    0.01484         30        320:  49%|����������     | 90/185 02:12
+        2/2         0G    0.03307    0.01203    0.01473         33        320:  49%|����������     | 90/185 02:14
+        2/2         0G    0.03307    0.01203    0.01473         33        320:  49%|����������     | 91/185 02:14
+        2/2         0G    0.03307      0.012    0.01475         22        320:  49%|����������     | 91/185 02:15
+        2/2         0G    0.03307      0.012    0.01475         22        320:  50%|����������     | 92/185 02:15
+        2/2         0G    0.03294    0.01195    0.01468         17        320:  50%|����������     | 92/185 02:17
+        2/2         0G    0.03294    0.01195    0.01468         17        320:  50%|����������     | 93/185 02:17
+        2/2         0G    0.03298    0.01196    0.01463         33        320:  50%|����������     | 93/185 02:18
+        2/2         0G    0.03298    0.01196    0.01463         33        320:  51%|����������     | 94/185 02:18
+        2/2         0G    0.03298    0.01199    0.01466         35        320:  51%|����������     | 94/185 02:20
+        2/2         0G    0.03298    0.01199    0.01466         35        320:  51%|������������    | 95/185 02:20
+        2/2         0G    0.03288    0.01196    0.01455         23        320:  51%|������������    | 95/185 02:21
+        2/2         0G    0.03288    0.01196    0.01455         23        320:  52%|������������    | 96/185 02:21
+        2/2         0G    0.03286    0.01195    0.01458         27        320:  52%|������������    | 96/185 02:23
+        2/2         0G    0.03286    0.01195    0.01458         27        320:  52%|������������    | 97/185 02:23
+        2/2         0G    0.03284    0.01194    0.01454         30        320:  52%|������������    | 97/185 02:24
+        2/2         0G    0.03284    0.01194    0.01454         30        320:  53%|������������    | 98/185 02:24
+        2/2         0G    0.03287    0.01197    0.01448         36        320:  53%|������������    | 98/185 02:25
+        2/2         0G    0.03287    0.01197    0.01448         36        320:  54%|������������    | 99/185 02:25
+        2/2         0G    0.03306    0.01203    0.01442         45        320:  54%|������������    | 99/185 02:27
+        2/2         0G    0.03306    0.01203    0.01442         45        320:  54%|������������    | 100/185 02:27
+        2/2         0G    0.03309    0.01207    0.01452         36        320:  54%|������������    | 100/185 02:28
+        2/2         0G    0.03309    0.01207    0.01452         36        320:  55%|������������    | 101/185 02:28
+        2/2         0G    0.03314    0.01211    0.01446         35        320:  55%|������������    | 101/185 02:30
+        2/2         0G    0.03314    0.01211    0.01446         35        320:  55%|������������    | 102/185 02:30
+        2/2         0G    0.03315    0.01211    0.01454         29        320:  55%|������������    | 102/185 02:31
+        2/2         0G    0.03315    0.01211    0.01454         29        320:  56%|������������    | 103/185 02:31
+        2/2         0G    0.03322     0.0122    0.01451         52        320:  56%|������������    | 103/185 02:33
+        2/2         0G    0.03322     0.0122    0.01451         52        320:  56%|������������    | 104/185 02:33
+        2/2         0G    0.03324    0.01222    0.01458         39        320:  56%|������������    | 104/185 02:34
+        2/2         0G    0.03324    0.01222    0.01458         39        320:  57%|������������    | 105/185 02:34
+        2/2         0G    0.03324    0.01225    0.01449         34        320:  57%|������������    | 105/185 02:35
+        2/2         0G    0.03324    0.01225    0.01449         34        320:  57%|������������    | 106/185 02:35
+        2/2         0G    0.03337    0.01235    0.01444         61        320:  57%|������������    | 106/185 02:37
+        2/2         0G    0.03337    0.01235    0.01444         61        320:  58%|������������    | 107/185 02:37
+        2/2         0G    0.03343    0.01238    0.01439         34        320:  58%|������������    | 107/185 02:38
+        2/2         0G    0.03343    0.01238    0.01439         34        320:  58%|������������    | 108/185 02:38
+        2/2         0G    0.03337    0.01235    0.01444         28        320:  58%|������������    | 108/185 02:40
+        2/2         0G    0.03337    0.01235    0.01444         28        320:  59%|������������    | 109/185 02:40
+        2/2         0G    0.03332    0.01234    0.01439         29        320:  59%|������������    | 109/185 02:41
+        2/2         0G    0.03332    0.01234    0.01439         29        320:  59%|������������    | 110/185 02:41
+        2/2         0G     0.0333    0.01231    0.01445         21        320:  59%|������������    | 110/185 02:43
+        2/2         0G     0.0333    0.01231    0.01445         21        320:  60%|������������    | 111/185 02:43
+        2/2         0G    0.03333    0.01231    0.01446         30        320:  60%|������������    | 111/185 02:44
+        2/2         0G    0.03333    0.01231    0.01446         30        320:  61%|������������    | 112/185 02:44
+        2/2         0G     0.0334     0.0123    0.01452         33        320:  61%|������������    | 112/185 02:46
+        2/2         0G     0.0334     0.0123    0.01452         33        320:  61%|������������    | 113/185 02:46
+        2/2         0G    0.03335    0.01228    0.01458         23        320:  61%|������������    | 113/185 02:47
+        2/2         0G    0.03335    0.01228    0.01458         23        320:  62%|��������������   | 114/185 02:47
+        2/2         0G    0.03337    0.01228    0.01467         29        320:  62%|��������������   | 114/185 02:49
+        2/2         0G    0.03337    0.01228    0.01467         29        320:  62%|��������������   | 115/185 02:49
+        2/2         0G    0.03337    0.01228    0.01466         36        320:  62%|��������������   | 115/185 02:50
+        2/2         0G    0.03337    0.01228    0.01466         36        320:  63%|��������������   | 116/185 02:50
+        2/2         0G    0.03336    0.01228    0.01467         34        320:  63%|��������������   | 116/185 02:51
+        2/2         0G    0.03336    0.01228    0.01467         34        320:  63%|��������������   | 117/185 02:51
+        2/2         0G    0.03326    0.01227    0.01464         25        320:  63%|��������������   | 117/185 02:53
+        2/2         0G    0.03326    0.01227    0.01464         25        320:  64%|��������������   | 118/185 02:53
+        2/2         0G    0.03327     0.0123    0.01462         42        320:  64%|��������������   | 118/185 02:54
+        2/2         0G    0.03327     0.0123    0.01462         42        320:  64%|��������������   | 119/185 02:54
+        2/2         0G    0.03323    0.01229     0.0146         27        320:  64%|��������������   | 119/185 02:56
+        2/2         0G    0.03323    0.01229     0.0146         27        320:  65%|��������������   | 120/185 02:56
+        2/2         0G    0.03315    0.01225    0.01468         21        320:  65%|��������������   | 120/185 02:57
+        2/2         0G    0.03315    0.01225    0.01468         21        320:  65%|��������������   | 121/185 02:57
+        2/2         0G    0.03321    0.01224    0.01468         29        320:  65%|��������������   | 121/185 02:59
+        2/2         0G    0.03321    0.01224    0.01468         29        320:  66%|��������������   | 122/185 02:59
+        2/2         0G    0.03324    0.01227    0.01469         42        320:  66%|��������������   | 122/185 03:00
+        2/2         0G    0.03324    0.01227    0.01469         42        320:  66%|��������������   | 123/185 03:00
+        2/2         0G    0.03328    0.01229    0.01461         38        320:  66%|��������������   | 123/185 03:01
+        2/2         0G    0.03328    0.01229    0.01461         38        320:  67%|��������������   | 124/185 03:01
+        2/2         0G    0.03333     0.0123    0.01457         38        320:  67%|��������������   | 124/185 03:03
+        2/2         0G    0.03333     0.0123    0.01457         38        320:  68%|��������������   | 125/185 03:03
+        2/2         0G    0.03333    0.01228     0.0146         26        320:  68%|��������������   | 125/185 03:04
+        2/2         0G    0.03333    0.01228     0.0146         26        320:  68%|��������������   | 126/185 03:04
+        2/2         0G    0.03326    0.01224     0.0146         17        320:  68%|��������������   | 126/185 03:06
+        2/2         0G    0.03326    0.01224     0.0146         17        320:  69%|��������������   | 127/185 03:06
+        2/2         0G    0.03319     0.0122    0.01463         23        320:  69%|��������������   | 127/185 03:07
+        2/2         0G    0.03319     0.0122    0.01463         23        320:  69%|��������������   | 128/185 03:07
+        2/2         0G    0.03316    0.01219    0.01458         33        320:  69%|��������������   | 128/185 03:09
+        2/2         0G    0.03316    0.01219    0.01458         33        320:  70%|��������������   | 129/185 03:09
+        2/2         0G    0.03313    0.01218    0.01461         30        320:  70%|��������������   | 129/185 03:10
+        2/2         0G    0.03313    0.01218    0.01461         30        320:  70%|��������������   | 130/185 03:10
+        2/2         0G    0.03309    0.01215    0.01455         24        320:  70%|��������������   | 130/185 03:12
+        2/2         0G    0.03309    0.01215    0.01455         24        320:  71%|��������������   | 131/185 03:12
+        2/2         0G    0.03307    0.01215    0.01453         33        320:  71%|��������������   | 131/185 03:13
+        2/2         0G    0.03307    0.01215    0.01453         33        320:  71%|����������������  | 132/185 03:13
+        2/2         0G    0.03301    0.01214    0.01451         27        320:  71%|����������������  | 132/185 03:14
+        2/2         0G    0.03301    0.01214    0.01451         27        320:  72%|����������������  | 133/185 03:14
+        2/2         0G      0.033    0.01215    0.01447         40        320:  72%|����������������  | 133/185 03:16
+        2/2         0G      0.033    0.01215    0.01447         40        320:  72%|����������������  | 134/185 03:16
+        2/2         0G    0.03306    0.01217    0.01443         34        320:  72%|����������������  | 134/185 03:17
+        2/2         0G    0.03306    0.01217    0.01443         34        320:  73%|����������������  | 135/185 03:17
+        2/2         0G    0.03298    0.01214    0.01453         27        320:  73%|����������������  | 135/185 03:19
+        2/2         0G    0.03298    0.01214    0.01453         27        320:  74%|����������������  | 136/185 03:19
+        2/2         0G    0.03291    0.01213    0.01457         25        320:  74%|����������������  | 136/185 03:20
+        2/2         0G    0.03291    0.01213    0.01457         25        320:  74%|����������������  | 137/185 03:20
+        2/2         0G    0.03287    0.01209    0.01456         18        320:  74%|����������������  | 137/185 03:22
+        2/2         0G    0.03287    0.01209    0.01456         18        320:  75%|����������������  | 138/185 03:22
+        2/2         0G    0.03288    0.01209     0.0146         37        320:  75%|����������������  | 138/185 03:23
+        2/2         0G    0.03288    0.01209     0.0146         37        320:  75%|����������������  | 139/185 03:23
+        2/2         0G    0.03286    0.01209    0.01462         30        320:  75%|����������������  | 139/185 03:25
+        2/2         0G    0.03286    0.01209    0.01462         30        320:  76%|����������������  | 140/185 03:25
+        2/2         0G    0.03289    0.01211    0.01465         34        320:  76%|����������������  | 140/185 03:26
+        2/2         0G    0.03289    0.01211    0.01465         34        320:  76%|����������������  | 141/185 03:26
+        2/2         0G    0.03286    0.01211    0.01465         31        320:  76%|����������������  | 141/185 03:27
+        2/2         0G    0.03286    0.01211    0.01465         31        320:  77%|����������������  | 142/185 03:27
+        2/2         0G    0.03285     0.0121    0.01459         23        320:  77%|����������������  | 142/185 03:29
+        2/2         0G    0.03285     0.0121    0.01459         23        320:  77%|����������������  | 143/185 03:29
+        2/2         0G    0.03281    0.01208    0.01453         21        320:  77%|����������������  | 143/185 03:30
+        2/2         0G    0.03281    0.01208    0.01453         21        320:  78%|����������������  | 144/185 03:30
+        2/2         0G    0.03279    0.01208    0.01456         30        320:  78%|����������������  | 144/185 03:32
+        2/2         0G    0.03279    0.01208    0.01456         30        320:  78%|����������������  | 145/185 03:32
+        2/2         0G    0.03277    0.01206    0.01462         24        320:  78%|����������������  | 145/185 03:33
+        2/2         0G    0.03277    0.01206    0.01462         24        320:  79%|����������������  | 146/185 03:33
+        2/2         0G    0.03274    0.01203    0.01463         22        320:  79%|����������������  | 146/185 03:35
+        2/2         0G    0.03274    0.01203    0.01463         22        320:  79%|����������������  | 147/185 03:35
+        2/2         0G     0.0327    0.01202    0.01458         27        320:  79%|����������������  | 147/185 03:36
+        2/2         0G     0.0327    0.01202    0.01458         27        320:  80%|����������������  | 148/185 03:36
+        2/2         0G    0.03273    0.01202     0.0146         26        320:  80%|����������������  | 148/185 03:37
+        2/2         0G    0.03273    0.01202     0.0146         26        320:  81%|����������������  | 149/185 03:37
+        2/2         0G    0.03274      0.012    0.01458         27        320:  81%|����������������  | 149/185 03:39
+        2/2         0G    0.03274      0.012    0.01458         27        320:  81%|����������������  | 150/185 03:39
+        2/2         0G    0.03274      0.012    0.01463         36        320:  81%|����������������  | 150/185 03:40
+        2/2         0G    0.03274      0.012    0.01463         36        320:  82%|������������������ | 151/185 03:40
+        2/2         0G     0.0327    0.01198    0.01465         26        320:  82%|������������������ | 151/185 03:42
+        2/2         0G     0.0327    0.01198    0.01465         26        320:  82%|������������������ | 152/185 03:42
+        2/2         0G    0.03269    0.01197    0.01471         31        320:  82%|������������������ | 152/185 03:43
+        2/2         0G    0.03269    0.01197    0.01471         31        320:  83%|������������������ | 153/185 03:43
+        2/2         0G    0.03264    0.01196    0.01475         28        320:  83%|������������������ | 153/185 03:45
+        2/2         0G    0.03264    0.01196    0.01475         28        320:  83%|������������������ | 154/185 03:45
+        2/2         0G     0.0326    0.01194    0.01471         28        320:  83%|������������������ | 154/185 03:46
+        2/2         0G     0.0326    0.01194    0.01471         28        320:  84%|������������������ | 155/185 03:46
+        2/2         0G     0.0326    0.01193    0.01471         24        320:  84%|������������������ | 155/185 03:48
+        2/2         0G     0.0326    0.01193    0.01471         24        320:  84%|������������������ | 156/185 03:48
+        2/2         0G     0.0326    0.01196    0.01471         48        320:  84%|������������������ | 156/185 03:49
+        2/2         0G     0.0326    0.01196    0.01471         48        320:  85%|������������������ | 157/185 03:49
+        2/2         0G    0.03255    0.01195    0.01479         25        320:  85%|������������������ | 157/185 03:50
+        2/2         0G    0.03255    0.01195    0.01479         25        320:  85%|������������������ | 158/185 03:50
+        2/2         0G    0.03264      0.012    0.01482         46        320:  85%|������������������ | 158/185 03:52
+        2/2         0G    0.03264      0.012    0.01482         46        320:  86%|������������������ | 159/185 03:52
+        2/2         0G    0.03265      0.012    0.01479         34        320:  86%|������������������ | 159/185 03:53
+        2/2         0G    0.03265      0.012    0.01479         34        320:  86%|������������������ | 160/185 03:53
+        2/2         0G    0.03263    0.01201    0.01483         34        320:  86%|������������������ | 160/185 03:55
+        2/2         0G    0.03263    0.01201    0.01483         34        320:  87%|������������������ | 161/185 03:55
+        2/2         0G    0.03265      0.012    0.01486         31        320:  87%|������������������ | 161/185 03:56
+        2/2         0G    0.03265      0.012    0.01486         31        320:  88%|������������������ | 162/185 03:56
+        2/2         0G    0.03263    0.01198    0.01492         25        320:  88%|������������������ | 162/185 03:58
+        2/2         0G    0.03263    0.01198    0.01492         25        320:  88%|������������������ | 163/185 03:58
+        2/2         0G    0.03258    0.01196    0.01497         25        320:  88%|������������������ | 163/185 03:59
+        2/2         0G    0.03258    0.01196    0.01497         25        320:  89%|������������������ | 164/185 03:59
+        2/2         0G     0.0326    0.01198    0.01494         39        320:  89%|������������������ | 164/185 04:01
+        2/2         0G     0.0326    0.01198    0.01494         39        320:  89%|������������������ | 165/185 04:01
+        2/2         0G    0.03261    0.01198    0.01489         27        320:  89%|������������������ | 165/185 04:02
+        2/2         0G    0.03261    0.01198    0.01489         27        320:  90%|������������������ | 166/185 04:02
+        2/2         0G    0.03259    0.01195    0.01486         18        320:  90%|������������������ | 166/185 04:03
+        2/2         0G    0.03259    0.01195    0.01486         18        320:  90%|������������������ | 167/185 04:03
+        2/2         0G    0.03259    0.01196    0.01486         42        320:  90%|������������������ | 167/185 04:05
+        2/2         0G    0.03259    0.01196    0.01486         42        320:  91%|������������������ | 168/185 04:05
+        2/2         0G    0.03261    0.01197    0.01482         37        320:  91%|������������������ | 168/185 04:06
+        2/2         0G    0.03261    0.01197    0.01482         37        320:  91%|��������������������| 169/185 04:06
+        2/2         0G    0.03265    0.01201    0.01481         48        320:  91%|��������������������| 169/185 04:08
+        2/2         0G    0.03265    0.01201    0.01481         48        320:  92%|��������������������| 170/185 04:08
+        2/2         0G    0.03268    0.01202    0.01479         37        320:  92%|��������������������| 170/185 04:09
+        2/2         0G    0.03268    0.01202    0.01479         37        320:  92%|��������������������| 171/185 04:09
+        2/2         0G    0.03265    0.01201     0.0148         33        320:  92%|��������������������| 171/185 04:11
+        2/2         0G    0.03265    0.01201     0.0148         33        320:  93%|��������������������| 172/185 04:11
+        2/2         0G     0.0326    0.01199     0.0148         24        320:  93%|��������������������| 172/185 04:12
+        2/2         0G     0.0326    0.01199     0.0148         24        320:  94%|��������������������| 173/185 04:12
+        2/2         0G    0.03269    0.01208    0.01482         61        320:  94%|��������������������| 173/185 04:14
+        2/2         0G    0.03269    0.01208    0.01482         61        320:  94%|��������������������| 174/185 04:14
+        2/2         0G    0.03268    0.01208     0.0148         34        320:  94%|��������������������| 174/185 04:15
+        2/2         0G    0.03268    0.01208     0.0148         34        320:  95%|��������������������| 175/185 04:15
+        2/2         0G    0.03273    0.01208    0.01487         28        320:  95%|��������������������| 175/185 04:16
+        2/2         0G    0.03273    0.01208    0.01487         28        320:  95%|��������������������| 176/185 04:16
+        2/2         0G    0.03266    0.01205    0.01487         16        320:  95%|��������������������| 176/185 04:18
+        2/2         0G    0.03266    0.01205    0.01487         16        320:  96%|��������������������| 177/185 04:18
+        2/2         0G    0.03265    0.01205    0.01487         28        320:  96%|��������������������| 177/185 04:19
+        2/2         0G    0.03265    0.01205    0.01487         28        320:  96%|��������������������| 178/185 04:19
+        2/2         0G    0.03262    0.01203    0.01489         27        320:  96%|��������������������| 178/185 04:21
+        2/2         0G    0.03262    0.01203    0.01489         27        320:  97%|��������������������| 179/185 04:21
+        2/2         0G    0.03258    0.01202    0.01485         25        320:  97%|��������������������| 179/185 04:22
+        2/2         0G    0.03258    0.01202    0.01485         25        320:  97%|��������������������| 180/185 04:22
+        2/2         0G    0.03258    0.01203    0.01487         37        320:  97%|��������������������| 180/185 04:24
+        2/2         0G    0.03258    0.01203    0.01487         37        320:  98%|��������������������| 181/185 04:24
+        2/2         0G     0.0326    0.01204    0.01486         35        320:  98%|��������������������| 181/185 04:25
+        2/2         0G     0.0326    0.01204    0.01486         35        320:  98%|��������������������| 182/185 04:25
+        2/2         0G    0.03266    0.01208    0.01482         47        320:  98%|��������������������| 182/185 04:27
+        2/2         0G    0.03266    0.01208    0.01482         47        320:  99%|��������������������| 183/185 04:27
+        2/2         0G    0.03267    0.01208    0.01482         34        320:  99%|��������������������| 183/185 04:28
+        2/2         0G    0.03267    0.01208    0.01482         34        320:  99%|��������������������| 184/185 04:28
+        2/2         0G    0.03268     0.0121    0.01479         39        320:  99%|��������������������| 184/185 04:29
+        2/2         0G    0.03268     0.0121    0.01479         39        320: 100%|��������������������| 185/185 04:29
+        2/2         0G    0.03268     0.0121    0.01479         39        320: 100%|��������������������| 185/185 04:29
+
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   0%|          | 0/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   2%|��         | 1/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   4%|��         | 2/50 00:01
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   6%|��         | 3/50 00:02
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   8%|��         | 4/50 00:03
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  10%|��         | 5/50 00:05
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  12%|����        | 6/50 00:06
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  14%|����        | 7/50 00:07
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  16%|����        | 8/50 00:08
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  18%|����        | 9/50 00:10
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  20%|����        | 10/50 00:11
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  22%|������       | 11/50 00:12
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  24%|������       | 12/50 00:13
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  26%|������       | 13/50 00:14
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  28%|������       | 14/50 00:16
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  30%|������       | 15/50 00:17
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  32%|��������      | 16/50 00:18
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  34%|��������      | 17/50 00:19
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  36%|��������      | 18/50 00:20
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  38%|��������      | 19/50 00:22
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  40%|��������      | 20/50 00:23
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  42%|����������     | 21/50 00:24
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  44%|����������     | 22/50 00:25
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  46%|����������     | 23/50 00:27
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  48%|����������     | 24/50 00:28
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  50%|����������     | 25/50 00:29
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  52%|������������    | 26/50 00:30
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  54%|������������    | 27/50 00:31
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  56%|������������    | 28/50 00:33
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  58%|������������    | 29/50 00:34
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  60%|������������    | 30/50 00:35
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  62%|��������������   | 31/50 00:36
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  64%|��������������   | 32/50 00:37
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  66%|��������������   | 33/50 00:39
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  68%|��������������   | 34/50 00:40
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  70%|��������������   | 35/50 00:41
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  72%|����������������  | 36/50 00:42
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  74%|����������������  | 37/50 00:43
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  76%|����������������  | 38/50 00:45
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  78%|����������������  | 39/50 00:46
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  80%|����������������  | 40/50 00:47
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  82%|������������������ | 41/50 00:48
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  84%|������������������ | 42/50 00:49
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  86%|������������������ | 43/50 00:51
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  88%|������������������ | 44/50 00:52
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  90%|������������������ | 45/50 00:53
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  92%|��������������������| 46/50 00:54
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  94%|��������������������| 47/50 00:56
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  96%|��������������������| 48/50 00:57
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  98%|��������������������| 49/50 00:58
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:58
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:58
+                   all       1587       2382       0.74       0.71      0.769      0.525
+EPOCH_RESULT {"epoch": 3, "epochs": 3, "elapsed_s": 1004.4792504310608, "precision": 0.7399734536072591, "recall": 0.709704314165107, "mAP50": 0.7694429857362602, "mAP50_95": 0.5250324044457318, "best_fitness": 0.5591948883377845, "fitness": 0.5494734625747847, "teacher_preservation": {"batches": 185, "mean_preservation_loss": 0.006134524997449606, "matched_anchors_by_class": {"0": 12735, "2": 9290, "3": 10331, "1": 12514}, "strength": 5.0, "validation_teacher_used": false}}
+
+3 epochs completed in 0.272 hours.
+Optimizer stripped from D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081\weights\last.pt, 3.7MB
+Optimizer stripped from D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081\weights\best.pt, 3.7MB
+
+Validating D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081\weights\best.pt...
+Fusing layers... 
+Model summary: 157 layers, 1764577 parameters, 0 gradients, 4.1 GFLOPs
+
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   0%|          | 0/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   2%|��         | 1/50 00:00
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   4%|��         | 2/50 00:01
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   6%|��         | 3/50 00:02
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   8%|��         | 4/50 00:03
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  10%|��         | 5/50 00:05
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  12%|����        | 6/50 00:06
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  14%|����        | 7/50 00:07
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  16%|����        | 8/50 00:08
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  18%|����        | 9/50 00:09
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  20%|����        | 10/50 00:10
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  22%|������       | 11/50 00:11
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  24%|������       | 12/50 00:12
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  26%|������       | 13/50 00:14
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  28%|������       | 14/50 00:15
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  30%|������       | 15/50 00:16
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  32%|��������      | 16/50 00:17
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  34%|��������      | 17/50 00:18
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  36%|��������      | 18/50 00:19
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  38%|��������      | 19/50 00:20
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  40%|��������      | 20/50 00:22
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  42%|����������     | 21/50 00:23
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  44%|����������     | 22/50 00:24
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  46%|����������     | 23/50 00:25
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  48%|����������     | 24/50 00:26
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  50%|����������     | 25/50 00:27
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  52%|������������    | 26/50 00:28
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  54%|������������    | 27/50 00:30
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  56%|������������    | 28/50 00:31
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  58%|������������    | 29/50 00:32
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  60%|������������    | 30/50 00:33
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  62%|��������������   | 31/50 00:34
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  64%|��������������   | 32/50 00:35
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  66%|��������������   | 33/50 00:36
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  68%|��������������   | 34/50 00:37
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  70%|��������������   | 35/50 00:38
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  72%|����������������  | 36/50 00:40
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  74%|����������������  | 37/50 00:41
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  76%|����������������  | 38/50 00:42
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  78%|����������������  | 39/50 00:43
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  80%|����������������  | 40/50 00:44
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  82%|������������������ | 41/50 00:45
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  84%|������������������ | 42/50 00:46
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  86%|������������������ | 43/50 00:47
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  88%|������������������ | 44/50 00:49
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  90%|������������������ | 45/50 00:50
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  92%|��������������������| 46/50 00:51
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  94%|��������������������| 47/50 00:52
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  96%|��������������������| 48/50 00:53
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:  98%|��������������������| 49/50 00:54
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:55
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|��������������������| 50/50 00:55
+                   all       1587       2382      0.743      0.709      0.772      0.535
+               kitchen       1587        325      0.738      0.665      0.741      0.512
+            recyclable       1587       1755      0.908      0.644      0.809      0.518
+             hazardous       1587         45      0.654          1      0.927       0.71
+                 other       1587        257      0.672      0.525      0.612      0.402
+Results saved to D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\trash_subject_four_bins_20261113_081\runs\subject_four_081

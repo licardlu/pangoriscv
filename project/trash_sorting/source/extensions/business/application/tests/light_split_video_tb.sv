@@ -80,7 +80,7 @@ module light_split_video_tb;
             if (hs_out!==q2_hs || vs_out!==q2_vs || de_out!==q2_de)
                 $fatal(1,"sync not delayed by exactly two cycles");
             if (de_out) begin
-                if (q2_y<112) begin
+                if (q2_y<48) begin
                     if (rgb_out!=={q2_x[7:0],q2_y[7:0],8'h55})
                         $fatal(1,"header coordinate mismatch x=%0d y=%0d rgb=%h",q2_x,q2_y,rgb_out);
                 end else begin
@@ -99,7 +99,7 @@ module light_split_video_tb;
             @(negedge clk);vs_in=1;de_in=0;hs_in=0;
             repeat(3) @(negedge clk);
             vs_in=0;
-            for (row=0;row<114;row=row+1) begin
+            for (row=0;row<50;row=row+1) begin
                 for (col=0;col<1280;col=col+1) begin
                     @(negedge clk);de_in=1;hs_in=(col==0);
                     pixel_in=source565(col,row+fid);

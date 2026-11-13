@@ -1,0 +1,11 @@
+# Proposal only: battery subtype/bin policy must be defined before annotation.
+path: ./dataset_7
+train: images/train
+val: images/val
+test: images/test
+nc: 7
+names: [biodegradable, glass, metal, paper, plastic, battery, used_tissue]
+# Bins: green, blue, blue, blue, blue, red*, gray.
+# * Red is the intended demonstrator policy for selected hazardous batteries;
+#   ordinary alkaline batteries must follow local sorting rules.
+# Cigarette butts may be added later after evaluating their size at 320x320.

@@ -1,0 +1,487 @@
+  assign execute_ctrl3_down_early0_MulPlugin_SEL_lane0 = execute_ctrl3_up_early0_MulPlugin_SEL_lane0;
+  assign execute_ctrl3_down_early0_DivPlugin_SEL_lane0 = execute_ctrl3_up_early0_DivPlugin_SEL_lane0;
+  assign execute_ctrl3_down_late0_IntAluPlugin_SEL_lane0 = execute_ctrl3_up_late0_IntAluPlugin_SEL_lane0;
+  assign execute_ctrl3_down_late0_BarrelShifterPlugin_SEL_lane0 = execute_ctrl3_up_late0_BarrelShifterPlugin_SEL_lane0;
+  assign execute_ctrl3_down_late0_BranchPlugin_SEL_lane0 = execute_ctrl3_up_late0_BranchPlugin_SEL_lane0;
+  assign execute_ctrl3_down_CsrAccessPlugin_SEL_lane0 = execute_ctrl3_up_CsrAccessPlugin_SEL_lane0;
+  assign execute_ctrl3_down_AguPlugin_SEL_lane0 = execute_ctrl3_up_AguPlugin_SEL_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_FENCE_lane0 = execute_ctrl3_up_LsuPlugin_logic_FENCE_lane0;
+  assign execute_ctrl3_down_lane0_integer_WriteBackPlugin_SEL_lane0 = execute_ctrl3_up_lane0_integer_WriteBackPlugin_SEL_lane0;
+  assign execute_ctrl3_down_COMPLETION_AT_4_lane0 = execute_ctrl3_up_COMPLETION_AT_4_lane0;
+  assign execute_ctrl3_down_COMPLETION_AT_3_lane0 = execute_ctrl3_up_COMPLETION_AT_3_lane0;
+  assign execute_ctrl3_down_lane0_logic_completions_onCtrl_1_ENABLE_lane0 = execute_ctrl3_up_lane0_logic_completions_onCtrl_1_ENABLE_lane0;
+  assign execute_ctrl3_down_lane0_logic_completions_onCtrl_2_ENABLE_lane0 = execute_ctrl3_up_lane0_logic_completions_onCtrl_2_ENABLE_lane0;
+  assign execute_ctrl3_down_SrcStageables_REVERT_lane0 = execute_ctrl3_up_SrcStageables_REVERT_lane0;
+  assign execute_ctrl3_down_SrcStageables_ZERO_lane0 = execute_ctrl3_up_SrcStageables_ZERO_lane0;
+  assign execute_ctrl3_down_lane0_IntFormatPlugin_logic_SIGNED_lane0 = execute_ctrl3_up_lane0_IntFormatPlugin_logic_SIGNED_lane0;
+  assign execute_ctrl3_down_lane0_IntFormatPlugin_logic_WIDTH_ID_lane0 = execute_ctrl3_up_lane0_IntFormatPlugin_logic_WIDTH_ID_lane0;
+  assign execute_ctrl3_down_SrcStageables_UNSIGNED_lane0 = execute_ctrl3_up_SrcStageables_UNSIGNED_lane0;
+  assign execute_ctrl3_down_BarrelShifterPlugin_LEFT_lane0 = execute_ctrl3_up_BarrelShifterPlugin_LEFT_lane0;
+  assign execute_ctrl3_down_BarrelShifterPlugin_SIGNED_lane0 = execute_ctrl3_up_BarrelShifterPlugin_SIGNED_lane0;
+  assign execute_ctrl3_down_BranchPlugin_BRANCH_CTRL_lane0 = execute_ctrl3_up_BranchPlugin_BRANCH_CTRL_lane0;
+  assign execute_ctrl3_down_MulPlugin_HIGH_lane0 = execute_ctrl3_up_MulPlugin_HIGH_lane0;
+  assign execute_ctrl3_down_AguPlugin_LOAD_lane0 = execute_ctrl3_up_AguPlugin_LOAD_lane0;
+  assign execute_ctrl3_down_AguPlugin_STORE_lane0 = execute_ctrl3_up_AguPlugin_STORE_lane0;
+  assign execute_ctrl3_down_AguPlugin_EXECUTE_lane0 = execute_ctrl3_up_AguPlugin_EXECUTE_lane0;
+  assign execute_ctrl3_down_AguPlugin_ATOMIC_lane0 = execute_ctrl3_up_AguPlugin_ATOMIC_lane0;
+  assign execute_ctrl3_down_AguPlugin_FLOAT_lane0 = execute_ctrl3_up_AguPlugin_FLOAT_lane0;
+  assign execute_ctrl3_down_AguPlugin_CLEAN_lane0 = execute_ctrl3_up_AguPlugin_CLEAN_lane0;
+  assign execute_ctrl3_down_AguPlugin_INVALIDATE_lane0 = execute_ctrl3_up_AguPlugin_INVALIDATE_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_LSU_PREFETCH_lane0 = execute_ctrl3_up_LsuPlugin_logic_LSU_PREFETCH_lane0;
+  assign execute_ctrl3_down_late0_IntAluPlugin_ALU_ADD_SUB_lane0 = execute_ctrl3_up_late0_IntAluPlugin_ALU_ADD_SUB_lane0;
+  assign execute_ctrl3_down_late0_IntAluPlugin_ALU_SLTX_lane0 = execute_ctrl3_up_late0_IntAluPlugin_ALU_SLTX_lane0;
+  assign execute_ctrl3_down_late0_IntAluPlugin_ALU_BITWISE_CTRL_lane0 = execute_ctrl3_up_late0_IntAluPlugin_ALU_BITWISE_CTRL_lane0;
+  assign execute_ctrl3_down_late0_SrcPlugin_logic_SRC1_CTRL_lane0 = execute_ctrl3_up_late0_SrcPlugin_logic_SRC1_CTRL_lane0;
+  assign execute_ctrl3_down_late0_SrcPlugin_logic_SRC2_CTRL_lane0 = execute_ctrl3_up_late0_SrcPlugin_logic_SRC2_CTRL_lane0;
+  assign execute_ctrl3_down_early1_BranchPlugin_SEL_lane1 = execute_ctrl3_up_early1_BranchPlugin_SEL_lane1;
+  assign execute_ctrl3_down_late1_IntAluPlugin_SEL_lane1 = execute_ctrl3_up_late1_IntAluPlugin_SEL_lane1;
+  assign execute_ctrl3_down_late1_BarrelShifterPlugin_SEL_lane1 = execute_ctrl3_up_late1_BarrelShifterPlugin_SEL_lane1;
+  assign execute_ctrl3_down_late1_BranchPlugin_SEL_lane1 = execute_ctrl3_up_late1_BranchPlugin_SEL_lane1;
+  assign execute_ctrl3_down_lane1_integer_WriteBackPlugin_SEL_lane1 = execute_ctrl3_up_lane1_integer_WriteBackPlugin_SEL_lane1;
+  assign execute_ctrl3_down_COMPLETION_AT_4_lane1 = execute_ctrl3_up_COMPLETION_AT_4_lane1;
+  assign execute_ctrl3_down_lane1_logic_completions_onCtrl_1_ENABLE_lane1 = execute_ctrl3_up_lane1_logic_completions_onCtrl_1_ENABLE_lane1;
+  assign execute_ctrl3_down_SrcStageables_REVERT_lane1 = execute_ctrl3_up_SrcStageables_REVERT_lane1;
+  assign execute_ctrl3_down_SrcStageables_ZERO_lane1 = execute_ctrl3_up_SrcStageables_ZERO_lane1;
+  assign execute_ctrl3_down_SrcStageables_UNSIGNED_lane1 = execute_ctrl3_up_SrcStageables_UNSIGNED_lane1;
+  assign execute_ctrl3_down_BarrelShifterPlugin_LEFT_lane1 = execute_ctrl3_up_BarrelShifterPlugin_LEFT_lane1;
+  assign execute_ctrl3_down_BarrelShifterPlugin_SIGNED_lane1 = execute_ctrl3_up_BarrelShifterPlugin_SIGNED_lane1;
+  assign execute_ctrl3_down_BranchPlugin_BRANCH_CTRL_lane1 = execute_ctrl3_up_BranchPlugin_BRANCH_CTRL_lane1;
+  assign execute_ctrl3_down_late1_IntAluPlugin_ALU_ADD_SUB_lane1 = execute_ctrl3_up_late1_IntAluPlugin_ALU_ADD_SUB_lane1;
+  assign execute_ctrl3_down_late1_IntAluPlugin_ALU_SLTX_lane1 = execute_ctrl3_up_late1_IntAluPlugin_ALU_SLTX_lane1;
+  assign execute_ctrl3_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1 = execute_ctrl3_up_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1;
+  assign execute_ctrl3_down_late1_SrcPlugin_logic_SRC1_CTRL_lane1 = execute_ctrl3_up_late1_SrcPlugin_logic_SRC1_CTRL_lane1;
+  assign execute_ctrl3_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1 = execute_ctrl3_up_late1_SrcPlugin_logic_SRC2_CTRL_lane1;
+  assign execute_ctrl3_down_COMMIT_lane0 = execute_ctrl3_up_COMMIT_lane0;
+  assign execute_ctrl3_down_COMMIT_lane1 = execute_ctrl3_up_COMMIT_lane1;
+  assign execute_ctrl3_down_early0_SrcPlugin_ADD_SUB_lane0 = execute_ctrl3_up_early0_SrcPlugin_ADD_SUB_lane0;
+  assign execute_ctrl3_down_early0_MulPlugin_logic_mul_VALUES_0_lane0 = execute_ctrl3_up_early0_MulPlugin_logic_mul_VALUES_0_lane0;
+  assign execute_ctrl3_down_early0_MulPlugin_logic_mul_VALUES_1_lane0 = execute_ctrl3_up_early0_MulPlugin_logic_mul_VALUES_1_lane0;
+  assign execute_ctrl3_down_early0_MulPlugin_logic_mul_VALUES_2_lane0 = execute_ctrl3_up_early0_MulPlugin_logic_mul_VALUES_2_lane0;
+  assign execute_ctrl3_down_early0_MulPlugin_logic_mul_VALUES_3_lane0 = execute_ctrl3_up_early0_MulPlugin_logic_mul_VALUES_3_lane0;
+  assign execute_ctrl3_down_DivPlugin_DIV_RESULT_lane0 = execute_ctrl3_up_DivPlugin_DIV_RESULT_lane0;
+  assign execute_ctrl3_down_early0_BranchPlugin_pcCalc_PC_TRUE_lane0 = execute_ctrl3_up_early0_BranchPlugin_pcCalc_PC_TRUE_lane0;
+  assign execute_ctrl3_down_early0_BranchPlugin_pcCalc_PC_FALSE_lane0 = execute_ctrl3_up_early0_BranchPlugin_pcCalc_PC_FALSE_lane0;
+  assign execute_ctrl3_down_early0_BranchPlugin_pcCalc_PC_LAST_SLICE_lane0 = execute_ctrl3_up_early0_BranchPlugin_pcCalc_PC_LAST_SLICE_lane0;
+  assign execute_ctrl3_down_early1_BranchPlugin_pcCalc_PC_TRUE_lane1 = execute_ctrl3_up_early1_BranchPlugin_pcCalc_PC_TRUE_lane1;
+  assign execute_ctrl3_down_early1_BranchPlugin_pcCalc_PC_FALSE_lane1 = execute_ctrl3_up_early1_BranchPlugin_pcCalc_PC_FALSE_lane1;
+  assign execute_ctrl3_down_early1_BranchPlugin_pcCalc_PC_LAST_SLICE_lane1 = execute_ctrl3_up_early1_BranchPlugin_pcCalc_PC_LAST_SLICE_lane1;
+  assign execute_ctrl3_down_lane1_integer_WriteBackPlugin_logic_DATA_lane1 = execute_ctrl3_up_lane1_integer_WriteBackPlugin_logic_DATA_lane1;
+  assign execute_ctrl3_down_LsuL1_MIXED_ADDRESS_lane0 = execute_ctrl3_up_LsuL1_MIXED_ADDRESS_lane0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_BANK_BUSY_lane0 = execute_ctrl3_up_LsuL1Plugin_logic_BANK_BUSY_lane0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_EVENT_WRITE_VALID_lane0 = execute_ctrl3_up_LsuL1Plugin_logic_EVENT_WRITE_VALID_lane0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_EVENT_WRITE_ADDRESS_lane0 = execute_ctrl3_up_LsuL1Plugin_logic_EVENT_WRITE_ADDRESS_lane0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_lsu_rt0_SHARED_BYPASS_VALID_lane0 = execute_ctrl3_up_LsuL1Plugin_logic_lsu_rt0_SHARED_BYPASS_VALID_lane0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_lsu_rt0_SHARED_BYPASS_VALUE_lane0_plru_0 = execute_ctrl3_up_LsuL1Plugin_logic_lsu_rt0_SHARED_BYPASS_VALUE_lane0_plru_0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_lsu_rt0_SHARED_BYPASS_VALUE_lane0_dirty = execute_ctrl3_up_LsuL1Plugin_logic_lsu_rt0_SHARED_BYPASS_VALUE_lane0_dirty;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_EVENT_WRITE_DATA_lane0 = execute_ctrl3_up_LsuL1Plugin_logic_EVENT_WRITE_DATA_lane0;
+  assign execute_ctrl3_down_LsuL1Plugin_logic_EVENT_WRITE_MASK_lane0 = execute_ctrl3_up_LsuL1Plugin_logic_EVENT_WRITE_MASK_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_FROM_ACCESS_lane0 = execute_ctrl3_up_LsuPlugin_logic_FROM_ACCESS_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_FROM_WB_lane0 = execute_ctrl3_up_LsuPlugin_logic_FROM_WB_lane0;
+  assign execute_ctrl3_down_LsuL1_MASK_lane0 = execute_ctrl3_up_LsuL1_MASK_lane0;
+  assign execute_ctrl3_down_LsuL1_SIZE_lane0 = execute_ctrl3_up_LsuL1_SIZE_lane0;
+  assign execute_ctrl3_down_LsuL1_LOAD_lane0 = execute_ctrl3_up_LsuL1_LOAD_lane0;
+  assign execute_ctrl3_down_LsuL1_EXECUTE_lane0 = execute_ctrl3_up_LsuL1_EXECUTE_lane0;
+  assign execute_ctrl3_down_LsuL1_ATOMIC_lane0 = execute_ctrl3_up_LsuL1_ATOMIC_lane0;
+  assign execute_ctrl3_down_LsuL1_STORE_lane0 = execute_ctrl3_up_LsuL1_STORE_lane0;
+  assign execute_ctrl3_down_LsuL1_CLEAN_lane0 = execute_ctrl3_up_LsuL1_CLEAN_lane0;
+  assign execute_ctrl3_down_LsuL1_INVALID_lane0 = execute_ctrl3_up_LsuL1_INVALID_lane0;
+  assign execute_ctrl3_down_LsuL1_GUEST_lane0 = execute_ctrl3_up_LsuL1_GUEST_lane0;
+  assign execute_ctrl3_down_LsuL1_PREFETCH_lane0 = execute_ctrl3_up_LsuL1_PREFETCH_lane0;
+  assign execute_ctrl3_down_LsuL1_FLUSH_lane0 = execute_ctrl3_up_LsuL1_FLUSH_lane0;
+  assign execute_ctrl3_down_Decode_STORE_ID_lane0 = execute_ctrl3_up_Decode_STORE_ID_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_FROM_LSU_lane0 = execute_ctrl3_up_LsuPlugin_logic_FROM_LSU_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_FROM_PREFETCH_lane0 = execute_ctrl3_up_LsuPlugin_logic_FROM_PREFETCH_lane0;
+  assign execute_ctrl3_down_LsuPlugin_SB_PTR_lane0 = execute_ctrl3_up_LsuPlugin_SB_PTR_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_onAddress0_SB_DATA_lane0 = execute_ctrl3_up_LsuPlugin_logic_onAddress0_SB_DATA_lane0;
+  assign execute_ctrl3_down_LsuPlugin_logic_onAddress0_STORE_BUFFER_EMPTY_lane0 = execute_ctrl3_up_LsuPlugin_logic_onAddress0_STORE_BUFFER_EMPTY_lane0;
+  assign execute_ctrl4_up_ready = execute_ctrl4_down_isReady;
+  assign execute_ctrl4_down_Decode_UOP_lane0 = execute_ctrl4_up_Decode_UOP_lane0;
+  assign execute_ctrl4_down_Prediction_ALIGNED_JUMPED_lane0 = execute_ctrl4_up_Prediction_ALIGNED_JUMPED_lane0;
+  assign execute_ctrl4_down_Prediction_ALIGNED_JUMPED_PC_lane0 = execute_ctrl4_up_Prediction_ALIGNED_JUMPED_PC_lane0;
+  assign execute_ctrl4_down_Prediction_ALIGNED_SLICES_TAKEN_lane0 = execute_ctrl4_up_Prediction_ALIGNED_SLICES_TAKEN_lane0;
+  assign execute_ctrl4_down_Prediction_ALIGNED_SLICES_BRANCH_lane0 = execute_ctrl4_up_Prediction_ALIGNED_SLICES_BRANCH_lane0;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane0_0 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane0_0;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane0_1 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane0_1;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane0_2 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane0_2;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane0_3 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane0_3;
+  assign execute_ctrl4_down_Prediction_BRANCH_HISTORY_lane0 = execute_ctrl4_up_Prediction_BRANCH_HISTORY_lane0;
+  assign execute_ctrl4_down_Decode_INSTRUCTION_SLICE_COUNT_lane0 = execute_ctrl4_up_Decode_INSTRUCTION_SLICE_COUNT_lane0;
+  assign execute_ctrl4_down_PC_lane0 = execute_ctrl4_up_PC_lane0;
+  assign execute_ctrl4_down_Decode_UOP_ID_lane0 = execute_ctrl4_up_Decode_UOP_ID_lane0;
+  assign execute_ctrl4_down_RD_PHYS_lane0 = execute_ctrl4_up_RD_PHYS_lane0;
+  assign execute_ctrl4_down_LANE_AGE_lane0 = execute_ctrl4_up_LANE_AGE_lane0;
+  assign execute_ctrl4_down_Decode_UOP_lane1 = execute_ctrl4_up_Decode_UOP_lane1;
+  assign execute_ctrl4_down_Prediction_ALIGNED_JUMPED_lane1 = execute_ctrl4_up_Prediction_ALIGNED_JUMPED_lane1;
+  assign execute_ctrl4_down_Prediction_ALIGNED_JUMPED_PC_lane1 = execute_ctrl4_up_Prediction_ALIGNED_JUMPED_PC_lane1;
+  assign execute_ctrl4_down_Prediction_ALIGNED_SLICES_TAKEN_lane1 = execute_ctrl4_up_Prediction_ALIGNED_SLICES_TAKEN_lane1;
+  assign execute_ctrl4_down_Prediction_ALIGNED_SLICES_BRANCH_lane1 = execute_ctrl4_up_Prediction_ALIGNED_SLICES_BRANCH_lane1;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane1_0 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane1_0;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane1_1 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane1_1;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane1_2 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane1_2;
+  assign execute_ctrl4_down_GSharePlugin_GSHARE_COUNTER_lane1_3 = execute_ctrl4_up_GSharePlugin_GSHARE_COUNTER_lane1_3;
+  assign execute_ctrl4_down_Prediction_BRANCH_HISTORY_lane1 = execute_ctrl4_up_Prediction_BRANCH_HISTORY_lane1;
+  assign execute_ctrl4_down_Decode_INSTRUCTION_SLICE_COUNT_lane1 = execute_ctrl4_up_Decode_INSTRUCTION_SLICE_COUNT_lane1;
+  assign execute_ctrl4_down_PC_lane1 = execute_ctrl4_up_PC_lane1;
+  assign execute_ctrl4_down_TRAP_lane1 = execute_ctrl4_up_TRAP_lane1;
+  assign execute_ctrl4_down_Decode_UOP_ID_lane1 = execute_ctrl4_up_Decode_UOP_ID_lane1;
+  assign execute_ctrl4_down_RD_PHYS_lane1 = execute_ctrl4_up_RD_PHYS_lane1;
+  assign execute_ctrl4_down_LANE_AGE_lane1 = execute_ctrl4_up_LANE_AGE_lane1;
+  assign execute_ctrl4_down_AguPlugin_SIZE_lane0 = execute_ctrl4_up_AguPlugin_SIZE_lane0;
+  assign execute_ctrl4_down_early0_BranchPlugin_SEL_lane0 = execute_ctrl4_up_early0_BranchPlugin_SEL_lane0;
+  assign execute_ctrl4_down_early0_MulPlugin_SEL_lane0 = execute_ctrl4_up_early0_MulPlugin_SEL_lane0;
+  assign execute_ctrl4_down_late0_IntAluPlugin_SEL_lane0 = execute_ctrl4_up_late0_IntAluPlugin_SEL_lane0;
+  assign execute_ctrl4_down_late0_BarrelShifterPlugin_SEL_lane0 = execute_ctrl4_up_late0_BarrelShifterPlugin_SEL_lane0;
+  assign execute_ctrl4_down_late0_BranchPlugin_SEL_lane0 = execute_ctrl4_up_late0_BranchPlugin_SEL_lane0;
+  assign execute_ctrl4_down_AguPlugin_SEL_lane0 = execute_ctrl4_up_AguPlugin_SEL_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_FENCE_lane0 = execute_ctrl4_up_LsuPlugin_logic_FENCE_lane0;
+  assign execute_ctrl4_down_lane0_integer_WriteBackPlugin_SEL_lane0 = execute_ctrl4_up_lane0_integer_WriteBackPlugin_SEL_lane0;
+  assign execute_ctrl4_down_COMPLETION_AT_4_lane0 = execute_ctrl4_up_COMPLETION_AT_4_lane0;
+  assign execute_ctrl4_down_lane0_logic_completions_onCtrl_1_ENABLE_lane0 = execute_ctrl4_up_lane0_logic_completions_onCtrl_1_ENABLE_lane0;
+  assign execute_ctrl4_down_SrcStageables_REVERT_lane0 = execute_ctrl4_up_SrcStageables_REVERT_lane0;
+  assign execute_ctrl4_down_SrcStageables_ZERO_lane0 = execute_ctrl4_up_SrcStageables_ZERO_lane0;
+  assign execute_ctrl4_down_lane0_IntFormatPlugin_logic_SIGNED_lane0 = execute_ctrl4_up_lane0_IntFormatPlugin_logic_SIGNED_lane0;
+  assign execute_ctrl4_down_lane0_IntFormatPlugin_logic_WIDTH_ID_lane0 = execute_ctrl4_up_lane0_IntFormatPlugin_logic_WIDTH_ID_lane0;
+  assign execute_ctrl4_down_SrcStageables_UNSIGNED_lane0 = execute_ctrl4_up_SrcStageables_UNSIGNED_lane0;
+  assign execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane0 = execute_ctrl4_up_BarrelShifterPlugin_LEFT_lane0;
+  assign execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane0 = execute_ctrl4_up_BarrelShifterPlugin_SIGNED_lane0;
+  assign execute_ctrl4_down_BranchPlugin_BRANCH_CTRL_lane0 = execute_ctrl4_up_BranchPlugin_BRANCH_CTRL_lane0;
+  assign execute_ctrl4_down_MulPlugin_HIGH_lane0 = execute_ctrl4_up_MulPlugin_HIGH_lane0;
+  assign execute_ctrl4_down_AguPlugin_LOAD_lane0 = execute_ctrl4_up_AguPlugin_LOAD_lane0;
+  assign execute_ctrl4_down_AguPlugin_STORE_lane0 = execute_ctrl4_up_AguPlugin_STORE_lane0;
+  assign execute_ctrl4_down_AguPlugin_EXECUTE_lane0 = execute_ctrl4_up_AguPlugin_EXECUTE_lane0;
+  assign execute_ctrl4_down_AguPlugin_ATOMIC_lane0 = execute_ctrl4_up_AguPlugin_ATOMIC_lane0;
+  assign execute_ctrl4_down_AguPlugin_FLOAT_lane0 = execute_ctrl4_up_AguPlugin_FLOAT_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_LSU_PREFETCH_lane0 = execute_ctrl4_up_LsuPlugin_logic_LSU_PREFETCH_lane0;
+  assign execute_ctrl4_down_late0_IntAluPlugin_ALU_ADD_SUB_lane0 = execute_ctrl4_up_late0_IntAluPlugin_ALU_ADD_SUB_lane0;
+  assign execute_ctrl4_down_late0_IntAluPlugin_ALU_SLTX_lane0 = execute_ctrl4_up_late0_IntAluPlugin_ALU_SLTX_lane0;
+  assign execute_ctrl4_down_late0_IntAluPlugin_ALU_BITWISE_CTRL_lane0 = execute_ctrl4_up_late0_IntAluPlugin_ALU_BITWISE_CTRL_lane0;
+  assign execute_ctrl4_down_late0_SrcPlugin_logic_SRC1_CTRL_lane0 = execute_ctrl4_up_late0_SrcPlugin_logic_SRC1_CTRL_lane0;
+  assign execute_ctrl4_down_late0_SrcPlugin_logic_SRC2_CTRL_lane0 = execute_ctrl4_up_late0_SrcPlugin_logic_SRC2_CTRL_lane0;
+  assign execute_ctrl4_down_early1_BranchPlugin_SEL_lane1 = execute_ctrl4_up_early1_BranchPlugin_SEL_lane1;
+  assign execute_ctrl4_down_late1_IntAluPlugin_SEL_lane1 = execute_ctrl4_up_late1_IntAluPlugin_SEL_lane1;
+  assign execute_ctrl4_down_late1_BarrelShifterPlugin_SEL_lane1 = execute_ctrl4_up_late1_BarrelShifterPlugin_SEL_lane1;
+  assign execute_ctrl4_down_late1_BranchPlugin_SEL_lane1 = execute_ctrl4_up_late1_BranchPlugin_SEL_lane1;
+  assign execute_ctrl4_down_lane1_integer_WriteBackPlugin_SEL_lane1 = execute_ctrl4_up_lane1_integer_WriteBackPlugin_SEL_lane1;
+  assign execute_ctrl4_down_COMPLETION_AT_4_lane1 = execute_ctrl4_up_COMPLETION_AT_4_lane1;
+  assign execute_ctrl4_down_lane1_logic_completions_onCtrl_1_ENABLE_lane1 = execute_ctrl4_up_lane1_logic_completions_onCtrl_1_ENABLE_lane1;
+  assign execute_ctrl4_down_SrcStageables_REVERT_lane1 = execute_ctrl4_up_SrcStageables_REVERT_lane1;
+  assign execute_ctrl4_down_SrcStageables_ZERO_lane1 = execute_ctrl4_up_SrcStageables_ZERO_lane1;
+  assign execute_ctrl4_down_SrcStageables_UNSIGNED_lane1 = execute_ctrl4_up_SrcStageables_UNSIGNED_lane1;
+  assign execute_ctrl4_down_BarrelShifterPlugin_LEFT_lane1 = execute_ctrl4_up_BarrelShifterPlugin_LEFT_lane1;
+  assign execute_ctrl4_down_BarrelShifterPlugin_SIGNED_lane1 = execute_ctrl4_up_BarrelShifterPlugin_SIGNED_lane1;
+  assign execute_ctrl4_down_BranchPlugin_BRANCH_CTRL_lane1 = execute_ctrl4_up_BranchPlugin_BRANCH_CTRL_lane1;
+  assign execute_ctrl4_down_late1_IntAluPlugin_ALU_ADD_SUB_lane1 = execute_ctrl4_up_late1_IntAluPlugin_ALU_ADD_SUB_lane1;
+  assign execute_ctrl4_down_late1_IntAluPlugin_ALU_SLTX_lane1 = execute_ctrl4_up_late1_IntAluPlugin_ALU_SLTX_lane1;
+  assign execute_ctrl4_down_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1 = execute_ctrl4_up_late1_IntAluPlugin_ALU_BITWISE_CTRL_lane1;
+  assign execute_ctrl4_down_late1_SrcPlugin_logic_SRC1_CTRL_lane1 = execute_ctrl4_up_late1_SrcPlugin_logic_SRC1_CTRL_lane1;
+  assign execute_ctrl4_down_late1_SrcPlugin_logic_SRC2_CTRL_lane1 = execute_ctrl4_up_late1_SrcPlugin_logic_SRC2_CTRL_lane1;
+  assign execute_ctrl4_down_COMMIT_lane1 = execute_ctrl4_up_COMMIT_lane1;
+  assign execute_ctrl4_down_early0_MulPlugin_logic_mul_VALUES_0_lane0 = execute_ctrl4_up_early0_MulPlugin_logic_mul_VALUES_0_lane0;
+  assign execute_ctrl4_down_early0_MulPlugin_logic_mul_VALUES_1_lane0 = execute_ctrl4_up_early0_MulPlugin_logic_mul_VALUES_1_lane0;
+  assign execute_ctrl4_down_early0_MulPlugin_logic_mul_VALUES_2_lane0 = execute_ctrl4_up_early0_MulPlugin_logic_mul_VALUES_2_lane0;
+  assign execute_ctrl4_down_early0_MulPlugin_logic_mul_VALUES_3_lane0 = execute_ctrl4_up_early0_MulPlugin_logic_mul_VALUES_3_lane0;
+  assign execute_ctrl4_down_early0_BranchPlugin_pcCalc_PC_TRUE_lane0 = execute_ctrl4_up_early0_BranchPlugin_pcCalc_PC_TRUE_lane0;
+  assign execute_ctrl4_down_early0_BranchPlugin_pcCalc_PC_FALSE_lane0 = execute_ctrl4_up_early0_BranchPlugin_pcCalc_PC_FALSE_lane0;
+  assign execute_ctrl4_down_early0_BranchPlugin_pcCalc_PC_LAST_SLICE_lane0 = execute_ctrl4_up_early0_BranchPlugin_pcCalc_PC_LAST_SLICE_lane0;
+  assign execute_ctrl4_down_early1_BranchPlugin_pcCalc_PC_TRUE_lane1 = execute_ctrl4_up_early1_BranchPlugin_pcCalc_PC_TRUE_lane1;
+  assign execute_ctrl4_down_early1_BranchPlugin_pcCalc_PC_FALSE_lane1 = execute_ctrl4_up_early1_BranchPlugin_pcCalc_PC_FALSE_lane1;
+  assign execute_ctrl4_down_early1_BranchPlugin_pcCalc_PC_LAST_SLICE_lane1 = execute_ctrl4_up_early1_BranchPlugin_pcCalc_PC_LAST_SLICE_lane1;
+  assign execute_ctrl4_down_LsuL1_MIXED_ADDRESS_lane0 = execute_ctrl4_up_LsuL1_MIXED_ADDRESS_lane0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_EVENT_WRITE_DATA_lane0 = execute_ctrl4_up_LsuL1Plugin_logic_EVENT_WRITE_DATA_lane0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_EVENT_WRITE_MASK_lane0 = execute_ctrl4_up_LsuL1Plugin_logic_EVENT_WRITE_MASK_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_FROM_WB_lane0 = execute_ctrl4_up_LsuPlugin_logic_FROM_WB_lane0;
+  assign execute_ctrl4_down_LsuL1_MASK_lane0 = execute_ctrl4_up_LsuL1_MASK_lane0;
+  assign execute_ctrl4_down_LsuL1_SIZE_lane0 = execute_ctrl4_up_LsuL1_SIZE_lane0;
+  assign execute_ctrl4_down_LsuL1_LOAD_lane0 = execute_ctrl4_up_LsuL1_LOAD_lane0;
+  assign execute_ctrl4_down_LsuL1_EXECUTE_lane0 = execute_ctrl4_up_LsuL1_EXECUTE_lane0;
+  assign execute_ctrl4_down_LsuL1_ATOMIC_lane0 = execute_ctrl4_up_LsuL1_ATOMIC_lane0;
+  assign execute_ctrl4_down_LsuL1_STORE_lane0 = execute_ctrl4_up_LsuL1_STORE_lane0;
+  assign execute_ctrl4_down_LsuL1_CLEAN_lane0 = execute_ctrl4_up_LsuL1_CLEAN_lane0;
+  assign execute_ctrl4_down_LsuL1_INVALID_lane0 = execute_ctrl4_up_LsuL1_INVALID_lane0;
+  assign execute_ctrl4_down_LsuL1_GUEST_lane0 = execute_ctrl4_up_LsuL1_GUEST_lane0;
+  assign execute_ctrl4_down_LsuL1_PREFETCH_lane0 = execute_ctrl4_up_LsuL1_PREFETCH_lane0;
+  assign execute_ctrl4_down_LsuL1_FLUSH_lane0 = execute_ctrl4_up_LsuL1_FLUSH_lane0;
+  assign execute_ctrl4_down_Decode_STORE_ID_lane0 = execute_ctrl4_up_Decode_STORE_ID_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_FROM_LSU_lane0 = execute_ctrl4_up_LsuPlugin_logic_FROM_LSU_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_FROM_PREFETCH_lane0 = execute_ctrl4_up_LsuPlugin_logic_FROM_PREFETCH_lane0;
+  assign execute_ctrl4_down_LsuPlugin_SB_PTR_lane0 = execute_ctrl4_up_LsuPlugin_SB_PTR_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_SB_DATA_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_SB_DATA_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_STORE_BUFFER_EMPTY_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_STORE_BUFFER_EMPTY_lane0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_SHARED_lane0_plru_0 = execute_ctrl4_up_LsuL1Plugin_logic_SHARED_lane0_plru_0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_SHARED_lane0_dirty = execute_ctrl4_up_LsuL1Plugin_logic_SHARED_lane0_dirty;
+  assign execute_ctrl4_down_early0_MulPlugin_logic_steps_0_adders_0_lane0 = execute_ctrl4_up_early0_MulPlugin_logic_steps_0_adders_0_lane0;
+  assign execute_ctrl4_down_early0_MulPlugin_logic_steps_0_adders_1_lane0 = execute_ctrl4_up_early0_MulPlugin_logic_steps_0_adders_1_lane0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_BANK_BUSY_REMAPPED_lane0 = execute_ctrl4_up_LsuL1Plugin_logic_BANK_BUSY_REMAPPED_lane0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_BANKS_MUXES_lane0_0 = execute_ctrl4_up_LsuL1Plugin_logic_BANKS_MUXES_lane0_0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_BANKS_MUXES_lane0_1 = execute_ctrl4_up_LsuL1Plugin_logic_BANKS_MUXES_lane0_1;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WRITE_TO_READ_HAZARDS_lane0 = execute_ctrl4_up_LsuL1Plugin_logic_WRITE_TO_READ_HAZARDS_lane0;
+  assign execute_ctrl4_down_LsuL1_PHYSICAL_ADDRESS_lane0 = execute_ctrl4_up_LsuL1_PHYSICAL_ADDRESS_lane0;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_TAGS_lane0_0_loaded = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_TAGS_lane0_0_loaded;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_TAGS_lane0_0_address = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_TAGS_lane0_0_address;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_TAGS_lane0_0_fault = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_TAGS_lane0_0_fault;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_TAGS_lane0_1_loaded = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_TAGS_lane0_1_loaded;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_TAGS_lane0_1_address = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_TAGS_lane0_1_address;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_TAGS_lane0_1_fault = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_TAGS_lane0_1_fault;
+  assign execute_ctrl4_down_LsuL1Plugin_logic_WAYS_HITS_lane0 = execute_ctrl4_up_LsuL1Plugin_logic_WAYS_HITS_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onTrigger_HIT_lane0 = execute_ctrl4_up_LsuPlugin_logic_onTrigger_HIT_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_translationPort_keys_TRANSLATED_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_translationPort_keys_TRANSLATED_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_preCtrl_MISS_ALIGNED_lane0 = execute_ctrl4_up_LsuPlugin_logic_preCtrl_MISS_ALIGNED_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onPma_CACHED_RSP_lane0_fault = execute_ctrl4_up_LsuPlugin_logic_onPma_CACHED_RSP_lane0_fault;
+  assign execute_ctrl4_down_LsuPlugin_logic_onPma_CACHED_RSP_lane0_io = execute_ctrl4_up_LsuPlugin_logic_onPma_CACHED_RSP_lane0_io;
+  assign execute_ctrl4_down_LsuPlugin_logic_onPma_IO_RSP_lane0_fault = execute_ctrl4_up_LsuPlugin_logic_onPma_IO_RSP_lane0_fault;
+  assign execute_ctrl4_down_LsuPlugin_logic_onPma_IO_RSP_lane0_io = execute_ctrl4_up_LsuPlugin_logic_onPma_IO_RSP_lane0_io;
+  assign execute_ctrl4_down_LsuPlugin_logic_onPma_IO_lane0 = execute_ctrl4_up_LsuPlugin_logic_onPma_IO_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onPma_FROM_LSU_MSB_FAILED_lane0 = execute_ctrl4_up_LsuPlugin_logic_onPma_FROM_LSU_MSB_FAILED_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_MMU_PAGE_FAULT_lane0 = execute_ctrl4_up_LsuPlugin_logic_MMU_PAGE_FAULT_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_MMU_FAILURE_lane0 = execute_ctrl4_up_LsuPlugin_logic_MMU_FAILURE_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_translationPort_keys_ACCESS_FAULT_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_translationPort_keys_ACCESS_FAULT_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_translationPort_keys_REFILL_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_translationPort_keys_REFILL_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_translationPort_keys_HAZARD_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_translationPort_keys_HAZARD_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_GUEST_MMU_FAILURE_lane0 = execute_ctrl4_up_LsuPlugin_logic_GUEST_MMU_FAILURE_lane0;
+  assign execute_ctrl4_down_LsuPlugin_logic_onAddress0_translationPort_keys_BYPASS_TRANSLATION_lane0 = execute_ctrl4_up_LsuPlugin_logic_onAddress0_translationPort_keys_BYPASS_TRANSLATION_lane0;
+  assign execute_ctrl5_up_ready = execute_ctrl5_down_isReady;
+  assign execute_ctrl5_down_LANE_SEL_lane0 = execute_ctrl5_up_LANE_SEL_lane0;
+  assign execute_ctrl5_down_Decode_UOP_ID_lane0 = execute_ctrl5_up_Decode_UOP_ID_lane0;
+  assign execute_ctrl5_down_RD_PHYS_lane0 = execute_ctrl5_up_RD_PHYS_lane0;
+  assign execute_ctrl5_down_LANE_AGE_lane0 = execute_ctrl5_up_LANE_AGE_lane0;
+  assign execute_ctrl5_down_LANE_SEL_lane1 = execute_ctrl5_up_LANE_SEL_lane1;
+  assign execute_ctrl5_down_Decode_UOP_ID_lane1 = execute_ctrl5_up_Decode_UOP_ID_lane1;
+  assign execute_ctrl5_down_RD_PHYS_lane1 = execute_ctrl5_up_RD_PHYS_lane1;
+  assign execute_ctrl5_down_LANE_AGE_lane1 = execute_ctrl5_up_LANE_AGE_lane1;
+  assign execute_ctrl5_down_COMMIT_lane0 = execute_ctrl5_up_COMMIT_lane0;
+  assign execute_ctrl5_down_COMMIT_lane1 = execute_ctrl5_up_COMMIT_lane1;
+  assign execute_ctrl5_down_lane0_integer_WriteBackPlugin_logic_DATA_lane0 = execute_ctrl5_up_lane0_integer_WriteBackPlugin_logic_DATA_lane0;
+  assign execute_ctrl5_down_lane1_integer_WriteBackPlugin_logic_DATA_lane1 = execute_ctrl5_up_lane1_integer_WriteBackPlugin_logic_DATA_lane1;
+  assign fetch_logic_ctrls_0_down_isValid = fetch_logic_ctrls_0_down_valid;
+  assign fetch_logic_ctrls_0_down_isReady = fetch_logic_ctrls_0_down_ready;
+  assign fetch_logic_ctrls_0_down_isCancel = 1'b0;
+  assign fetch_logic_ctrls_1_up_isValid = fetch_logic_ctrls_1_up_valid;
+  assign fetch_logic_ctrls_1_up_isReady = fetch_logic_ctrls_1_up_ready;
+  assign fetch_logic_ctrls_1_up_isCancel = fetch_logic_ctrls_1_up_cancel;
+  assign fetch_logic_ctrls_1_down_isValid = fetch_logic_ctrls_1_down_valid;
+  assign fetch_logic_ctrls_1_down_isReady = fetch_logic_ctrls_1_down_ready;
+  assign fetch_logic_ctrls_1_down_isCancel = 1'b0;
+  assign fetch_logic_ctrls_2_up_isMoving = (fetch_logic_ctrls_2_up_isValid && (fetch_logic_ctrls_2_up_isReady || fetch_logic_ctrls_2_up_isCancel));
+  assign fetch_logic_ctrls_2_up_isValid = fetch_logic_ctrls_2_up_valid;
+  assign fetch_logic_ctrls_2_up_isReady = fetch_logic_ctrls_2_up_ready;
+  assign fetch_logic_ctrls_2_up_isCancel = fetch_logic_ctrls_2_up_cancel;
+  assign fetch_logic_ctrls_2_up_isCanceling = (fetch_logic_ctrls_2_up_isValid && fetch_logic_ctrls_2_up_isCancel);
+  assign fetch_logic_ctrls_0_up_isFiring = (fetch_logic_ctrls_0_up_isValid && fetch_logic_ctrls_0_up_isReady);
+  assign fetch_logic_ctrls_0_up_isValid = fetch_logic_ctrls_0_up_valid;
+  assign fetch_logic_ctrls_0_up_isReady = fetch_logic_ctrls_0_up_ready;
+  assign fetch_logic_ctrls_2_down_isValid = fetch_logic_ctrls_2_down_valid;
+  assign fetch_logic_ctrls_2_down_isReady = fetch_logic_ctrls_2_down_ready;
+  assign fetch_logic_ctrls_2_down_isCancel = 1'b0;
+  assign decode_ctrls_0_down_isValid = decode_ctrls_0_down_valid;
+  assign decode_ctrls_0_down_isReady = decode_ctrls_0_down_ready;
+  assign decode_ctrls_1_up_isMoving = (decode_ctrls_1_up_isValid && decode_ctrls_1_up_isReady);
+  assign decode_ctrls_1_up_isValid = decode_ctrls_1_up_valid;
+  assign decode_ctrls_1_up_isReady = decode_ctrls_1_up_ready;
+  assign decode_ctrls_1_up_isCanceling = 1'b0;
+  assign decode_ctrls_0_up_isFiring = (decode_ctrls_0_up_isValid && decode_ctrls_0_up_isReady);
+  assign decode_ctrls_0_up_isMoving = (decode_ctrls_0_up_isValid && decode_ctrls_0_up_isReady);
+  assign decode_ctrls_0_up_isValid = decode_ctrls_0_up_valid;
+  assign decode_ctrls_0_up_isReady = decode_ctrls_0_up_ready;
+  assign decode_ctrls_0_up_isCancel = 1'b0;
+  assign decode_ctrls_1_down_isReady = decode_ctrls_1_down_ready;
+  assign execute_ctrl0_down_isReady = execute_ctrl0_down_ready;
+  assign execute_ctrl1_down_isReady = execute_ctrl1_down_ready;
+  assign execute_ctrl2_down_isReady = execute_ctrl2_down_ready;
+  assign execute_ctrl3_down_isReady = execute_ctrl3_down_ready;
+  assign execute_ctrl4_up_isReady = execute_ctrl4_up_ready;
+  assign execute_ctrl4_down_isReady = execute_ctrl4_down_ready;
+  assign execute_ctrl5_down_isReady = execute_ctrl5_down_ready;
+  assign FetchL1Plugin_pmaBuilder_addressBits = FetchL1Plugin_logic_ctrl_pmaPort_cmd_address;
+  assign _zz_FetchL1Plugin_logic_ctrl_pmaPort_rsp_io = ((FetchL1Plugin_pmaBuilder_addressBits & 32'h0) == 32'h0);
+  assign FetchL1Plugin_pmaBuilder_onTransfers_0_addressHit = _zz_FetchL1Plugin_pmaBuilder_onTransfers_0_addressHit[0];
+  assign FetchL1Plugin_pmaBuilder_onTransfers_0_argsHit = (|1'b1);
+  assign FetchL1Plugin_pmaBuilder_onTransfers_0_hit = (FetchL1Plugin_pmaBuilder_onTransfers_0_argsHit && FetchL1Plugin_pmaBuilder_onTransfers_0_addressHit);
+  assign FetchL1Plugin_pmaBuilder_executeFault = 1'b0;
+  assign FetchL1Plugin_logic_ctrl_pmaPort_rsp_fault = ((! ((|((FetchL1Plugin_pmaBuilder_addressBits & 32'hffff0000) == 32'h80000000)) && (|FetchL1Plugin_pmaBuilder_onTransfers_0_hit))) || FetchL1Plugin_pmaBuilder_executeFault);
+  assign FetchL1Plugin_logic_ctrl_pmaPort_rsp_io = (! _zz_FetchL1Plugin_logic_ctrl_pmaPort_rsp_io_1[0]);
+  assign LsuPlugin_pmaBuilder_l1_addressBits = LsuPlugin_logic_onPma_cached_cmd_address;
+  assign LsuPlugin_pmaBuilder_l1_argsBits = LsuPlugin_logic_onPma_cached_cmd_op;
+  assign _zz_LsuPlugin_logic_onPma_cached_rsp_io = ((LsuPlugin_pmaBuilder_l1_addressBits & 32'h0) == 32'h0);
+  assign LsuPlugin_pmaBuilder_l1_onTransfers_0_addressHit = _zz_LsuPlugin_pmaBuilder_l1_onTransfers_0_addressHit[0];
+  assign LsuPlugin_pmaBuilder_l1_onTransfers_0_argsHit = (|((LsuPlugin_pmaBuilder_l1_argsBits & 2'b00) == 2'b00));
+  assign LsuPlugin_pmaBuilder_l1_onTransfers_0_hit = (LsuPlugin_pmaBuilder_l1_onTransfers_0_argsHit && LsuPlugin_pmaBuilder_l1_onTransfers_0_addressHit);
+  assign LsuPlugin_pmaBuilder_l1_loadExecute_needCheck = (LsuPlugin_logic_onPma_cached_cmd_op == 2'b10);
+  assign LsuPlugin_pmaBuilder_l1_loadExecute_fault = ((! _zz_LsuPlugin_pmaBuilder_l1_loadExecute_fault[0]) && LsuPlugin_pmaBuilder_l1_loadExecute_needCheck);
+  assign LsuPlugin_logic_onPma_cached_rsp_fault = ((! ((|((LsuPlugin_pmaBuilder_l1_addressBits & 32'hffff0000) == 32'h80000000)) && (|LsuPlugin_pmaBuilder_l1_onTransfers_0_hit))) || LsuPlugin_pmaBuilder_l1_loadExecute_fault);
+  assign LsuPlugin_logic_onPma_cached_rsp_io = (! _zz_LsuPlugin_logic_onPma_cached_rsp_io_1[0]);
+  assign LsuPlugin_pmaBuilder_io_addressBits = LsuPlugin_logic_onPma_io_cmd_address;
+  assign LsuPlugin_pmaBuilder_io_argsBits = {LsuPlugin_logic_onPma_io_cmd_size,LsuPlugin_logic_onPma_io_cmd_op};
+  assign _zz_LsuPlugin_logic_onPma_io_rsp_io = ((LsuPlugin_pmaBuilder_io_addressBits & 32'h10000000) == 32'h0);
+  assign LsuPlugin_pmaBuilder_io_onTransfers_0_addressHit = _zz_LsuPlugin_pmaBuilder_io_onTransfers_0_addressHit[0];
+  assign LsuPlugin_pmaBuilder_io_onTransfers_0_argsHit = (|((LsuPlugin_pmaBuilder_io_argsBits & 4'b0000) == 4'b0000));
+  assign LsuPlugin_pmaBuilder_io_onTransfers_0_hit = (LsuPlugin_pmaBuilder_io_onTransfers_0_argsHit && LsuPlugin_pmaBuilder_io_onTransfers_0_addressHit);
+  assign LsuPlugin_pmaBuilder_io_onTransfers_1_addressHit = _zz_LsuPlugin_pmaBuilder_io_onTransfers_1_addressHit[0];
+  assign LsuPlugin_pmaBuilder_io_onTransfers_1_argsHit = (|{((LsuPlugin_pmaBuilder_io_argsBits & 4'b1000) == 4'b1000),((LsuPlugin_pmaBuilder_io_argsBits & 4'b0001) == 4'b0000)});
+  assign LsuPlugin_pmaBuilder_io_onTransfers_1_hit = (LsuPlugin_pmaBuilder_io_onTransfers_1_argsHit && LsuPlugin_pmaBuilder_io_onTransfers_1_addressHit);
+  assign LsuPlugin_pmaBuilder_io_loadExecute_needCheck = (LsuPlugin_logic_onPma_io_cmd_op == 2'b10);
+  assign LsuPlugin_pmaBuilder_io_loadExecute_fault = ((! _zz_LsuPlugin_pmaBuilder_io_loadExecute_fault[0]) && LsuPlugin_pmaBuilder_io_loadExecute_needCheck);
+  assign LsuPlugin_logic_onPma_io_rsp_fault = ((! ((|{((LsuPlugin_pmaBuilder_io_addressBits & 32'hffc00000) == 32'h10c00000),((LsuPlugin_pmaBuilder_io_addressBits & _zz_LsuPlugin_logic_onPma_io_rsp_fault) == 32'h10010000),(_zz_LsuPlugin_logic_onPma_io_rsp_fault_1 == _zz_LsuPlugin_logic_onPma_io_rsp_fault_2),_zz_LsuPlugin_logic_onPma_io_rsp_fault_3,_zz_LsuPlugin_logic_onPma_io_rsp_fault_4}) && (|{LsuPlugin_pmaBuilder_io_onTransfers_1_hit,LsuPlugin_pmaBuilder_io_onTransfers_0_hit}))) || LsuPlugin_pmaBuilder_io_loadExecute_fault);
+  assign LsuPlugin_logic_onPma_io_rsp_io = (! _zz_LsuPlugin_logic_onPma_io_rsp_io_1[0]);
+  always @(*) begin
+    PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_stateReg;
+    case(PerformanceCounterPlugin_logic_fsm_stateReg)
+      PerformanceCounterPlugin_logic_fsm_IDLE : begin
+        if(PerformanceCounterPlugin_logic_fsm_csrWriteCmd_valid) begin
+          PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_CSR_WRITE;
+        end else begin
+          if(PerformanceCounterPlugin_logic_fsm_flusherCmd_valid) begin
+            PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_READ_LOW;
+          end else begin
+            if(PerformanceCounterPlugin_logic_fsm_csrReadCmd_valid) begin
+              PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_READ_LOW;
+            end
+          end
+        end
+      end
+      PerformanceCounterPlugin_logic_fsm_READ_LOW : begin
+        if(PerformanceCounterPlugin_logic_readPort_ready) begin
+          PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_CALC_LOW;
+        end
+      end
+      PerformanceCounterPlugin_logic_fsm_CALC_LOW : begin
+        if(PerformanceCounterPlugin_logic_writePort_ready) begin
+          PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_IDLE;
+          if(when_PerformanceCounterPlugin_l345) begin
+            PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_READ_HIGH;
+          end
+        end
+      end
+      PerformanceCounterPlugin_logic_fsm_READ_HIGH : begin
+        if(PerformanceCounterPlugin_logic_readPort_ready) begin
+          PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_CALC_HIGH;
+        end
+      end
+      PerformanceCounterPlugin_logic_fsm_CALC_HIGH : begin
+        if(PerformanceCounterPlugin_logic_writePort_ready) begin
+          PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_IDLE;
+        end
+      end
+      PerformanceCounterPlugin_logic_fsm_CSR_WRITE : begin
+        PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_IDLE;
+      end
+      default : begin
+      end
+    endcase
+    if(PerformanceCounterPlugin_logic_fsm_wantStart) begin
+      PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_IDLE;
+    end
+    if(PerformanceCounterPlugin_logic_fsm_wantKill) begin
+      PerformanceCounterPlugin_logic_fsm_stateNext = PerformanceCounterPlugin_logic_fsm_BOOT;
+    end
+  end
+
+  assign when_PerformanceCounterPlugin_l338 = PerformanceCounterPlugin_logic_fsm_counterReaded[7];
+  assign when_PerformanceCounterPlugin_l345 = PerformanceCounterPlugin_logic_fsm_calc_sum[32];
+  assign when_PerformanceCounterPlugin_l316 = (CsrAccessPlugin_bus_write_address[7] == 1'b0);
+  assign when_PerformanceCounterPlugin_l322 = PerformanceCounterPlugin_logic_fsm_cmd_oh[1];
+  assign PerformanceCounterPlugin_logic_fsm_done = (PerformanceCounterPlugin_logic_fsm_stateReg == PerformanceCounterPlugin_logic_fsm_IDLE);
+  always @(*) begin
+    TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_stateReg;
+    case(TrapPlugin_logic_harts_0_trap_fsm_stateReg)
+      TrapPlugin_logic_harts_0_trap_fsm_RUNNING : begin
+        if(TrapPlugin_logic_harts_0_trap_trigger_valid) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_COMPUTE;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_COMPUTE : begin
+        if(when_TrapPlugin_l630) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_TRAP_TVAL;
+        end else begin
+          case(TrapPlugin_logic_harts_0_trap_pending_state_code)
+            5'h0 : begin
+              TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_RUNNING;
+            end
+            5'h01 : begin
+              if(when_TrapPlugin_l693) begin
+                TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_XRET_EPC;
+              end
+            end
+            5'h02 : begin
+              TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_LSU_FLUSH;
+            end
+            5'h04 : begin
+              TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_JUMP;
+            end
+            5'h05 : begin
+              TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_JUMP;
+            end
+            5'h08 : begin
+              if(TrapPlugin_api_harts_0_askWake) begin
+                TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_JUMP;
+              end
+            end
+            5'h06 : begin
+              TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_JUMP;
+            end
+            5'h09 : begin
+              TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_JUMP;
+            end
+            default : begin
+            end
+          endcase
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_EPC : begin
+        if(TrapPlugin_logic_harts_0_crsPorts_write_ready) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_TRAP_TVEC;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_TVAL : begin
+        if(TrapPlugin_logic_harts_0_crsPorts_write_ready) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_TRAP_EPC;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_HTVAL : begin
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_HTINST : begin
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_TVEC : begin
+        if(TrapPlugin_logic_harts_0_crsPorts_read_ready) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_TRAP_WAIT;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_WAIT : begin
+        if(when_TrapPlugin_l955) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_TRAP_APPLY;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_TRAP_APPLY : begin
+        TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_RUNNING;
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_XRET_EPC : begin
+        if(TrapPlugin_logic_harts_0_crsPorts_read_ready) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_XRET_APPLY;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_XRET_APPLY : begin
+        TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_RUNNING;
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_JUMP : begin
+        TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_RUNNING;
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_LSU_FLUSH : begin
+        if(TrapPlugin_logic_lsuL1Invalidate_0_cmd_ready) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_FETCH_FLUSH;
+        end
+      end
+      TrapPlugin_logic_harts_0_trap_fsm_FETCH_FLUSH : begin
+        if(TrapPlugin_logic_fetchL1Invalidate_0_cmd_ready) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_JUMP;
+        end
+      end
+      default : begin
+        if(when_TrapPlugin_l556) begin
+          TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_RUNNING;
+        end
+      end
+    endcase
+    if(TrapPlugin_logic_harts_0_trap_fsm_wantKill) begin
+      TrapPlugin_logic_harts_0_trap_fsm_stateNext = TrapPlugin_logic_harts_0_trap_fsm_RESET;
+    end
+  end
+

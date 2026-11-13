@@ -1,0 +1,234 @@
+{
+  "precision": 0.21306060487976433,
+  "recall": 0.23446047685591412,
+  "mAP50": 0.2110345527673628,
+  "mAP50_95": 0.11887633363019935,
+  "per_class_AP50_95": [
+    0.11993803211537453,
+    0.3555673024054229,
+    0.0,
+    0.0
+  ],
+  "timing_ms": [
+    0.222547060357402,
+    30.077317440479465,
+    1.6444358813550333
+  ],
+  "input": "fixed square 320x320, no rectangular padding",
+  "summary_PR_note": "Upstream P/R use maximum mean F1 on this split; fixed-threshold P/R are below.",
+  "per_class": {
+    "kitchen": {
+      "targets": 351,
+      "AP50": 0.19720474851302053,
+      "AP50_95": 0.11993803211537453
+    },
+    "recyclable": {
+      "targets": 1841,
+      "AP50": 0.6469334625564307,
+      "AP50_95": 0.3555673024054229
+    },
+    "hazardous": {
+      "targets": 49,
+      "AP50": 0.0,
+      "AP50_95": 0.0
+    },
+    "other": {
+      "targets": 216,
+      "AP50": 0.0,
+      "AP50_95": 0.0
+    }
+  },
+  "confusion_matrix_conf025_iou045": [
+    [
+      149.0,
+      11.0,
+      0.0,
+      1.0,
+      677.0
+    ],
+    [
+      12.0,
+      1293.0,
+      9.0,
+      81.0,
+      495.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      190.0,
+      537.0,
+      40.0,
+      134.0,
+      0.0
+    ]
+  ],
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 146,
+      "FP": 1511,
+      "GT": 351,
+      "precision": 0.08811104405552203,
+      "recall": 0.41595441595441596
+    },
+    "recyclable": {
+      "TP": 1256,
+      "FP": 897,
+      "GT": 1841,
+      "precision": 0.5833720390153274,
+      "recall": 0.6822379141770777
+    },
+    "hazardous": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 49,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "other": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 216,
+      "precision": 0.0,
+      "recall": 0.0
+    }
+  },
+  "image_top_bin_conf025": {
+    "sumn2u": {
+      "images": 1232,
+      "no_detection": 61,
+      "correct_top_bin": 1087,
+      "wrong_top_bin": 84
+    },
+    "codingbear": {
+      "images": 340,
+      "no_detection": 63,
+      "correct_top_bin": 77,
+      "wrong_top_bin": 200
+    }
+  },
+  "image_primary_bin_conf025": {
+    "row_bins": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other"
+    ],
+    "columns": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "no_detection"
+    ],
+    "matrix": [
+      [
+        111,
+        93,
+        0,
+        0,
+        19
+      ],
+      [
+        18,
+        1053,
+        0,
+        0,
+        69
+      ],
+      [
+        0,
+        39,
+        0,
+        0,
+        10
+      ],
+      [
+        3,
+        131,
+        0,
+        0,
+        26
+      ]
+    ],
+    "source_matrices": {
+      "sumn2u": [
+        [
+          101,
+          3,
+          0,
+          0,
+          1
+        ],
+        [
+          17,
+          986,
+          0,
+          0,
+          54
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          62,
+          0,
+          0,
+          6
+        ]
+      ],
+      "codingbear": [
+        [
+          10,
+          90,
+          0,
+          0,
+          18
+        ],
+        [
+          1,
+          67,
+          0,
+          0,
+          15
+        ],
+        [
+          0,
+          39,
+          0,
+          0,
+          10
+        ],
+        [
+          1,
+          69,
+          0,
+          0,
+          20
+        ]
+      ]
+    },
+    "images": 1572,
+    "coverage": 0.9211195928753181,
+    "primary_bin_accuracy_including_missed": 0.7404580152671756,
+    "primary_bin_accuracy_when_detected": 0.8038674033149171,
+    "primary_bin_note": "One image prediction (highest-confidence box) is compared with its most frequent ground-truth bin; this complements object-level AP and is not a physical-item benchmark."
+  }
+}

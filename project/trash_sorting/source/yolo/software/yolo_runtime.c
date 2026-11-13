@@ -1,5 +1,14 @@
 #include "yolo_runtime.h"
+#include "yolo_frame_workspace.h"
 #include <string.h>
+
+/* Opt-in candidate: retain size optimization elsewhere and leave arithmetic
+ * and MMIO unchanged. Board profiles, not compiler flags, establish speed. */
+#if defined(__GNUC__) && defined(YOLO_LINEAR_O2)
+#define YOLO_LINEAR_OPT __attribute__((optimize("O2")))
+#else
+#define YOLO_LINEAR_OPT
+#endif
 
 uint32_t yolo_runtime_options=YOLO_FAST_HEAD|YOLO_FAST_LINEAR|YOLO_FAST_POOL|
                                YOLO_FAST_DECODE|YOLO_FAST_INT_HEAD|YOLO_FAST_SPARSE_HEAD;
@@ -14,12 +23,14 @@ static union {
     int16_t head_q16[4096];
     int8_t pool[5][1536];
     unsigned char scale_lut[4][256];
+    yolo_frame_workspace_t frame;
     struct {
         int32_t whole[2][256];
         uint32_t fraction[2][256];
     } add;
 } scratch;
 static int8_t head_input[256];
+yolo_frame_workspace_t *yolo_frame_workspace_get(void) {return &scratch.frame;}
 #endif
 
 static int8_t clip(int64_t v)
@@ -83,7 +94,7 @@ static int write_bytes(const yolo_io_t *io, uint32_t a,
     return 0;
 }
 
-static void scale_bytes(unsigned char *dst,const unsigned char *src,
+static YOLO_LINEAR_OPT void scale_bytes(unsigned char *dst,const unsigned char *src,
                         uint32_t n,uint32_t ratio,uint32_t slot)
 {
     uint32_t i;
@@ -102,7 +113,23 @@ static void scale_bytes(unsigned char *dst,const unsigned char *src,
         dst[i]=(unsigned char)clip(rounded_q24((int64_t)(int8_t)src[i]*ratio));
 }
 
-static int execute_bulk_linear(const yolo_io_t *io, const yolo_op_t *op,
+/* Each product fits int32 when its Q24 ratio is <= 1. Add modulo 2^32,
+ * detect equal-sign overflow, and round an unsigned magnitude. */
+#ifdef YOLO_PACKED_ADD
+static inline unsigned char add_q24_products(int32_t left,int32_t right)
+{
+    uint32_t a=(uint32_t)left,b=(uint32_t)right,sum=a+b;
+    uint32_t sign=sum>>31,magnitude,rounded;
+    if(!((a^b)>>31) && ((sum^a)>>31))
+        return (unsigned char)((a>>31)?128u:127u);
+    magnitude=sign ? 0u-sum : sum;
+    rounded=(magnitude+0x800000u)>>24;
+    return (unsigned char)(sign ? (rounded>=128u?128u:0u-rounded) :
+                                      (rounded>=127u?127u:rounded));
+}
+#endif
+
+static YOLO_LINEAR_OPT int execute_bulk_linear(const yolo_io_t *io, const yolo_op_t *op,
                                const yolo_tensor_t *tensors)
 {
     enum { CHUNK_BYTES = 1024 };
@@ -116,10 +143,16 @@ static int execute_bulk_linear(const yolo_io_t *io, const yolo_op_t *op,
         uint32_t row_bytes = (uint32_t)out->w * out->c;
 #ifdef YOLO_CACHED_RUNTIME
         int fast=(yolo_runtime_options&YOLO_FAST_LINEAR)!=0;
+#ifdef YOLO_PACKED_ADD
+        int packed=fast && op->ratios[0]<=(1u<<24) && op->ratios[1]<=(1u<<24);
+#endif
         if(fast) {
             uint32_t j,i;
             for(j=0;j<2;j++) for(i=0;i<256;i++) {
                 int64_t product=(int64_t)(int8_t)i*op->ratios[j];
+#ifdef YOLO_PACKED_ADD
+                if(packed) {scratch.add.whole[j][i]=(int32_t)product;continue;}
+#endif
                 int32_t whole=(int32_t)(product>=0 ? product>>24 :
                                       -((-product+0xffffff)>>24));
                 scratch.add.whole[j][i]=whole;
@@ -140,6 +173,13 @@ static int execute_bulk_linear(const yolo_io_t *io, const yolo_op_t *op,
                 rc = read_bytes(io,
                     address(&tensors[op->inputs[1]], y, 0, off), input[1], n);
                 if (rc) return rc;
+#if defined(YOLO_CACHED_RUNTIME) && defined(YOLO_PACKED_ADD)
+                if(packed) {
+                    for(i=0;i<n;i++) output[i]=add_q24_products(
+                        scratch.add.whole[0][input[0][i]],
+                        scratch.add.whole[1][input[1][i]]);
+                } else
+#endif
                 for (i = 0; i < n; ++i) {
                     int64_t v;
 #ifdef YOLO_CACHED_RUNTIME
@@ -278,8 +318,8 @@ static int head_scalar(const yolo_io_t *io, const yolo_op_t *op,
 {
     const yolo_tensor_t *in = &tensors[op->inputs[0]], *out = &tensors[op->output];
     uint32_t y, x, oc, c;
-    if (out->c != 33 || in->c > 256 || in->h != out->h || in->w != out->w ||
-        in->padded_c != in->c || (in->c & 7) || out->padded_c != 40)
+    if ((out->c != 33 && out->c != 30 && out->c != 27) || in->c > 256 || in->h != out->h || in->w != out->w ||
+        in->padded_c != in->c || (in->c & 7) || out->padded_c != ((out->c+7u)&~7u))
         return YOLO_INVALID;
     /* Two output rows fit the 16 KiB CPU RAM budget. Reading FP32 weights
      * through the mailbox for every individual MAC is prohibitively costly. */
@@ -379,6 +419,8 @@ static int head_cached_q16(const yolo_io_t *io,const yolo_op_t *op,
                            const yolo_tensor_t *in,const yolo_tensor_t *out)
 {
     uint32_t oc,px,j,c;
+    uint32_t anchor_values=out->c/3;
+    if(out->c%3 || anchor_values<6) return YOLO_INVALID;
     int sparse=(yolo_runtime_options&YOLO_FAST_SPARSE_HEAD)!=0;
     int16_t object_weights[3][256];
     float object_bias[3],factor=in->scale/65536.0f;
@@ -387,9 +429,9 @@ static int head_cached_q16(const yolo_io_t *io,const yolo_op_t *op,
     capacity&=~7u;
     if(capacity>40) capacity=40;
     if(sparse) for(j=0;j<3;j++) {
-        int rc=float_read(io,op->head_bias+(j*11+4)*4,&object_bias[j]);
+        int rc=float_read(io,op->head_bias+(j*anchor_values+4)*4,&object_bias[j]);
         if(rc) return rc;
-        rc=head_load_q16(io,op->head_weight+(j*11+4)*in->c*4,
+        rc=head_load_q16(io,op->head_weight+(j*anchor_values+4)*in->c*4,
                          in->c,object_weights[j]);
         if(rc) return rc;
     }
@@ -404,7 +446,7 @@ static int head_cached_q16(const yolo_io_t *io,const yolo_op_t *op,
         if(block>capacity) block=capacity;
         for(j=0;j<block && oc+j<out->c;j++) {
             int rc;
-            if(sparse && (oc+j)%11==4) continue;
+            if(sparse && (oc+j)%anchor_values==4) continue;
             rc=float_read(io,op->head_bias+(oc+j)*4,&biases[j]);
             if(rc) return rc;
             rc=head_load_q16(io,op->head_weight+(oc+j)*in->c*4,
@@ -418,13 +460,13 @@ static int head_cached_q16(const yolo_io_t *io,const yolo_op_t *op,
                               head_input,in->c);
             if(rc) return rc;
             if(sparse) for(c=0;c<3;c++)
-                if(c*11<oc+block && c*11+10>=oc)
+                if(c*anchor_values<oc+block && (c+1)*anchor_values-1>=oc)
                     object[c]=(float)head_dot_q16_i16(
                         head_input,object_weights[c],in->c)
                         *factor+object_bias[c];
             for(j=0;j<block && oc+j<out->c;j++) {
-                uint32_t anchor=(oc+j)/11;
-                if(sparse && (oc+j)%11==4) values[j]=object[anchor];
+                uint32_t anchor=(oc+j)/anchor_values;
+                if(sparse && (oc+j)%anchor_values==4) values[j]=object[anchor];
                 else if(!sparse || object[anchor]>=yolo_head_logit_floor) {
                     int32_t sum=head_dot_q16_i16(
                         head_input,scratch.head_q16+j*in->c,in->c);
@@ -446,8 +488,8 @@ static int head_cached(const yolo_io_t *io,const yolo_op_t *op,
 {
     const yolo_tensor_t *in=&tensors[op->inputs[0]],*out=&tensors[op->output];
     uint32_t oc,px,j,c;
-    if(out->c!=33 || !in->c || in->c>256 || in->h!=out->h || in->w!=out->w ||
-       in->padded_c!=in->c || (in->c&7) || out->padded_c!=40)
+    if((out->c!=33 && out->c!=30 && out->c!=27) || !in->c || in->c>256 || in->h!=out->h || in->w!=out->w ||
+       in->padded_c!=in->c || (in->c&7) || out->padded_c!=((out->c+7u)&~7u))
         return YOLO_INVALID;
     int q16=(yolo_runtime_options&YOLO_FAST_INT_HEAD)!=0;
     if(q16) return head_cached_q16(io,op,in,out);

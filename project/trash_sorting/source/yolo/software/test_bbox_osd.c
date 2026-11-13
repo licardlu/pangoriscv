@@ -99,6 +99,29 @@ static void test_display_commits(void) {
     assert(display_results(0) == YOLO_TIMEOUT);
     assert(reads == POLL_LIMIT && !writes && !commits && !fences);
 }
+static void test_camera_probe(void) {
+    uint32_t count;
+    boxes[0]=(yolo_box_t){10,10,20,20,.99f,0};
+    boxes[1]=(yolo_box_t){100,100,200,200,.8f,2};
+    count=2;reset_mmio();busy_reads=POLL_LIMIT;
+    assert(camera_results(&count,4,UINT32_MAX,1280,720,0)==YOLO_OK);
+    assert(count==1 && boxes[0].category==2);
+    assert(!reads && !writes && !commits && !fences);
+    count=1;reset_mmio();
+    assert(camera_results(&count,4,UINT32_MAX,1280,720,1)==YOLO_OK);
+    assert(commits==1 && committed[0]==0x80000002u);
+    count=0;reset_mmio();
+    assert(camera_results(&count,4,UINT32_MAX,1280,720,0)==YOLO_OK);
+    assert(count==0 && !reads && !writes && !commits);
+    assert(camera_results(&count,4,UINT32_MAX,1280,720,1)==YOLO_OK);
+    expect_empty_commit();
+    /* A hand with no contacting object suppresses remote background in both modes. */
+    boxes[0]=(yolo_box_t){800,500,900,600,.99f,2};
+    boxes[1]=(yolo_box_t){20,20,100,100,.9f,4};
+    count=2;reset_mmio();
+    assert(camera_results(&count,4,4,1280,720,0)==YOLO_OK);
+    assert(count==0 && !writes && !commits);
+}
 #endif
 
 static uint32_t pack(unsigned x, unsigned y) { return x | (y << 16); }
@@ -141,6 +164,7 @@ int main(void) {
     }
 #ifdef BBOX_OSD_MMIO_TEST
     test_display_commits();
+    test_camera_probe();
     puts("BBOX_OSD_MMIO_PASS empty/invalid commit, stale-slot clear, busy/timeout");
 #endif
     puts("BBOX_OSD_PASS geometry and successful-empty commit policy");

@@ -1,0 +1,1080 @@
+{
+  "memory_loads": [
+    "firmware_lane0.bin",
+    "firmware_lane1.bin",
+    "firmware_lane2.bin",
+    "firmware_lane3.bin",
+    "firmware_lane4.bin",
+    "firmware_lane5.bin",
+    "firmware_lane6.bin",
+    "firmware_lane7.bin",
+    "voice_pcm8.hex.bank00.hex",
+    "voice_pcm8.hex.bank01.hex",
+    "voice_pcm8.hex.bank02.hex",
+    "voice_pcm8.hex.bank03.hex",
+    "voice_pcm8.hex.bank04.hex",
+    "voice_pcm8.hex.bank05.hex",
+    "voice_pcm8.hex.bank06.hex",
+    "voice_pcm8.hex.bank07.hex",
+    "voice_pcm8.hex.bank08.hex",
+    "voice_pcm8.hex.bank09.hex",
+    "voice_pcm8.hex.bank10.hex",
+    "voice_pcm8.hex.bank11.hex",
+    "voice_pcm8.hex.bank12.hex",
+    "voice_pcm8.hex.bank13.hex",
+    "voice_pcm8.hex.bank14.hex",
+    "voice_pcm8.hex.bank15.hex",
+    "voice_pcm8.hex.bank16.hex",
+    "voice_pcm8.hex.bank17.hex",
+    "voice_pcm8.hex.bank18.hex",
+    "voice_pcm8.hex.bank19.hex",
+    "voice_pcm8.hex.bank20.hex",
+    "voice_pcm8.hex.bank21.hex",
+    "voice_pcm8.hex.bank22.hex",
+    "voice_pcm8.hex.bank23.hex",
+    "voice_pcm8.hex.bank24.hex",
+    "voice_pcm8.hex.bank25.hex",
+    "voice_pcm8.hex.bank26.hex",
+    "voice_pcm8.hex.bank27.hex",
+    "voice_pcm8.hex.bank28.hex",
+    "voice_pcm8.hex.bank29.hex",
+    "voice_pcm8.hex.bank30.hex",
+    "voice_pcm8.hex.bank31.hex",
+    "voice_pcm8.hex.bank32.hex",
+    "voice_pcm8.hex.bank33.hex",
+    "voice_pcm8.hex.bank34.hex",
+    "voice_pcm8.hex.bank35.hex",
+    "voice_pcm8.hex.bank36.hex",
+    "voice_pcm8.hex.bank37.hex",
+    "voice_pcm8.hex.bank38.hex",
+    "voice_pcm8.hex.bank39.hex",
+    "voice_pcm8.hex.bank40.hex",
+    "voice_pcm8.hex.bank41.hex",
+    "voice_pcm8.hex.bank42.hex",
+    "voice_pcm8.hex.bank43.hex",
+    "voice_pcm8.hex.bank44.hex",
+    "voice_pcm8.hex.bank45.hex",
+    "voice_pcm8.hex.bank46.hex",
+    "voice_pcm8.hex.bank47.hex",
+    "voice_pcm8.hex.bank48.hex",
+    "voice_pcm8.hex.bank49.hex",
+    "voice_pcm8.hex.bank50.hex",
+    "voice_pcm8.hex.bank51.hex",
+    "voice_pcm8.hex.bank52.hex",
+    "voice_pcm8.hex.bank53.hex",
+    "voice_pcm8.hex.bank54.hex",
+    "voice_pcm8.hex.bank55.hex",
+    "voice_pcm8.hex.bank56.hex",
+    "ui_light_bg.hex",
+    "ui_light_palette.hex",
+    "ui_light_status.hex"
+  ],
+  "resources": {
+    "APM": {
+      "used": 123.0,
+      "available": 240.0
+    },
+    "FF": {
+      "used": 22141.0,
+      "available": 133200.0
+    },
+    "LUT": {
+      "used": 28569.0,
+      "available": 66600.0
+    },
+    "Distributed RAM": {
+      "used": 290.0,
+      "available": 19900.0
+    },
+    "DRM": {
+      "used": 132.5,
+      "available": 155.0
+    },
+    "IO": {
+      "used": 141.0,
+      "available": 300.0
+    }
+  },
+  "raw_model_classes": 4,
+  "four_bin_classes": 1,
+  "hand_locator_class": null,
+  "camera_probe_command": 12,
+  "linear_o2": true,
+  "classes": [
+    "kitchen",
+    "recyclable",
+    "hazardous",
+    "other"
+  ],
+  "checkpoint_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0",
+  "model_sha256": "ea70896cec65e802cd063525ba8a09814b10c52b65a36822abbc0d7854ac447e",
+  "peripheral_test_mode": 0,
+  "servo_reversed_mask": "1111",
+  "cpu_hz": 54000000,
+  "source_build": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_camera_probe_fast54_20261113_062",
+  "fast_router": true,
+  "share_router_control_signal": true,
+  "plc_decongestion": 4,
+  "early_block_placement": "Global",
+  "slack_prior_in_global_router": false,
+  "pin_cost_increasing_speed": 300,
+  "hold_margin_ps": 200,
+  "reused_placement": null,
+  "optimize_multi_corner_timing": true,
+  "final_timing": {
+    "Slow_Setup": [
+      {
+        "clocks": [
+          "sys_clk",
+          "sys_clk"
+        ],
+        "slack_ns": 30.356,
+        "endpoints": 1489
+      },
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 4.165,
+        "endpoints": 2433
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 95.264,
+        "endpoints": 666
+      },
+      {
+        "clocks": [
+          "clk_25M",
+          "clk_25M"
+        ],
+        "slack_ns": 37.514,
+        "endpoints": 74
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 2.019,
+        "endpoints": 55048
+      },
+      {
+        "clocks": [
+          "cam1_sccb",
+          "cam1_sccb"
+        ],
+        "slack_ns": 96869.014,
+        "endpoints": 100
+      },
+      {
+        "clocks": [
+          "cam2_sccb",
+          "cam2_sccb"
+        ],
+        "slack_ns": 96867.776,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 5.021,
+        "endpoints": 412
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 2.157,
+        "endpoints": 19777
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_1",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 2.367,
+        "endpoints": 260
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_0",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 3.584,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_0"
+        ],
+        "slack_ns": 0.584,
+        "endpoints": 196
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_1"
+        ],
+        "slack_ns": 0.108,
+        "endpoints": 420
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1"
+        ],
+        "slack_ns": 3.768,
+        "endpoints": 95
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 7.907,
+        "endpoints": 929
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 1.833,
+        "endpoints": 166
+      }
+    ],
+    "Slow_Hold": [
+      {
+        "clocks": [
+          "sys_clk",
+          "sys_clk"
+        ],
+        "slack_ns": 0.291,
+        "endpoints": 1489
+      },
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 0.349,
+        "endpoints": 2433
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 0.299,
+        "endpoints": 666
+      },
+      {
+        "clocks": [
+          "clk_25M",
+          "clk_25M"
+        ],
+        "slack_ns": 0.323,
+        "endpoints": 74
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 0.228,
+        "endpoints": 55048
+      },
+      {
+        "clocks": [
+          "cam1_sccb",
+          "cam1_sccb"
+        ],
+        "slack_ns": 0.284,
+        "endpoints": 100
+      },
+      {
+        "clocks": [
+          "cam2_sccb",
+          "cam2_sccb"
+        ],
+        "slack_ns": 0.304,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 0.347,
+        "endpoints": 412
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.345,
+        "endpoints": 19777
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_1",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.922,
+        "endpoints": 260
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_0",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 1.089,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_0"
+        ],
+        "slack_ns": 0.697,
+        "endpoints": 196
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_1"
+        ],
+        "slack_ns": 0.788,
+        "endpoints": 420
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1"
+        ],
+        "slack_ns": 0.292,
+        "endpoints": 95
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 0.288,
+        "endpoints": 929
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 0.345,
+        "endpoints": 166
+      }
+    ],
+    "Slow_Recovery": [
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 11.294,
+        "endpoints": 8
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 97.676,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 14.443,
+        "endpoints": 594
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 5.595,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 4.206,
+        "endpoints": 3649
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 11.249,
+        "endpoints": 4
+      }
+    ],
+    "Slow_Removal": [
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 0.584,
+        "endpoints": 8
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 1.007,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 0.349,
+        "endpoints": 594
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 0.426,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.388,
+        "endpoints": 3649
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 0.766,
+        "endpoints": 4
+      }
+    ],
+    "Slow_Minimum Pulse Width": [
+      {
+        "clocks": [
+          "sys_clk"
+        ],
+        "slack_ns": 17.54,
+        "endpoints": 237
+      },
+      {
+        "clocks": [
+          "ref_clk"
+        ],
+        "slack_ns": 3.8,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "pix_clk"
+        ],
+        "slack_ns": 5.767,
+        "endpoints": 752
+      },
+      {
+        "clocks": [
+          "cfg_clk"
+        ],
+        "slack_ns": 49.074,
+        "endpoints": 125
+      },
+      {
+        "clocks": [
+          "clk_25M"
+        ],
+        "slack_ns": 19.981,
+        "endpoints": 10
+      },
+      {
+        "clocks": [
+          "ai_clk54"
+        ],
+        "slack_ns": 7.905,
+        "endpoints": 12187
+      },
+      {
+        "clocks": [
+          "cam1_sccb"
+        ],
+        "slack_ns": 48433.44,
+        "endpoints": 20
+      },
+      {
+        "clocks": [
+          "cam2_sccb"
+        ],
+        "slack_ns": 48433.44,
+        "endpoints": 19
+      },
+      {
+        "clocks": [
+          "rst_clk"
+        ],
+        "slack_ns": 3.8,
+        "endpoints": 98
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 3.04,
+        "endpoints": 4591
+      },
+      {
+        "clocks": [
+          "phy_dq_clk_0"
+        ],
+        "slack_ns": 0.035,
+        "endpoints": 35
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_0"
+        ],
+        "slack_ns": 1.85,
+        "endpoints": 35
+      },
+      {
+        "clocks": [
+          "phy_dq_clk_1"
+        ],
+        "slack_ns": 0.035,
+        "endpoints": 84
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_1"
+        ],
+        "slack_ns": 2.4,
+        "endpoints": 84
+      },
+      {
+        "clocks": [
+          "dvp1"
+        ],
+        "slack_ns": 3.133,
+        "endpoints": 72
+      },
+      {
+        "clocks": [
+          "dvp1_pixel"
+        ],
+        "slack_ns": 5.707,
+        "endpoints": 142
+      }
+    ],
+    "Fast_Setup": [
+      {
+        "clocks": [
+          "sys_clk",
+          "sys_clk"
+        ],
+        "slack_ns": 32.968,
+        "endpoints": 1489
+      },
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 7.685,
+        "endpoints": 2433
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 97.121,
+        "endpoints": 666
+      },
+      {
+        "clocks": [
+          "clk_25M",
+          "clk_25M"
+        ],
+        "slack_ns": 38.647,
+        "endpoints": 74
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 8.288,
+        "endpoints": 55048
+      },
+      {
+        "clocks": [
+          "cam1_sccb",
+          "cam1_sccb"
+        ],
+        "slack_ns": 96870.406,
+        "endpoints": 100
+      },
+      {
+        "clocks": [
+          "cam2_sccb",
+          "cam2_sccb"
+        ],
+        "slack_ns": 96869.702,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 6.234,
+        "endpoints": 412
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 4.42,
+        "endpoints": 19777
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_1",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 4.106,
+        "endpoints": 260
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_0",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 4.944,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_0"
+        ],
+        "slack_ns": 2.989,
+        "endpoints": 196
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_1"
+        ],
+        "slack_ns": 2.712,
+        "endpoints": 420
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1"
+        ],
+        "slack_ns": 4.819,
+        "endpoints": 95
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 9.906,
+        "endpoints": 929
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 3.641,
+        "endpoints": 166
+      }
+    ],
+    "Fast_Hold": [
+      {
+        "clocks": [
+          "sys_clk",
+          "sys_clk"
+        ],
+        "slack_ns": 0.202,
+        "endpoints": 1489
+      },
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 0.251,
+        "endpoints": 2433
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 0.201,
+        "endpoints": 666
+      },
+      {
+        "clocks": [
+          "clk_25M",
+          "clk_25M"
+        ],
+        "slack_ns": 0.228,
+        "endpoints": 74
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 0.167,
+        "endpoints": 55048
+      },
+      {
+        "clocks": [
+          "cam1_sccb",
+          "cam1_sccb"
+        ],
+        "slack_ns": 0.251,
+        "endpoints": 100
+      },
+      {
+        "clocks": [
+          "cam2_sccb",
+          "cam2_sccb"
+        ],
+        "slack_ns": 0.258,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 0.251,
+        "endpoints": 412
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.249,
+        "endpoints": 19777
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_1",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.326,
+        "endpoints": 260
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_0",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.496,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_0"
+        ],
+        "slack_ns": 0.263,
+        "endpoints": 196
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_1"
+        ],
+        "slack_ns": 0.29,
+        "endpoints": 420
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1"
+        ],
+        "slack_ns": 0.2,
+        "endpoints": 95
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 0.203,
+        "endpoints": 929
+      },
+      {
+        "clocks": [
+          "dvp1",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 0.201,
+        "endpoints": 166
+      }
+    ],
+    "Fast_Recovery": [
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 12.096,
+        "endpoints": 8
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 98.599,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 15.868,
+        "endpoints": 594
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 6.503,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 5.521,
+        "endpoints": 3649
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 12.061,
+        "endpoints": 4
+      }
+    ],
+    "Fast_Removal": [
+      {
+        "clocks": [
+          "pix_clk",
+          "pix_clk"
+        ],
+        "slack_ns": 0.35,
+        "endpoints": 8
+      },
+      {
+        "clocks": [
+          "cfg_clk",
+          "cfg_clk"
+        ],
+        "slack_ns": 0.713,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "ai_clk54",
+          "ai_clk54"
+        ],
+        "slack_ns": 0.248,
+        "endpoints": 594
+      },
+      {
+        "clocks": [
+          "rst_clk",
+          "rst_clk"
+        ],
+        "slack_ns": 0.298,
+        "endpoints": 97
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk",
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 0.264,
+        "endpoints": 3649
+      },
+      {
+        "clocks": [
+          "dvp1_pixel",
+          "dvp1_pixel"
+        ],
+        "slack_ns": 0.483,
+        "endpoints": 4
+      }
+    ],
+    "Fast_Minimum Pulse Width": [
+      {
+        "clocks": [
+          "sys_clk"
+        ],
+        "slack_ns": 17.93,
+        "endpoints": 237
+      },
+      {
+        "clocks": [
+          "ref_clk"
+        ],
+        "slack_ns": 3.8,
+        "endpoints": 1
+      },
+      {
+        "clocks": [
+          "pix_clk"
+        ],
+        "slack_ns": 6.157,
+        "endpoints": 752
+      },
+      {
+        "clocks": [
+          "cfg_clk"
+        ],
+        "slack_ns": 49.464,
+        "endpoints": 125
+      },
+      {
+        "clocks": [
+          "clk_25M"
+        ],
+        "slack_ns": 19.981,
+        "endpoints": 10
+      },
+      {
+        "clocks": [
+          "ai_clk54"
+        ],
+        "slack_ns": 8.452,
+        "endpoints": 12187
+      },
+      {
+        "clocks": [
+          "cam1_sccb"
+        ],
+        "slack_ns": 48433.83,
+        "endpoints": 20
+      },
+      {
+        "clocks": [
+          "cam2_sccb"
+        ],
+        "slack_ns": 48433.83,
+        "endpoints": 19
+      },
+      {
+        "clocks": [
+          "rst_clk"
+        ],
+        "slack_ns": 3.8,
+        "endpoints": 98
+      },
+      {
+        "clocks": [
+          "ddrphy_sysclk"
+        ],
+        "slack_ns": 3.43,
+        "endpoints": 4591
+      },
+      {
+        "clocks": [
+          "phy_dq_clk_0"
+        ],
+        "slack_ns": 0.035,
+        "endpoints": 35
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_0"
+        ],
+        "slack_ns": 1.85,
+        "endpoints": 35
+      },
+      {
+        "clocks": [
+          "phy_dq_clk_1"
+        ],
+        "slack_ns": 0.035,
+        "endpoints": 84
+      },
+      {
+        "clocks": [
+          "phy_dq_sysclk_1"
+        ],
+        "slack_ns": 2.4,
+        "endpoints": 84
+      },
+      {
+        "clocks": [
+          "dvp1"
+        ],
+        "slack_ns": 3.133,
+        "endpoints": 72
+      },
+      {
+        "clocks": [
+          "dvp1_pixel"
+        ],
+        "slack_ns": 6.097,
+        "endpoints": 142
+      }
+    ]
+  },
+  "timing_pass": true,
+  "board_programmed": false,
+  "model_loaded": false,
+  "physical_full_application_verified": false,
+  "bitstream": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_camera_probe_fast54_20261113_062\\input\\yolo\\sources\\generate_bitstream\\yolo_camera_top.sbit",
+  "bitstream_sha256": "3fdc4bd34db37cfa78d972dbf32afbc6b5021d1cecbb70ac91ae3a5dd8415051"
+}

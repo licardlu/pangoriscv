@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "scope": "software Q15 convolution oracle + actual C Q16 head/decoder; not FPGA accuracy",
+  "model_sha256": "9404d87d05aea890524412c7c5af1a6095cfaf3c1f20d6b4c5cc28db8f6f442f",
+  "cpu_non_head_ops_checked": 25,
+  "head_checks": 288,
+  "max_head_absolute_error": 0.0002714693546295166,
+  "images": 96,
+  "compiler_command": [
+    "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wno-unused-function",
+    "-shared",
+    "-DNATIVE_DECODE",
+    "-DNATIVE_SHARED_FRAME_WORKSPACE",
+    "-DYOLO_CLASSES=5",
+    "-DYOLO_SINGLE_LABEL=1",
+    "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_decode.c",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+    "-lm",
+    "-o",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_hand_val_numeric_20261112_027\\runtime.dll"
+  ],
+  "truth_sha256": "224297168584fae8a8f96139adf8ec4d836783a9d018c2eb2bdb9dad7f44acfc"
+}

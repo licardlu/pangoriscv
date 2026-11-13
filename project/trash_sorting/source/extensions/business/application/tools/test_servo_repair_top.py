@@ -31,8 +31,8 @@ def main():
     por = one(r'(always\s*@\(posedge sys_clk\)\s*begin\s*if\(peripheral_por_count\b.*?end\s*else\s*peripheral_reset\s*<=.*?;\s*end)', source, 'actual POR process')
     mapping = one(r'(assign\s+servo_pwm\s*=\s*logical_servo_pwm\s*;)', source, 'direct physical cable assignment')
     mask = one(r'\.SERVO_REVERSED_MASK\(\s*(4\s*\x27b[01_]+)\s*\)', source, 'normal servo direction mask')
-    if int(mask.split('b')[1].replace('_', ''), 2) != 0b0000:
-        raise RuntimeError('Top must reverse green0/gray2 pulse widths with mask0101')
+    if int(mask.split('b')[1].replace('_', ''), 2) != 0b1111:
+        raise RuntimeError('Top must use 1111: user tested all four lids closed=1500us/open=500us')
     mode = one(r'parameter\s+PERIPHERAL_TEST_MODE\s*=\s*([01])\b', source, 'active camera quiz mode')
     if mode != '0':
         raise RuntimeError('Top must run camera-driven quiz mode0')
@@ -43,7 +43,7 @@ def main():
         raise RuntimeError('Peripheral POR still depends on PLL lock')
     if not re.search(r'application_peripherals\s*\(.*?\.servo_pwm\(logical_servo_pwm\)', source, re.DOTALL):
         raise RuntimeError('Peripheral instance does not feed logical_servo_pwm')
-    build = args.build_dir or (project / 'yolo/build_camera_servo_v3_20261103/regression')
+    build = (args.build_dir or (app.parents[5] / 'build/sim_servo_direct')).resolve()
     build.mkdir(parents=True, exist_ok=True)
     harness = build / 'servo_repair_top_tb.sv'
     harness.write_text('''`timescale 1ns/1ps
@@ -86,7 +86,7 @@ initial begin
             if(servo_pwm[channel]!==logical_servo_pwm[channel])
                 $fatal(1,"Combined mapping failed %b",logical_servo_pwm);
     end
-    $display("TEST_PASS servo_repair_top POR release=270001, counter saturates, PLL-independent, camera mode0, normal_mask0000, direct four one-hot and all16 cable mappings");
+    $display("TEST_PASS servo_repair_top POR release=270001, counter saturates, PLL-independent, camera mode0, physical_mask1111, direct four one-hot and all16 cable mappings");
     $finish;
 end
 initial begin #3000000; $fatal(1,"Top regression timeout"); end

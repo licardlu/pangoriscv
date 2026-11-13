@@ -1,0 +1,295 @@
+{
+  "precision": 0.7281162198459106,
+  "recall": 0.7460747028220789,
+  "mAP50": 0.7776716693640102,
+  "mAP50_95": 0.5128038564788076,
+  "per_class_AP50_95": [
+    0.4977849145705992,
+    0.4767656150676743,
+    0.6882428500090524,
+    0.38842204626790433,
+    0.5128038564788076
+  ],
+  "timing_ms": [
+    0.2107239212218267,
+    25.774616935841284,
+    0.6753206253051758
+  ],
+  "input": "fixed square 320x320, no rectangular padding",
+  "summary_PR_note": "Upstream P/R use maximum mean F1 on this split; fixed-threshold P/R are below.",
+  "per_class": {
+    "kitchen": {
+      "targets": 314,
+      "AP50": 0.7643751772190365,
+      "AP50_95": 0.4977849145705992
+    },
+    "recyclable": {
+      "targets": 1716,
+      "AP50": 0.8055817041091577,
+      "AP50_95": 0.4767656150676743
+    },
+    "hazardous": {
+      "targets": 45,
+      "AP50": 0.9298377942940135,
+      "AP50_95": 0.6882428500090524
+    },
+    "other": {
+      "targets": 257,
+      "AP50": 0.6108920018338333,
+      "AP50_95": 0.38842204626790433
+    }
+  },
+  "confusion_matrix_conf025_iou045": [
+    [
+      252.0,
+      6.0,
+      0.0,
+      2.0,
+      0.0,
+      163.0
+    ],
+    [
+      0.0,
+      1323.0,
+      0.0,
+      9.0,
+      0.0,
+      291.0
+    ],
+    [
+      0.0,
+      22.0,
+      45.0,
+      1.0,
+      0.0,
+      10.0
+    ],
+    [
+      1.0,
+      74.0,
+      0.0,
+      179.0,
+      0.0,
+      114.0
+    ],
+    [
+      1.0,
+      10.0,
+      0.0,
+      0.0,
+      0.0,
+      17.0
+    ],
+    [
+      60.0,
+      281.0,
+      0.0,
+      66.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 250,
+      "FP": 181,
+      "GT": 314,
+      "precision": 0.580046403712297,
+      "recall": 0.7961783439490446
+    },
+    "recyclable": {
+      "TP": 1312,
+      "FP": 354,
+      "GT": 1716,
+      "precision": 0.787515006002401,
+      "recall": 0.7645687645687645
+    },
+    "hazardous": {
+      "TP": 45,
+      "FP": 33,
+      "GT": 45,
+      "precision": 0.5769230769230769,
+      "recall": 1.0
+    },
+    "other": {
+      "TP": 178,
+      "FP": 199,
+      "GT": 257,
+      "precision": 0.47214854111405835,
+      "recall": 0.6926070038910506
+    },
+    "hand": {
+      "TP": 0,
+      "FP": 28,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": 0.0
+    }
+  },
+  "deployment_decode_policy": "single-label per anchor, conf .25 for decisions, NMS IoU .45, max 32",
+  "waste_only_mean_AP50": 0.7776716693640102,
+  "image_top_bin_conf025": {
+    "sumn2u": {
+      "images": 1221,
+      "no_detection": 8,
+      "correct_top_bin": 1134,
+      "wrong_top_bin": 79
+    },
+    "codingbear": {
+      "images": 287,
+      "no_detection": 4,
+      "correct_top_bin": 236,
+      "wrong_top_bin": 47
+    }
+  },
+  "image_primary_bin_conf025": {
+    "row_bins": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "hand"
+    ],
+    "columns": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "hand",
+      "no_detection"
+    ],
+    "matrix": [
+      [
+        174,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        8,
+        1013,
+        21,
+        72,
+        7,
+        9
+      ],
+      [
+        0,
+        0,
+        45,
+        0,
+        0,
+        0
+      ],
+      [
+        4,
+        10,
+        2,
+        138,
+        0,
+        3
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "source_matrices": {
+      "sumn2u": [
+        [
+          103,
+          1,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          7,
+          976,
+          0,
+          53,
+          5,
+          7
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          9,
+          1,
+          55,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "codingbear": [
+        [
+          71,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          37,
+          21,
+          19,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          45,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          1,
+          83,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    "images": 1508,
+    "coverage": 0.9920424403183024,
+    "primary_bin_accuracy_including_missed": 0.9084880636604774,
+    "primary_bin_accuracy_when_detected": 0.9157754010695187,
+    "primary_bin_note": "One image prediction (highest-confidence box) is compared with its most frequent ground-truth bin; this complements object-level AP and is not a physical-item benchmark."
+  }
+}

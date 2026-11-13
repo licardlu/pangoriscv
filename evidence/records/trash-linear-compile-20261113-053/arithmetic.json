@@ -1,0 +1,49 @@
+{
+  "status": "PASS_HOST_ARITHMETIC_NOT_BOARD_SPEED",
+  "builds": [
+    {
+      "linear_o2": false,
+      "checked": 44,
+      "compiler_command": [
+        "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_linear_math_20261113_053\\linear_os.dll"
+      ]
+    },
+    {
+      "linear_o2": true,
+      "checked": 44,
+      "compiler_command": [
+        "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+        "-DYOLO_LINEAR_O2",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_linear_math_20261113_053\\linear_o2.dll"
+      ]
+    }
+  ],
+  "runtime_sha256": "ae21d314fc9d2f270a94bde3d57eeed4102674c8b9915331e3402f9fd56fd175",
+  "script_sha256": "b178096aba881e2f492a66b75da30c8585c5e53e5c9e8dd90050d5829a03d128",
+  "includes": "all signed ADD pairs, half ties/saturation, chunk boundaries, guard bytes, CONCAT up to 4 inputs, UPSAMPLE"
+}

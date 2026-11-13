@@ -1,0 +1,444 @@
+{
+  "precision": 0.7328406987402083,
+  "recall": 0.6418934092242964,
+  "mAP50": 0.7211034995107868,
+  "mAP50_95": 0.4654608618980888,
+  "per_class_AP50_95": [
+    0.49442339066940777,
+    0.48863694099632893,
+    0.7029158377977204,
+    0.3918544985799637,
+    0.24947364144702253
+  ],
+  "timing_ms": [
+    0.20487940133507573,
+    28.472632762804555,
+    0.7658043311009953
+  ],
+  "input": "fixed square 320x320, no rectangular padding",
+  "summary_PR_note": "Upstream P/R use maximum mean F1 on this split; fixed-threshold P/R are below.",
+  "per_class": {
+    "kitchen": {
+      "targets": 325,
+      "AP50": 0.7379883781183662,
+      "AP50_95": 0.49442339066940777
+    },
+    "recyclable": {
+      "targets": 1755,
+      "AP50": 0.7908997513697924,
+      "AP50_95": 0.48863694099632893
+    },
+    "hazardous": {
+      "targets": 45,
+      "AP50": 0.9093692444596121,
+      "AP50_95": 0.7029158377977204
+    },
+    "other": {
+      "targets": 257,
+      "AP50": 0.6084280516796643,
+      "AP50_95": 0.3918544985799637
+    },
+    "hand": {
+      "targets": 107,
+      "AP50": 0.5588320719264992,
+      "AP50_95": 0.24947364144702253
+    }
+  },
+  "confusion_matrix_conf025_iou045": [
+    [
+      256.0,
+      9.0,
+      0.0,
+      0.0,
+      1.0,
+      209.0
+    ],
+    [
+      4.0,
+      1403.0,
+      0.0,
+      14.0,
+      5.0,
+      656.0
+    ],
+    [
+      0.0,
+      25.0,
+      45.0,
+      2.0,
+      0.0,
+      24.0
+    ],
+    [
+      3.0,
+      82.0,
+      0.0,
+      178.0,
+      1.0,
+      172.0
+    ],
+    [
+      5.0,
+      10.0,
+      0.0,
+      0.0,
+      59.0,
+      30.0
+    ],
+    [
+      57.0,
+      226.0,
+      0.0,
+      63.0,
+      41.0,
+      0.0
+    ]
+  ],
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 254,
+      "FP": 236,
+      "GT": 325,
+      "precision": 0.5183673469387755,
+      "recall": 0.7815384615384615
+    },
+    "recyclable": {
+      "TP": 1392,
+      "FP": 764,
+      "GT": 1755,
+      "precision": 0.6456400742115028,
+      "recall": 0.7931623931623931
+    },
+    "hazardous": {
+      "TP": 45,
+      "FP": 51,
+      "GT": 45,
+      "precision": 0.46875,
+      "recall": 1.0
+    },
+    "other": {
+      "TP": 180,
+      "FP": 262,
+      "GT": 257,
+      "precision": 0.4072398190045249,
+      "recall": 0.7003891050583657
+    },
+    "hand": {
+      "TP": 58,
+      "FP": 54,
+      "GT": 107,
+      "precision": 0.5178571428571429,
+      "recall": 0.5420560747663551
+    }
+  },
+  "deployment_decode_policy": "single-label per anchor, conf .25 for decisions, NMS IoU .45, max 32",
+  "waste_only_mean_AP50": 0.7616713564068587,
+  "image_top_bin_conf025": {
+    "sumn2u": {
+      "images": 1221,
+      "no_detection": 4,
+      "correct_top_bin": 1141,
+      "wrong_top_bin": 76
+    },
+    "codingbear": {
+      "images": 287,
+      "no_detection": 2,
+      "correct_top_bin": 232,
+      "wrong_top_bin": 53
+    },
+    "hagrid_hand_localisation": {
+      "images": 29,
+      "no_detection": 0,
+      "correct_top_bin": 28,
+      "wrong_top_bin": 1
+    },
+    "reviewed_hand_context": {
+      "images": 21,
+      "no_detection": 2,
+      "correct_top_bin": 17,
+      "wrong_top_bin": 2
+    },
+    "personal_handheld": {
+      "images": 50,
+      "no_detection": 1,
+      "correct_top_bin": 43,
+      "wrong_top_bin": 6
+    }
+  },
+  "image_primary_bin_conf025": {
+    "row_bins": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "hand"
+    ],
+    "columns": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "hand",
+      "no_detection"
+    ],
+    "matrix": [
+      [
+        175,
+        5,
+        0,
+        1,
+        6,
+        0
+      ],
+      [
+        9,
+        1055,
+        25,
+        69,
+        7,
+        4
+      ],
+      [
+        0,
+        0,
+        45,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        12,
+        3,
+        134,
+        0,
+        3
+      ],
+      [
+        0,
+        3,
+        0,
+        0,
+        45,
+        2
+      ]
+    ],
+    "source_matrices": {
+      "sumn2u": [
+        [
+          103,
+          1,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          8,
+          985,
+          0,
+          50,
+          2,
+          3
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          11,
+          1,
+          53,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "codingbear": [
+        [
+          70,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          36,
+          24,
+          18,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          45,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          1,
+          2,
+          81,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "hagrid_hand_localisation": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          28,
+          0
+        ]
+      ],
+      "reviewed_hand_context": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0,
+          17,
+          2
+        ]
+      ],
+      "personal_handheld": [
+        [
+          2,
+          4,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          34,
+          1,
+          1,
+          2,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    "images": 1608,
+    "coverage": 0.9944029850746269,
+    "primary_bin_accuracy_including_missed": 0.904228855721393,
+    "primary_bin_accuracy_when_detected": 0.9093183239524703,
+    "primary_bin_note": "One image prediction (highest-confidence box) is compared with its most frequent ground-truth bin; this complements object-level AP and is not a physical-item benchmark."
+  }
+}

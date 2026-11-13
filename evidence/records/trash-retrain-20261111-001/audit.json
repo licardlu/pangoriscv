@@ -1,0 +1,83 @@
+{
+  "seed": 20261111,
+  "audited": 10383,
+  "rejected": [
+    {
+      "source": "sumn2u",
+      "image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\sumn2u\\cardboard\\images\\cardboard_2.jpg",
+      "error": "invalid box bounds"
+    },
+    {
+      "source": "sumn2u",
+      "image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\sumn2u\\glass\\images\\glass_529.jpg",
+      "error": "invalid box bounds"
+    },
+    {
+      "source": "sumn2u",
+      "image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\sumn2u\\glass\\images\\glass_751.jpg",
+      "error": "invalid box bounds"
+    },
+    {
+      "source": "sumn2u",
+      "image": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\sumn2u\\glass\\images\\glass_937.jpg",
+      "error": "invalid box bounds"
+    }
+  ],
+  "empty_labeled": 13,
+  "conflicting_duplicate_images": [],
+  "unique_pixels": 10363,
+  "visual_groups": 9816,
+  "near_duplicate_links": 2076,
+  "splits": {
+    "train": {
+      "images": 1795,
+      "images_by_primary_bin": {
+        "kitchen": 500,
+        "recyclable": 500,
+        "hazardous": 295,
+        "other": 500
+      },
+      "boxes": {
+        "recyclable": 838,
+        "kitchen": 906,
+        "other": 804,
+        "hazardous": 296
+      }
+    },
+    "val": {
+      "images": 1508,
+      "images_by_primary_bin": {
+        "kitchen": 176,
+        "recyclable": 1130,
+        "hazardous": 45,
+        "other": 157
+      },
+      "boxes": {
+        "recyclable": 1716,
+        "kitchen": 314,
+        "other": 257,
+        "hazardous": 45
+      }
+    },
+    "test": {
+      "images": 1572,
+      "images_by_primary_bin": {
+        "kitchen": 223,
+        "recyclable": 1140,
+        "hazardous": 49,
+        "other": 160
+      },
+      "boxes": {
+        "recyclable": 1841,
+        "other": 216,
+        "kitchen": 351,
+        "hazardous": 49
+      }
+    }
+  },
+  "limitations": [
+    "No physical instance/session IDs; visually dissimilar views may still show the same object.",
+    "Public-image test results do not measure FPGA camera accuracy.",
+    "Negative empty scenes must be supplemented with board captures."
+  ]
+}

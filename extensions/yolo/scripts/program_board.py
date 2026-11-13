@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import time
 
@@ -28,7 +29,9 @@ def main():
     trace=out/"trace.txt"
     script=[
         f"set fh [open {{{trace.as_posix()}}} w]",
-        f'cfg_connect -ip 127.0.0.1 -port {args.port}',
+        # cdt_cfg connects before executing -file. Do not reconnect an open
+        # cable; always release it explicitly before the GUI process exits.
+        'set failed [catch {',
         'puts $fh "scan: [cfg_scan_chain]"',
         'flush $fh',
         'set id [cfg_read_device_property -mode 0]',
@@ -46,7 +49,39 @@ def main():
             'if {$result != 1} {error "Programming failed"}',
             'puts $fh "after: [cfg_scan_chain]"',
         ])
-    script.extend(['puts $fh "JTAG_SCRIPT_DONE"','flush $fh','close $fh'])
+    script.extend([
+        'set status [cfg_read_device_property -mode 3]',
+        'puts $fh "status: $status"',
+        'flush $fh',
+    ])
+    if args.sbit:
+        script.extend([
+            # PG2L100H: DONE, global output/clock/write enables and global
+            # reset release must all be set. A successful transfer alone is
+            # not evidence that the loaded circuit is running.
+            'if {[scan $status %x status_value] != 1 || '
+            '($status_value & 0x0007d000) != 0x0007d000 || '
+            '($status_value & 0x00000007) != 0} '
+            '{error "FPGA configuration is not active or has configuration errors"}',
+            'after 5000',
+            'set status [cfg_read_device_property -mode 3]',
+            'puts $fh "status_after_5s: $status"',
+            'flush $fh',
+            'if {[scan $status %x status_value] != 1 || '
+            '($status_value & 0x0007d000) != 0x0007d000 || '
+            '($status_value & 0x00000007) != 0} '
+            '{error "FPGA configuration did not remain active"}',
+        ])
+    script.extend([
+        '} detail]',
+        'set release_failed [catch {cfg_disconnect} release_detail]',
+        'puts $fh "disconnect: $release_detail"',
+        'if {$release_failed || $release_detail != 1} '
+        '{set failed 1; append detail "; JTAG disconnect failed: $release_detail"}',
+        'if {$failed} {puts $fh "JTAG_SCRIPT_FAILED: $detail"} '
+        'else {puts $fh "JTAG_SCRIPT_DONE"}',
+        'flush $fh', 'close $fh',
+    ])
     tcl=out/"run.tcl"
     tcl.write_text("\n".join(script)+"\n",encoding="ascii")
     env=os.environ.copy()
@@ -60,6 +95,8 @@ def main():
         try:
             while time.monotonic()-start<90:
                 text=trace.read_text(errors="replace") if trace.is_file() else ""
+                if "JTAG_SCRIPT_FAILED" in text:
+                    raise RuntimeError(text)
                 if "JTAG_SCRIPT_DONE" in text:
                     break
                 if proc.poll() is not None:
@@ -72,8 +109,13 @@ def main():
                 proc.terminate()
                 proc.wait(timeout=10)
     print(text,flush=True)
+    statuses = re.findall(r"^status(?:_after_5s)?:\s*([0-9a-fA-F]+)\s*$", text, re.M)
     metadata=dict(seconds=time.monotonic()-start,jtag_port=args.port,
-                  programming_requested=bool(args.sbit),trace_complete=True)
+                  programming_requested=bool(args.sbit),trace_complete=True,
+                  configuration_status_hex=statuses,
+                  configuration_active_verified=bool(args.sbit),
+                  physical_motion_verified=False,
+                  cable_disconnected=True)
     if args.sbit:
         metadata.update(sbit=str(sbit),sha256=hashlib.sha256(sbit.read_bytes()).hexdigest())
     (out/"result.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")

@@ -738,6 +738,19 @@ define_attribute {p:ddr_init_done} {PAP_IO_SLEW} {FAST}
 ###==== BEGIN Clocks
 create_clock -name {sys_clk} [get_ports {sys_clk}] -period {37.000} -waveform {0.000 18.500}
 create_clock -name {ref_clk} [get_ports {clk_p}] -period {8.0} -waveform {0 4.0}
+# Name the existing PLL clocks explicitly so clock groups select actual clocks.
+create_generated_clock -name {pix_clk} -source [get_ports {sys_clk}] [get_pins {u_pll/u_gpll:CLKOUT0}] -multiply_by 44 -divide_by 16
+create_generated_clock -name {cfg_clk} -source [get_ports {sys_clk}] [get_pins {u_pll/u_gpll:CLKOUT1}] -multiply_by 44 -divide_by 119
+create_generated_clock -name {clk_25M} -source [get_ports {sys_clk}] [get_pins {u_pll/u_gpll:CLKOUT2}] -multiply_by 44 -divide_by 48
+# Optional 54 MHz AI output is only retained by synthesis in clock mode2.
+if {[llength [get_pins {u_pll/u_gpll:CLKOUT3}]] > 0} {
+    create_generated_clock -name {ai_clk54} -source [get_ports {sys_clk}] [get_pins {u_pll/u_gpll:CLKOUT3}] -multiply_by 44 -divide_by 22
+    set_clock_groups -name ai54_async -asynchronous -group [get_clocks {ai_clk54}]
+}
+# Physical SCCB division is /2500. PDS rejects periods >=100000ns;
+# /2400 is a stricter setup analysis model for these two slow domains.
+create_generated_clock -name {cam1_sccb} -source [get_pins {u_pll/u_gpll:CLKOUT2}] [get_pins {coms1_reg_config:clock_20k}] -master_clock [get_clocks {clk_25M}] -divide_by 2400
+create_generated_clock -name {cam2_sccb} -source [get_pins {u_pll/u_gpll:CLKOUT2}] [get_pins {coms2_reg_config:clock_20k}] -master_clock [get_clocks {clk_25M}] -divide_by 2400
 ###==== BEGIN "Generated Clocks"
 create_generated_clock -name {rst_clk} -source [get_ports {clk_p}] [get_pins {u_ddr3_test_h.u_ddrphy_top.rst_clk_gpll/clkout0}] -master_clock [get_clocks {ref_clk}] -multiply_by {16} -divide_by {16}
 create_generated_clock -name {ddrphy_sysclk} -source [get_ports {clk_p}] [get_pins {u_ddr3_test_h.u_ddrphy_top.ddrphy_gpll/clkout0}] -master_clock [get_clocks {ref_clk}] -multiply_by {16} -divide_by {16}

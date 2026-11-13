@@ -1,0 +1,170 @@
+{
+  "status": "NOT_SELECTED_BATTERY_REGRESSION_REMAINS",
+  "best_checkpoint_sha256": "7287417c771347a109b9f4e76de0f5cdd8348194a81624faadce968c2ead9d2c",
+  "last_checkpoint_sha256": "0785495d4d32f1d2cabe3c7ccd577e452747b470fe713130ac9ab5d076a03047",
+  "policy_sha256": "d7e366e0a49b2bacae80fff42e3c56ddea67e727ae34873fd044c7835c53d799",
+  "policy": "hand_size_adaptive_contact_v2",
+  "data_manifest_sha256": "9752be86bfec51b08a460d879dc4bae525a828574f24958ddbc16736b494f769",
+  "best": {
+    "held": {
+      "images": 15,
+      "hand_seen_images": 11,
+      "selected_images": 13,
+      "TP": 10,
+      "FP": 1,
+      "GT": 15,
+      "subject_selected_iou050": 12,
+      "bucket_correct": 13,
+      "subject_and_bucket_correct": 12,
+      "no_hand_fallback_images": 4,
+      "no_hand_fallback_subject_and_bucket_correct": 4,
+      "base_subject_detected_iou050": 12,
+      "base_subject_correct_bucket_iou050": 12,
+      "oracle_hand_subject_and_bucket_correct": 11,
+      "hand_present_images": 11,
+      "hand_present_subject_and_bucket_correct": 8
+    },
+    "empty_gesture": {
+      "images": 29,
+      "hand_seen_images": 29,
+      "selected_images": 0,
+      "TP": 29,
+      "FP": 2,
+      "GT": 29
+    },
+    "no_hand": {
+      "images": 31,
+      "hand_seen_images": 0,
+      "selected_images": 31,
+      "hand_false_detections": 0
+    },
+    "context": {
+      "images": 21,
+      "hand_seen_images": 21,
+      "selected_images": 5,
+      "TP": 18,
+      "FP": 12,
+      "GT": 28
+    },
+    "old80": {
+      "images": 80,
+      "hand_seen_images": 1,
+      "strict_correct": 40,
+      "accepted_correct": 67,
+      "largest_accepted_correct": 67,
+      "top_accepted_correct": 69,
+      "no_selection": 0,
+      "hand_presence_reviewed_images": 80,
+      "reviewed_no_hand_images": 80,
+      "false_hand_images": 1
+    },
+    "battery": {
+      "images": 9,
+      "hand_seen_images": 1,
+      "strict_correct": 3,
+      "accepted_correct": 3,
+      "largest_accepted_correct": 3,
+      "top_accepted_correct": 4,
+      "no_selection": 0,
+      "hand_presence_reviewed_images": 9,
+      "reviewed_no_hand_images": 9,
+      "false_hand_images": 1
+    }
+  },
+  "last": {
+    "held": {
+      "images": 15,
+      "hand_seen_images": 9,
+      "selected_images": 13,
+      "TP": 8,
+      "FP": 1,
+      "GT": 15,
+      "subject_selected_iou050": 12,
+      "bucket_correct": 13,
+      "subject_and_bucket_correct": 12,
+      "no_hand_fallback_images": 6,
+      "no_hand_fallback_subject_and_bucket_correct": 5,
+      "base_subject_detected_iou050": 12,
+      "base_subject_correct_bucket_iou050": 12,
+      "oracle_hand_subject_and_bucket_correct": 11,
+      "hand_present_images": 9,
+      "hand_present_subject_and_bucket_correct": 7
+    },
+    "empty_gesture": {
+      "images": 29,
+      "hand_seen_images": 29,
+      "selected_images": 1,
+      "TP": 29,
+      "FP": 2,
+      "GT": 29
+    },
+    "no_hand": {
+      "images": 31,
+      "hand_seen_images": 0,
+      "selected_images": 31,
+      "hand_false_detections": 0
+    },
+    "context": {
+      "images": 21,
+      "hand_seen_images": 20,
+      "selected_images": 4,
+      "TP": 17,
+      "FP": 9,
+      "GT": 28
+    },
+    "old80": {
+      "images": 80,
+      "hand_seen_images": 1,
+      "strict_correct": 40,
+      "accepted_correct": 67,
+      "largest_accepted_correct": 67,
+      "top_accepted_correct": 69,
+      "no_selection": 0,
+      "hand_presence_reviewed_images": 80,
+      "reviewed_no_hand_images": 80,
+      "false_hand_images": 1
+    },
+    "battery": {
+      "images": 9,
+      "hand_seen_images": 1,
+      "strict_correct": 4,
+      "accepted_correct": 4,
+      "largest_accepted_correct": 4,
+      "top_accepted_correct": 4,
+      "no_selection": 0,
+      "hand_presence_reviewed_images": 9,
+      "reviewed_no_hand_images": 9,
+      "false_hand_images": 1
+    }
+  },
+  "public_val_best_AP50": {
+    "kitchen": 0.7597791599265944,
+    "recyclable": 0.8036143211652703,
+    "hazardous": 0.9082882626808627,
+    "other": 0.6063035363100608
+  },
+  "visually_reviewed_best_failures": [
+    {
+      "key": "personal_H013_0",
+      "reason": "Selected blue object box includes hand/background; subject IoU .4764 despite bucket correct"
+    },
+    {
+      "key": "personal_H064_0",
+      "reason": "Only near-full-frame waste box, rejected by preexisting >90% frame gate; correct hand alone cannot recover proper object extent"
+    },
+    {
+      "key": "personal_H065_0",
+      "reason": "Hand prediction surrounds cardboard/background, no waste detection; area policy cannot recover missing detector output"
+    }
+  ],
+  "comparison": "Held subject+bucket12/15 vs02411/15, best hands11/15; old battery top4/9 vsactive float8/9. Best/last both fail battery retention; last also empty-hand false selection1/29.",
+  "limits": [
+    "15 held validation images contain blue-bin jar/cardboard only; development validation, not four-bin field accuracy",
+    "Old80 repeated diagnostics; not independent instance accuracy",
+    "No new held-battery test inference; no test used for training/calibration/selection",
+    "No quantization for rejected032; no FPGA timing or2s claim"
+  ],
+  "quantized": false,
+  "pds_started": false,
+  "board_programmed": false
+}

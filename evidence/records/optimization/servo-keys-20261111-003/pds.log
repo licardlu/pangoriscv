@@ -1,0 +1,841 @@
+License checkout: fabric_shell from D:\FPGA_Project\zi_guang_tong_chuang\pds\new_pds_00e04cf107df.lic
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+Executing : add_design servo_key_test_top.sv
+Executing : add_design servo_key_test_top.sv successfully.
+Executing : add_design key_debounce4.sv
+Executing : add_design key_debounce4.sv successfully.
+Executing : add_design servo_key_controller.sv
+Executing : add_design servo_key_controller.sv successfully.
+Executing : add_design servo_pwm4.sv
+Executing : add_design servo_pwm4.sv successfully.
+Executing : add_constraint servo_keys.fdc
+Executing : add_constraint servo_keys.fdc successfully.
+Executing : set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG676
+Executing : set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG676 successfully.
+
+
+Executing : compile -top_module servo_key_test_top -system_verilog
+
+
+Process "Compile" started.
+Current time: Wed Nov 11 13:44:58 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+License checkout: fabric_ads from D:\FPGA_Project\zi_guang_tong_chuang\pds\new_pds_00e04cf107df.lic
+Compiling verification operator library.
+Loading technology operator library.
+Compiling technology operator library.
+Compiling technology operator (valence) library.
+I: Enable SystemVerilog features and keywords
+Start rtl-analyze.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_test_top.sv
+I: Verilog-0001: Analyzing file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_test_top.sv
+I: Verilog-0002: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_test_top.sv(line number: 3)] Analyzing module servo_key_test_top (library work)
+Parsing done.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_test_top.sv successfully.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/key_debounce4.sv
+I: Verilog-0001: Analyzing file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/key_debounce4.sv
+I: Verilog-0002: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/key_debounce4.sv(line number: 2)] Analyzing module key_debounce4 (library work)
+Parsing done.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/key_debounce4.sv successfully.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv
+I: Verilog-0001: Analyzing file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv
+I: Verilog-0002: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv(line number: 3)] Analyzing module servo_key_controller (library work)
+Parsing done.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv successfully.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_pwm4.sv
+I: Verilog-0001: Analyzing file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_pwm4.sv
+I: Verilog-0002: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_pwm4.sv(line number: 6)] Analyzing module servo_pwm4 (library work)
+Parsing done.
+Executing : .rtl_analyze -work work -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003} D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_pwm4.sv successfully.
+I: Module "servo_key_test_top" is set as top module.
+Executing : rtl-analyze successfully. Time elapsed: 1.432s wall, 0.000s user + 0.000s system = 0.000s CPU (n/a%)
+
+Start rtl-elaborate.
+I: Verilog-0003: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_test_top.sv(line number: 3)] Elaborating module servo_key_test_top
+I: Module instance {servo_key_test_top} parameter value:
+    CLK_HZ = 32'b00000001100110111111110011000000
+    POR_CYCLES = 32'b00000000000001000001111010110000
+    DEBOUNCE_MS = 32'b00000000000000000000000000010100
+I: Verilog-0004: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_test_top.sv(line number: 26)] Elaborating instance controller
+I: Verilog-0003: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv(line number: 3)] Elaborating module servo_key_controller
+I: Module instance {servo_key_test_top/controller} parameter value:
+    CLK_HZ = 32'b00000001100110111111110011000000
+    DEBOUNCE_MS = 32'b00000000000000000000000000010100
+    OPEN_MS = 32'b00000000000000000001001110001000
+    SERVO_REVERSED_MASK = 4'b1111
+I: Verilog-0004: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv(line number: 17)] Elaborating instance keys
+I: Verilog-0003: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/key_debounce4.sv(line number: 2)] Elaborating module key_debounce4
+W: Sdm-2008: The attribute named ASYNC_REG is not legal, then it has no effect, ignore its value.
+W: Sdm-2008: The attribute named ASYNC_REG is not legal, then it has no effect, ignore its value.
+I: Module instance {servo_key_test_top/controller/keys} parameter value:
+    CLK_HZ = 32'b00000001100110111111110011000000
+    DEBOUNCE_MS = 32'b00000000000000000000000000010100
+I: Verilog-0004: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_key_controller.sv(line number: 21)] Elaborating instance servo_bank
+I: Verilog-0003: [D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/servo_pwm4.sv(line number: 6)] Elaborating module servo_pwm4
+I: Module instance {servo_key_test_top/controller/servo_bank} parameter value:
+    CLK_HZ = 32'b00000001100110111111110011000000
+    OPEN_FRAMES = 32'b00000000000000000000000011111010
+    REVERSED_MASK = 4'b1111
+    MOVE_FRAMES = 32'b00000000000000000000000000110010
+    REARM_FRAMES = 32'b00000000000000000000000000000101
+Executing : rtl-elaborate successfully. Time elapsed: 0.020s wall, 0.016s user + 0.000s system = 0.016s CPU (79.8%)
+
+Start rtl-prep.
+Executing : rtl-prep successfully. Time elapsed: 0.016s wall, 0.000s user + 0.016s system = 0.016s CPU (100.6%)
+
+Start rtl-infer.
+Start DFF-inference.
+Executing : DFF-inference successfully.
+Executing : rtl-infer successfully. Time elapsed: 0.882s wall, 0.641s user + 0.219s system = 0.859s CPU (97.5%)
+
+Start rtl-control-opt.
+Executing : rtl-control-opt successfully. Time elapsed: 0.007s wall, 0.000s user + 0.000s system = 0.000s CPU (n/a%)
+
+Start rtl-data-opt.
+Executing : rtl-data-opt successfully. Time elapsed: 0.028s wall, 0.016s user + 0.016s system = 0.031s CPU (111.2%)
+
+Start FSM inference.
+Executing : FSM inference successfully. Time elapsed: 0.003s wall, 0.000s user + 0.000s system = 0.000s CPU (n/a%)
+
+Start sdm2adm.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+W: Loop was found during constant probe.
+I: Constant propagation done on N1684_1 (bmsWIDEMUX).
+I: Constant propagation done on N1708_1 (bmsWIDEMUX).
+I: Constant propagation done on N1732_1 (bmsWIDEMUX).
+I: Constant propagation done on N1756_1 (bmsWIDEMUX).
+I: Constant propagation done on N1780_1 (bmsWIDEMUX).
+I: Constant propagation done on N1804_1 (bmsWIDEMUX).
+I: Constant propagation done on N1828_1 (bmsWIDEMUX).
+I: Constant propagation done on N1852_1 (bmsWIDEMUX).
+I: Constant propagation done on N172[0] (bmsWIDEMUX).
+I: Constant propagation done on N2777_1 (bmsWIDEMUX).
+Executing : sdm2adm successfully. Time elapsed: 0.035s wall, 0.031s user + 0.000s system = 0.031s CPU (89.2%)
+
+Saving design to DB.
+Action compile: Real time elapsed is 0h:0m:5s
+Action compile: CPU time elapsed is 0h:0m:1s
+Action compile: Process CPU time elapsed is 0h:0m:1s
+Current time: Wed Nov 11 13:45:02 2026
+Action compile: Peak memory pool usage is 137 MB
+Action from compile to compile: Total Real Time elapsed is 0h:0m:5s
+Action from compile to compile: Total CPU time elapsed is 0h:0m:1s
+Action from compile to compile: Total Process CPU Time elapsed is 0h:0m:1s
+Process "Compile" done.
+Executing : compile -top_module servo_key_test_top -system_verilog successfully.
+
+
+Executing : synthesize -ads -selected_syn_tool_opt 2
+
+
+Process "Synthesize" started.
+Current time: Wed Nov 11 13:45:02 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+License checkout: fabric_ads from D:\FPGA_Project\zi_guang_tong_chuang\pds\new_pds_00e04cf107df.lic
+Compiling verification operator library.
+Compiling common defs.
+Loading technology operator library.
+Compiling technology operator library.
+Compiling technology operator (valence) library.
+Reading design from compile DB
+Reading design from compile DB successfully.
+NOTE: The technology fpga was specified.
+NOTE: delay_model specified was generic_cmos.
+NOTE: Using the fpga syntax tables...
+Totals:
+ Calls to malloc = 0
+ Calls to calloc = 148538
+
+Constraint check start.
+Compiling prim grid devices.
+Building architecture model.
+Loading device packaging model.
+Building architecture floorplan logic view.
+Executing : get_ports sys_clk
+Executing : get_ports sys_clk successfully.
+Executing : create_clock -name sys_clk -period 37.037 [get_ports sys_clk]
+Executing : create_clock -name sys_clk -period 37.037 [get_ports sys_clk] successfully.
+Executing : get_ports {key_n[*]}
+I: The pattern 'key_n[*]' in command 'get_ports {key_n[*]}' match 4 objects below:
+I: port key_n[0]
+I: port key_n[1]
+I: port key_n[2]
+I: port key_n[3]
+Executing : get_ports {key_n[*]} successfully.
+Executing : set_false_path -from [get_ports {key_n[*]}]
+Executing : set_false_path -from [get_ports {key_n[*]}] successfully.
+Constraint check end.
+
+Start pre-mapping.
+Executing : pre-mapping successfully. Time elapsed: 0.047s wall, 0.078s user + 0.016s system = 0.094s CPU (197.7%)
+
+Start mod-gen.
+I: Constant propagation done on out_xor (bmsREDXOR).
+I: Constant propagation done on out_xor_1 (bmsREDXOR).
+I: Constant propagation done on out_xor_2 (bmsREDXOR).
+I: Constant propagation done on out_xor_3 (bmsREDXOR).
+I: Constant propagation done on out_xor_4 (bmsREDXOR).
+I: Constant propagation done on out_xor_5 (bmsREDXOR).
+I: Constant propagation done on out_xor_6 (bmsREDXOR).
+I: Constant propagation done on out_xor_7 (bmsREDXOR).
+I: Constant propagation done on out_xor_8 (bmsREDXOR).
+I: Constant propagation done on out_xor_9 (bmsREDXOR).
+Executing : mod-gen successfully. Time elapsed: 0.284s wall, 0.297s user + 0.094s system = 0.391s CPU (137.5%)
+
+Start logic-optimization.
+Executing : logic-optimization successfully. Time elapsed: 0.195s wall, 0.172s user + 0.016s system = 0.188s CPU (96.1%)
+
+Start tech-mapping phase 1.
+Executing : tech-mapping phase 1 successfully. Time elapsed: 0.034s wall, 0.031s user + 0.000s system = 0.031s CPU (91.6%)
+
+Start tech-mapping phase 2.
+Executing : tech-mapping phase 2 successfully. Time elapsed: 0.522s wall, 0.516s user + 0.188s system = 0.703s CPU (134.6%)
+
+Start tech-optimization.
+Executing : tech-optimization successfully. Time elapsed: 0.130s wall, 0.094s user + 0.031s system = 0.125s CPU (96.2%)
+
+Start phys-optimization.
+Executing : phys-optimization successfully. Time elapsed: 0.000s wall, 0.000s user + 0.000s system = 0.000s CPU (n/a%)
+
+Start restore-hierarchy.
+Executing : restore-hierarchy successfully. Time elapsed: 0.035s wall, 0.031s user + 0.000s system = 0.031s CPU (88.2%)
+
+
+Cell Usage:
+GTP_DFF                       4 uses
+GTP_DFF_E                    19 uses
+GTP_DFF_R                   118 uses
+GTP_DFF_RE                   68 uses
+GTP_DFF_S                     8 uses
+GTP_DFF_SE                    8 uses
+GTP_GRS                       1 use
+GTP_INV                       1 use
+GTP_LUT1                      2 uses
+GTP_LUT2                      2 uses
+GTP_LUT3                      4 uses
+GTP_LUT4                     29 uses
+GTP_LUT5                     26 uses
+GTP_LUT6                     73 uses
+GTP_LUT6CARRY               317 uses
+GTP_LUT6D                    40 uses
+
+I/O ports: 9
+GTP_INBUF                   5 uses
+GTP_OUTBUF                  4 uses
+
+Mapping Summary:
+Total LUTs: 493 of 66600 (0.74%)
+	LUTs as dram: 0 of 19900 (0.00%)
+	LUTs as logic: 493
+Total Registers: 225 of 133200 (0.17%)
+Total Latches: 0
+
+DRM36K/FIFO:
+Total DRM = 0.0 of 155 (0.00%)
+
+APMs:
+Total APMs = 0.00 of 240 (0.00%)
+
+Total I/O ports = 9 of 300 (3.00%)
+
+
+Overview of Control Sets:
+
+Number of unique control sets : 25
+
+Histogram:
+**************************************************************
+  Fanout      | Count    | Sync Set/Reset    Async Set/Reset
+--------------------------------------------------------------
+  [0, 2)      | 0        | 0                 0
+  [2, 4)      | 9        | 9                 0
+  [4, 6)      | 1        | 1                 0
+  [6, 8)      | 4        | 4                 0
+  [8, 10)     | 4        | 4                 0
+  [10, 12)    | 0        | 0                 0
+  [12, 14)    | 0        | 0                 0
+  [14, 16)    | 0        | 0                 0
+  [16, Inf)   | 7        | 7                 0
+--------------------------------------------------------------
+  The maximum fanout: 24
+==============================================================
+
+Flip-Flop Distribution:
+************************************************************************
+  Clock Enable    Sync Set/Reset    Async Set/Reset    Total Registers
+------------------------------------------------------------------------
+  NO              NO                NO                 4
+  NO              NO                YES                0
+  NO              YES               NO                 126
+  YES             NO                NO                 19
+  YES             NO                YES                0
+  YES             YES               NO                 76
+========================================================================
+
+Latch Distribution:
+************************************************
+  Gate Enable    Preset/Clear    Total Latches
+************************************************
+  NO             NO              0
+  NO             YES             0
+  YES            NO              0
+  YES            YES             0
+************************************************
+
+Design 'servo_key_test_top' has been successfully synthesized to architecture-specific objects.
+Saving design to DB.
+Saving design to servo_key_test_top_syn.vm
+Constructing timing graph ...
+Timing graph has been constructed successfully
+W: Timing-4087: Port 'servo_pwm[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[3]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'key_n[0]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[1]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[2]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[3]' is not constrained, it is treated as combinational input.
+Action synthesize: Real time elapsed is 0h:0m:11s
+Action synthesize: CPU time elapsed is 0h:0m:9s
+Action synthesize: Process CPU time elapsed is 0h:0m:9s
+Current time: Wed Nov 11 13:45:12 2026
+Action synthesize: Peak memory pool usage is 322 MB
+Action from compile to synthesize: Total Real Time elapsed is 0h:0m:16s
+Action from compile to synthesize: Total CPU time elapsed is 0h:0m:10s
+Action from compile to synthesize: Total Process CPU Time elapsed is 0h:0m:10s
+Process "Synthesize" done.
+Executing : synthesize -ads -selected_syn_tool_opt 2 successfully.
+
+
+Executing : dev_map
+
+
+Process "Device Map" started.
+Current time: Wed Nov 11 13:45:12 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+Compiling verification operator library.
+Compiling common defs.
+Loading technology operator library.
+Compiling technology operator library.
+Compiling technology operator (valence) library.
+Compiling operator packing rules.
+Compiling prim grid devices.
+Compiling gate devices.
+Compiling gate operators.
+Compiling tech operator impls.
+Building architecture model.
+Loading device packaging model.
+NOTE: The technology fpga was specified.
+NOTE: delay_model specified was generic_cmos.
+NOTE: Using the fpga syntax tables...
+Totals:
+ Calls to malloc = 0
+ Calls to calloc = 148538
+
+Flattening design 'servo_key_test_top'
+Device mapping started.
+Optimizing circuit logic.
+Checking design netlist.
+Processing tech operator.
+I: The instance clkbufg_0(GTP_CLKBUFG) has been inserted on the net nt_sys_clk in design, driver pin O(instance sys_clk_ibuf) -> load pin CLK(instance controller/keys/count[0][0]).
+Converting tech operator to gate operator.
+Processing gate operator.
+I: Infer CARRY group, base inst: N5_0_1/gateop, insts:18.
+I: Infer CARRY group, base inst: controller/keys/N34_0_1/gateop, insts:19.
+I: Infer CARRY group, base inst: controller/keys/N58_0_1/gateop, insts:19.
+I: Infer CARRY group, base inst: controller/keys/N82_0_1/gateop, insts:19.
+I: Infer CARRY group, base inst: controller/keys/N106_0_1/gateop, insts:19.
+I: Infer CARRY group, base inst: controller/servo_bank/N7_a1_0/gateop, insts:12.
+I: Infer CARRY group, base inst: controller/servo_bank/N10_1_1/gateop, insts:14.
+I: Infer CARRY group, base inst: controller/servo_bank/N25_1.fsub_1/gateop, insts:15.
+I: Infer CARRY group, base inst: controller/servo_bank/N38_a1_0/gateop, insts:12.
+I: Infer CARRY group, base inst: controller/servo_bank/N41_1_1/gateop, insts:14.
+I: Infer CARRY group, base inst: controller/servo_bank/N56_1.fsub_1/gateop, insts:15.
+I: Infer CARRY group, base inst: controller/servo_bank/N69_a1_0/gateop, insts:12.
+I: Infer CARRY group, base inst: controller/servo_bank/N72_1_1/gateop, insts:14.
+I: Infer CARRY group, base inst: controller/servo_bank/N87_1.fsub_1/gateop, insts:15.
+I: Infer CARRY group, base inst: controller/servo_bank/N100_a1_0/gateop, insts:12.
+I: Infer CARRY group, base inst: controller/servo_bank/N103_1_1/gateop, insts:14.
+I: Infer CARRY group, base inst: controller/servo_bank/N118_1.fsub_1/gateop, insts:15.
+I: Infer CARRY group, base inst: controller/servo_bank/N173.lt_0/gateop, insts:10.
+I: Infer CARRY group, base inst: controller/servo_bank/N183.lt_0/gateop, insts:10.
+I: Infer CARRY group, base inst: controller/servo_bank/N193.lt_0/gateop, insts:10.
+I: Infer CARRY group, base inst: controller/servo_bank/N203.lt_0/gateop, insts:10.
+I: Infer CARRY group, base inst: controller/servo_bank/N637_1_1/gateop, insts:19.
+Device Utilization Summary:
++------------------------------------------------------------------------+
+| Logic Utilization     | Used     | Available     | Utilization(%)     
++------------------------------------------------------------------------+
+| APM                   | 0        | 240           | 0                  
+| FF                    | 225      | 133200        | 1                  
+| LUT                   | 493      | 66600         | 1                  
+| Distributed RAM       | 0        | 19900         | 0                  
+| DRM                   | 0        | 155           | 0                  
+| IO                    | 9        | 300           | 3                  
+| RCKB                  | 0        | 24            | 0                  
+| SCANCHAIN             | 0        | 1             | 0                  
+| USCM                  | 1        | 32            | 4                  
+| CCS                   | 1        | 1             | 100                
+| ADC                   | 0        | 1             | 0                  
+| DDR_PHY               | 0        | 24            | 0                  
+| HSSTLP                | 0        | 2             | 0                  
+| GPLL                  | 0        | 6             | 0                  
+| PPLL                  | 0        | 6             | 0                  
+| DDRPHY_CPD            | 0        | 12            | 0                  
+| HCKB                  | 0        | 96            | 0                  
+| IOCKB                 | 0        | 24            | 0                  
+| MRCKB                 | 0        | 12            | 0                  
+| PCIE                  | 0        | 1             | 0                  
+| DDRPHY_IOCLK_DIV      | 0        | 6             | 0                  
+| ANALOG                | 0        | 1             | 0                  
+| TSERDES               | 0        | 48            | 0                  
+| KEYRAM                | 0        | 1             | 0                  
++------------------------------------------------------------------------+
+
+Device mapping done.
+Total device mapping takes 0.02 sec.
+
+Design 'servo_key_test_top' has been successfully mapped to architecture-specific objects.
+Saving design to DB.
+Action dev_map: Real time elapsed is 0h:0m:11s
+Action dev_map: CPU time elapsed is 0h:0m:9s
+Action dev_map: Process CPU time elapsed is 0h:0m:9s
+Current time: Wed Nov 11 13:45:22 2026
+Action dev_map: Peak memory pool usage is 329 MB
+Action from compile to dev_map: Total Real Time elapsed is 0h:0m:27s
+Action from compile to dev_map: Total CPU time elapsed is 0h:0m:19s
+Action from compile to dev_map: Total Process CPU Time elapsed is 0h:0m:19s
+Process "Device Map" done.
+Executing : dev_map successfully.
+
+
+Executing : pnr -gplace_seed 2 -groute_seed 2 -fix_hold_violation_iterations 50
+
+
+Process "Place & Route" started.
+Current time: Wed Nov 11 13:45:22 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+Compiling verification operator library.
+Compiling common defs.
+Compiling prim grid devices.
+Compiling gate devices.
+Compiling gate operators.
+Building architecture model.
+Loading device packaging model.
+pnr strategy configuration : 
+strategy name : 0
+Building architecture floorplan logic view.
+Constraint check start.
+Executing : def_port {servo_pwm[0]} LOC=U16 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE
+Executing : def_port {servo_pwm[0]} LOC=U16 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE successfully
+Executing : def_port {servo_pwm[1]} LOC=U15 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE
+Executing : def_port {servo_pwm[1]} LOC=U15 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE successfully
+Executing : def_port {servo_pwm[2]} LOC=AC26 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE
+Executing : def_port {servo_pwm[2]} LOC=AC26 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE successfully
+Executing : def_port {servo_pwm[3]} LOC=AB26 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE
+Executing : def_port {servo_pwm[3]} LOC=AB26 VCCIO=3.3 IOSTANDARD=LVCMOS33 DRIVE=4 SLEW=SLOW NONE=TRUE successfully
+Executing : def_port {key_n[0]} LOC=C23 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE
+Executing : def_port {key_n[0]} LOC=C23 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE successfully
+Executing : def_port {key_n[1]} LOC=B22 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE
+Executing : def_port {key_n[1]} LOC=B22 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE successfully
+Executing : def_port {key_n[2]} LOC=A22 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE
+Executing : def_port {key_n[2]} LOC=A22 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE successfully
+Executing : def_port {key_n[3]} LOC=B20 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE
+Executing : def_port {key_n[3]} LOC=B20 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE successfully
+Executing : def_port {sys_clk} LOC=D18 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE
+Executing : def_port {sys_clk} LOC=D18 VCCIO=3.3 IOSTANDARD=LVCMOS33 NONE=TRUE successfully
+Constraint check end.
+NOTE: The technology fpga was specified.
+NOTE: delay_model specified was generic_cmos.
+NOTE: Using the fpga syntax tables...
+Totals:
+ Calls to malloc = 0
+ Calls to calloc = 5993935
+
+I: Column Clock Check open.
+Read Column Clock Map.
+
+Placement started.
+Phase 1 Pre global placement started.
+Mapping instance GRS_INST/grs_ccs to CCS_87_316.
+Phase 1.1 1st GP placement started.
+Design Utilization : 1%.
+First map gop timing takes 0.69 sec
+Worst slack after clock region global placement is 33041
+Wirelength after clock region global placement is 2394 and checksum is A469CEB7657FAFB.
+1st GP placement takes 3.17 sec.
+
+Phase 1.2 Clock placement started.
+Mapping instance clkbufg_0/gopclkbufg to USCM_215_624.
+Clock placement takes 0.14 sec.
+
+Wirelength after Pre Global Placement is 2394 and checksum is A469CEB7657FAFB.
+Pre global placement takes 3.95 sec.
+
+Phase 2 Global placement started.
+Phase 2.1 Fixed placement started.
+Placed fixed group with base inst key_n_ibuf[0]/opit_1 on IOLHR_16_984.
+Placed fixed group with base inst key_n_ibuf[1]/opit_1 on IOLHR_16_1014.
+Placed fixed group with base inst key_n_ibuf[2]/opit_1 on IOLHR_16_1008.
+Placed fixed group with base inst key_n_ibuf[3]/opit_1 on IOLHR_16_1038.
+Placed fixed group with base inst servo_pwm_obuf[0]/opit_1 on IOLHR_16_30.
+Placed fixed group with base inst servo_pwm_obuf[1]/opit_1 on IOLHR_16_36.
+Placed fixed group with base inst servo_pwm_obuf[2]/opit_1 on IOLHR_16_264.
+Placed fixed group with base inst servo_pwm_obuf[3]/opit_1 on IOLHR_16_270.
+Placed fixed group with base inst sys_clk_ibuf/opit_1 on IOLHR_16_1080.
+Placed fixed instance GRS_INST/grs_ccs on CCS_87_316.
+Placed fixed instance clkbufg_0/gopclkbufg on USCM_215_624.
+Placed fixed instance BKCL_auto_0 on BKCL_1_952.
+Placed fixed instance BKCL_auto_1 on BKCL_1_34.
+Fixed placement takes 0.03 sec.
+
+Phase 2.2 Process placement started.
+Process placement takes 0.00 sec.
+
+Phase 2.3 IO placement started.
+IO placement takes 0.02 sec.
+
+Phase 2.4 2nd GP placement started.
+Run super clustering :
+	Initial slack 28625.
+	9 iterations finished.
+	Final slack 32487.
+Super clustering done.
+Design Utilization : 1%.
+Worst slack after global placement is 32861
+2nd GP placement takes 2.70 sec.
+
+Wirelength after global placement is 2596 and checksum is F513DA13021CB446.
+Global placement takes 2.75 sec.
+
+Phase 3 Post global placement started.
+Packing LUT6D started.
+I: LUT6D pack result: There are 136 LUT6 in collection, pack success:7
+Packing LUT6D takes 0.08 sec.
+Phase 3.1 Macro cell placement started.
+I: Process macros using "Greedy".
+Wirelength after macro cell placement is 2591 and checksum is CEEC78D9D62062EC.
+Macro cell placement takes 0.00 sec.
+
+Phase 3.2 3rd GP placement started.
+Run super clustering :
+	Initial slack 28625.
+	9 iterations finished.
+	Final slack 32496.
+Super clustering done.
+Design Utilization : 1%.
+Worst slack after post global placement is 32816
+3rd GP placement takes 2.92 sec.
+
+Wirelength after post global placement is 2728 and checksum is AA13F26B16AD283.
+Packing LUT6D started.
+I: LUT6D pack result: There are 122 LUT6 in collection, pack success:0
+Packing LUT6D takes 0.08 sec.
+Post global placement takes 3.09 sec.
+
+Phase 4 Legalization started.
+The average distance in LP is 0.172554.
+Wirelength after legalization is 3241 and checksum is 7669FBE6CE93DA8A.
+Legalization takes 0.06 sec.
+
+Phase 5 Timing-driven detailed placement started.
+Phase 5.1 Replication placement started.
+Worst slack before Replication Place is 32535.
+Replication placement takes 0.08 sec.
+
+Wirelength after replication placement is 3241 and checksum is 7669FBE6CE93DA8A.
+Phase 5.2 Swapping placement started.
+Worst slack before detailed placement is 32535, TNS before detailed placement is 0. 
+Worst slack after detailed placement is 32535, TNS after detailed placement is 0. 
+Swapping placement takes 0.02 sec.
+
+Wirelength after detailed placement is 3241 and checksum is 7669FBE6CE93DA8A.
+Timing-driven detailed placement takes 0.09 sec.
+
+Worst slack is 32535, TNS after placement is 0.
+Placement done.
+Total placement takes 10.19 sec.
+Finished placement.
+
+Routing started.
+Building routing graph takes 4.42 sec.
+Worst slack is 32535, TNS before global route is 0.
+Processing design graph takes 1.03 sec.
+Total memory for routing:
+	216.362052 M.
+Total nets for routing : 734.
+Rcf routing step 1 processed 0 nets, it takes 0.00 sec.
+Rcf routing step 2 processed 0 nets, it takes 0.00 sec.
+Rcf routing step 3 processed 0 nets, it takes 0.00 sec.
+Unrouted nets 0 at the end of iteration 0.
+Global Routing step 1 processed 46 nets, it takes 0.03 sec.
+Unrouted nets 223 at the end of iteration 0.
+Unrouted nets 160 at the end of iteration 1.
+Unrouted nets 96 at the end of iteration 2.
+Unrouted nets 66 at the end of iteration 3.
+Unrouted nets 55 at the end of iteration 4.
+Unrouted nets 25 at the end of iteration 5.
+Unrouted nets 14 at the end of iteration 6.
+Unrouted nets 7 at the end of iteration 7.
+Unrouted nets 7 at the end of iteration 8.
+Unrouted nets 6 at the end of iteration 9.
+Unrouted nets 0 at the end of iteration 10.
+Global Routing step 2 processed 410 nets, it takes 1.75 sec.
+Global Routing step 3 processed 0 nets, it takes 0.00 sec.
+Unrouted nets 0 at the end of iteration 0.
+Global Routing step 4 processed 5 nets, it takes 0.02 sec.
+Global routing takes 1.88 sec.
+Total 739 subnets.
+    forward max bucket size 267 , backward 179.
+        Unrouted nets 202 at the end of iteration 0.
+    route iteration 0, CPU time elapsed 0.109375 sec.
+    forward max bucket size 267 , backward 146.
+        Unrouted nets 149 at the end of iteration 1.
+    route iteration 1, CPU time elapsed 0.046875 sec.
+    forward max bucket size 284 , backward 154.
+        Unrouted nets 109 at the end of iteration 2.
+    route iteration 2, CPU time elapsed 0.031250 sec.
+    forward max bucket size 264 , backward 167.
+        Unrouted nets 88 at the end of iteration 3.
+    route iteration 3, CPU time elapsed 0.031250 sec.
+    forward max bucket size 27 , backward 15.
+        Unrouted nets 58 at the end of iteration 4.
+    route iteration 4, CPU time elapsed 0.015625 sec.
+    forward max bucket size 27 , backward 14.
+        Unrouted nets 35 at the end of iteration 5.
+    route iteration 5, CPU time elapsed 0.015625 sec.
+    forward max bucket size 36 , backward 15.
+        Unrouted nets 23 at the end of iteration 6.
+    route iteration 6, CPU time elapsed 0.000000 sec.
+    forward max bucket size 26 , backward 13.
+        Unrouted nets 13 at the end of iteration 7.
+    route iteration 7, CPU time elapsed 0.000000 sec.
+    forward max bucket size 26 , backward 24.
+        Unrouted nets 11 at the end of iteration 8.
+    route iteration 8, CPU time elapsed 0.015625 sec.
+    forward max bucket size 15 , backward 14.
+        Unrouted nets 6 at the end of iteration 9.
+    route iteration 9, CPU time elapsed 0.000000 sec.
+    forward max bucket size 15 , backward 7.
+        Unrouted nets 0 at the end of iteration 10.
+    route iteration 10, CPU time elapsed 0.000000 sec.
+Detailed routing takes 10 iterations
+Detailed routing takes 0.33 sec.
+Start fix hold violation.
+Build tmp routing results takes 0.02 sec.
+Timing analysis takes 0.03 sec.
+No hold violation.
+Hold Violation Fix in router takes 0 iterations.
+Fix hold violation Finished.
+Hold Violation Fix in router takes 0.48 sec.
+
+Dispose routing result:
+    Collect routing result.
+    Delete unused device instances.
+    Annotate routing result.
+    Change LUT configuration.
+    Dispose misc instances.
+    Annotate routing result again.
+Finish routing takes 0.08 sec.
+Used SRB routing arc is 4678.
+Cleanup routing takes 0.05 sec.
+Routing done.
+Total routing takes 9.41 sec.
+
+
+Device Utilization Summary :
++------------------------------------------------------------------------------+
+| Logic Utilization           | Used     | Available     | Utilization(%)     
++------------------------------------------------------------------------------+
+| Use of ADC                  | 0        | 1             | 0                  
+| Use of ANALOG               | 0        | 1             | 0                  
+| Use of APM                  | 0        | 240           | 0                  
+| Use of BKCL                 | 2        | 6             | 34                 
+| Use of CCS                  | 1        | 1             | 100                
+| Use of CLMA                 | 93       | 11675         | 1                  
+|   FF                        | 157      | 93400         | 1                  
+|   LUT                       | 321      | 46700         | 1                  
+|   LUT-FF pairs              | 141      | 46700         | 1                  
+| Use of CLMS                 | 48       | 4975          | 1                  
+|   FF                        | 68       | 39800         | 1                  
+|   LUT                       | 165      | 19900         | 1                  
+|   LUT-FF pairs              | 55       | 19900         | 1                  
+|   Distributed RAM           | 0        | 19900         | 0                  
+| Use of DDRPHY_CPD           | 0        | 12            | 0                  
+| Use of DDRPHY_IOCLK_DIV     | 0        | 6             | 0                  
+| Use of DDR_PHY              | 0        | 24            | 0                  
+| Use of DRM                  | 0        | 155           | 0                  
+| Use of GPLL                 | 0        | 6             | 0                  
+| Use of GSEB                 | 0        | 218           | 0                  
+| Use of HARD0                | 69       | 10550         | 1                  
+| Use of HCKB                 | 2        | 96            | 3                  
+|  HCKB dataused              | 0        | 96            | 0                  
+| Use of HCKMUX_TEST          | 0        | 8             | 0                  
+| Use of HSSTLP               | 0        | 2             | 0                  
+| Use of IO                   | 9        | 300           | 3                  
+|   IOBD                      | 5        | 144           | 4                  
+|   IOBS                      | 4        | 156           | 3                  
+| Use of IOCKB                | 0        | 24            | 0                  
+| Use of IOCKMUX_TEST         | 0        | 6             | 0                  
+| Use of IOLHR                | 9        | 300           | 3                  
+| Use of KEYRAM               | 0        | 1             | 0                  
+| Use of MFG_TEST             | 0        | 1             | 0                  
+| Use of MRCKB                | 0        | 12            | 0                  
+| Use of MRCKMUX_TEST         | 0        | 6             | 0                  
+| Use of MRPOSTMUX_TEST       | 0        | 6             | 0                  
+| Use of PCIE                 | 0        | 1             | 0                  
+| Use of PCKMUX_TEST          | 0        | 12            | 0                  
+| Use of PLLMRMUX_TEST        | 0        | 6             | 0                  
+| Use of PLLREFMUX_TEST       | 0        | 6             | 0                  
+| Use of PPLL                 | 0        | 6             | 0                  
+| Use of PREGMUXC_TEST        | 0        | 4             | 0                  
+| Use of PREGMUXLR_TEST       | 0        | 6             | 0                  
+| Use of RCKB                 | 0        | 24            | 0                  
+|  RCKB dataused              | 0        | 24            | 0                  
+| Use of RCKMUX_TEST          | 0        | 6             | 0                  
+| Use of SCANCHAIN            | 0        | 1             | 0                  
+| Use of SCKMUX_TEST          | 0        | 12            | 0                  
+| Use of SFB                  | 0        | 2225          | 0                  
+| Use of SPAD                 | 0        | 8             | 0                  
+| Use of TSERDES              | 0        | 48            | 0                  
+| Use of USCM                 | 1        | 32            | 4                  
+|  USCM dataused              | 0        | 32            | 0                  
+| Use of USCMMUX_TEST         | 0        | 32            | 0                  
++------------------------------------------------------------------------------+
+
+Finished routing.
+Design 'servo_key_test_top' has been placed and routed successfully.
+Saving design to DB.
+Finished placement and routing.
+Action pnr: Real time elapsed is 0h:0m:41s
+Action pnr: CPU time elapsed is 0h:0m:36s
+Action pnr: Process CPU time elapsed is 0h:0m:37s
+Current time: Wed Nov 11 13:46:03 2026
+Action pnr: Peak memory pool usage is 1,137 MB
+Action from compile to pnr: Total Real Time elapsed is 0h:1m:8s
+Action from compile to pnr: Total CPU time elapsed is 0h:0m:55s
+Action from compile to pnr: Total Process CPU Time elapsed is 0h:0m:56s
+Process "Place & Route" done.
+Executing : pnr -gplace_seed 2 -groute_seed 2 -fix_hold_violation_iterations 50 successfully.
+
+
+Executing : report_timing
+
+
+Process "Report Timing" started.
+Current time: Wed Nov 11 13:46:04 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+Compiling verification operator library.
+Compiling common defs.
+Compiling prim grid devices.
+Compiling gate devices.
+Compiling gate operators.
+Building architecture model.
+Loading device packaging model.
+Reading design from pnr DB.
+Start Report Post-PnR timing.
+NOTE: The technology fpga was specified.
+NOTE: delay_model specified was generic_cmos.
+NOTE: Using the fpga syntax tables...
+Totals:
+ Calls to malloc = 0
+ Calls to calloc = 5993935
+
+Constructing timing graph ...
+Timing graph has been constructed successfully
+W: Timing-4087: Port 'servo_pwm[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[3]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'key_n[0]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[1]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[2]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[3]' is not constrained, it is treated as combinational input.
+Report timing is finished successfully.
+Action report_timing: Real time elapsed is 0h:0m:17s
+Action report_timing: CPU time elapsed is 0h:0m:14s
+Action report_timing: Process CPU time elapsed is 0h:0m:14s
+Current time: Wed Nov 11 13:46:20 2026
+Action report_timing: Peak memory pool usage is 1,069 MB
+Action from compile to report_timing: Total Real Time elapsed is 0h:1m:25s
+Action from compile to report_timing: Total CPU time elapsed is 0h:1m:9s
+Action from compile to report_timing: Total Process CPU Time elapsed is 0h:1m:10s
+Process "Report Timing" done.
+Executing : report_timing successfully.
+
+
+Executing : gen_bit_stream
+
+
+Process "Generate Bitstream" started.
+Current time: Wed Nov 11 13:46:20 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/build.pds'.
+Compiling verification operator library.
+Compiling common defs.
+Compiling prim grid devices.
+Compiling gate devices.
+Compiling gate operators.
+Building architecture model.
+Loading device packaging model.
+Reading design from DB.
+Start Generating Programming File...
+Reading design from DB takes 0.218750 sec.
+Generating architecture configuration.
+C: Bitstream-2001: SCBV has not been set. Please set SCBV value based on PCB board, where is in configuration tab of bit stream options.
+The bitstream file is "D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/servo_keys_20261111_003/generate_bitstream/servo_key_test_top.sbit"
+Generate programming file takes 5.109375 sec.
+Generating Programming File done.
+Action gen_bit_stream: Real time elapsed is 0h:0m:20s
+Action gen_bit_stream: CPU time elapsed is 0h:0m:18s
+Action gen_bit_stream: Process CPU time elapsed is 0h:0m:18s
+Current time: Wed Nov 11 13:46:40 2026
+Action gen_bit_stream: Peak memory pool usage is 1,082 MB
+Action from compile to gen_bit_stream: Total Real Time elapsed is 0h:1m:45s
+Action from compile to gen_bit_stream: Total CPU time elapsed is 0h:1m:27s
+Action from compile to gen_bit_stream: Total Process CPU Time elapsed is 0h:1m:28s
+Process "Generate Bitstream" done.
+Executing : gen_bit_stream successfully.
+SERVO_KEY_DIAGNOSTIC_BITSTREAM_COMPLETE

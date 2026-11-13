@@ -1,0 +1,16 @@
+# Candidate training taxonomy. This does not describe the active six-class weights.
+nc: 4
+names: [kitchen, recyclable, hazardous, other]
+bin_colors: [green, blue, red, gray]
+business_bin_codes: [1, 4, 2, 3]  # Existing key/bin order: green, red, gray, blue.
+# Paper and cardboard are both recyclable. This candidate predicts bin categories;
+# it does not identify individual materials or specific battery chemistry.
+sources:
+  codingbearhsun/trash-sort:
+    version: 1
+    license: CC-BY-NC-SA-4.0
+    old_to_new: {0: 1, 1: 3, 2: 2, 3: 1, 4: 0, 5: 3, 6: 1, 7: 2, 8: 0, 9: 0, 10: 3, 11: 0}
+  sumn2u/garbage-classification-v2-bbox-384:
+    version: 1
+    license: CC-BY-4.0
+    old_to_new: {0: 1, 1: 3, 2: 1, 3: 1, 4: 1, 5: 1, 6: 0}

@@ -3,6 +3,7 @@
  * CRC32 covers the first 12 header bytes then payload. Stop-and-wait replies.
  */
 #include "yolo_decode.h"
+#include "yolo_contact_policy.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -69,11 +70,24 @@ static int display_results(uint32_t count)
     return 0;
 }
 
+/* Probe and game use identical target selection. A diagnostic request must
+ * never create/replace/clear a quiz, even when it selects an object. */
+static int camera_results(uint32_t *count,uint32_t waste_classes,uint32_t hand_class,
+                          float width,float height,int commit)
+{
+    yolo_target_t target=yolo_select_contact_target(boxes,*count,waste_classes,
+                                                   hand_class,width,height);
+    if(target.object_index>=0) {boxes[0]=boxes[target.object_index];*count=1;}
+    else *count=0;
+    return commit ? display_results(*count) : YOLO_OK;
+}
+
 #endif
 
 #ifndef BBOX_OSD_TEST
 #include "yolo_runtime.h"
 #include "deployment_model.h"
+#include "yolo_frame_workspace.h"
 #include <string.h>
 
 #ifndef CPU_HZ
@@ -85,13 +99,16 @@ static int display_results(uint32_t count)
 #define UART ((volatile uint32_t *)(uintptr_t)0x30000000u)
 #endif
 extern int yolo_forward(uint32_t,uint64_t *,int *);
-/* Capture finishes before decoding starts; reuse storage on the 64 KiB CPU. */
-static union {
-    yolo_decode_workspace_t decode;
-    uint8_t input_row[320u * 8u];
-} frame_workspace;
+/* The graph has finished before decode starts; reuse its 8 KiB scratch.
+ * Legacy scalar platforms retain their independent acquisition/decode union. */
+#if defined(VEXII_PLATFORM) || !defined(__riscv)
+#define frame_workspace (*yolo_frame_workspace_get())
+#else
+static yolo_frame_workspace_t frame_workspace;
+#endif
 static uint8_t model_verified;
 static uint32_t input_loaded;
+static uint32_t camera_fast=1;
 /* cmd8 returns CPU cycles for the last request, followed by one word per op.
  * cmd9 selects baseline (0) or individual optimizations (bits 0..5). */
 static uint32_t profile[8+YOLO_N_OPS];
@@ -150,22 +167,19 @@ static void reply(uint8_t status,const void *payload,uint16_t n)
     for(i=0;i<4;i++) send((unsigned char)(crc>>(i*8)));
 }
 
-static int capture_input(void)
+static int prepare_snapshot_input(void)
 {
-    uint32_t left,y,x;
-    acc_wr(0x74,1);
+    uint32_t y,x;
+    acc_wr(0x78,0);
     acc_fence();
-    for(left=0;left<POLL_LIMIT;left++) {
-        uint32_t s=acc_rd(0x80);
-        if(s&4) return YOLO_IO;
-        if((s&3)==2) break;
-    }
-    if(left==POLL_LIMIT) return YOLO_TIMEOUT;
     for(y=0;y<320;y++) {
         for(x=0;x<320;x++) {
         uint64_t word=57u | (57ull<<8) | (57ull<<16); // letterbox RGB 114
         if(y>=70 && y<250) {
             uint32_t pixel,r,g,b;
+            if(camera_fast) {
+                word=acc_rd(0xbc);
+            } else {
             acc_wr(0x78,(y-70)*320+x);
             acc_fence();
             pixel=acc_rd(0x7c);
@@ -173,6 +187,7 @@ static int capture_input(void)
             r=(r<<3)|(r>>2);g=(g<<2)|(g>>4);b=(b<<3)|(b>>2);
             r=(r*127+127)/255;g=(g*127+127)/255;b=(b*127+127)/255;
             word=r | ((uint64_t)g<<8) | ((uint64_t)b<<16);
+            }
         }
         memcpy(frame_workspace.input_row+x*8u,&word,8);
         }
@@ -187,6 +202,44 @@ static int capture_input(void)
     decode_cfg.ratio=.25f;decode_cfg.pad_x=0;decode_cfg.pad_y=70;
     decode_cfg.original_w=1280;decode_cfg.original_h=720;
     return 0;
+}
+
+static int capture_input(void)
+{
+    uint32_t left;
+    acc_wr(0x74,1);
+    acc_fence();
+    for(left=0;left<POLL_LIMIT;left++) {
+        uint32_t s=acc_rd(0x80);
+        if(s&4) return YOLO_IO;
+        if((s&3)==2) return prepare_snapshot_input();
+    }
+    return YOLO_TIMEOUT;
+}
+
+/* Reprocess the same immutable camera snapshot twice. This verifies the full
+ * packed input, including letterbox/padding channels, independently of YOLO.
+ * Timings exclude CRC and acquisition; normal inference still uses cmd6. */
+static int compare_camera_inputs(uint32_t result[4])
+{
+    uint32_t saved_mode=camera_fast,mode,started;
+    int status=capture_input();
+    if(status) return status;
+    for(mode=0;mode<2;mode++) {
+        uint32_t crc=~0u;
+        camera_fast=mode;
+        started=yolo_clock();
+        status=prepare_snapshot_input();
+        result[2+mode]=yolo_clock()-started;
+        if(!status) status=acc_memory_crc_bulk(yolo_tensors[0].address,
+                                             320u*320u*8u,POLL_LIMIT,&crc);
+        if(status) break;
+        result[mode]=~crc;
+    }
+    camera_fast=saved_mode;
+    if(!status && result[0]!=result[1]) status=YOLO_INVALID;
+    if(!status) input_loaded=320u*320u*8u;
+    return status;
 }
 
 
@@ -219,7 +272,14 @@ static int infer_reply(const yolo_io_t *io,uint32_t limit,int camera)
     profile[6]=yolo_clock()-started;
     started=yolo_clock();
     /* Only successful inference results may start the frontend miss timer. */
-    if(!status && camera) status=display_results(count);
+    if(!status && camera) {
+        /* Raw static-image requests retain all detections for numerical checks.
+         * Camera game commits exactly one target, with matching UART/OSD/bin. */
+        status=camera_results(&count,
+            YOLO_CLASSES==5 ? 4u : YOLO_CLASSES,
+            YOLO_CLASSES==5 ? 4u : UINT32_MAX,
+            decode_cfg.original_w,decode_cfg.original_h,camera==1);
+    }
     profile[7]=yolo_clock()-started;
     if(status) {
         uint32_t error[2]={(uint32_t)status,(uint32_t)bad};
@@ -288,19 +348,34 @@ int main(void)
                 else input_loaded=0;
                 if(input_loaded>320u*320u*8u) input_loaded=0;
             }
-        } else if((cmd==3 || cmd==6) && n==0) {
-            infer_reply(&io,limit,cmd==6);
+        } else if((cmd==3 || cmd==6 || cmd==12) && n==0) {
+            infer_reply(&io,limit,cmd==12 ? 2 : cmd==6);
             continue;
         } else if(cmd==7 && n==0 && model_verified) {
             reply(0,0,0);
             /* Autonomous demo; resetting the board leaves this mode. */
-            while(!infer_reply(&io,limit,1)) {}
+            for(;;) {
+                /* Wait for this question AND its open/hold/close cycle to
+                 * finish. Starting inference during a locked round wastes
+                 * a frame and can delay the next fresh capture by a full
+                 * inference. Bits 1..3 are local lock, game busy and clear.
+                 * Legacy frontends return zero for these reserved bits. */
+                while(acc_rd(0x98)&0x0eu) {}
+                if(infer_reply(&io,limit,1)) break;
+            }
             continue;
         } else if(cmd==8 && n==0) {
             reply(0,profile,sizeof profile);continue;
         } else if(cmd==9 && n==0 && address<=63u) {
             yolo_runtime_options=address;
             reply(0,&yolo_runtime_options,sizeof yolo_runtime_options);continue;
+        } else if(cmd==10 && n==0 && address<=1u) {
+            camera_fast=address;
+            reply(0,&camera_fast,sizeof camera_fast);continue;
+        } else if(cmd==11 && n==0) {
+            uint32_t result[4]={0};
+            status=(uint8_t)compare_camera_inputs(result);
+            reply(status,result,sizeof result);continue;
         } else if(cmd==4 && n==16) {
             float values[3];
             uint16_t dimensions[2];

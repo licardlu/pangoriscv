@@ -11,21 +11,21 @@ end endtask
 task check_status;input integer expected_state;integer px,py,idx;reg[31:0]w;begin
  for(py=0;py<12;py=py+1)for(px=0;px<278;px=px+7)begin
   idx=expected_state*4320+py*360+px;w=reference_status[idx/8];
-  sample(660+px*2,56+py*2,pal[(w>>((idx%8)*4))&15]);
+  sample(232+px*2,12+py*2,pal[(w>>((idx%8)*4))&15]);
  end
 end endtask
 integer s;
 initial begin
  $readmemh("ui_light_status.hex",reference_status);$readmemh("ui_light_palette.hex",pal);
  repeat(4)@(negedge clk);rst=0;
- sample(10,10,24'hf4f8f6);sample(650,50,24'he4f1eb);
+ sample(10,10,24'hf4f8f6);sample(220,24,24'he4f1eb);
  check_status(0); // normal-mode idle waits for camera recognition
  for(s=1;s<=7;s=s+1)begin snapshot[2:0]=s;check_status((s==3||s==7)?6:s);end
  snapshot[2:0]=2;snapshot[119]=1;snapshot[105:104]=2;snapshot[113:112]=2;
  check_status(7);snapshot[113:112]=1;check_status(8);
  snapshot[63:32]=32'hffffffff;snapshot[124:123]=3;
- sample(10,110,24'hf4f8f6); // former points/audio bits cannot add UI
- sample(10,112,24'hedf3f3);sample(1279,719,24'hedf3f3);
+ sample(10,46,24'hf4f8f6); // former points/audio bits cannot add UI
+ sample(10,48,24'hedf3f3);sample(1279,719,24'hedf3f3);
  sample(1649,749,24'hedf3f3); // blanking cannot address outside compact ROM
  $display("TEST_PASS light_panel compact header + all dynamic status sprites + ROM bounds");$finish;
 end

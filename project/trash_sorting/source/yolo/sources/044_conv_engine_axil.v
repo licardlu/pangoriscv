@@ -25,6 +25,7 @@ module conv_engine_axil #(
     output reg [7:0]   vid_wr_addr,
     output reg [31:0]  vid_wr_data,
     output wire [7:0]  vid_rd_addr,
+    output wire        vid_rd_en,
     input wire [31:0]  vid_rd_data,
 
     // ---- AXI4-Lite slave: control / status ----
@@ -76,6 +77,7 @@ module conv_engine_axil #(
     assign m_awlen = 8'd0;
     assign m_wlast = 1'b1;          // single beat: WLAST on the only beat
     assign vid_rd_addr=s_araddr;
+    assign vid_rd_en=s_arvalid && s_arready;
 
     // ---- configuration registers ----------------------------------------
     reg [15:0] r_cin, r_cout, r_inw, r_inh, r_outw, r_outh;

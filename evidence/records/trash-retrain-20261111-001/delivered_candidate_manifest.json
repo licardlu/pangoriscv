@@ -1,0 +1,122 @@
+{
+  "selected_unix": 1794409131.615506,
+  "criterion": "upstream validation fitness = .1*mAP50 + .9*mAP50:95",
+  "choices": [
+    {
+      "stage": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\runs\\frozen_backbone_002",
+      "checkpoint": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\runs\\frozen_backbone_002\\weights\\best.pt",
+      "validation_fitness": 0.4796449543278234,
+      "checkpoint_sha256": "80385e8f39b99cc6468ddc4a018b1ec353ab60dd3c2907565e6c7c44fbeb11d9",
+      "epochs_completed": 12,
+      "epochs_requested": 12,
+      "input_weights_sha256": "24623ac6d903e4554e548b97f963e277dfa32d102cecad6f3d518259c641deea"
+    },
+    {
+      "stage": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\runs\\full_finetune_001",
+      "checkpoint": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\runs\\full_finetune_001\\weights\\best.pt",
+      "validation_fitness": 0.5596789568560573,
+      "checkpoint_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0",
+      "epochs_completed": 12,
+      "epochs_requested": 12,
+      "input_weights_sha256": "80385e8f39b99cc6468ddc4a018b1ec353ab60dd3c2907565e6c7c44fbeb11d9"
+    }
+  ],
+  "selected": {
+    "stage": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\runs\\full_finetune_001",
+    "checkpoint": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_retrain_research_20261111_001\\runs\\full_finetune_001\\weights\\best.pt",
+    "validation_fitness": 0.5596789568560573,
+    "checkpoint_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0",
+    "epochs_completed": 12,
+    "epochs_requested": 12,
+    "input_weights_sha256": "80385e8f39b99cc6468ddc4a018b1ec353ab60dd3c2907565e6c7c44fbeb11d9"
+  },
+  "candidate": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\candidates\\four_bins_20261111\\four_bins_yolov5n_320.pt",
+  "classes": [
+    "kitchen",
+    "recyclable",
+    "hazardous",
+    "other"
+  ],
+  "bin_colors": [
+    "green",
+    "blue",
+    "red",
+    "gray"
+  ],
+  "business_bin_codes": [
+    1,
+    4,
+    2,
+    3
+  ],
+  "input_size": [
+    320,
+    320
+  ],
+  "raw_head_channels": 27,
+  "deployment_status": "floating-point candidate; INT8 packing, firmware/OSD mapping, FPGA verification pending",
+  "test_used_for_selection": false,
+  "evaluation": {
+    "test_images": 1572,
+    "candidate": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\candidates\\four_bins_20261111\\four_bins_yolov5n_320.pt",
+    "candidate_sha256": "8014832f2bc87081c9a7adad363d5590c13ffc6b4c8ff6700f289553b1f575e0",
+    "old_mAP50": 0.2110345527673628,
+    "new_mAP50": 0.769853040612308,
+    "mAP50_change_percentage_points": 55.881848784494515,
+    "old_mAP50_95": 0.11887633363019935,
+    "new_mAP50_95": 0.49584921624098294,
+    "old_primary_image_accuracy": 0.7404580152671756,
+    "new_primary_image_accuracy": 0.9096692111959288,
+    "classes": {
+      "kitchen": {
+        "old_AP50": 0.19720474851302053,
+        "new_AP50": 0.7612619213926695,
+        "TP": 294,
+        "FP": 309,
+        "GT": 351,
+        "precision": 0.48756218905472637,
+        "recall": 0.8376068376068376
+      },
+      "recyclable": {
+        "old_AP50": 0.6469334625564307,
+        "new_AP50": 0.7971340106939196,
+        "TP": 1432,
+        "FP": 846,
+        "GT": 1841,
+        "precision": 0.6286215978928885,
+        "recall": 0.7778381314502988
+      },
+      "hazardous": {
+        "old_AP50": 0.0,
+        "new_AP50": 0.8173575283377865,
+        "TP": 48,
+        "FP": 71,
+        "GT": 49,
+        "precision": 0.40336134453781514,
+        "recall": 0.9795918367346939
+      },
+      "other": {
+        "old_AP50": 0.0,
+        "new_AP50": 0.7036587020248565,
+        "TP": 186,
+        "FP": 368,
+        "GT": 216,
+        "precision": 0.33574007220216606,
+        "recall": 0.8611111111111112
+      }
+    },
+    "scope": "public-image held-out floating-point evaluation, fixed square 320; no FPGA/camera accuracy or speed claim"
+  },
+  "licenses": [
+    {
+      "dataset": "CodingBearHsun trash-sort v1",
+      "url": "https://www.kaggle.com/datasets/codingbearhsun/trash-sort",
+      "license": "CC-BY-NC-SA-4.0"
+    },
+    {
+      "dataset": "Suman Kunwar Garbage Classification v2 BBox 384 v1",
+      "url": "https://www.kaggle.com/datasets/sumn2u/garbage-classification-v2-bbox-384",
+      "license": "CC-BY-4.0"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "status": "REJECTED_HAND_RECALL_AND_FALSE_SELECTION",
+  "early_model_sha256": "55d6117247ff6f8096a495b535716cdcb1ed130465ba484ba74392396ab72348",
+  "control_model_sha256": "1736bd8632fc999d9a0bb4075c6be3f40e594cdae9c181e97e165bcef39ce04a",
+  "all_original_waste_tensors_and_bn_equal": true,
+  "all176_garbage_logit_outputs_equal": true,
+  "all176_shared_and_standalone_hand_forward_equal": true,
+  "extra_hand_MACs": 6944000,
+  "threshold_replay_endpoint_checks": [
+    {
+      "model": "early034",
+      "threshold": 0.05,
+      "exact_selection_images": 176
+    },
+    {
+      "model": "early034",
+      "threshold": 0.25,
+      "exact_selection_images": 176
+    },
+    {
+      "model": "neck035",
+      "threshold": 0.05,
+      "exact_selection_images": 176
+    },
+    {
+      "model": "neck035",
+      "threshold": 0.25,
+      "exact_selection_images": 176
+    }
+  ],
+  "thresholds": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25
+  ],
+  "independent_hand_threshold_research_only": true,
+  "fixed_waste_confidence": 0.25,
+  "result": "Early features yield3/15 held-hand-seen vsneck0/15 at.25, insufficient; threshold.10 gives14/15 early hand-seen but7/31 no-hand false hand and only7/15 subject+bucket. Neither adopted.",
+  "original_battery_note": "Original unfiltered top8/9 preserved; actual no-hand largest remains4/9 on old repeated diagnostic photos, not8/9 final policy accuracy.",
+  "quantized": false,
+  "test_inference_performed": false,
+  "pds_started": false,
+  "board_programmed": false,
+  "limits": [
+    "15 held val images contain only blue-bin jar/cardboard",
+    "Same hand/rooms and partially overlapping physical items across diagnostic and train",
+    "No new held-battery test inference",
+    "MAC count is not FPGA latency; auxiliary head/export is not supported or deployed yet"
+  ]
+}

@@ -28,7 +28,8 @@ module rd_buf #(
     parameter                     LEN_WIDTH       = 12'd16,
     parameter                     PIX_WIDTH       = 12'd24,
     parameter                     LINE_ADDR_WIDTH = 16'd19,
-    parameter                     FRAME_CNT_WIDTH = 16'd8
+    parameter                     FRAME_CNT_WIDTH = 16'd8,
+    parameter                     DISPLAY_V_NUM   = V_NUM
 )  (
     input                         ddr_clk,
     input                         ddr_rstn,
@@ -57,6 +58,13 @@ module rd_buf #(
     localparam WR_LINE_NUM    = H_NUM * PIX_WIDTH/RAM_WIDTH;
     localparam RD_LINE_NUM    = WR_LINE_NUM * RAM_WIDTH/DDR_DATA_WIDTH;
     localparam DDR_ADDR_OFFSET= RD_LINE_NUM*DDR_DATA_WIDTH/DQ_WIDTH; 
+    // Preserve the full source field of view in a shorter display viewport.
+    // Endpoint-aligned nearest rows: source=floor(display*(V_NUM-1)/(DISPLAY_V_NUM-1)).
+    // Default mode retains the original native reader. No extra line/frame RAM.
+    localparam ROW_DEN = DISPLAY_V_NUM > 1 ? DISPLAY_V_NUM-1 : 1;
+    localparam ROW_STEP = (V_NUM-1)/ROW_DEN;
+    localparam ROW_REM = (V_NUM-1)%ROW_DEN;
+    reg [12:0] row_error;
     
     //===========================================================================
     reg       rd_fsync_1d;
@@ -90,12 +98,13 @@ module rd_buf #(
         wr_en_2d <= wr_en_1d;
         wr_en_3d <= wr_en_2d;
         
-        wr_trig <= wr_rst || (~wr_en_3d && wr_en_2d && wr_line != V_NUM);
+        wr_trig <= wr_rst || (~wr_en_3d && wr_en_2d && wr_line < DISPLAY_V_NUM);
     end 
     always @(posedge ddr_clk)
     begin
         if(wr_rst || (~ddr_rstn))
-            wr_line <= 12'd1;
+            // Scaled mode counts issued commands, including the VS prefetch.
+            wr_line <= DISPLAY_V_NUM == V_NUM ? 12'd1 : 12'd0;
         else if(wr_trig)
             wr_line <= wr_line + 12'd1;
     end 
@@ -126,12 +135,20 @@ reg [1:0]ddr_rdone_cnt;
     reg [LINE_ADDR_WIDTH - 1'b1 :0] wr_cnt;
     always @(posedge ddr_clk)
     begin 
-        if(wr_rst)
-            wr_cnt <= 22'd0;
-        else if(ddr_rdone)// && ddr_rdone_cnt[0])
-            wr_cnt <= wr_cnt + DDR_ADDR_OFFSET;
-        else
-            wr_cnt <= wr_cnt;
+        if(wr_rst || !ddr_rstn) begin
+            wr_cnt <= 0;
+            row_error <= 0;
+        end else if(ddr_rdone) begin
+            if(DISPLAY_V_NUM == V_NUM) begin
+                wr_cnt <= wr_cnt + DDR_ADDR_OFFSET;
+            end else if(row_error + ROW_REM >= ROW_DEN) begin
+                wr_cnt <= wr_cnt + DDR_ADDR_OFFSET*(ROW_STEP+1);
+                row_error <= row_error + ROW_REM - ROW_DEN;
+            end else begin
+                wr_cnt <= wr_cnt + DDR_ADDR_OFFSET*ROW_STEP;
+                row_error <= row_error + ROW_REM;
+            end
+        end
     end 
     
     // Choose the most recently COMPLETED frame, latched at our own vsync.

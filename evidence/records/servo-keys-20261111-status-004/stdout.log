@@ -1,0 +1,101 @@
+M_PROCESS_FINISH_STARTED
+
+Executing : cfg_connect -ip 127.0.0.1 -port 65420
+Connecting to server[127.0.0.1 : 65420].
+Connect to server[127.0.0.1 : 65420] successfully.
+COMMAND[check version information] execute successfully, takes 0.0 secs.
+The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+COMMAND[get_cable_paras] execute successfully, takes 1.5 secs.
+Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+Executing : cfg_help -help
+H: cfg_help : list all support commands (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+
+
+Executing : cfg_help -help successfully.
+Executing : cfg_read_register -help
+H: cfg_read_register : read register value by address (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    -address string
+        Specify the address of register.   ---Hexadecimal Number.
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+Executing : cfg_read_register -help successfully.
+Executing : cfg_read_device_property -help
+H: cfg_read_device_property : read device properties of chip from server (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify device's index.
+    -mode integer_number
+        Specify device's operate mode.
+             	0: Read Device ID.
+             	1: Read Device UID.
+             	2: Read Device UserCode.
+             	3: Read Device Status Register.
+             	4: Read Device EFuse Value.
+
+
+Executing : cfg_read_device_property -help successfully.
+Executing : cfg_verify -help
+H: cfg_verify : verify the bit stream on the board (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+Executing : cfg_verify -help successfully.
+Executing : cfg_readback -help
+H: cfg_readback : read back the bit_stream on the board to the specified file (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    -file string
+        Specify read back file name
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+Executing : cfg_readback -help successfully.
+Executing : cfg_debug_operate -help
+H: cfg_debug_operate : process to some special debug function,such as read debug register (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    -mode integer_number
+        Specify the mode of operation. 
+           	0:Read  Device RDRDC Value. 
+           	1:Write Device RDRDC Value. 
+           	2:Read  Device Debug Register Value. 
+           	3:Read  Device Instruction Register Value. 
+           	4:Read  Device Calibration Status Register Value.
+           	5:Read  Device Pin OutPut Value.
+           	6:Read  Device EFlash SM Page Data.
+	
+ 	200:Disable Jtag. 
+           	201:Disable Scan Chain.
+    [ -value string ]
+        Specify value of the operate function   ---Hexadecimal Number.
+    [ -file string ]
+        Specify the sbit file of operation
+    [ -device_index integer_number ]
+        Specify operate device's index
+
+
+Executing : cfg_debug_operate -help successfully.
+Executing : cfg_set_options -help
+H: cfg_set_options : set server running condition (Version 2022.2-SP6.1 build 138931)
+    [ -help  ]
+        Turn on to print this message
+    [ -report_detail Boolean_value (TRUE/FALSE) ]
+        set report detailed info
+    [ -server_delay_time string ]
+        set server delay time(second)
+
+
+Executing : cfg_set_options -help successfully.

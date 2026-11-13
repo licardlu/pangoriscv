@@ -1,9 +1,10 @@
 // Active-low board keys with per-key synchronizers and stable-time debounce.
-// key_n[0..3] map to blue, gray, red, and green servo outputs respectively.
+// Active 27MHz application: key_n[0..3] map to green, red, gray, blue.
 module servo_key_controller #(
     parameter integer CLK_HZ = 120461538,
     parameter integer DEBOUNCE_MS = 20,
-    parameter integer OPEN_MS = 5000
+    parameter integer OPEN_MS = 5000,
+    parameter logic [3:0] SERVO_REVERSED_MASK = 4'b0000
 ) (
     input  logic       clk,
     input  logic       rst,
@@ -16,7 +17,8 @@ module servo_key_controller #(
     key_debounce4 #(.CLK_HZ(CLK_HZ),.DEBOUNCE_MS(DEBOUNCE_MS)) keys(
         .clk(clk),.rst(rst),.key_n(key_n),.key_event(key_event));
 
-    servo_pwm4 #(.CLK_HZ(CLK_HZ), .OPEN_FRAMES(OPEN_FRAMES)) servo_bank (
+    servo_pwm4 #(.CLK_HZ(CLK_HZ), .OPEN_FRAMES(OPEN_FRAMES),
+        .REVERSED_MASK(SERVO_REVERSED_MASK)) servo_bank (
         .clk(clk), .rst(rst), .trigger(key_event),
         .pwm(servo_pwm), .open_state(open_state)
     );

@@ -64,21 +64,23 @@ def float_graph(model, graph, image, callback=None):
     return outputs
 
 
-def calibrate(output, count):
-    graph = json.loads((ROOT / "gen/integration/graph.json").read_text())
-    import csv
-    with (ROOT / "data/layer_table/layers.csv").open() as handle:
-        validate(graph, list(csv.DictReader(handle)))
-    model = torch.load(export_graph.CKPT, map_location="cpu",
-                       weights_only=False)["model"].float().eval()
-    manifest = json.loads((ROOT / "data/g4/train.json").read_text(encoding="utf-8"))
-    paths = []
-    for entry in manifest.values():
-        path = ROOT / entry["img"].replace("\\", "/")
-        if path.is_file() and path not in paths:
-            paths.append(path)
-        if len(paths) == count:
-            break
+def calibrate(output, count, *, graph=None, checkpoint=None, paths=None):
+    if graph is None:
+        graph = json.loads((ROOT / "gen/integration/graph.json").read_text())
+        import csv
+        with (ROOT / "data/layer_table/layers.csv").open() as handle:
+            validate(graph, list(csv.DictReader(handle)))
+    checkpoint = checkpoint or export_graph.CKPT
+    model = torch.load(checkpoint, map_location="cpu")["model"].float().eval()
+    if paths is None:
+        manifest = json.loads((ROOT / "data/g4/train.json").read_text(encoding="utf-8"))
+        paths = []
+        for entry in manifest.values():
+            path = ROOT / entry["img"].replace("\\", "/")
+            if path.is_file() and path not in paths:
+                paths.append(path)
+            if len(paths) == count:
+                break
     if not paths:
         raise ValueError("No training calibration images")
     maxima = np.zeros(len(graph["ops"]), np.float64)
@@ -149,8 +151,8 @@ def calibrate(output, count):
                           zero_multipliers=int(np.sum(mul == 0)))
         ops.append(op)
     bundle = dict(graph, ops=ops, input_scale=scales[-1],
-                  checkpoint_sha256=hashlib.sha256(export_graph.CKPT.read_bytes()).hexdigest(),
-                  calibration_images=[str(p.relative_to(ROOT)) for p in paths],
+                  checkpoint_sha256=hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
+                  calibration_images=[str(p.resolve()) for p in paths],
                   note="Exact Q15 simulation; NOT an accepted FPGA release")
     np.savez(output / "parameters.npz", **arrays)
     (output / "bundle.json").write_text(json.dumps(bundle, indent=1), encoding="utf-8")
@@ -160,11 +162,10 @@ def calibrate(output, count):
 
 
 class Deployment:
-    def __init__(self, path):
+    def __init__(self, path, checkpoint=None):
         self.graph = json.loads((path / "bundle.json").read_text())
         self.arrays = np.load(path / "parameters.npz")
-        self.model = torch.load(export_graph.CKPT, map_location="cpu",
-                                weights_only=False)["model"].float().eval()
+        self.model = torch.load(checkpoint or export_graph.CKPT, map_location="cpu")["model"].float().eval()
 
     def execute(self, image, callback=None):
         graph = self.graph
@@ -222,7 +223,7 @@ class Deployment:
         # not its convolutions; raw is produced by the deployment executor.
         detect = self.model.model[-1]
         boxes, scores = [], []
-        nc = 6
+        nc = self.model.model[-1].nc
         for h, output in enumerate(raw):
             _, _, height, width = output.shape
             y = torch.sigmoid(torch.from_numpy(output).view(1, 3, nc + 5, height, width)
@@ -236,7 +237,9 @@ class Deployment:
             scores.append((y[..., 4:5] * y[..., 5:]).reshape(-1, nc))
         from torchvision.ops import nms
         all_boxes, all_scores = torch.cat(boxes), torch.cat(scores)
-        names = ["biodegradable", "cardboard", "glass", "metal", "paper", "plastic"]
+        names = self.model.names
+        if isinstance(names, dict):
+            names = [names[i] for i in range(nc)]
         results = []
         for cls, name in enumerate(names):
             selected = (all_scores[:, cls] >= confidence).nonzero().flatten()

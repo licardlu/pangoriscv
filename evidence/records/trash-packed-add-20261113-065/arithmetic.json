@@ -1,0 +1,96 @@
+{
+  "status": "PASS_HOST_ARITHMETIC_NOT_BOARD_SPEED",
+  "builds": [
+    {
+      "linear_o2": false,
+      "packed_add": false,
+      "checked": 66,
+      "compiler_command": [
+        "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_packed_add_20261113_065\\arithmetic\\linear_o20_packed0.dll"
+      ]
+    },
+    {
+      "linear_o2": true,
+      "packed_add": false,
+      "checked": 66,
+      "compiler_command": [
+        "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+        "-DYOLO_LINEAR_O2",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_packed_add_20261113_065\\arithmetic\\linear_o21_packed0.dll"
+      ]
+    },
+    {
+      "linear_o2": false,
+      "packed_add": true,
+      "checked": 66,
+      "compiler_command": [
+        "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+        "-DYOLO_PACKED_ADD",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_packed_add_20261113_065\\arithmetic\\linear_o20_packed1.dll"
+      ]
+    },
+    {
+      "linear_o2": true,
+      "packed_add": true,
+      "checked": 66,
+      "compiler_command": [
+        "D:\\embeded\\feitengpai\\phytium-dev-windows-nt\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software",
+        "-DYOLO_LINEAR_O2",
+        "-DYOLO_PACKED_ADD",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_packed_add_20261113_065\\arithmetic\\linear_o21_packed1.dll"
+      ]
+    }
+  ],
+  "runtime_sha256": "a598e9b842e6fd818521453e1db42d9d48d2a99b9f3646ed7dbd8ec2b335d4ef",
+  "script_sha256": "db00d8aeb6d8be690122e7c9e40a9b6d73c92a5ebf3ff7bcb319ad3d79713a77",
+  "includes": "all signed ADD pairs, half ties/saturation, chunk boundaries, guard bytes, CONCAT up to 4 inputs, UPSAMPLE"
+}

@@ -15,6 +15,11 @@ set business_dir [file normalize [file join $pkg_dir .. extensions business appl
 if {![file isdirectory $src_dir]} {
     error "Missing source directory: $src_dir"
 }
+# PDS chooses the project/subprocess directory before evaluating this Tcl.
+# A Tcl-only cd cannot repair the startup directory used by synthesis.
+if {[file normalize [pwd]] ne [file normalize $src_dir]} {
+    error "Start pds_shell with its process working directory set to $src_dir (firmware and audio ROM relative paths depend on it)"
+}
 cd $src_dir
 puts "PDS_WORKING_DIR=[pwd]"
 
@@ -80,6 +85,7 @@ add_design [file join $business_dir rtl servo_key_controller.sv]
 add_design [file join $business_dir rtl trash_quiz_controller.sv]
 add_design [file join $business_dir rtl trash_peripherals.sv]
 add_design [file join $business_dir rtl snapshot_cdc.sv]
+add_design [file join $business_dir rtl result_event_cdc.sv]
 add_design [file join $business_dir rtl yolo_class_to_bin.v]
 add_design [file join $business_dir rtl trash_voice_rom_player.v]
 add_design [file join $business_dir rtl trash_i2s_tx.v]

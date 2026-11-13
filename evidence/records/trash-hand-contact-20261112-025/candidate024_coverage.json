@@ -1,0 +1,67 @@
+{
+  "status": "MANIFEST_COVERAGE_AUDIT",
+  "manifest_sha256": "6a2ba17b04f09b910da2e59fb8c1c53478752cfd17dffffc34682bc605725a5b",
+  "splits": {
+    "train": {
+      "public_waste_images": 1791,
+      "public_class_images": {
+        "0": 498,
+        "1": 503,
+        "2": 295,
+        "3": 502
+      },
+      "personal_unique_images": 56,
+      "personal_groups": [
+        "personal_glass_latch_jar",
+        "personal_metal_thermos",
+        "personal_plastic_food_box",
+        "personal_spiral_notebook",
+        "personal_tissue_outer_container",
+        "personal_used_tissue"
+      ],
+      "personal_bins": [
+        1,
+        3
+      ]
+    },
+    "val": {
+      "public_waste_images": 1508,
+      "public_class_images": {
+        "0": 176,
+        "1": 1132,
+        "2": 45,
+        "3": 157
+      },
+      "personal_unique_images": 15,
+      "personal_groups": [
+        "personal_cardboard_box",
+        "personal_glass_food_jar"
+      ],
+      "personal_bins": [
+        1
+      ]
+    },
+    "test": {
+      "public_waste_images": 1572,
+      "public_class_images": {
+        "0": 223,
+        "1": 1142,
+        "2": 49,
+        "3": 160
+      },
+      "personal_unique_images": 9,
+      "personal_groups": [
+        "personal_cylindrical_battery"
+      ],
+      "personal_bins": [
+        2
+      ]
+    }
+  },
+  "limitations": [
+    "Test coverage inspected only through labels/manifest; no test model inference",
+    "Personal val only blue; held bins0/2/3 accuracy cannot be inferred",
+    "No held kitchen training samples in personal dataset",
+    "Test handheld battery uses same hand/rooms and older physical item; not independent domain accuracy"
+  ]
+}

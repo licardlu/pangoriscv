@@ -1,0 +1,191 @@
+{
+  "status": "TRAINING_AND_FIXED_POLICY_VALIDATION_COMPLETED",
+  "epochs_completed": 24,
+  "selected_epoch_1based": 23,
+  "candidate_sha256": "12a41d754f3917ce3a88be11aaf6309bc548c9df701b844fc0a3ec8cadd1f468",
+  "comparison_gates": {
+    "personal_hand_recall_improves": true,
+    "personal_battery_recall_within_5pp": true,
+    "personal_battery_precision_within_5pp": true,
+    "personal_recyclable_recall_within_5pp": true,
+    "public_four_bin_mean_f1_within_2pp": true,
+    "empty_hand_C_selections_not_increased": true
+  },
+  "gate_scope": "post-training validation tradeoff screen, no independent test or FPGA approval",
+  "all_tradeoff_gates_passed": true,
+  "baseline_fixed_policy_mAP50": 0.578797747909432,
+  "candidate_fixed_policy_mAP50": 0.6868497857130786,
+  "baseline_public_mean_F1": 0.6168687586341899,
+  "candidate_public_mean_F1": 0.6527033583576862,
+  "baseline_personal": {
+    "kitchen": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "recyclable": {
+      "TP": 55,
+      "FP": 12,
+      "GT": 174,
+      "precision": 0.8208955223880597,
+      "recall": 0.3160919540229885
+    },
+    "hazardous": {
+      "TP": 56,
+      "FP": 26,
+      "GT": 60,
+      "precision": 0.6829268292682927,
+      "recall": 0.9333333333333333
+    },
+    "other": {
+      "TP": 0,
+      "FP": 141,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "hand": {
+      "TP": 6,
+      "FP": 1,
+      "GT": 341,
+      "precision": 0.8571428571428571,
+      "recall": 0.017595307917888565
+    }
+  },
+  "candidate_personal": {
+    "kitchen": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "recyclable": {
+      "TP": 98,
+      "FP": 23,
+      "GT": 174,
+      "precision": 0.8099173553719008,
+      "recall": 0.5632183908045977
+    },
+    "hazardous": {
+      "TP": 57,
+      "FP": 29,
+      "GT": 60,
+      "precision": 0.6627906976744186,
+      "recall": 0.95
+    },
+    "other": {
+      "TP": 0,
+      "FP": 75,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "hand": {
+      "TP": 111,
+      "FP": 19,
+      "GT": 341,
+      "precision": 0.8538461538461538,
+      "recall": 0.3255131964809384
+    }
+  },
+  "baseline_contact": {
+    "personal_空手": {
+      "images": 107,
+      "hand_seen": 6,
+      "selected": 15,
+      "correct_class_and_iou050": 0,
+      "false_selection_on_hand_only": 15
+    },
+    "personal_all": {
+      "images": 341,
+      "hand_seen": 7,
+      "selected": 234,
+      "correct_class_and_iou050": 104,
+      "false_selection_on_hand_only": 15
+    },
+    "hand_only": {
+      "images": 107,
+      "hand_seen": 6,
+      "selected": 15,
+      "correct_class_and_iou050": 0,
+      "false_selection_on_hand_only": 15
+    },
+    "personal_塑料片": {
+      "images": 28,
+      "hand_seen": 0,
+      "selected": 23,
+      "correct_class_and_iou050": 23
+    },
+    "has_garbage_gt": {
+      "images": 234,
+      "hand_seen": 1,
+      "selected": 219,
+      "correct_class_and_iou050": 104
+    },
+    "personal_纸团": {
+      "images": 146,
+      "hand_seen": 0,
+      "selected": 138,
+      "correct_class_and_iou050": 26
+    },
+    "personal_电池": {
+      "images": 60,
+      "hand_seen": 1,
+      "selected": 58,
+      "correct_class_and_iou050": 55
+    }
+  },
+  "candidate_contact": {
+    "personal_空手": {
+      "images": 107,
+      "hand_seen": 54,
+      "selected": 15,
+      "correct_class_and_iou050": 0,
+      "false_selection_on_hand_only": 15
+    },
+    "personal_all": {
+      "images": 341,
+      "hand_seen": 130,
+      "selected": 228,
+      "correct_class_and_iou050": 142,
+      "false_selection_on_hand_only": 15
+    },
+    "hand_only": {
+      "images": 107,
+      "hand_seen": 54,
+      "selected": 15,
+      "correct_class_and_iou050": 0,
+      "false_selection_on_hand_only": 15
+    },
+    "personal_塑料片": {
+      "images": 28,
+      "hand_seen": 8,
+      "selected": 23,
+      "correct_class_and_iou050": 23
+    },
+    "has_garbage_gt": {
+      "images": 234,
+      "hand_seen": 76,
+      "selected": 213,
+      "correct_class_and_iou050": 142
+    },
+    "personal_纸团": {
+      "images": 146,
+      "hand_seen": 55,
+      "selected": 133,
+      "correct_class_and_iou050": 64
+    },
+    "personal_电池": {
+      "images": 60,
+      "hand_seen": 13,
+      "selected": 57,
+      "correct_class_and_iou050": 55
+    }
+  },
+  "board_release_recommendation": "019 + 005 unchanged until quantization/C-numerical and board validation",
+  "test_used_for_selection": false,
+  "board_modified": false
+}

@@ -1,0 +1,42 @@
+version,2022.2-SP6.1<build 138931>
+project name,implement.pds
+
+Single Seed:
+Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
+single,OK,Fail,-0.187,2.464,-0.013,-0.001,3.847,5.485,0.390,0.273,NA,NA,NA,6.50,209.61,597.59,870.97,NA,NA,NA,962808,NA,NA,1208,1208,1208,1208,NA,0,0,-0.187,1,-0.013,1,NA
+Pass Rate/Convergence Rate,100.00%,0.00%
+
+Synthesize:
+control_set,916
+Synthesize Performance Summary:
+slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
+slack value,1.321,0.000,4.566,0.000
+Synthesize Process Cpu Time,0h:5m:20s
+
+Device Map:
+Device Map Resource Usage Summary:
+Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
+Used,45820,28103,155,146,2307,NA,9,0,3
+Available,66600,133200,155,240,19900,NA,32,96,24
+Utilization(%),69%,22%,100%,61%,12%,NA,29%,0%,13%
+Device Map Process Cpu Time,0h:0m:51s
+
+Project Configurations:
+top module,yolo_camera_top
+compile," -top_module {yolo_camera_top} 
+ -include_path {D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_001/input/yolo/sources/include	D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_001/input/extensions/business/application/rtl	D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_001/input/extensions/media/third_party/core_mmc/src_v} 
+ -system_verilog "
+synthesize," -ads "
+device map,
+place & route," -plc_decongestion 4 
+ -gplace_seed 7 
+ -groute_seed 2 
+ -optimize_multi_corner_timing 
+ -fix_hold_violation_iterations 300 
+ -fix_hold_violation_threshold 300 
+ -fix_hold_violation_threshold_for_clk_tree 200 
+ -early_block_placement {Global} "
+
+Test Parameters Configurations:
+testparam,
+

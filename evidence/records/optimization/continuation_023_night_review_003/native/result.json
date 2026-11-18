@@ -1,0 +1,231 @@
+{
+  "status": "HOST_TESTS_PASS",
+  "scope": "actual C callbacks/host workload only; not FPGA timing or camera accuracy",
+  "pnr_performed": false,
+  "board_modified": false,
+  "cases": {
+    "target": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\test_target_policy.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\target.exe"
+      ],
+      "output": "TEST_PASS target_policy largest/clipping/hand/empty/multihand/invalid/separate_TopK\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\test_target_policy.c": "53afb7fe7939ccc9831edf4df05548dc1e4488c3bc6a6588246182fe5bf92915"
+      }
+    },
+    "contact": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\test_contact_policy.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\contact.exe"
+      ],
+      "output": "TEST_PASS contact_policy long_object/palm_battery/clutter/hand_duplicate/invalid/no_hand/multihand/combined_camera/clipped_area_ties/size_adaptive/full_large_box/mean_valid_hands/equal_area/clipped_hand/confident_narrow/edge_gap\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\test_contact_policy.c": "96fe81e64b110d51743780f9f526a7da074ac16c0a18683a81bce431f5bc9e16"
+      }
+    },
+    "camera_gate": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_camera_gate.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\camera_gate.exe"
+      ],
+      "output": "TEST_PASS camera_gate: two-frame class/IoU, one-shot until two absences, interruption/invalid never rearms, latency contract\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_camera_gate.c": "651e4eae9758fc7a39ff47675264ebd3a1dee9926585e50a192d5e50d8bf2f57"
+      }
+    },
+    "bbox_mmio": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "-DBBOX_OSD_MMIO_TEST",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\test_bbox_osd.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\bbox_mmio.exe"
+      ],
+      "output": "BBOX_OSD_MMIO_PASS empty/invalid commit, stale-slot clear, busy/timeout, transactional confirmation/rearm, ownership cancellation\nBBOX_OSD_PASS geometry and successful-empty commit policy\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\test_bbox_osd.c": "e3c9e278dbcf25e68cc683ded07dce06f607411624541c49a6046229d3c3773e"
+      }
+    },
+    "benchmark": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "-DBENCHMARK_UI_TEST",
+        "-DMEDIA_ENABLE",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark_ui.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_feedback_benchmark.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\benchmark.exe"
+      ],
+      "output": "TEST_PASS feedback benchmark: KEY1 request only, visible-page wait, safe-point run, media restore, measured/unclamped result, invalid CRC hides score\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark_ui.c": "9f152244c162751b4bfda9226b41f4109ef7f0f3f3d51b6078cde4c802b9afcd",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_feedback_benchmark.c": "8806b044cfffbf6b58c4817d6943ba6fee90ba1ed2217c160d791af585e9d22c"
+      }
+    },
+    "coremark": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "-DBENCHMARK_HOST_TEST",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark_entry.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_feedback_coremark.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_list_join.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_matrix.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_state.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_util.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\coremark.exe"
+      ],
+      "output": "CRC e9f5 e714 1fd7 8e3a bd59; native ticks 7560000 (not board timing)\nTEST_PASS CoreMark official workload: five CRCs, known-ticks units/frequency invariance, >=10s and invalid-input gating; host only\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark.c": "c4899edd68db17efa710b84074d34e391622a3f16219b477553021787bfd9c25",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark_entry.c": "e8af0c371b8ad3faa6af96c13a7bccbee9d564133f4826b21ac3ffa7ea6f7ecd",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_feedback_coremark.c": "31f4e26595f143e1d7dfb9d4fb8571565ba5bed651c9993b76be5dca900bde2d",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_list_join.c": "ca00e4e010ece47d7f040cb92aa50a95345a00d3171b59d088f6b243be06ce7b",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_matrix.c": "ecdff717b5a5c4907d221a606760e25499899cbf617582c05d40db71c91351e4",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_state.c": "f4b84bb0a3452c45a4daa664ab502bfdccbd31cb57d93e9ac490c60937717a4e",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark\\core_util.c": "a3fbfcb9bb943b638624b8ece01c5836dd56a96d7bcde2697b248d077447327f"
+      }
+    },
+    "stereo_depth": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_depth.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_stereo_depth.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\stereo_depth.exe"
+      ],
+      "output": "TEST_PASS stereo_depth near/far/boundary/quality/texture/search/invalid-map/hysteresis/wrap\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_depth.c": "1546c7f5c1f4d89c8f9cd946b73ea83abf26486cfffba537b33d8086cbee6412",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_stereo_depth.c": "125810b64d214d97f147a15275824991930850b0f2d0650261bf151d862e8bd2"
+      }
+    },
+    "stereo_platform": {
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-UNDEBUG",
+        "-DCPU_HZ=54000000",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\model",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_depth.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_stereo_platform.c",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\native_ownership_006\\stereo_platform.exe"
+      ],
+      "output": "TEST_PASS stereo_platform metadata/chunks/errors/near/far/boundary/scene-change/manual-cancel/uncalibrated\n",
+      "files": {
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_depth.c": "1546c7f5c1f4d89c8f9cd946b73ea83abf26486cfffba537b33d8086cbee6412",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\test_stereo_platform.c": "6d8880a5e94ff92cc1f5c905f4386d0d6eaab9192e577dabec190cbe0b511ff3"
+      }
+    }
+  },
+  "source_sha256": {
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark.c": "c4899edd68db17efa710b84074d34e391622a3f16219b477553021787bfd9c25",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark_reference.c": "04b849fcde05f3498a0fe66c65932fec5b47aaf546ecd9742e30e9bfccb4b213",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark_ui.c": "9f152244c162751b4bfda9226b41f4109ef7f0f3f3d51b6078cde4c802b9afcd",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\coremark_entry.c": "e8af0c371b8ad3faa6af96c13a7bccbee9d564133f4826b21ac3ffa7ea6f7ecd",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_board.c": "a2f6f89b09bbb606a73a423a1b6bcba1bc0eed95d1823bdc759e3379deb553cc",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_fat32.c": "2e0b2d16b9d6b85bbb440436274821db27f3a9c9a57a37314a353c9fecc4dd47",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_player.c": "148ca22ad953916c7614d4670c1cebec87633db58322d252250470acc9b149c2",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_pmj.c": "0f2130d1e2d67970e82dfd2d592284eefbe58916647edb7e2a11b622e8088c2b",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_sdmmc.c": "34229b4cf31da3351ddf4e2afe8fbcad1193d89fbcdc4ebf7ce1324b78c2f9ac",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\model_boot.c": "76460bbb36d9725b8c9a59dae3f6bfed69fc4826eed347ceeb6072ac50d73e86",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\platform_main.c": "8534a33403a68d23e026ce7f62956b7f7292a02dd69fc087a0442f25590a9781",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_depth.c": "1546c7f5c1f4d89c8f9cd946b73ea83abf26486cfffba537b33d8086cbee6412",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\test_bbox_osd.c": "e3c9e278dbcf25e68cc683ded07dce06f607411624541c49a6046229d3c3773e",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_decode.c": "9ddb3c2528bf8f4e947b76a7791d42dd4662fe2f546a7a4b057142e2a59e34b3",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_forward.c": "247a6ffa861d4da5eb998a8a457eac317657217314dc022f3edff4c570b92159",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_runtime.c": "424be84db87ae45c7b42e8131d741505b605b4b9f96bacd0d4a5eff885c9c194",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\acc_regs.h": "a4322e935a77a57253a91493c0706c4d69604166b915ff7d3896824b655996d9",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark.h": "c547b223efb17db074c8b1e2a29f24a9fb298f0f5f1b36dcd48fc18d1bb3ddc8",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark_mmio.h": "44a4c418abc7f0cb195c6f6a3582763c4d6830b1dc73377552e13e28fb8e94e6",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\benchmark_text.h": "cabd2a0a43d158234ec7b7d085679c84032ceedc1dedbfda3f5defb4b978a1d1",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_board.h": "ac044907acca388ba584eed86ec3c5b1496d341e6e900d8fbb13a93b05f1a943",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_fat32.h": "72df2a854640f8d44e4c23fc3ba323be51b31a6b8184daac02753722490dcbad",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_player.h": "d1ef04545f9fc5b93b0df1700f55ebc75761aec715b79fd501b0e91ea8ab913f",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_pmj.h": "efeb658bee22a07a0e10f69089277a51affd26b335ce33d0a97ae6803206d35f",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\media_sdmmc.h": "bbfeb0cdc1f92eb4d9aa8027c794a4fc0c37c149172bb8d4003aa8f559ff6feb",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\model_boot.h": "41e6747d0bd59dea70f301fd9cad61969e4cfc06bd23db676d961f963b773d18",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_calibration.h": "bdf07ed7b7d75530891c892a3ce70b509ef2f421b9b4f7ae1b080ca502227fd9",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\stereo_depth.h": "ebaea2df37e6f61928fabaaa1715cb0a671e8c56599123b8c4d1fea8fbe526e8",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_camera_gate.h": "c58daf7acf235feed18b5afeeabf3e7e020a342d701a0c3808e285d2c7aa6dda",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_contact_policy.h": "4efa1e9085405cae8e23de8b547df2e35826c686e1785e0eb150c8eccd52e1de",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_decode.h": "5e80a74bc6f9b32df27e2efb22b5e106b3c0bc031aae224a8197927b34e14938",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_frame_workspace.h": "692f2b9be4290077038ceeec3dce6a107dbd32cb2cb9cc7ab4ec1cf78273a48b",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_interaction_policy.h": "7f7954a9caa6c223e7c67b0d1823d76142f3d4faf06e3d4edd1b5561b5020596",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_runtime.h": "98507f7550ef4bc941f99230ecf65c6c49c449ed40eebaeb65f64b3977d416cb",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software\\yolo_target_policy.h": "553c202879b323c34ad11e3d4700f9d0937ef93985cbb94300d0b7fbeba864ee"
+  }
+}

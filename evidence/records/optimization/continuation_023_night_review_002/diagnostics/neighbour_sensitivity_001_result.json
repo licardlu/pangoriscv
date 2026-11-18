@@ -1,0 +1,178 @@
+{
+  "status": "DEVELOPMENT_SENSITIVITY_REPORT",
+  "scope": "Saved software Q15/C decisions; not camera accuracy",
+  "test_used": false,
+  "training_performed": false,
+  "thresholds_changed": false,
+  "split_changed": false,
+  "flagged_pairs": 77,
+  "flagged_parent_val_images": 46,
+  "flag_rule": "pHash distance <=6; all flags excluded, regardless of visual judgement or outcome",
+  "limitations": [
+    "Unflagged images are not proven free of same-object or same-session leakage.",
+    "pHash is dominated by background in several images and is not an object-identity test.",
+    "This is sensitivity analysis of a developed-on validation set, not independent final evaluation."
+  ],
+  "input_identities": {
+    "neighbours": "28ae328eac960a494005f2c7ec1b9f10fd00076efd5d207525fd43b1b2b14235",
+    "manifest": "3e99feddaf410ee5d0dde82c4e78e1925886fd5142152a31a419996e8de85ce0",
+    "stage4_original": {
+      "decisions_sha256": "dc6f54cb70f17ba347cb36e8bf592cd49e679169b357088d7dcf3e954471732c",
+      "result_sha256": "a025a6ebf31f7a5c804e407ab22088a71364fa899d24a92b3141bc92f70c0658"
+    },
+    "stage4_focused": {
+      "decisions_sha256": "63fee29a4c81278c3929d3d01eb0ddbfa773c1525a4a3fadaf18c847abf173d6",
+      "result_sha256": "4944b83dfccc182b30d5cdab248e659f1c37d5ff24782115c662d128ab87b4a7"
+    },
+    "conservative_original": {
+      "decisions_sha256": "deecc75e3657823eeae46c4ac6c8e15b81fd7ab188b6719d5ed67cf682c5e506",
+      "result_sha256": "ac84b9a3313c5ab775a6390072941e0daa5182fad915f1d09654c4b4345f937b"
+    },
+    "conservative_focused": {
+      "decisions_sha256": "179dc682abf1cd3a4f839f162fe33f52c2080385702b6680794bd2ee88ddc3ca",
+      "result_sha256": "5e797f173f839d68567f0e0523d7de5c8e540831acdcc503a23a483ce1a31e43"
+    }
+  },
+  "comparisons": {
+    "stage4_original": {
+      "model_sha256": "7a0765a6f275f3c06d838f924d73542783ca55e131509aa1b546efc98bd65728",
+      "cohorts": {
+        "all": {
+          "images": 1929,
+          "positive_images": 1793,
+          "correct_class_and_iou050": 1455,
+          "missed_or_wrong": 338,
+          "background_images": 136,
+          "background_false_selected": 8,
+          "background_correct_rejection": 128,
+          "positive_success_fraction": 0.8114891243725599,
+          "background_false_selection_fraction": 0.058823529411764705
+        },
+        "unflagged": {
+          "images": 1883,
+          "positive_images": 1747,
+          "correct_class_and_iou050": 1413,
+          "missed_or_wrong": 334,
+          "background_images": 136,
+          "background_false_selected": 8,
+          "background_correct_rejection": 128,
+          "positive_success_fraction": 0.8088151116199198,
+          "background_false_selection_fraction": 0.058823529411764705
+        },
+        "flagged": {
+          "images": 46,
+          "positive_images": 46,
+          "correct_class_and_iou050": 42,
+          "missed_or_wrong": 4,
+          "positive_success_fraction": 0.9130434782608695,
+          "background_false_selection_fraction": null
+        }
+      }
+    },
+    "stage4_focused": {
+      "model_sha256": "4151d34c7ab52cc548699b68dd9f46e3315b0a9494aeed71deb979404bf0342f",
+      "cohorts": {
+        "all": {
+          "images": 1929,
+          "positive_images": 1793,
+          "correct_class_and_iou050": 1449,
+          "missed_or_wrong": 344,
+          "background_images": 136,
+          "background_false_selected": 24,
+          "background_correct_rejection": 112,
+          "positive_success_fraction": 0.8081427774679308,
+          "background_false_selection_fraction": 0.17647058823529413
+        },
+        "unflagged": {
+          "images": 1883,
+          "positive_images": 1747,
+          "correct_class_and_iou050": 1406,
+          "missed_or_wrong": 341,
+          "background_images": 136,
+          "background_false_selected": 24,
+          "background_correct_rejection": 112,
+          "positive_success_fraction": 0.8048082427017744,
+          "background_false_selection_fraction": 0.17647058823529413
+        },
+        "flagged": {
+          "images": 46,
+          "positive_images": 46,
+          "correct_class_and_iou050": 43,
+          "missed_or_wrong": 3,
+          "positive_success_fraction": 0.9347826086956522,
+          "background_false_selection_fraction": null
+        }
+      }
+    },
+    "conservative_original": {
+      "model_sha256": "6fd2ec15615a9768398c6c7a76068d8a89ac0f77624ffdd4ce1541d110ef3354",
+      "cohorts": {
+        "all": {
+          "images": 1929,
+          "positive_images": 1793,
+          "correct_class_and_iou050": 1443,
+          "missed_or_wrong": 350,
+          "background_images": 136,
+          "background_false_selected": 9,
+          "background_correct_rejection": 127,
+          "positive_success_fraction": 0.8047964305633017,
+          "background_false_selection_fraction": 0.0661764705882353
+        },
+        "unflagged": {
+          "images": 1883,
+          "positive_images": 1747,
+          "correct_class_and_iou050": 1401,
+          "missed_or_wrong": 346,
+          "background_images": 136,
+          "background_false_selected": 9,
+          "background_correct_rejection": 127,
+          "positive_success_fraction": 0.8019461934745278,
+          "background_false_selection_fraction": 0.0661764705882353
+        },
+        "flagged": {
+          "images": 46,
+          "positive_images": 46,
+          "correct_class_and_iou050": 42,
+          "missed_or_wrong": 4,
+          "positive_success_fraction": 0.9130434782608695,
+          "background_false_selection_fraction": null
+        }
+      }
+    },
+    "conservative_focused": {
+      "model_sha256": "9150bd0dee1f7c3b294ad13307faa53c5e4fdd73a9183a4f641666f0a591bc61",
+      "cohorts": {
+        "all": {
+          "images": 1929,
+          "positive_images": 1793,
+          "correct_class_and_iou050": 1431,
+          "missed_or_wrong": 362,
+          "background_images": 136,
+          "background_false_selected": 17,
+          "background_correct_rejection": 119,
+          "positive_success_fraction": 0.7981037367540436,
+          "background_false_selection_fraction": 0.125
+        },
+        "unflagged": {
+          "images": 1883,
+          "positive_images": 1747,
+          "correct_class_and_iou050": 1389,
+          "missed_or_wrong": 358,
+          "background_images": 136,
+          "background_false_selected": 17,
+          "background_correct_rejection": 119,
+          "positive_success_fraction": 0.7950772753291356,
+          "background_false_selection_fraction": 0.125
+        },
+        "flagged": {
+          "images": 46,
+          "positive_images": 46,
+          "correct_class_and_iou050": 42,
+          "missed_or_wrong": 4,
+          "positive_success_fraction": 0.9130434782608695,
+          "background_false_selection_fraction": null
+        }
+      }
+    }
+  }
+}

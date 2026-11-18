@@ -1,0 +1,268 @@
+{
+  "status": "COMPLETED_BULK_OFFLINE_EVALUATION",
+  "steps": [
+    {
+      "name": "training",
+      "status": "completed",
+      "started_unix": 1795020104.137952,
+      "pid": 25688,
+      "returncode": 0,
+      "elapsed_s": 1895.2469637393951
+    },
+    {
+      "name": "evaluation",
+      "status": "completed",
+      "started_unix": 1795022793.13374,
+      "pid": 6412,
+      "returncode": 0,
+      "elapsed_s": 729.214766740799
+    },
+    {
+      "name": "continuation",
+      "status": "completed",
+      "started_unix": 1795023522.350526,
+      "pid": 22552,
+      "returncode": 0,
+      "elapsed_s": 48.50750780105591
+    },
+    {
+      "name": "gallery",
+      "status": "completed",
+      "started_unix": 1795023570.8622534,
+      "pid": 9168,
+      "returncode": 0,
+      "elapsed_s": 0.9345829486846924
+    },
+    {
+      "name": "coverage",
+      "status": "completed",
+      "started_unix": 1795023571.8002713,
+      "pid": 35164,
+      "returncode": 0,
+      "elapsed_s": 0.6895787715911865
+    },
+    {
+      "name": "background_dev",
+      "status": "completed",
+      "started_unix": 1795023572.493225,
+      "pid": 23012,
+      "returncode": 0,
+      "elapsed_s": 38.30797529220581
+    },
+    {
+      "name": "targeted_regressions",
+      "status": "completed",
+      "started_unix": 1795023610.80463,
+      "pid": 13412,
+      "returncode": 0,
+      "elapsed_s": 1.7299001216888428
+    }
+  ],
+  "deadline_utc": "2026-11-18T18:19:51+00:00",
+  "board_accessed": false,
+  "training_repeated": false,
+  "preserved_failed_evaluation": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation_failed_jpeg_001",
+  "image_identity_recovery_sha256": "88d1216c5d413ee7b6a7ad3aff0d7ceacdcb0b70a03bce6ad29a2950f90acf94",
+  "accepted_offline": false,
+  "q15": {
+    "correct_positive": 1442,
+    "false_background": 7,
+    "correct_personal_battery": 44,
+    "correct_public_glass": 231,
+    "denominators": {
+      "positive": 1793,
+      "background": 136,
+      "personal_battery": 60,
+      "public_glass": 242
+    }
+  },
+  "public_dev": {
+    "correct_positive": 700,
+    "false_background": 0,
+    "correct_personal_battery": 0,
+    "correct_public_glass": 0,
+    "denominators": {
+      "positive": 712,
+      "background": 0,
+      "personal_battery": 0,
+      "public_glass": 0
+    }
+  },
+  "gates": {
+    "float": false,
+    "q15_primary": false,
+    "q15_all_waste_classes": false,
+    "q15_all_detection_classes": false,
+    "q15_publicdev": true
+  },
+  "finished_unix": 1795023612.5365317,
+  "training": {
+    "status": "PASS",
+    "epochs": 4,
+    "elapsed_s": 1889.0552339553833,
+    "checkpoint_sha256": "6c376e840cb1a192be49148d11e47ca90474ad8c298b785e9fb006788a31ac42",
+    "final_epoch_only": true
+  },
+  "actual_loader_audit": {
+    "status": "COMPLETED_EFFECTIVE_LOADER_AUDIT",
+    "requested_list_entries": 19260,
+    "effective_primary_samples_per_epoch": 9349,
+    "planned_epochs": 4,
+    "primary_samples_if_all_epochs_complete": 37396,
+    "batch": 64,
+    "expected_batches_per_epoch": 147,
+    "observed_training_log_batch_totals": [
+      147
+    ],
+    "last_batch_size": 5,
+    "balanced_replay_effective": false,
+    "all_unique_training_files_retained": true,
+    "requested": {
+      "sources": {
+        "sumn2u": 1622,
+        "codingbear": 1538,
+        "hagrid_hand_localisation": 1176,
+        "mark_battery": 1760,
+        "mark_battery_crop": 1760,
+        "personal_empty_hand": 262,
+        "personal_held_battery": 464,
+        "personal_held_bottle": 202,
+        "personal_no_pickup": 310,
+        "continuation_no_pickup": 392,
+        "continuation_held_plastic_container": 50,
+        "continuation_held_thermos": 12,
+        "continuation_held_tissue_packet": 18,
+        "continuation_held_tissue": 244,
+        "continuation_held_glass_jar": 88,
+        "continuation_held_notebook": 24,
+        "continuation_held_pear": 316,
+        "continuation_empty_hand": 92,
+        "continuation_held_foam_packaging": 92,
+        "continuation_held_battery": 288,
+        "continuation_held_bottle": 256,
+        "large_public_drinking": 3626,
+        "large_public_bbox384": 1106,
+        "large_public_trashsort": 333,
+        "large_public_batteryobjects": 15,
+        "targeted_taco_reviewed": 160,
+        "targeted_reviewed_background_crop": 56,
+        "derived_battery_orientation": 752,
+        "extras_reviewed_single_battery": 228,
+        "extras_reviewed_multi_battery": 84,
+        "wastesense_reviewed_glass": 116,
+        "reviewed_fruit_complete_objects": 94,
+        "reviewed_hagrid_background_crop": 20,
+        "reviewed_foam_objects": 140,
+        "reviewed_mju_hand_crop": 16,
+        "reviewed_fetan_battery": 44,
+        "extras_resume_reviewed_battery": 356,
+        "mostafa_reviewed_single_battery": 264,
+        "mostafa_reviewed_multi_battery": 52,
+        "mostafa_reviewed_trash": 120,
+        "mostafa_reviewed_white-glass": 30,
+        "mostafa_reviewed_biological": 156,
+        "datacluster_reviewed_plastic": 56,
+        "datacluster_reviewed_glass": 162,
+        "datacluster_reviewed_cardboard": 48,
+        "apadoss_reviewed_battery": 140,
+        "datacluster_reviewed_household_clutter": 120
+      },
+      "class_image_counts": {
+        "1": 7162,
+        "3": 2092,
+        "2": 6889,
+        "4": 4976,
+        "0": 1759
+      },
+      "contexts": {
+        "waste_only": 14208,
+        "waste_with_hand": 3520,
+        "hand_only": 1456,
+        "empty": 76
+      }
+    },
+    "effective": {
+      "sources": {
+        "datacluster_reviewed_plastic": 28,
+        "mostafa_reviewed_single_battery": 132,
+        "large_public_bbox384": 1106,
+        "hagrid_hand_localisation": 147,
+        "codingbear": 292,
+        "large_public_drinking": 3626,
+        "reviewed_foam_objects": 70,
+        "personal_held_battery": 116,
+        "extras_reviewed_single_battery": 38,
+        "large_public_trashsort": 333,
+        "mark_battery_crop": 440,
+        "extras_resume_reviewed_battery": 178,
+        "sumn2u": 327,
+        "derived_battery_orientation": 376,
+        "mark_battery": 440,
+        "continuation_held_battery": 72,
+        "datacluster_reviewed_glass": 81,
+        "continuation_held_tissue": 61,
+        "continuation_no_pickup": 180,
+        "personal_no_pickup": 155,
+        "personal_held_bottle": 101,
+        "personal_empty_hand": 131,
+        "continuation_empty_hand": 46,
+        "continuation_held_foam_packaging": 23,
+        "datacluster_reviewed_cardboard": 24,
+        "continuation_held_bottle": 128,
+        "continuation_held_plastic_container": 25,
+        "targeted_taco_reviewed": 40,
+        "reviewed_fruit_complete_objects": 47,
+        "mostafa_reviewed_biological": 78,
+        "apadoss_reviewed_battery": 70,
+        "datacluster_reviewed_household_clutter": 60,
+        "wastesense_reviewed_glass": 58,
+        "continuation_held_pear": 79,
+        "continuation_held_tissue_packet": 9,
+        "continuation_held_glass_jar": 44,
+        "mostafa_reviewed_trash": 60,
+        "mostafa_reviewed_multi_battery": 26,
+        "continuation_held_thermos": 6,
+        "reviewed_fetan_battery": 11,
+        "mostafa_reviewed_white-glass": 15,
+        "targeted_reviewed_background_crop": 14,
+        "reviewed_mju_hand_crop": 8,
+        "large_public_batteryobjects": 5,
+        "continuation_held_notebook": 12,
+        "extras_reviewed_multi_battery": 21,
+        "reviewed_hagrid_background_crop": 10
+      },
+      "class_image_counts": {
+        "1": 5769,
+        "2": 2169,
+        "4": 1664,
+        "0": 529,
+        "3": 645
+      },
+      "contexts": {
+        "waste_only": 7661,
+        "hand_only": 287,
+        "waste_with_hand": 1377,
+        "empty": 24
+      }
+    },
+    "reason": "YOLO LoadImagesAndLabels rebuilds im_files from cache dictionary keys, collapsing repeated paths.",
+    "frozen_plan_changed": false,
+    "training_changed_or_restarted": false,
+    "final_test_accessed": false,
+    "independent_original_photo_count": null,
+    "qualified_20000_original_target_achieved": false,
+    "limitations": [
+      "Primary samples exclude additional stochastic mosaic/mixup source reads.",
+      "Four-epoch sample total is conditional until progress confirms completion.",
+      "Unique file hashes include existing derived views; they are not certified independent original photos."
+    ],
+    "evidence_sha256": {
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\plan.json": "e36ca685010dfa0b1c7e94e55668b6d119cfe005b2046cc4887f78d714e13603",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\unique_train.json": "4acb323749348031a808012639802757c832503e8d0c55a6cc9d85330c193bf0",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\dataset_001\\train.txt": "5646ec74b13866f5570f6225ecd6f165e43d7ff438be50c031ca0ac63e00914c",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\dataset_001\\train.cache": "848884e5c2ee867ca9136c245a315e1afdf1fd15725b06bcbe9eda4e165defc2"
+    }
+  },
+  "unchanged_deployment_sha256": "7a0765a6f275f3c06d838f924d73542783ca55e131509aa1b546efc98bd65728",
+  "new_images": 0
+}

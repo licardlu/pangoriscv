@@ -1,0 +1,1300 @@
+{
+  "status": "STATIC_STACK_AUDIT_PASS",
+  "elf_sha256": "6e1ccfa1b5dac2ad75417df8ee2b05173d2a0f599e6a0a012bfa49dccb34a42d",
+  "available_stack_bytes": 8984,
+  "conservative_call_chain_bytes": 6032,
+  "remaining_bytes": 2952,
+  "worst_chain": [
+    {
+      "function": "main",
+      "frame_bytes": 496
+    },
+    {
+      "function": "infer_reply",
+      "frame_bytes": 1872
+    },
+    {
+      "function": "head_scalar.constprop.0",
+      "frame_bytes": 3472
+    },
+    {
+      "function": "read_bytes",
+      "frame_bytes": 48
+    },
+    {
+      "function": "yolo_acc_read_bulk",
+      "frame_bytes": 80
+    },
+    {
+      "function": "__riscv_save_10",
+      "frame_bytes": 64
+    }
+  ],
+  "function_frames": {
+    "_start": 8,
+    "acc_crc_update": 0,
+    "acc_wait_idle.lto_priv.0": 0,
+    "acc_memory_read64.lto_priv.0": 32,
+    "yolo_clock.lto_priv.0": 0,
+    "target_intersection": 48,
+    "target_clip": 48,
+    "send": 0,
+    "reply": 48,
+    "yolo_acc_read": 16,
+    "acc_memory_crc_bulk.part.0.constprop.0": 64,
+    "float_read": 32,
+    "read_bytes": 48,
+    "write_bytes": 48,
+    "scale_bytes": 16,
+    "execute_bulk_linear.constprop.0": 2656,
+    "concat_wide.constprop.0": 2128,
+    "head_scalar.constprop.0": 3472,
+    "head_dot": 0,
+    "head_dot_q16_i16.constprop.0": 0,
+    "head_load_q16": 1104,
+    "head_cached.constprop.0": 2272,
+    "yolo_acc_write": 32,
+    "yolo_acc_convolve": 32,
+    "insert.constprop.0": 32,
+    "read_float": 32,
+    "start_time": 0,
+    "stop_time": 0,
+    "benchmark_evaluate.constprop.0": 32,
+    "text": 0,
+    "decimal": 128,
+    "cmp_idx": 0,
+    "core_list_find": 0,
+    "core_list_mergesort": 64,
+    "matrix_sum": 0,
+    "matrix_add_const": 0,
+    "core_state_transition": 0,
+    "crcu8": 0,
+    "crcu16": 16,
+    "calc_func": 144,
+    "cmp_complex": 32,
+    "core_bench_list": 80,
+    "iterate.isra.0": 16,
+    "media_board_page": 0,
+    "yolo_graph_cancelled": 16,
+    "transfer": 0,
+    "read_reg.lto_priv.0": 16,
+    "write_reg.lto_priv.0": 32,
+    "milliseconds": 16,
+    "page": 16,
+    "read_reg.lto_priv.1": 16,
+    "write_reg.lto_priv.1": 32,
+    "now.lto_priv.0": 16,
+    "now.constprop.0": 16,
+    "cancelled": 16,
+    "put": 16,
+    "get": 16,
+    "le32": 0,
+    "transition": 16,
+    "media_player_pause": 16,
+    "wr": 16,
+    "rd": 16,
+    "now.lto_priv.1": 16,
+    "guard": 32,
+    "media_sdmmc_abort": 16,
+    "fail": 16,
+    "delay.constprop.0": 32,
+    "bits": 0,
+    "command": 64,
+    "r1": 48,
+    "app.constprop.0": 32,
+    "media_sdmmc_init.constprop.0": 64,
+    "media_sdmmc_read_begin": 16,
+    "media_sdmmc_read": 48,
+    "media_sdmmc_sector_callback": 16,
+    "valid_cluster": 0,
+    "block": 16,
+    "next_cluster": 48,
+    "media_fat32_map": 64,
+    "media_fat32_read": 64,
+    "read_file": 16,
+    "read_at.constprop.0": 16,
+    "index_at.constprop.0": 64,
+    "acc_memory_write_bulk.lto_priv.0": 96,
+    "boot_write": 16,
+    "prepare_snapshot_input": 64,
+    "capture_input": 16,
+    "acc_host_copy8.lto_priv.1": 16,
+    "yolo_acc_read_bulk": 80,
+    "yolo_acc_write_bulk": 96,
+    "draw": 144,
+    "benchmark_poll": 16,
+    "media_fat32_mount.constprop.0": 48,
+    "sigmoid": 16,
+    "infer_reply": 1872,
+    "ee_printf": 64,
+    "coremark_entry.isra.0": 2112,
+    "benchmark_coremark.constprop.0": 16,
+    "media_fat32_open.constprop.0": 96,
+    "media_player_load_model.constprop.0": 576,
+    "boot_model": 48,
+    "media_player_poll": 592,
+    "receive": 16,
+    "main": 496,
+    "expf": 16,
+    "logf": 16,
+    "nanf": 0,
+    "fmaxf": 16,
+    "fminf": 16,
+    "__fpclassifyf": 0,
+    "finitef": 0,
+    "__ieee754_expf": 32,
+    "__ieee754_logf": 48,
+    "with_errnof": 32,
+    "xflowf": 16,
+    "__math_uflowf": 0,
+    "__math_oflowf": 0,
+    "memcmp": 0,
+    "__errno": 0,
+    "memset": 0,
+    "memcpy": 0,
+    "strcmp": 0,
+    "__addsf3": 32,
+    "__divsf3": 48,
+    "__eqsf2": 0,
+    "__gesf2": 0,
+    "__lesf2": 0,
+    "__mulsf3": 48,
+    "__subsf3": 32,
+    "__unordsf2": 0,
+    "__fixsfsi": 0,
+    "__floatsisf": 32,
+    "__clzsi2": 0,
+    "__lshrdi3": 0,
+    "__ashldi3": 0,
+    "__udivdi3": 0,
+    "__umoddi3": 0,
+    "__fixunssfsi": 0,
+    "__floatunsisf": 32,
+    "__floatdisf": 32,
+    "__riscv_save_12": 64,
+    "__riscv_save_10": 64,
+    "__riscv_save_4": 64,
+    "__riscv_save_0": 16,
+    "__riscv_restore_12": 0,
+    "__riscv_restore_10": 0,
+    "__riscv_restore_4": 0,
+    "__riscv_restore_0": 0,
+    "errpat": 0,
+    "scipat": 0,
+    "floatpat": 0,
+    "intpat": 0,
+    "state_known_crc": 0,
+    "matrix_known_crc": 0,
+    "list_known_crc": 0,
+    "addresses.0.lto_priv.0": 0,
+    "yolo_tensors.lto_priv.1": 0,
+    "yolo_ops": 0,
+    "yolo_tensors.lto_priv.0": 0,
+    "__clz_tab": 0
+  },
+  "edges": {
+    "_start": [
+      "main"
+    ],
+    "acc_crc_update": [],
+    "acc_wait_idle.lto_priv.0": [],
+    "acc_memory_read64.lto_priv.0": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "yolo_clock.lto_priv.0": [],
+    "target_intersection": [
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "__subsf3"
+    ],
+    "target_clip": [
+      "__gesf2",
+      "__lesf2",
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "__unordsf2",
+      "memcpy"
+    ],
+    "send": [],
+    "reply": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "acc_crc_update",
+      "send"
+    ],
+    "yolo_acc_read": [
+      "acc_memory_read64.lto_priv.0"
+    ],
+    "acc_memory_crc_bulk.part.0.constprop.0": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "acc_crc_update",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "float_read": [
+      "__lshrdi3",
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "memcpy",
+      "yolo_acc_read"
+    ],
+    "read_bytes": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "memcpy",
+      "yolo_acc_read",
+      "yolo_acc_read_bulk"
+    ],
+    "write_bytes": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "memcpy",
+      "yolo_acc_write",
+      "yolo_acc_write_bulk"
+    ],
+    "scale_bytes": [
+      "memcpy"
+    ],
+    "execute_bulk_linear.constprop.0": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "read_bytes",
+      "scale_bytes",
+      "write_bytes"
+    ],
+    "concat_wide.constprop.0": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "read_bytes",
+      "scale_bytes",
+      "write_bytes"
+    ],
+    "head_scalar.constprop.0": [
+      "__addsf3",
+      "__floatsisf",
+      "__mulsf3",
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "float_read",
+      "memcpy",
+      "read_bytes",
+      "yolo_acc_write"
+    ],
+    "head_dot": [],
+    "head_dot_q16_i16.constprop.0": [],
+    "head_load_q16": [
+      "__addsf3",
+      "__fixsfsi",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "__subsf3",
+      "read_bytes"
+    ],
+    "head_cached.constprop.0": [
+      "__addsf3",
+      "__fixsfsi",
+      "__floatdisf",
+      "__floatsisf",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "__subsf3",
+      "float_read",
+      "head_dot",
+      "head_dot_q16_i16.constprop.0",
+      "head_load_q16",
+      "memset",
+      "read_bytes",
+      "write_bytes"
+    ],
+    "yolo_acc_write": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "yolo_acc_convolve": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "insert.constprop.0": [
+      "__gesf2",
+      "__lesf2",
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "memcpy"
+    ],
+    "read_float": [
+      "__gesf2",
+      "__lshrdi3",
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "__unordsf2",
+      "memcpy",
+      "yolo_acc_read"
+    ],
+    "start_time": [],
+    "stop_time": [],
+    "benchmark_evaluate.constprop.0": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "__udivdi3"
+    ],
+    "text": [],
+    "decimal": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "__udivdi3",
+      "__umoddi3",
+      "text"
+    ],
+    "cmp_idx": [],
+    "core_list_find": [],
+    "core_list_mergesort": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "cmp_complex",
+      "cmp_idx"
+    ],
+    "matrix_sum": [],
+    "matrix_add_const": [],
+    "core_state_transition": [],
+    "crcu8": [],
+    "crcu16": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "crcu8"
+    ],
+    "calc_func": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "core_state_transition",
+      "crcu16",
+      "matrix_add_const",
+      "matrix_sum"
+    ],
+    "cmp_complex": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "calc_func"
+    ],
+    "core_bench_list": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "core_list_find",
+      "core_list_mergesort",
+      "crcu16"
+    ],
+    "iterate.isra.0": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "core_bench_list",
+      "crcu16"
+    ],
+    "media_board_page": [],
+    "yolo_graph_cancelled": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "media_board_page"
+    ],
+    "transfer": [],
+    "read_reg.lto_priv.0": [
+      "transfer"
+    ],
+    "write_reg.lto_priv.0": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "transfer"
+    ],
+    "milliseconds": [
+      "__udivdi3"
+    ],
+    "page": [
+      "media_board_page"
+    ],
+    "read_reg.lto_priv.1": [
+      "read_reg.lto_priv.0"
+    ],
+    "write_reg.lto_priv.1": [
+      "write_reg.lto_priv.0"
+    ],
+    "now.lto_priv.0": [
+      "milliseconds"
+    ],
+    "now.constprop.0": [
+      "milliseconds"
+    ],
+    "cancelled": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "page"
+    ],
+    "put": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "write_reg.lto_priv.1"
+    ],
+    "get": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "read_reg.lto_priv.1"
+    ],
+    "le32": [],
+    "transition": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "now.constprop.0"
+    ],
+    "media_player_pause": [
+      "put"
+    ],
+    "wr": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "write_reg.lto_priv.1"
+    ],
+    "rd": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "read_reg.lto_priv.1"
+    ],
+    "now.lto_priv.1": [
+      "now.lto_priv.0"
+    ],
+    "guard": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "cancelled",
+      "now.lto_priv.1"
+    ],
+    "media_sdmmc_abort": [
+      "wr"
+    ],
+    "fail": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "cancelled",
+      "media_sdmmc_abort",
+      "put",
+      "transition"
+    ],
+    "delay.constprop.0": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "cancelled",
+      "now.lto_priv.1"
+    ],
+    "bits": [],
+    "command": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "bits",
+      "guard",
+      "media_sdmmc_abort",
+      "now.lto_priv.1",
+      "rd",
+      "wr"
+    ],
+    "r1": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "command"
+    ],
+    "app.constprop.0": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "command",
+      "r1"
+    ],
+    "media_sdmmc_init.constprop.0": [
+      "__ashldi3",
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "app.constprop.0",
+      "bits",
+      "command",
+      "delay.constprop.0",
+      "guard",
+      "now.lto_priv.1",
+      "r1",
+      "rd",
+      "wr"
+    ],
+    "media_sdmmc_read_begin": [
+      "r1"
+    ],
+    "media_sdmmc_read": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "media_sdmmc_read_begin",
+      "rd"
+    ],
+    "media_sdmmc_sector_callback": [
+      "media_sdmmc_read"
+    ],
+    "valid_cluster": [],
+    "block": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "media_sdmmc_sector_callback"
+    ],
+    "next_cluster": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "block",
+      "le32",
+      "valid_cluster"
+    ],
+    "media_fat32_map": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "next_cluster",
+      "valid_cluster"
+    ],
+    "media_fat32_read": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "block",
+      "media_fat32_map",
+      "memcpy"
+    ],
+    "read_file": [
+      "media_fat32_read"
+    ],
+    "read_at.constprop.0": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "media_fat32_read"
+    ],
+    "index_at.constprop.0": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "le32",
+      "read_at.constprop.0"
+    ],
+    "acc_memory_write_bulk.lto_priv.0": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "acc_wait_idle.lto_priv.0",
+      "memcpy"
+    ],
+    "boot_write": [
+      "acc_memory_write_bulk.lto_priv.0"
+    ],
+    "prepare_snapshot_input": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "acc_memory_write_bulk.lto_priv.0",
+      "memcpy",
+      "yolo_graph_cancelled"
+    ],
+    "capture_input": [
+      "prepare_snapshot_input"
+    ],
+    "acc_host_copy8.lto_priv.1": [
+      "memcpy"
+    ],
+    "yolo_acc_read_bulk": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "acc_host_copy8.lto_priv.1",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "yolo_acc_write_bulk": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "acc_host_copy8.lto_priv.1",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "draw": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "__udivdi3",
+      "decimal",
+      "memset",
+      "text"
+    ],
+    "benchmark_poll": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "draw"
+    ],
+    "media_fat32_mount.constprop.0": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "__udivdi3",
+      "le32",
+      "media_sdmmc_read",
+      "memset",
+      "valid_cluster"
+    ],
+    "sigmoid": [
+      "__addsf3",
+      "__divsf3",
+      "__gesf2",
+      "__lesf2",
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "expf"
+    ],
+    "infer_reply": [
+      "__addsf3",
+      "__divsf3",
+      "__eqsf2",
+      "__fixunssfsi",
+      "__floatsisf",
+      "__floatunsisf",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "__subsf3",
+      "__unordsf2",
+      "capture_input",
+      "concat_wide.constprop.0",
+      "execute_bulk_linear.constprop.0",
+      "fmaxf",
+      "fminf",
+      "head_cached.constprop.0",
+      "head_scalar.constprop.0",
+      "insert.constprop.0",
+      "logf",
+      "memcpy",
+      "memset",
+      "read_bytes",
+      "read_float",
+      "reply",
+      "sigmoid",
+      "target_clip",
+      "target_intersection",
+      "write_bytes",
+      "yolo_acc_read",
+      "yolo_acc_write",
+      "yolo_clock.lto_priv.0",
+      "yolo_graph_cancelled"
+    ],
+    "ee_printf": [
+      "strcmp"
+    ],
+    "coremark_entry.isra.0": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "__udivdi3",
+      "core_list_mergesort",
+      "crcu16",
+      "ee_printf",
+      "iterate.isra.0",
+      "start_time",
+      "stop_time"
+    ],
+    "benchmark_coremark.constprop.0": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "benchmark_evaluate.constprop.0",
+      "coremark_entry.isra.0",
+      "memset"
+    ],
+    "media_fat32_open.constprop.0": [
+      "__riscv_restore_12",
+      "__riscv_save_12",
+      "block",
+      "le32",
+      "memcmp",
+      "next_cluster",
+      "valid_cluster"
+    ],
+    "media_player_load_model.constprop.0": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "acc_crc_update",
+      "boot_write",
+      "media_fat32_mount.constprop.0",
+      "media_fat32_open.constprop.0",
+      "media_fat32_read",
+      "media_sdmmc_init.constprop.0",
+      "memcpy",
+      "memset"
+    ],
+    "boot_model": [
+      "__riscv_restore_4",
+      "__riscv_save_4",
+      "acc_memory_crc_bulk.part.0.constprop.0",
+      "media_player_load_model.constprop.0",
+      "yolo_clock.lto_priv.0"
+    ],
+    "media_player_poll": [
+      "__riscv_restore_10",
+      "__riscv_save_10",
+      "__udivdi3",
+      "acc_crc_update",
+      "cancelled",
+      "fail",
+      "get",
+      "index_at.constprop.0",
+      "le32",
+      "media_fat32_map",
+      "media_fat32_mount.constprop.0",
+      "media_fat32_open.constprop.0",
+      "media_fat32_read",
+      "media_sdmmc_abort",
+      "media_sdmmc_init.constprop.0",
+      "media_sdmmc_read_begin",
+      "memcmp",
+      "memcpy",
+      "memset",
+      "now.constprop.0",
+      "put",
+      "read_at.constprop.0",
+      "transition"
+    ],
+    "receive": [
+      "__riscv_restore_0",
+      "__riscv_save_0",
+      "benchmark_poll",
+      "media_player_poll"
+    ],
+    "main": [
+      "__gesf2",
+      "__riscv_save_12",
+      "acc_crc_update",
+      "acc_memory_crc_bulk.part.0.constprop.0",
+      "acc_memory_read64.lto_priv.0",
+      "acc_memory_write_bulk.lto_priv.0",
+      "benchmark_coremark.constprop.0",
+      "benchmark_evaluate.constprop.0",
+      "benchmark_poll",
+      "boot_model",
+      "capture_input",
+      "draw",
+      "get",
+      "infer_reply",
+      "media_board_page",
+      "media_player_pause",
+      "media_player_poll",
+      "memcpy",
+      "memset",
+      "prepare_snapshot_input",
+      "receive",
+      "reply",
+      "transfer",
+      "yolo_clock.lto_priv.0"
+    ],
+    "expf": [
+      "__errno",
+      "__gesf2",
+      "__ieee754_expf",
+      "__lesf2",
+      "finitef"
+    ],
+    "logf": [
+      "__eqsf2",
+      "__errno",
+      "__gesf2",
+      "__ieee754_logf",
+      "__unordsf2",
+      "nanf"
+    ],
+    "nanf": [],
+    "fmaxf": [
+      "__fpclassifyf",
+      "__gesf2"
+    ],
+    "fminf": [
+      "__fpclassifyf",
+      "__lesf2"
+    ],
+    "__fpclassifyf": [],
+    "finitef": [],
+    "__ieee754_expf": [
+      "__addsf3",
+      "__divsf3",
+      "__fixsfsi",
+      "__floatsisf",
+      "__gesf2",
+      "__math_oflowf",
+      "__math_uflowf",
+      "__mulsf3",
+      "__subsf3"
+    ],
+    "__ieee754_logf": [
+      "__addsf3",
+      "__divsf3",
+      "__eqsf2",
+      "__floatsisf",
+      "__mulsf3",
+      "__subsf3"
+    ],
+    "with_errnof": [
+      "__errno"
+    ],
+    "xflowf": [
+      "__mulsf3",
+      "with_errnof"
+    ],
+    "__math_uflowf": [
+      "xflowf"
+    ],
+    "__math_oflowf": [
+      "xflowf"
+    ],
+    "memcmp": [],
+    "__errno": [],
+    "memset": [],
+    "memcpy": [],
+    "strcmp": [],
+    "__addsf3": [
+      "__clzsi2"
+    ],
+    "__divsf3": [
+      "__clzsi2"
+    ],
+    "__eqsf2": [],
+    "__gesf2": [],
+    "__lesf2": [],
+    "__mulsf3": [
+      "__clzsi2"
+    ],
+    "__subsf3": [
+      "__clzsi2"
+    ],
+    "__unordsf2": [],
+    "__fixsfsi": [],
+    "__floatsisf": [
+      "__clzsi2"
+    ],
+    "__clzsi2": [],
+    "__lshrdi3": [],
+    "__ashldi3": [],
+    "__udivdi3": [],
+    "__umoddi3": [],
+    "__fixunssfsi": [],
+    "__floatunsisf": [
+      "__clzsi2"
+    ],
+    "__floatdisf": [
+      "__clzsi2"
+    ],
+    "__riscv_save_12": [],
+    "__riscv_save_10": [],
+    "__riscv_save_4": [],
+    "__riscv_save_0": [],
+    "__riscv_restore_12": [],
+    "__riscv_restore_10": [],
+    "__riscv_restore_4": [],
+    "__riscv_restore_0": [],
+    "errpat": [],
+    "scipat": [],
+    "floatpat": [],
+    "intpat": [],
+    "state_known_crc": [],
+    "matrix_known_crc": [],
+    "list_known_crc": [],
+    "addresses.0.lto_priv.0": [],
+    "yolo_tensors.lto_priv.1": [],
+    "yolo_ops": [],
+    "yolo_tensors.lto_priv.0": [],
+    "__clz_tab": []
+  },
+  "indirect_transfers": {
+    "float_read": [
+      {
+        "address": 2147485328,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80000690:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "read_bytes": [
+      {
+        "address": 2147485416,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800006e8:\t000780e7          \tjalr\ta5"
+      },
+      {
+        "address": 2147485492,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80000734:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "write_bytes": [
+      {
+        "address": 2147485548,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "8000076c:\t000780e7          \tjalr\ta5"
+      },
+      {
+        "address": 2147485644,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800007cc:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "head_scalar.constprop.0": [
+      {
+        "address": 2147488992,
+        "mnemonic": "jalr",
+        "operands": "a6",
+        "text": "800014e0:\t000800e7          \tjalr\ta6"
+      }
+    ],
+    "read_float": [
+      {
+        "address": 2147492476,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "8000227c:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "core_list_mergesort": [
+      {
+        "address": 2147493680,
+        "mnemonic": "jalr",
+        "operands": "s9",
+        "text": "80002730:\t000c80e7          \tjalr\ts9"
+      }
+    ],
+    "core_state_transition": [
+      {
+        "address": 2147493980,
+        "mnemonic": "jr",
+        "operands": "t6",
+        "text": "8000285c:\t000f8067          \tjr\tt6"
+      }
+    ],
+    "read_reg.lto_priv.1": [
+      {
+        "address": 2147496752,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80003330:\t00070067          \tjr\ta4"
+      }
+    ],
+    "write_reg.lto_priv.1": [
+      {
+        "address": 2147496768,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80003340:\t00070067          \tjr\ta4"
+      }
+    ],
+    "now.lto_priv.0": [
+      {
+        "address": 2147496784,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80003350:\t00070067          \tjr\ta4"
+      }
+    ],
+    "now.constprop.0": [
+      {
+        "address": 2147496800,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80003360:\t00070067          \tjr\ta4"
+      }
+    ],
+    "cancelled": [
+      {
+        "address": 2147496820,
+        "mnemonic": "jalr",
+        "operands": "a4",
+        "text": "80003374:\t000700e7          \tjalr\ta4"
+      }
+    ],
+    "wr": [
+      {
+        "address": 2147497032,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80003448:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "rd": [
+      {
+        "address": 2147497060,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80003464:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "now.lto_priv.1": [
+      {
+        "address": 2147497084,
+        "mnemonic": "jr",
+        "operands": "a5",
+        "text": "8000347c:\t00078067          \tjr\ta5"
+      }
+    ],
+    "guard": [
+      {
+        "address": 2147497160,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800034c8:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "delay.constprop.0": [
+      {
+        "address": 2147497412,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800035c4:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "block": [
+      {
+        "address": 2147499512,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80003df8:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "read_at.constprop.0": [
+      {
+        "address": 2147500244,
+        "mnemonic": "jalr",
+        "operands": "a4 # 800000 <_start-0x7f800000>",
+        "text": "800040d4:\t000700e7          \tjalr\ta4 # 800000 <_start-0x7f800000>"
+      }
+    ],
+    "infer_reply": [
+      {
+        "address": 2147505128,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800053e8:\t000780e7          \tjalr\ta5"
+      },
+      {
+        "address": 2147506508,
+        "mnemonic": "jalr",
+        "operands": "a3",
+        "text": "8000594c:\t000680e7          \tjalr\ta3"
+      },
+      {
+        "address": 2147506668,
+        "mnemonic": "jalr",
+        "operands": "a7",
+        "text": "800059ec:\t000880e7          \tjalr\ta7"
+      },
+      {
+        "address": 2147506876,
+        "mnemonic": "jalr",
+        "operands": "a3",
+        "text": "80005abc:\t000680e7          \tjalr\ta3"
+      },
+      {
+        "address": 2147506972,
+        "mnemonic": "jalr",
+        "operands": "a3",
+        "text": "80005b1c:\t000680e7          \tjalr\ta3"
+      },
+      {
+        "address": 2147508148,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80005fb4:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "media_player_poll": [
+      {
+        "address": 2147517304,
+        "mnemonic": "jr",
+        "operands": "a5",
+        "text": "80008378:\t00078067          \tjr\ta5"
+      }
+    ],
+    "__divsf3": [
+      {
+        "address": 2147528120,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "8000adb8:\t00070067          \tjr\ta4"
+      },
+      {
+        "address": 2147528212,
+        "mnemonic": "jr",
+        "operands": "a5",
+        "text": "8000ae14:\t00078067          \tjr\ta5"
+      }
+    ],
+    "__riscv_save_4": [
+      {
+        "address": 2147536364,
+        "mnemonic": "jr",
+        "operands": "t0",
+        "text": "8000cdec:\t00028067          \tjr\tt0"
+      }
+    ],
+    "__riscv_save_0": [
+      {
+        "address": 2147536388,
+        "mnemonic": "jr",
+        "operands": "t0",
+        "text": "8000ce04:\t00028067          \tjr\tt0"
+      }
+    ]
+  },
+  "declared_callback_bindings": {
+    "float_read": [
+      "yolo_acc_read"
+    ],
+    "read_bytes": [
+      "yolo_acc_read",
+      "yolo_acc_read_bulk"
+    ],
+    "write_bytes": [
+      "yolo_acc_write",
+      "yolo_acc_write_bulk"
+    ],
+    "head_scalar.constprop.0": [
+      "yolo_acc_write"
+    ],
+    "read_float": [
+      "yolo_acc_read"
+    ],
+    "read_reg.lto_priv.1": [
+      "read_reg.lto_priv.0"
+    ],
+    "write_reg.lto_priv.1": [
+      "write_reg.lto_priv.0"
+    ],
+    "now.lto_priv.0": [
+      "milliseconds"
+    ],
+    "now.constprop.0": [
+      "milliseconds"
+    ],
+    "cancelled": [
+      "page"
+    ],
+    "wr": [
+      "write_reg.lto_priv.1"
+    ],
+    "rd": [
+      "read_reg.lto_priv.1"
+    ],
+    "now.lto_priv.1": [
+      "now.lto_priv.0"
+    ],
+    "guard": [
+      "cancelled"
+    ],
+    "delay.constprop.0": [
+      "cancelled"
+    ],
+    "block": [
+      "media_sdmmc_sector_callback"
+    ],
+    "read_at.constprop.0": [
+      "media_fat32_read"
+    ],
+    "infer_reply": [
+      "yolo_acc_read",
+      "yolo_acc_write"
+    ],
+    "core_list_mergesort": [
+      "cmp_idx",
+      "cmp_complex"
+    ]
+  },
+  "verified_local_dispatch": [
+    {
+      "function": "__divsf3",
+      "base": "0x8000fcb0",
+      "relative": true,
+      "targets": [
+        "0x8000afe4",
+        "0x8000ae48",
+        "0x8000ae6c",
+        "0x8000ae18",
+        "0x8000ae6c",
+        "0x8000ae20",
+        "0x8000ae6c",
+        "0x8000ae18",
+        "0x8000ae48",
+        "0x8000ae48",
+        "0x8000ae20",
+        "0x8000ae18",
+        "0x8000af60",
+        "0x8000af60",
+        "0x8000af60",
+        "0x8000ae20"
+      ]
+    },
+    {
+      "function": "__divsf3",
+      "base": "0x8000fcf0",
+      "relative": true,
+      "targets": [
+        "0x8000ae48",
+        "0x8000ae48",
+        "0x8000ae6c",
+        "0x8000b0b4",
+        "0x8000ae6c",
+        "0x8000ae20",
+        "0x8000ae6c",
+        "0x8000b0b4",
+        "0x8000ae48",
+        "0x8000ae48",
+        "0x8000ae20",
+        "0x8000b0b4",
+        "0x8000af60",
+        "0x8000af60",
+        "0x8000af60"
+      ]
+    },
+    {
+      "function": "media_player_poll",
+      "base": "0x8000ce70",
+      "relative": false,
+      "targets": [
+        "0x8000837c",
+        "0x8000879c",
+        "0x80008940",
+        "0x800089dc",
+        "0x80008a3c",
+        "0x80008b00",
+        "0x80008be4",
+        "0x80008ca8"
+      ]
+    },
+    {
+      "function": "core_state_transition",
+      "base": "0x8000ce50",
+      "relative": false,
+      "targets": [
+        "0x80002860",
+        "0x8000282c",
+        "0x800028b4",
+        "0x80002964",
+        "0x800028f4",
+        "0x80002928",
+        "0x80002984",
+        "0x800029a4"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "runtime_high_water_measured": false,
+  "interrupt_stack_covered": false,
+  "assumptions": [
+    "Fixed application callback assignments in the linked source",
+    "Current startup does not enable interrupts",
+    "Tail calls conservatively counted as nested frames",
+    "Negative constant SP adjustments summed, compiler reports cross-checked"
+  ]
+}

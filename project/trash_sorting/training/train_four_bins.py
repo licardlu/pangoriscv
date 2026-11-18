@@ -24,6 +24,8 @@ def main():
     ap.add_argument('--project', type=Path, required=True)
     ap.add_argument('--name', required=True)
     ap.add_argument('--epochs', type=int, default=20)
+    ap.add_argument('--fixed-final', action='store_true',
+                    help='Run all requested epochs without intermediate validation or early stopping; assess last.pt')
     ap.add_argument('--imgsz', type=int, default=320, choices=(128,320),
                     help='128 is for the separate single-class hand feasibility model')
     ap.add_argument('--freeze', type=int, default=0)
@@ -32,6 +34,11 @@ def main():
     ap.add_argument('--batch', type=int, default=16)
     ap.add_argument('--threads', type=int, default=4)
     ap.add_argument('--lr0', type=float, default=.001)
+    ap.add_argument('--warmup-bias-lr', type=float, default=.01,
+                    help='Set explicitly to lr0 for controlled low-rate continuation')
+    ap.add_argument('--cache', choices=('none', 'ram'), default='ram')
+    ap.add_argument('--hard-negative-objectness', type=float, default=0.,
+                    help='Train only: extra GT-gated false objectness loss on waste-free images')
     ap.add_argument('--evaluate', choices=['val', 'test'])
     ap.add_argument('--baseline-legacy', action='store_true', help='Map old six raw classes to the four bins for comparison')
     ap.add_argument('--deployment-decode', action='store_true',
@@ -43,6 +50,10 @@ def main():
     ap.add_argument('--disjoint-hand-targets', action='store_true',
                     help='Training only: remove hand anchor assignments that conflict with true waste')
     a = ap.parse_args()
+    if a.fixed_final and a.evaluate:
+        ap.error('--fixed-final applies to training only')
+    if a.hard_negative_objectness < 0 or (a.hard_negative_objectness and a.evaluate):
+        ap.error('Hard-negative objectness is a positive training-only option')
     if a.evaluate and a.imgsz != 320:
         ap.error('Four-bin deployment evaluation requires 320 input')
     if a.baseline_legacy and not a.evaluate:
@@ -206,7 +217,10 @@ def main():
                                                'recall':float(fixed_tp[c]/max(1,fixed_gt[c]))} for c in range(nc)}
         if deployment_decode:
             metrics['deployment_decode_policy']='single-label per anchor, conf .25 for decisions, NMS IoU .45, max 32'
-            metrics['waste_only_mean_AP50']=float(np.mean([detail['per_class'][n]['AP50'] for n in class_names[:4]]))
+            present_waste=[n for n in class_names[:4] if n in detail['per_class']]
+            metrics['waste_only_mean_AP50']=float(np.mean([detail['per_class'][n]['AP50'] for n in present_waste])) if present_waste else None
+            metrics['waste_AP50_classes_present']=present_waste
+            metrics['waste_AP50_classes_missing']=[n for n in class_names[:4] if n not in present_waste]
         for stem,r in ground_truth.items():
             d = image_decisions.get(stem, {'top_bin':None,'bins_present':sorted({int(b[0]) for b in r['boxes']})})
             source = by_source.setdefault(r['source'], {'images':0,'no_detection':0,'correct_top_bin':0,'wrong_top_bin':0})
@@ -274,6 +288,16 @@ def main():
         train.Loggers = partial(train.Loggers, include=('csv',))
         preservation_losses=[]
         disjoint_losses=[]
+        hard_negative_losses=[]
+        if a.hard_negative_objectness:
+            from hard_negative_objectness import hard_negative_loss_class
+            train.ComputeLoss = hard_negative_loss_class(train.ComputeLoss, hard_negative_losses,
+                                                         strength=a.hard_negative_objectness)
+            provenance.update(hard_negative_objectness_sha256=hashlib.sha256(
+                (Path(__file__).parent/'hard_negative_objectness.py').read_bytes()).hexdigest(),
+                hard_negative_scope='Reviewed GT-waste-free images only; all positive anchors excluded; top8 per image, score>=.10; objectness only',
+                runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+            (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
         if a.disjoint_hand_targets:
             from disjoint_hand_loss import disjoint_loss_class
             train.ComputeLoss = disjoint_loss_class(train.ComputeLoss, disjoint_losses)
@@ -304,7 +328,7 @@ def main():
         train.check_git_status = lambda *args, **kwargs: None
         train.check_requirements = lambda *args, **kwargs: None
         hyp = yaml.safe_load((a.yolo/'data/hyps/hyp.scratch-low.yaml').read_text())
-        hyp.update(lr0=a.lr0, lrf=.1, warmup_epochs=1., warmup_bias_lr=.01,
+        hyp.update(lr0=a.lr0, lrf=.1, warmup_epochs=1., warmup_bias_lr=a.warmup_bias_lr,
                    degrees=8., translate=.1, scale=.35, mosaic=.5,
                    mixup=0., hsv_h=.015, hsv_s=.4, hsv_v=.3)
         hp = out/'training_hyp.yaml'
@@ -327,6 +351,14 @@ def main():
                 status['disjoint_hand_targets'] = disjoint_losses[0].take_assignment_stats()
                 if status['disjoint_hand_targets'].get('training_batches_with_hand', 0)==0:
                     raise ValueError('Disjoint hand targets enabled but never used in training')
+            if hard_negative_losses:
+                if len(hard_negative_losses)!=1:raise ValueError('Unexpected hard-negative loss instances')
+                stats=hard_negative_losses[0].take_hard_negative_stats()
+                status['hard_negative_objectness']=stats
+                if stats.get('training_batches',0)==0 or stats.get('mined_anchors',0)==0:
+                    raise ValueError('Hard-negative loss enabled but no actual training anchors used it')
+                with (out/'hard_negative_epochs.jsonl').open('a',encoding='utf8') as handle:
+                    handle.write(json.dumps(dict(epoch=int(epoch)+1,**stats))+'\n')
             (out/'progress.json').write_text(json.dumps(status,indent=2))
             print('EPOCH_RESULT '+json.dumps(status),flush=True)
         callbacks.register_action('on_fit_epoch_end', callback=progress)
@@ -337,8 +369,12 @@ def main():
                         hyp=str(hp), optimizer='AdamW', freeze=[a.freeze],freeze_bn=a.freeze_bn,
                         preserve_teacher=bool(a.preserve_teacher),
                         noautoanchor=bool(a.preserve_teacher),
-                        patience=8, save_period=5, cache='ram', seed=20261111,
+                        patience=8, save_period=5, cache=False if a.cache=='none' else 'ram', seed=20261111,
                         noplots=False, cos_lr=True)
+        if a.fixed_final:
+            settings.update(noval=True, patience=a.epochs+1)
+            provenance['checkpoint_selection']='Fixed final epoch last.pt; no intermediate validation or early stopping'
+            (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
         for k, v in settings.items():
             setattr(opt, k, v)
         try:

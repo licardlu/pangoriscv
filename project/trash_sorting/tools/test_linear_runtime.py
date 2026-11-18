@@ -18,6 +18,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--cc', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
+    p.add_argument('--source-dir', type=Path, default=ROOT/'project/trash_sorting/source')
+    p.add_argument('--compact-scratch', action='store_true')
     a = p.parse_args()
     a.out = a.out.resolve()
     a.out.mkdir(parents=True, exist_ok=False)
@@ -25,11 +27,12 @@ def main():
     sys.path.insert(0, str(ROOT/'extensions/yolo/scripts'))
     import numpy as np
     from test_deployment_cpu import Tensor, Op
-    sw = ROOT/'project/trash_sorting/source/yolo/software'
+    sw = a.source_dir.resolve()/'yolo/software'
     cc = a.cc.resolve()
     env = os.environ.copy()
     env['PATH'] = str(cc.parent)+os.pathsep+env.get('PATH', '')
     env['TMP'] = env['TEMP'] = str(a.out/'temp')
+    env['ZIG_GLOBAL_CACHE_DIR'] = str(a.out/'zig-cache')
     rng = np.random.default_rng(20261113)
 
     def rounded(x):
@@ -40,7 +43,7 @@ def main():
     grid = np.arange(-128, 128, dtype=np.int64)
     left = np.repeat(grid, 256).reshape(16, 256, 16).astype(np.int8)
     right = np.tile(grid, 256).reshape(left.shape).astype(np.int8)
-    deployed = json.loads((ROOT/'project/trash_sorting/source/yolo/model/memory_map.json').read_text(encoding='utf8'))
+    deployed = json.loads((a.source_dir.resolve()/'yolo/model/memory_map.json').read_text(encoding='utf8'))
     actual_ratios = [tuple(op['ratios']) for op in deployed['ops'] if op['kind']=='YOLO_ADD']
     for ratios in [(1 << 23, 1 << 23), (14618280, 11736629),
                    (1 << 24, 1 << 24), (0, 0), (0xffffffff, 1),
@@ -58,11 +61,21 @@ def main():
         for ratio in (16777216, 9838601, 1 << 23):
             expect = np.repeat(np.repeat(rounded(x.astype(np.int64)*ratio), 2, axis=0), 2, axis=1)
             cases.append(('UPSAMPLE', [x], [ratio], expect))
+    # Row sizes straddle the compact 768-byte cache boundary and original
+    # 1536-byte limit. Include real 20x20x128 SPP rows and negative padding.
+    for h,w,c in ((1,1,8),(5,95,8),(5,96,8),(5,97,8),(5,192,8),(20,20,128)):
+        x=rng.integers(-128,128,(h,w,c),dtype=np.int16).astype(np.int8)
+        padded=np.pad(x,((2,2),(2,2),(0,0)),constant_values=-128)
+        expect=np.full_like(x,-128)
+        for dy in range(5):
+            for dx in range(5):expect=np.maximum(expect,padded[dy:dy+h,dx:dx+w])
+        cases.append(('POOL',[x],[1<<24],expect))
     results = []
     for optimized, packed in ((False,False),(True,False),(False,True),(True,True)):
         dll = a.out/f'linear_o2{int(optimized)}_packed{int(packed)}.dll'
         command = [str(cc), '-std=c11', '-Os', '-Wall', '-Wextra', '-Werror',
                    '-Wno-unused-function', '-shared', '-I'+str(sw)]
+        if a.compact_scratch:command.append('-DYOLO_COMPACT_SCRATCH')
         if optimized:
             command.append('-DYOLO_LINEAR_O2')
         if packed:
@@ -80,9 +93,9 @@ def main():
             ts = [Tensor(0x1000+i*0x20000, x.shape[2], x.shape[2], x.shape[0], x.shape[1], 1) for i, x in enumerate(inputs)]
             ts += [Tensor(0x100000, expect.shape[2], expect.shape[2], expect.shape[0], expect.shape[1], 1)]
             tensors = (Tensor*len(ts))(*ts)
-            op = Op(kind={'ADD':4, 'CONCAT':3, 'UPSAMPLE':2}[kind], count=len(inputs),
+            op = Op(kind={'ADD':4, 'CONCAT':3, 'UPSAMPLE':2,'POOL':1}[kind], count=len(inputs),kernel=5 if kind=='POOL' else 0,stride=1,
                     inputs=(C.c_uint16*4)(*range(len(inputs))), output=len(inputs), ratios=(C.c_uint32*4)(*ratios))
-            for mode in (0, 2):
+            for mode in (0, 4 if kind=='POOL' else 2):
                 for t, x in zip(ts, inputs):
                     assert lib.native_put(t.address, x.ctypes.data, x.nbytes) == 0
                 guard = np.full(expect.nbytes+32, 0xa5, dtype=np.uint8)
@@ -100,7 +113,7 @@ def main():
     report = dict(status='PASS_HOST_ARITHMETIC_NOT_BOARD_SPEED', builds=results,
                   runtime_sha256=hashlib.sha256((sw/'yolo_runtime.c').read_bytes()).hexdigest(),
                   script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                  includes='all signed ADD pairs, half ties/saturation, chunk boundaries, guard bytes, CONCAT up to 4 inputs, UPSAMPLE')
+                  includes='all signed ADD pairs, half ties/saturation, chunk boundaries, guard bytes, CONCAT up to 4 inputs, UPSAMPLE, POOL cache/fallback boundaries')
     (a.out/'result.json').write_text(json.dumps(report, indent=2), encoding='utf8')
     print('TEST_PASS linear Os/O2 with exact Q24 oracle', flush=True)
 

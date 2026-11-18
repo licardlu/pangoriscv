@@ -1,0 +1,1065 @@
+{
+  "status": "STATIC_STACK_AUDIT_PASS",
+  "elf_sha256": "6fb7fa1b3f5fdc41833df7202072f2c19319da1ece8c738c391da63c0ccaae69",
+  "available_stack_bytes": 8272,
+  "conservative_call_chain_bytes": 6880,
+  "remaining_bytes": 1392,
+  "worst_chain": [
+    {
+      "function": "main",
+      "frame_bytes": 544
+    },
+    {
+      "function": "infer_reply",
+      "frame_bytes": 1952
+    },
+    {
+      "function": "stereo_measure.constprop.0",
+      "frame_bytes": 96
+    },
+    {
+      "function": "match.constprop.0",
+      "frame_bytes": 464
+    },
+    {
+      "function": "sample.constprop.0",
+      "frame_bytes": 96
+    },
+    {
+      "function": "stereo_read_pixel",
+      "frame_bytes": 32
+    },
+    {
+      "function": "stereo_poll_cancel",
+      "frame_bytes": 16
+    },
+    {
+      "function": "benchmark_poll",
+      "frame_bytes": 16
+    },
+    {
+      "function": "draw",
+      "frame_bytes": 3552
+    },
+    {
+      "function": "decimal",
+      "frame_bytes": 112
+    }
+  ],
+  "function_frames": {
+    "_start": 8,
+    "acc_crc_update": 0,
+    "acc_wait_idle.lto_priv.0": 0,
+    "acc_memory_read64.lto_priv.0": 32,
+    "yolo_clock.lto_priv.0": 0,
+    "target_intersection": 48,
+    "target_clip": 48,
+    "send": 0,
+    "reply": 48,
+    "yolo_acc_read": 0,
+    "acc_memory_crc_bulk.part.0.constprop.0": 64,
+    "address": 0,
+    "float_read": 32,
+    "read_bytes": 48,
+    "write_bytes": 48,
+    "scale_bytes": 0,
+    "execute_bulk_linear.constprop.0": 2656,
+    "concat_wide.constprop.0": 2128,
+    "head_scalar.constprop.0": 3472,
+    "head_dot": 0,
+    "head_dot_q16_i16.constprop.0": 0,
+    "head_load_q16": 1104,
+    "head_cached.constprop.0": 2272,
+    "yolo_acc_write": 32,
+    "yolo_acc_convolve": 32,
+    "insert.constprop.0": 32,
+    "read_float": 32,
+    "text": 0,
+    "decimal": 112,
+    "sort": 0,
+    "media_board_page": 0,
+    "yolo_graph_cancelled": 16,
+    "transfer": 0,
+    "read_reg.lto_priv.0": 0,
+    "write_reg.lto_priv.0": 32,
+    "milliseconds": 16,
+    "page": 0,
+    "read_reg.lto_priv.1": 0,
+    "write_reg.lto_priv.1": 32,
+    "now.lto_priv.0": 0,
+    "now.constprop.0": 0,
+    "cancelled": 16,
+    "put": 16,
+    "get": 16,
+    "le32": 0,
+    "transition": 16,
+    "wr": 16,
+    "rd": 16,
+    "now.lto_priv.1": 0,
+    "guard": 32,
+    "media_sdmmc_abort": 0,
+    "fail": 16,
+    "delay.constprop.0": 32,
+    "bits": 0,
+    "command": 64,
+    "r1": 48,
+    "app.constprop.0": 32,
+    "media_sdmmc_init.constprop.0": 64,
+    "media_sdmmc_read_begin": 0,
+    "media_sdmmc_read": 48,
+    "media_sdmmc_sector_callback": 0,
+    "valid_cluster": 0,
+    "block": 16,
+    "next_cluster": 48,
+    "media_fat32_map": 64,
+    "media_fat32_read": 64,
+    "read_file": 0,
+    "read_at.constprop.0": 16,
+    "index_at.constprop.0": 64,
+    "acc_memory_write_bulk.lto_priv.0": 96,
+    "boot_write": 0,
+    "prepare_snapshot_input": 64,
+    "capture_input": 0,
+    "acc_host_copy8.lto_priv.1": 0,
+    "yolo_acc_read_bulk": 80,
+    "yolo_acc_write_bulk": 96,
+    "draw": 3552,
+    "benchmark_poll": 16,
+    "media_fat32_mount.constprop.0": 48,
+    "sigmoid": 16,
+    "media_fat32_open.constprop.0": 96,
+    "media_player_load_model.constprop.0": 576,
+    "boot_model": 48,
+    "media_player_poll": 592,
+    "receive": 16,
+    "stereo_poll_cancel": 16,
+    "capture_stereo_pair": 32,
+    "stereo_read_pixel": 32,
+    "sample.constprop.0": 96,
+    "patch.constprop.0": 80,
+    "match.constprop.0": 464,
+    "stereo_measure.constprop.0": 96,
+    "infer_reply": 1952,
+    "main": 544,
+    "expf": 16,
+    "logf": 16,
+    "nanf": 0,
+    "fmaxf": 16,
+    "fminf": 16,
+    "fabsf": 0,
+    "__fpclassifyf": 0,
+    "finitef": 0,
+    "__ieee754_expf": 32,
+    "__ieee754_logf": 48,
+    "with_errnof": 32,
+    "xflowf": 16,
+    "__math_uflowf": 0,
+    "__math_oflowf": 0,
+    "memcmp": 0,
+    "__errno": 0,
+    "memset": 0,
+    "memcpy": 0,
+    "__addsf3": 32,
+    "__divsf3": 48,
+    "__eqsf2": 0,
+    "__gesf2": 0,
+    "__lesf2": 0,
+    "__mulsf3": 48,
+    "__subsf3": 32,
+    "__unordsf2": 0,
+    "__fixsfsi": 0,
+    "__floatsisf": 32,
+    "__clzsi2": 0,
+    "__lshrdi3": 0,
+    "__ashldi3": 0,
+    "__udivdi3": 0,
+    "__umoddi3": 0,
+    "__fixunssfsi": 0,
+    "__floatunsisf": 32,
+    "__floatdisf": 32,
+    "addresses.0.lto_priv.0": 0,
+    "yolo_tensors.lto_priv.1": 0,
+    "yolo_ops": 0,
+    "yolo_tensors.lto_priv.0": 0,
+    "__clz_tab": 0
+  },
+  "edges": {
+    "_start": [
+      "main"
+    ],
+    "acc_crc_update": [],
+    "acc_wait_idle.lto_priv.0": [],
+    "acc_memory_read64.lto_priv.0": [
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "yolo_clock.lto_priv.0": [],
+    "target_intersection": [
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__subsf3"
+    ],
+    "target_clip": [
+      "__gesf2",
+      "__lesf2",
+      "__unordsf2",
+      "memcpy"
+    ],
+    "send": [],
+    "reply": [
+      "acc_crc_update",
+      "send"
+    ],
+    "yolo_acc_read": [
+      "acc_memory_read64.lto_priv.0"
+    ],
+    "acc_memory_crc_bulk.part.0.constprop.0": [
+      "acc_crc_update",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "address": [],
+    "float_read": [
+      "__lshrdi3",
+      "memcpy",
+      "yolo_acc_read"
+    ],
+    "read_bytes": [
+      "memcpy",
+      "yolo_acc_read",
+      "yolo_acc_read_bulk"
+    ],
+    "write_bytes": [
+      "memcpy",
+      "yolo_acc_write",
+      "yolo_acc_write_bulk"
+    ],
+    "scale_bytes": [
+      "memcpy"
+    ],
+    "execute_bulk_linear.constprop.0": [
+      "address",
+      "read_bytes",
+      "scale_bytes",
+      "write_bytes"
+    ],
+    "concat_wide.constprop.0": [
+      "read_bytes",
+      "scale_bytes",
+      "write_bytes"
+    ],
+    "head_scalar.constprop.0": [
+      "__addsf3",
+      "__floatsisf",
+      "__mulsf3",
+      "address",
+      "float_read",
+      "memcpy",
+      "read_bytes",
+      "yolo_acc_write"
+    ],
+    "head_dot": [],
+    "head_dot_q16_i16.constprop.0": [],
+    "head_load_q16": [
+      "__addsf3",
+      "__fixsfsi",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__subsf3",
+      "read_bytes"
+    ],
+    "head_cached.constprop.0": [
+      "__addsf3",
+      "__fixsfsi",
+      "__floatdisf",
+      "__floatsisf",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__subsf3",
+      "float_read",
+      "head_dot",
+      "head_dot_q16_i16.constprop.0",
+      "head_load_q16",
+      "memset",
+      "read_bytes",
+      "write_bytes"
+    ],
+    "yolo_acc_write": [
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "yolo_acc_convolve": [
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "insert.constprop.0": [
+      "__gesf2",
+      "__lesf2",
+      "memcpy"
+    ],
+    "read_float": [
+      "__gesf2",
+      "__lshrdi3",
+      "__unordsf2",
+      "memcpy",
+      "yolo_acc_read"
+    ],
+    "text": [],
+    "decimal": [
+      "__udivdi3",
+      "__umoddi3",
+      "text"
+    ],
+    "sort": [],
+    "media_board_page": [],
+    "yolo_graph_cancelled": [
+      "media_board_page"
+    ],
+    "transfer": [],
+    "read_reg.lto_priv.0": [
+      "transfer"
+    ],
+    "write_reg.lto_priv.0": [
+      "transfer"
+    ],
+    "milliseconds": [
+      "__udivdi3"
+    ],
+    "page": [
+      "media_board_page"
+    ],
+    "read_reg.lto_priv.1": [
+      "read_reg.lto_priv.0"
+    ],
+    "write_reg.lto_priv.1": [
+      "write_reg.lto_priv.0"
+    ],
+    "now.lto_priv.0": [
+      "milliseconds"
+    ],
+    "now.constprop.0": [
+      "milliseconds"
+    ],
+    "cancelled": [
+      "page"
+    ],
+    "put": [
+      "write_reg.lto_priv.1"
+    ],
+    "get": [
+      "read_reg.lto_priv.1"
+    ],
+    "le32": [],
+    "transition": [
+      "now.constprop.0"
+    ],
+    "wr": [
+      "write_reg.lto_priv.1"
+    ],
+    "rd": [
+      "read_reg.lto_priv.1"
+    ],
+    "now.lto_priv.1": [
+      "now.lto_priv.0"
+    ],
+    "guard": [
+      "cancelled",
+      "now.lto_priv.1"
+    ],
+    "media_sdmmc_abort": [
+      "wr"
+    ],
+    "fail": [
+      "cancelled",
+      "media_sdmmc_abort",
+      "put",
+      "transition"
+    ],
+    "delay.constprop.0": [
+      "cancelled",
+      "now.lto_priv.1"
+    ],
+    "bits": [],
+    "command": [
+      "bits",
+      "guard",
+      "media_sdmmc_abort",
+      "now.lto_priv.1",
+      "rd",
+      "wr"
+    ],
+    "r1": [
+      "command"
+    ],
+    "app.constprop.0": [
+      "command",
+      "r1"
+    ],
+    "media_sdmmc_init.constprop.0": [
+      "__ashldi3",
+      "app.constprop.0",
+      "bits",
+      "command",
+      "delay.constprop.0",
+      "guard",
+      "now.lto_priv.1",
+      "r1",
+      "rd",
+      "wr"
+    ],
+    "media_sdmmc_read_begin": [
+      "r1"
+    ],
+    "media_sdmmc_read": [
+      "media_sdmmc_read_begin",
+      "rd"
+    ],
+    "media_sdmmc_sector_callback": [
+      "media_sdmmc_read"
+    ],
+    "valid_cluster": [],
+    "block": [
+      "media_sdmmc_sector_callback"
+    ],
+    "next_cluster": [
+      "block",
+      "le32",
+      "valid_cluster"
+    ],
+    "media_fat32_map": [
+      "next_cluster",
+      "valid_cluster"
+    ],
+    "media_fat32_read": [
+      "block",
+      "media_fat32_map",
+      "memcpy"
+    ],
+    "read_file": [
+      "media_fat32_read"
+    ],
+    "read_at.constprop.0": [
+      "media_fat32_read"
+    ],
+    "index_at.constprop.0": [
+      "le32",
+      "read_at.constprop.0"
+    ],
+    "acc_memory_write_bulk.lto_priv.0": [
+      "acc_wait_idle.lto_priv.0",
+      "memcpy"
+    ],
+    "boot_write": [
+      "acc_memory_write_bulk.lto_priv.0"
+    ],
+    "prepare_snapshot_input": [
+      "acc_memory_write_bulk.lto_priv.0",
+      "memcpy",
+      "yolo_graph_cancelled"
+    ],
+    "capture_input": [
+      "prepare_snapshot_input"
+    ],
+    "acc_host_copy8.lto_priv.1": [
+      "memcpy"
+    ],
+    "yolo_acc_read_bulk": [
+      "acc_host_copy8.lto_priv.1",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "yolo_acc_write_bulk": [
+      "acc_host_copy8.lto_priv.1",
+      "acc_wait_idle.lto_priv.0"
+    ],
+    "draw": [
+      "decimal",
+      "memset",
+      "text"
+    ],
+    "benchmark_poll": [
+      "__udivdi3",
+      "draw",
+      "memset"
+    ],
+    "media_fat32_mount.constprop.0": [
+      "__udivdi3",
+      "le32",
+      "media_sdmmc_read",
+      "memset",
+      "valid_cluster"
+    ],
+    "sigmoid": [
+      "__addsf3",
+      "__divsf3",
+      "__gesf2",
+      "__lesf2",
+      "expf"
+    ],
+    "media_fat32_open.constprop.0": [
+      "block",
+      "le32",
+      "memcmp",
+      "next_cluster",
+      "valid_cluster"
+    ],
+    "media_player_load_model.constprop.0": [
+      "acc_crc_update",
+      "boot_write",
+      "media_fat32_mount.constprop.0",
+      "media_fat32_open.constprop.0",
+      "media_fat32_read",
+      "media_sdmmc_init.constprop.0",
+      "memcpy",
+      "memset"
+    ],
+    "boot_model": [
+      "acc_memory_crc_bulk.part.0.constprop.0",
+      "media_player_load_model.constprop.0",
+      "yolo_clock.lto_priv.0"
+    ],
+    "media_player_poll": [
+      "__udivdi3",
+      "acc_crc_update",
+      "cancelled",
+      "fail",
+      "get",
+      "index_at.constprop.0",
+      "le32",
+      "media_fat32_map",
+      "media_fat32_mount.constprop.0",
+      "media_fat32_open.constprop.0",
+      "media_fat32_read",
+      "media_sdmmc_abort",
+      "media_sdmmc_init.constprop.0",
+      "media_sdmmc_read_begin",
+      "memcmp",
+      "memcpy",
+      "memset",
+      "now.constprop.0",
+      "put",
+      "read_at.constprop.0",
+      "transition"
+    ],
+    "receive": [
+      "benchmark_poll",
+      "media_player_poll"
+    ],
+    "stereo_poll_cancel": [
+      "benchmark_poll",
+      "media_board_page",
+      "media_player_poll"
+    ],
+    "capture_stereo_pair": [
+      "stereo_poll_cancel"
+    ],
+    "stereo_read_pixel": [
+      "stereo_poll_cancel"
+    ],
+    "sample.constprop.0": [
+      "__addsf3",
+      "__divsf3",
+      "__fixsfsi",
+      "__fixunssfsi",
+      "__floatsisf",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__subsf3",
+      "__unordsf2",
+      "fabsf",
+      "stereo_read_pixel"
+    ],
+    "patch.constprop.0": [
+      "sample.constprop.0"
+    ],
+    "match.constprop.0": [
+      "sample.constprop.0"
+    ],
+    "stereo_measure.constprop.0": [
+      "__gesf2",
+      "__lesf2",
+      "__unordsf2",
+      "match.constprop.0",
+      "memset",
+      "patch.constprop.0",
+      "sort"
+    ],
+    "infer_reply": [
+      "__addsf3",
+      "__divsf3",
+      "__eqsf2",
+      "__fixsfsi",
+      "__fixunssfsi",
+      "__floatsisf",
+      "__floatunsisf",
+      "__gesf2",
+      "__lesf2",
+      "__mulsf3",
+      "__subsf3",
+      "__udivdi3",
+      "__unordsf2",
+      "address",
+      "capture_input",
+      "capture_stereo_pair",
+      "concat_wide.constprop.0",
+      "execute_bulk_linear.constprop.0",
+      "fabsf",
+      "fmaxf",
+      "fminf",
+      "head_cached.constprop.0",
+      "head_scalar.constprop.0",
+      "insert.constprop.0",
+      "logf",
+      "memcpy",
+      "memset",
+      "read_bytes",
+      "read_float",
+      "reply",
+      "sigmoid",
+      "stereo_measure.constprop.0",
+      "target_clip",
+      "target_intersection",
+      "write_bytes",
+      "yolo_acc_convolve",
+      "yolo_acc_read",
+      "yolo_acc_write",
+      "yolo_clock.lto_priv.0",
+      "yolo_graph_cancelled"
+    ],
+    "main": [
+      "__gesf2",
+      "__udivdi3",
+      "acc_crc_update",
+      "acc_memory_crc_bulk.part.0.constprop.0",
+      "acc_memory_read64.lto_priv.0",
+      "acc_memory_write_bulk.lto_priv.0",
+      "benchmark_poll",
+      "boot_model",
+      "capture_input",
+      "capture_stereo_pair",
+      "draw",
+      "get",
+      "infer_reply",
+      "media_board_page",
+      "media_player_poll",
+      "memcpy",
+      "memset",
+      "prepare_snapshot_input",
+      "put",
+      "receive",
+      "reply",
+      "stereo_measure.constprop.0",
+      "transfer",
+      "yolo_clock.lto_priv.0"
+    ],
+    "expf": [
+      "__errno",
+      "__gesf2",
+      "__ieee754_expf",
+      "__lesf2",
+      "finitef"
+    ],
+    "logf": [
+      "__eqsf2",
+      "__errno",
+      "__gesf2",
+      "__ieee754_logf",
+      "__unordsf2",
+      "nanf"
+    ],
+    "nanf": [],
+    "fmaxf": [
+      "__fpclassifyf",
+      "__gesf2"
+    ],
+    "fminf": [
+      "__fpclassifyf",
+      "__lesf2"
+    ],
+    "fabsf": [],
+    "__fpclassifyf": [],
+    "finitef": [],
+    "__ieee754_expf": [
+      "__addsf3",
+      "__divsf3",
+      "__fixsfsi",
+      "__floatsisf",
+      "__gesf2",
+      "__math_oflowf",
+      "__math_uflowf",
+      "__mulsf3",
+      "__subsf3"
+    ],
+    "__ieee754_logf": [
+      "__addsf3",
+      "__divsf3",
+      "__eqsf2",
+      "__floatsisf",
+      "__mulsf3",
+      "__subsf3"
+    ],
+    "with_errnof": [
+      "__errno"
+    ],
+    "xflowf": [
+      "__mulsf3",
+      "with_errnof"
+    ],
+    "__math_uflowf": [
+      "xflowf"
+    ],
+    "__math_oflowf": [
+      "xflowf"
+    ],
+    "memcmp": [],
+    "__errno": [],
+    "memset": [],
+    "memcpy": [],
+    "__addsf3": [
+      "__clzsi2"
+    ],
+    "__divsf3": [
+      "__clzsi2"
+    ],
+    "__eqsf2": [],
+    "__gesf2": [],
+    "__lesf2": [],
+    "__mulsf3": [
+      "__clzsi2"
+    ],
+    "__subsf3": [
+      "__clzsi2"
+    ],
+    "__unordsf2": [],
+    "__fixsfsi": [],
+    "__floatsisf": [
+      "__clzsi2"
+    ],
+    "__clzsi2": [],
+    "__lshrdi3": [],
+    "__ashldi3": [],
+    "__udivdi3": [],
+    "__umoddi3": [],
+    "__fixunssfsi": [],
+    "__floatunsisf": [
+      "__clzsi2"
+    ],
+    "__floatdisf": [
+      "__clzsi2"
+    ],
+    "addresses.0.lto_priv.0": [],
+    "yolo_tensors.lto_priv.1": [],
+    "yolo_ops": [],
+    "yolo_tensors.lto_priv.0": [],
+    "__clz_tab": []
+  },
+  "indirect_transfers": {
+    "float_read": [
+      {
+        "address": 2147485668,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800007e4:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "read_bytes": [
+      {
+        "address": 2147485820,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "8000087c:\t00070067          \tjr\ta4"
+      },
+      {
+        "address": 2147485916,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800008dc:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "write_bytes": [
+      {
+        "address": 2147486020,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80000944:\t00070067          \tjr\ta4"
+      },
+      {
+        "address": 2147486136,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "800009b8:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "head_scalar.constprop.0": [
+      {
+        "address": 2147489448,
+        "mnemonic": "jalr",
+        "operands": "a6",
+        "text": "800016a8:\t000800e7          \tjalr\ta6"
+      }
+    ],
+    "read_float": [
+      {
+        "address": 2147493232,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80002570:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "read_reg.lto_priv.1": [
+      {
+        "address": 2147494280,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80002988:\t00070067          \tjr\ta4"
+      }
+    ],
+    "write_reg.lto_priv.1": [
+      {
+        "address": 2147494296,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "80002998:\t00070067          \tjr\ta4"
+      }
+    ],
+    "now.lto_priv.0": [
+      {
+        "address": 2147494312,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "800029a8:\t00070067          \tjr\ta4"
+      }
+    ],
+    "now.constprop.0": [
+      {
+        "address": 2147494328,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "800029b8:\t00070067          \tjr\ta4"
+      }
+    ],
+    "cancelled": [
+      {
+        "address": 2147494352,
+        "mnemonic": "jalr",
+        "operands": "a4",
+        "text": "800029d0:\t000700e7          \tjalr\ta4"
+      }
+    ],
+    "wr": [
+      {
+        "address": 2147494560,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80002aa0:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "rd": [
+      {
+        "address": 2147494600,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80002ac8:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "now.lto_priv.1": [
+      {
+        "address": 2147494632,
+        "mnemonic": "jr",
+        "operands": "a5",
+        "text": "80002ae8:\t00078067          \tjr\ta5"
+      }
+    ],
+    "guard": [
+      {
+        "address": 2147494728,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80002b48:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "delay.constprop.0": [
+      {
+        "address": 2147495076,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80002ca4:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "block": [
+      {
+        "address": 2147497368,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80003598:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "read_at.constprop.0": [
+      {
+        "address": 2147498244,
+        "mnemonic": "jalr",
+        "operands": "a4",
+        "text": "80003904:\t000700e7          \tjalr\ta4"
+      }
+    ],
+    "media_player_poll": [
+      {
+        "address": 2147504796,
+        "mnemonic": "jr",
+        "operands": "a5",
+        "text": "8000529c:\t00078067          \tjr\ta5"
+      }
+    ],
+    "infer_reply": [
+      {
+        "address": 2147516532,
+        "mnemonic": "jalr",
+        "operands": "a5",
+        "text": "80008074:\t000780e7          \tjalr\ta5"
+      }
+    ],
+    "__divsf3": [
+      {
+        "address": 2147530704,
+        "mnemonic": "jr",
+        "operands": "a4",
+        "text": "8000b7d0:\t00070067          \tjr\ta4"
+      },
+      {
+        "address": 2147530796,
+        "mnemonic": "jr",
+        "operands": "a5",
+        "text": "8000b82c:\t00078067          \tjr\ta5"
+      }
+    ]
+  },
+  "declared_callback_bindings": {
+    "float_read": [
+      "yolo_acc_read"
+    ],
+    "read_bytes": [
+      "yolo_acc_read",
+      "yolo_acc_read_bulk"
+    ],
+    "write_bytes": [
+      "yolo_acc_write",
+      "yolo_acc_write_bulk"
+    ],
+    "head_scalar.constprop.0": [
+      "yolo_acc_write"
+    ],
+    "read_float": [
+      "yolo_acc_read"
+    ],
+    "read_reg.lto_priv.1": [
+      "read_reg.lto_priv.0"
+    ],
+    "write_reg.lto_priv.1": [
+      "write_reg.lto_priv.0"
+    ],
+    "now.lto_priv.0": [
+      "milliseconds"
+    ],
+    "now.constprop.0": [
+      "milliseconds"
+    ],
+    "cancelled": [
+      "page"
+    ],
+    "wr": [
+      "write_reg.lto_priv.1"
+    ],
+    "rd": [
+      "read_reg.lto_priv.1"
+    ],
+    "now.lto_priv.1": [
+      "now.lto_priv.0"
+    ],
+    "guard": [
+      "cancelled"
+    ],
+    "delay.constprop.0": [
+      "cancelled"
+    ],
+    "block": [
+      "media_sdmmc_sector_callback"
+    ],
+    "read_at.constprop.0": [
+      "media_fat32_read"
+    ],
+    "infer_reply": [
+      "yolo_acc_read",
+      "yolo_acc_write"
+    ]
+  },
+  "verified_local_dispatch": [
+    {
+      "function": "__divsf3",
+      "base": "0x8000febc",
+      "relative": true,
+      "targets": [
+        "0x8000b9fc",
+        "0x8000b860",
+        "0x8000b884",
+        "0x8000b830",
+        "0x8000b884",
+        "0x8000b838",
+        "0x8000b884",
+        "0x8000b830",
+        "0x8000b860",
+        "0x8000b860",
+        "0x8000b838",
+        "0x8000b830",
+        "0x8000b978",
+        "0x8000b978",
+        "0x8000b978",
+        "0x8000b838"
+      ]
+    },
+    {
+      "function": "__divsf3",
+      "base": "0x8000fefc",
+      "relative": true,
+      "targets": [
+        "0x8000b860",
+        "0x8000b860",
+        "0x8000b884",
+        "0x8000bacc",
+        "0x8000b884",
+        "0x8000b838",
+        "0x8000b884",
+        "0x8000bacc",
+        "0x8000b860",
+        "0x8000b860",
+        "0x8000b838",
+        "0x8000bacc",
+        "0x8000b978",
+        "0x8000b978",
+        "0x8000b978"
+      ]
+    },
+    {
+      "function": "media_player_poll",
+      "base": "0x8000d7ac",
+      "relative": false,
+      "targets": [
+        "0x800052a0",
+        "0x800056ec",
+        "0x8000589c",
+        "0x8000593c",
+        "0x800059ac",
+        "0x80005a6c",
+        "0x80005b54",
+        "0x80005c18"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "runtime_high_water_measured": false,
+  "interrupt_stack_covered": false,
+  "assumptions": [
+    "Fixed application callback assignments in the linked source",
+    "Current startup does not enable interrupts",
+    "Tail calls conservatively counted as nested frames",
+    "Negative constant SP adjustments summed, compiler reports cross-checked"
+  ]
+}

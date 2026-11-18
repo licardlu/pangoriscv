@@ -1,0 +1,2 @@
+# Additional conservative data-path minimum; original clocks and periods unchanged.
+set_min_delay -from [get_clocks {ddrphy_sysclk}] -through [get_nets {*u_cdc/response_data*208*}] -to [get_clocks {ddrphy_sysclk}] 0.400

@@ -1,0 +1,15 @@
+{
+  "url": "https://github.com/ultraembedded/core_jpeg",
+  "commit": "bb03cce45d0b7459d395486e9e1db3de1b416bd2",
+  "zip_sha256": "cba532504ead801ee406acbd7dce23978b44dbb9dffa7ff97084997f6fd144a2",
+  "license": "Apache-2.0",
+  "local_changes": [
+    "src_v/jpeg_dht.v: move idx_q and total_entries_q declarations before cfg_last_w; ModelSim 10.6e forward-declaration compatibility, no logic change",
+    "src_v/jpeg_input.v: update parser state only on a valid accepted byte; prevent stale EOI recognition across SD input gaps. Reproduced by media_full_tb (352 of 384 writes before fix); both real JPEG fixtures pass after fix.",
+    "src_v/jpeg_output.v: add an elastic registered product/coordinate stage before YCbCr addition and saturation, addressing the measured 125 MHz RAM-to-RGB timing violation. Decoded 720p image bytes remain identical; full-chain stalled DDR tests cover backpressure.",
+    "src_v/jpeg_input.v: qualify every marker token with inport_valid_i, including SOF/SOI configuration side effects. Actual user video frames 61 and 63 deadlocked with sparse SD input before the fix. Minimal stale C0..FF word red test corrupted dimensions to 0x0/mode3; fixed marker test and full 720p user frames with gaps pass.",
+    "src_v/jpeg_dht.v: register standard-table lookup input/table/request before decoding. Break the measured bitbuffer-rotation to Huffman-result critical path at 125 MHz; MCU already waits for lookup_valid_o. Exhaustive 262144 table/prefix comparisons, bubbles/reset and 720p input-gap regression pass. Writable-table branch unchanged.",
+    "src_v/jpeg_idct_x.v, jpeg_idct_y.v, jpeg_idct.v, jpeg_output.v: bound signed multiplier operands to their exact integrated ranges (X sum17, Y input21/sum22, chroma8x14); retain full products and explicit division toward zero. PDS 2022.2 mapped oversized signed multiplies with incorrect sign correction and /256 with negative rounding down. Original mapped JPEG PSNR6.24dB; fixed mapped fixture RGB is byte-identical to original RTL, PSNR40.95/40.74dB. See media-integration-20261114.md and gate quality regressions.",
+    "src_v/jpeg_mcu_id.v: terminate at declared image block height as well as EOI. Real SD sector timing may deliver EOI after final CR block starts; otherwise padding becomes an extra MCU row (y=720). Full SD/CRC/JPEG/DDR regression on user frame117 fails before and passes after; keep writer bounds protection."
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "status": "PASS",
+  "scope": "software Q15 convolution oracle + actual C head/decoder and candidate C selector; not FPGA or camera accuracy",
+  "images": 77,
+  "model_sha256": "82f6236ec22c0fc1d429a3c3dbb4c8b6cc908bc9f9c5a281f935d54f08ab4f2e",
+  "held_out_test_used": false,
+  "confidence": 0.25,
+  "iou_match": 0.5,
+  "nms_iou": 0.45,
+  "max_det": 32,
+  "AP_not_computed": "outputs below confidence .25 were not retained",
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 0,
+      "precision": 0,
+      "recall": null
+    },
+    "recyclable": {
+      "TP": 7,
+      "FP": 14,
+      "GT": 8,
+      "precision": 0.3333333333333333,
+      "recall": 0.875
+    },
+    "hazardous": {
+      "TP": 49,
+      "FP": 4,
+      "GT": 57,
+      "precision": 0.9245283018867925,
+      "recall": 0.8596491228070176
+    },
+    "other": {
+      "TP": 0,
+      "FP": 4,
+      "GT": 12,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "hand": {
+      "TP": 48,
+      "FP": 8,
+      "GT": 72,
+      "precision": 0.8571428571428571,
+      "recall": 0.6666666666666666
+    }
+  },
+  "cohorts": {
+    "all": {
+      "images": 77,
+      "selected": 60,
+      "hand_seen": 52,
+      "correct_class_and_iou050": 51,
+      "correct_class": 54
+    },
+    "source/personal_continuation_held_bottle": {
+      "images": 8,
+      "selected": 7,
+      "hand_seen": 5,
+      "correct_class_and_iou050": 5,
+      "correct_class": 6
+    },
+    "has_waste": {
+      "images": 77,
+      "selected": 60,
+      "hand_seen": 52,
+      "correct_class_and_iou050": 51,
+      "correct_class": 54
+    },
+    "group/new20261115_bottle_floor": {
+      "images": 8,
+      "selected": 7,
+      "hand_seen": 5,
+      "correct_class_and_iou050": 5,
+      "correct_class": 6
+    },
+    "source/personal_continuation_held_battery": {
+      "images": 29,
+      "selected": 24,
+      "hand_seen": 21,
+      "correct_class_and_iou050": 22,
+      "correct_class": 23
+    },
+    "group/recovered_529_545": {
+      "images": 17,
+      "selected": 14,
+      "hand_seen": 11,
+      "correct_class_and_iou050": 14,
+      "correct_class": 14
+    },
+    "source/personal_continuation_held_foam_packaging": {
+      "images": 12,
+      "selected": 4,
+      "hand_seen": 11,
+      "correct_class_and_iou050": 0,
+      "correct_class": 0
+    },
+    "group/recovered_465_476": {
+      "images": 12,
+      "selected": 4,
+      "hand_seen": 11,
+      "correct_class_and_iou050": 0,
+      "correct_class": 0
+    },
+    "group/new20261115_battery_floor": {
+      "images": 12,
+      "selected": 10,
+      "hand_seen": 10,
+      "correct_class_and_iou050": 8,
+      "correct_class": 9
+    },
+    "source/personal_continuation_no_pickup": {
+      "images": 28,
+      "selected": 25,
+      "hand_seen": 15,
+      "correct_class_and_iou050": 24,
+      "correct_class": 25
+    },
+    "group/new20261115_281_308": {
+      "images": 28,
+      "selected": 25,
+      "hand_seen": 15,
+      "correct_class_and_iou050": 24,
+      "correct_class": 25
+    }
+  },
+  "numeric_result_sha256": "1f11f42b5d328dcfd26cdcb6936f170623620b99b40fede84b793cf11e6208f7",
+  "predictions_sha256": "62484b0de23fcf5a43648f5694e8f6b3dd7813c2ed836fd1768b5bf0dd03e01f",
+  "manifest_sha256": "9016c523195e51e2759f8852f5f45f0ca12eedeae7f226707318cc9ea2ee87f7",
+  "policy_headers": {
+    "yolo_contact_policy.h": "d7e366e0a49b2bacae80fff42e3c56ddea67e727ae34873fd044c7835c53d799",
+    "yolo_interaction_policy.h": "7f7954a9caa6c223e7c67b0d1823d76142f3d4faf06e3d4edd1b5561b5020596",
+    "yolo_target_policy.h": "471cece894c495b79280227fb6fd0604df5230d630a5fc92d1f1bfe0836af0d5"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "status": "PASS_HOST_ARITHMETIC_NOT_BOARD_SPEED",
+  "builds": [
+    {
+      "linear_o2": false,
+      "packed_add": false,
+      "checked": 78,
+      "compiler_command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software",
+        "-DYOLO_COMPACT_SCRATCH",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\continuation_022_linear_final\\linear_o20_packed0.dll"
+      ]
+    },
+    {
+      "linear_o2": true,
+      "packed_add": false,
+      "checked": 78,
+      "compiler_command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software",
+        "-DYOLO_COMPACT_SCRATCH",
+        "-DYOLO_LINEAR_O2",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\continuation_022_linear_final\\linear_o21_packed0.dll"
+      ]
+    },
+    {
+      "linear_o2": false,
+      "packed_add": true,
+      "checked": 78,
+      "compiler_command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software",
+        "-DYOLO_COMPACT_SCRATCH",
+        "-DYOLO_PACKED_ADD",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\continuation_022_linear_final\\linear_o20_packed1.dll"
+      ]
+    },
+    {
+      "linear_o2": true,
+      "packed_add": true,
+      "checked": 78,
+      "compiler_command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "-std=c11",
+        "-Os",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-shared",
+        "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software",
+        "-DYOLO_COMPACT_SCRATCH",
+        "-DYOLO_LINEAR_O2",
+        "-DYOLO_PACKED_ADD",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_022\\source\\yolo\\software\\yolo_runtime.c",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\extensions\\yolo\\tb\\deployment_native.c",
+        "-lm",
+        "-o",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\continuation_022_linear_final\\linear_o21_packed1.dll"
+      ]
+    }
+  ],
+  "runtime_sha256": "424be84db87ae45c7b42e8131d741505b605b4b9f96bacd0d4a5eff885c9c194",
+  "script_sha256": "280c5108272dda6b7212840cf400d326a708bcfdb4b2dfa972459496fcb16106",
+  "includes": "all signed ADD pairs, half ties/saturation, chunk boundaries, guard bytes, CONCAT up to 4 inputs, UPSAMPLE, POOL cache/fallback boundaries"
+}

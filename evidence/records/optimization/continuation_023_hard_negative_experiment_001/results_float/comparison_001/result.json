@@ -1,0 +1,94 @@
+{
+  "status": "PAIRED_DEVELOPMENT_FLOAT_COMPARISON_COMPLETED",
+  "scope": "Repeated development val float/C replay; not independent test, Q15, FPGA, or camera accuracy",
+  "denominators": {
+    "positive": 1793,
+    "background": 136,
+    "personal_battery": 60,
+    "public_glass": 242
+  },
+  "metrics": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "weights_sha256": "a4a0b1b04f83af1d114813e0512dd2c2fa5e7306fae16759824f136b3133021a"
+    },
+    "control_val_001": {
+      "correct_positive": 1465,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 232,
+      "weights_sha256": "6843a03e7ad666d1183d26b7be851469016168bb23076577fa315e8a63f62f29"
+    },
+    "mined_val_001": {
+      "correct_positive": 1464,
+      "false_background": 7,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "weights_sha256": "bade7605f8431a2a4dd43d2de729a7f791b58b9e66c6e0baccd3b1c286e46eec"
+    }
+  },
+  "paired": {
+    "stage4_original_val": {
+      "positive_gains": [
+        "codingbear_03d7ada673b15c73fb54",
+        "codingbear_af5d52cab81da610d58e",
+        "codingbear_c016401b841558381933",
+        "codingbear_e2d3153c822546b8cd00",
+        "sumn2u_055ba9a9792dfc673fc1",
+        "sumn2u_2a4c3e7be460ad64591a",
+        "sumn2u_32d6ed4852396b2fc17e",
+        "sumn2u_342041c109ab8309bd77",
+        "sumn2u_536283de3622ff42d654",
+        "sumn2u_74a63d3d4d122102c82b",
+        "sumn2u_89299cf3e76a07a08ed3",
+        "sumn2u_8c2cf6117a856a2d26ce",
+        "sumn2u_aee8981982137d3c021f",
+        "sumn2u_be1851169efb66ff2c69"
+      ],
+      "positive_losses": [
+        "N0679",
+        "N0778",
+        "codingbear_19cdd9e3d05f96da30cd",
+        "codingbear_5f3cea9016495ebc1d9c",
+        "sumn2u_22df4fe0f353c862bf75",
+        "sumn2u_4a799152d340b765998d",
+        "sumn2u_4fd13953c192ff9761d7"
+      ],
+      "background_removed": [
+        "hand_de099ebd-7513-44fd-977c-e3c48a732e16_0"
+      ],
+      "background_added": []
+    },
+    "control_val_001": {
+      "positive_gains": [
+        "sumn2u_342041c109ab8309bd77"
+      ],
+      "positive_losses": [
+        "sumn2u_863d9e19cfe55a5c49a7",
+        "sumn2u_b045e2720dcc3358d573"
+      ],
+      "background_removed": [
+        "hand_de099ebd-7513-44fd-977c-e3c48a732e16_0"
+      ],
+      "background_added": []
+    }
+  },
+  "proceed_to_fixed_calibration": false,
+  "decision": "REJECT_EXPERIMENT_KEEP_ORIGINAL_STAGE4",
+  "criterion": "Mined must be no worse in all four counts and strictly better in at least one, versus BOTH original stage4 and matched control",
+  "manifest_sha256": "a79db787172db3e7e154055e2023ebb2964644f9007d1cdfc52602d95d8c4db1",
+  "replay_report_sha256": "a6b3b7d24b40b13a9c50cda9260bb370a0cd3526e8dcd893b40c74c982c54795",
+  "replay_decisions_sha256": "2fbb36cb01dbf4fccee24543865081d46bbc41aa3d0169cc881c6f553b206501",
+  "script_sha256": "033164dee277fa12b8ec8ab37e868a5c846974ed3fb3804f2072bf8bab325ed2",
+  "policy_headers": {
+    "yolo_contact_policy.h": "4efa1e9085405cae8e23de8b547df2e35826c686e1785e0eb150c8eccd52e1de",
+    "yolo_interaction_policy.h": "7f7954a9caa6c223e7c67b0d1823d76142f3d4faf06e3d4edd1b5561b5020596",
+    "yolo_target_policy.h": "553c202879b323c34ad11e3d4700f9d0937ef93985cbb94300d0b7fbeba864ee"
+  },
+  "training_performed": false,
+  "test_files_opened": false,
+  "hardware_accessed": false
+}

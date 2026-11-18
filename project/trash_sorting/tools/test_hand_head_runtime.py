@@ -18,19 +18,23 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--cc',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--source-dir',type=Path,default=ROOT/'project/trash_sorting/source')
+    p.add_argument('--compact-scratch',action='store_true')
     a=p.parse_args()
     a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=False)
     sys.path.insert(0,str(ROOT/'extensions/yolo/scripts'))
     import numpy as np
     from test_deployment_cpu import Tensor,Op
-    sw=ROOT/'project/trash_sorting/source/yolo/software'
+    sw=a.source_dir.resolve()/'yolo/software'
     cc=a.cc.resolve();env=os.environ.copy()
     env['PATH']=str(cc.parent)+os.pathsep+env.get('PATH','')
     (a.out/'temp').mkdir();env['TMP']=env['TEMP']=str(a.out/'temp')
+    env['ZIG_GLOBAL_CACHE_DIR']=str(a.out/'zig-cache')
     dll=a.out/'head.dll'
     command=[str(cc),'-std=c11','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function',
         '-shared','-DYOLO_CACHED_RUNTIME','-I'+str(sw),str(sw/'yolo_runtime.c'),
         str(ROOT/'extensions/yolo/tb/deployment_native.c'),'-lm','-o',str(dll)]
+    if a.compact_scratch:command.insert(1,'-DYOLO_COMPACT_SCRATCH')
     r=subprocess.run(command,env=env,capture_output=True,text=True)
     (a.out/'build.log').write_text(r.stdout+r.stderr,encoding='utf8')
     r.check_returncode()

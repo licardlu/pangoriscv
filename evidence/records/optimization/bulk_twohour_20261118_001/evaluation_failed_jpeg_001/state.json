@@ -1,0 +1,113 @@
+{
+  "status": "failed",
+  "steps": [
+    {
+      "name": "float_oldval",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\dataset_001\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\training\\final.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation",
+        "--name",
+        "float_oldval",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "started_unix": 1795021999.6843565,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 91.17819166183472
+    },
+    {
+      "name": "replay_float",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\dataset_001\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\evaluation\\stage4_original_val",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation\\float_oldval",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation\\replay_float"
+      ],
+      "started_unix": 1795022090.8681338,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 35.30812621116638
+    },
+    {
+      "name": "quantize",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\prepare_deployment.py",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation\\quant",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\dataset_001",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\training\\final.pt",
+        "--expected-checkpoint-sha256",
+        "6c376e840cb1a192be49148d11e47ca90474ad8c298b785e9fb006788a31ac42",
+        "--include-hand",
+        "--calibration-from",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\calibration_reference.json",
+        "--expected-calibration-sha256",
+        "a2a5b00d1dcf0e234f0e6e6980bbb1992f2af232121aa429539ede438864a273"
+      ],
+      "started_unix": 1795022127.3387406,
+      "status": "failed",
+      "returncode": 1,
+      "elapsed_s": 24.38144588470459
+    }
+  ],
+  "checkpoint_sha256": "6c376e840cb1a192be49148d11e47ca90474ad8c298b785e9fb006788a31ac42",
+  "board_accessed": false,
+  "test_images_accessed": false,
+  "float_scores": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "float_oldval": {
+      "correct_positive": 1433,
+      "false_background": 1,
+      "correct_personal_battery": 49,
+      "correct_public_glass": 234,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "float_gate": false,
+  "error": "RuntimeError('quantize failed, see saved log')",
+  "original_deployment_unchanged": true
+}

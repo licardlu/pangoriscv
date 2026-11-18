@@ -1,0 +1,160 @@
+{
+  "status": "completed_rejected_float",
+  "steps": [
+    {
+      "name": "candidate_oldval_float_001",
+      "status": "reused_completed",
+      "weights_sha256": "d5876fa2580bed86996b3a829ecf6568939c4d3bab8c25940061b1005df04680"
+    },
+    {
+      "name": "baseline_publicdev_float_002",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\public_dev_003\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\runs\\continuation_stage4_002\\weights\\best.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs",
+        "--name",
+        "baseline_publicdev_float_002",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "status": "completed",
+      "returncode": 0
+    },
+    {
+      "name": "candidate_publicdev_float_002",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\public_dev_003\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs\\train_001\\weights\\best.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs",
+        "--name",
+        "candidate_publicdev_float_002",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "status": "completed",
+      "returncode": 0
+    },
+    {
+      "name": "replay_oldval_001",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\dataset_003\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\evaluation\\stage4_original_val",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs\\candidate_oldval_float_001",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\replay_oldval_001"
+      ],
+      "status": "completed",
+      "returncode": 0
+    },
+    {
+      "name": "replay_publicdev_001",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\public_dev_003\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs\\baseline_publicdev_float_002",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs\\candidate_publicdev_float_002",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\replay_publicdev_001"
+      ],
+      "status": "completed",
+      "returncode": 0
+    }
+  ],
+  "board_accessed": false,
+  "held_out_test_used": false,
+  "checkpoint_sha256": "d5876fa2580bed86996b3a829ecf6568939c4d3bab8c25940061b1005df04680",
+  "oldval_float": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "candidate_oldval_float_001": {
+      "correct_positive": 1455,
+      "false_background": 5,
+      "correct_personal_battery": 55,
+      "correct_public_glass": 229,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "publicdev_float": {
+    "baseline_publicdev_float_002": {
+      "correct_positive": 1,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 15,
+        "background": 2,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    },
+    "candidate_publicdev_float_002": {
+      "correct_positive": 3,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 15,
+        "background": 2,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    }
+  },
+  "float_gate_pass": false,
+  "publicdev_no_regression": true,
+  "decision": "KEEP_ORIGINAL_STAGE4"
+}

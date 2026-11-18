@@ -1,0 +1,24 @@
+{
+  "status": "PASS_ACTUAL_UPSTREAM_GRADIENTS",
+  "weights_sha256": "a4a0b1b04f83af1d114813e0512dd2c2fa5e7306fae16759824f136b3133021a",
+  "loss_sha256": "63a5a04e21248a00e209e4a5b97ad22bec15d748af6daadb677d2cb15669a910",
+  "test_sha256": "7a4c4da539cce7716b956ac3753abb2373c775d34d438aad0a61b82d457f8183",
+  "mixed_batch_stats": {
+    "training_batches": 1,
+    "eligible_images": 1,
+    "images_with_hard_negatives": 1,
+    "mined_anchors": 1,
+    "added_batch_loss_sum": 0.026265231892466545
+  },
+  "guarantees": [
+    "only selected false objectness gradient increases",
+    "all GT-positive anchors protected",
+    "all real-waste images unchanged",
+    "no extra class/box gradient",
+    "validation bit-exact to original",
+    "empty images finite",
+    "top-k per-image bound"
+  ],
+  "training_performed": false,
+  "hardware_accessed": false
+}

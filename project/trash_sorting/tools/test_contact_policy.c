@@ -62,14 +62,16 @@ int main(void)
         yolo_box_t palm={105,103,110,110,.4f,2};
         assert(policy_select_contact(&palm,1,&h,1,640,480).object_index==0);
         yolo_box_t edge={112,79,120,120,.99f,3};
-        /* Hand contact passes, but only73% is in the local ROI. The size
-         * branch must reject it; contact alone used to admit this box. */
+        /* High confidence and narrow shape take the new explicit exception. */
+        assert(policy_select_contact(&edge,1,&h,1,640,480).object_index==0);
+        edge.score=.59f;
+        /* Ordinary low-confidence contact still requires75% in local ROI. */
         assert(policy_select_contact(&edge,1,&h,1,640,480).object_index==-1);
     }
     {
         yolo_box_t h[3]={{100,100,120,120,.9f,4},
             {500,400,540,440,.8f,4},{0,0,640,480,NAN,4}};
-        yolo_box_t o={110,20,120,120,.6f,1}; /* Area1000, mean(400,1600)=1000. */
+        yolo_box_t o={110,20,120,120,.59f,1}; /* Area1000, mean(400,1600)=1000. */
         /* Equality belongs to small/local mode, not the large exception. */
         assert(policy_select_contact(&o,1,h,3,640,480).object_index==-1);
         o.y1=19;
@@ -86,6 +88,27 @@ int main(void)
         yolo_box_t o={10,20,20,120,.6f,1}; /* Area1000 => large. */
         assert(policy_select_contact(&o,1,&h,1,640,480).object_index==0);
     }
-    puts("TEST_PASS contact_policy long_object/palm_battery/clutter/hand_duplicate/invalid/no_hand/multihand/combined_camera/clipped_area_ties/size_adaptive/full_large_box/mean_valid_hands/equal_area/clipped_hand");
+    {
+        /* Measured validation geometry: the hand head covers lower palm,
+         * while the actual high-confidence battery extends above it. */
+        yolo_box_t h={304.319f,876.316f,1200.f,1568.335f,.28139f,4};
+        yolo_box_t o={540.762f,338.660f,771.259f,969.114f,.89677f,2};
+        assert(policy_select_contact(&o,1,&h,1,1200,1600).object_index==0);
+        o.score=.599f;
+        assert(policy_select_contact(&o,1,&h,1,1200,1600).object_index==-1);
+        /* Near contact tolerance accepts a boundary gap, never remote clutter. */
+        h=(yolo_box_t){200,200,300,300,.8f,4};
+        o=(yolo_box_t){220,100,240,190,.8f,2};
+        assert(policy_select_contact(&o,1,&h,1,640,480).object_index==0);
+        o.y2=189.9f;
+        assert(policy_select_contact(&o,1,&h,1,640,480).object_index==-1);
+        o=(yolo_box_t){220,100,240,190,.8f,4};
+        assert(policy_select_contact(&o,1,&h,1,640,480).object_index==-1);
+        /* A confident narrow duplicate of a narrow hand remains rejected. */
+        h=(yolo_box_t){200,100,240,300,.9f,4};
+        o=(yolo_box_t){200,100,240,300,.95f,2};
+        assert(policy_select_contact(&o,1,&h,1,640,480).object_index==-1);
+    }
+    puts("TEST_PASS contact_policy long_object/palm_battery/clutter/hand_duplicate/invalid/no_hand/multihand/combined_camera/clipped_area_ties/size_adaptive/full_large_box/mean_valid_hands/equal_area/clipped_hand/confident_narrow/edge_gap");
     return 0;
 }

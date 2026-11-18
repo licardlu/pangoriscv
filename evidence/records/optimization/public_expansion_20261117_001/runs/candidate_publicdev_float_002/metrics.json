@@ -1,0 +1,351 @@
+{
+  "precision": 0.6240725502090778,
+  "recall": 0.25,
+  "mAP50": 0.29836174603174603,
+  "mAP50_95": 0.15308303174603172,
+  "per_class_AP50_95": [
+    0.15308303174603172,
+    0.008472126984126981,
+    0.07855500000000001,
+    0.49749999999999994,
+    0.02780499999999999
+  ],
+  "timing_ms": [
+    0.27018434861127066,
+    31.448013642254995,
+    0.7803159601548139
+  ],
+  "input": "fixed square 320x320, no rectangular padding",
+  "summary_PR_note": "Upstream P/R use maximum mean F1 on this split; fixed-threshold P/R are below.",
+  "per_class": {
+    "recyclable": {
+      "targets": 8,
+      "AP50": 0.021180317460317455,
+      "AP50_95": 0.008472126984126981
+    },
+    "hazardous": {
+      "targets": 9,
+      "AP50": 0.130925,
+      "AP50_95": 0.07855500000000001
+    },
+    "other": {
+      "targets": 1,
+      "AP50": 0.995,
+      "AP50_95": 0.49749999999999994
+    },
+    "hand": {
+      "targets": 3,
+      "AP50": 0.046341666666666656,
+      "AP50_95": 0.02780499999999999
+    }
+  },
+  "confusion_matrix_conf025_iou045": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      8.0,
+      0.0,
+      0.0,
+      4.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      2.0
+    ],
+    [
+      0.0,
+      2.0,
+      1.0,
+      1.0,
+      0.0,
+      5.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      5.0,
+      0.0,
+      0.0,
+      3.0,
+      0.0
+    ]
+  ],
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "recyclable": {
+      "TP": 1,
+      "FP": 12,
+      "GT": 8,
+      "precision": 0.07692307692307693,
+      "recall": 0.125
+    },
+    "hazardous": {
+      "TP": 1,
+      "FP": 2,
+      "GT": 9,
+      "precision": 0.3333333333333333,
+      "recall": 0.1111111111111111
+    },
+    "other": {
+      "TP": 1,
+      "FP": 9,
+      "GT": 1,
+      "precision": 0.1,
+      "recall": 1.0
+    },
+    "hand": {
+      "TP": 0,
+      "FP": 2,
+      "GT": 3,
+      "precision": 0.0,
+      "recall": 0.0
+    }
+  },
+  "deployment_decode_policy": "single-label per anchor, conf .25 for decisions, NMS IoU .45, max 32",
+  "waste_only_mean_AP50": 0.38236843915343915,
+  "waste_AP50_classes_present": [
+    "recyclable",
+    "hazardous",
+    "other"
+  ],
+  "waste_AP50_classes_missing": [
+    "kitchen"
+  ],
+  "image_top_bin_conf025": {
+    "public_expansion_taco": {
+      "images": 7,
+      "no_detection": 1,
+      "correct_top_bin": 2,
+      "wrong_top_bin": 4
+    },
+    "public_expansion_ewaste": {
+      "images": 8,
+      "no_detection": 0,
+      "correct_top_bin": 1,
+      "wrong_top_bin": 7
+    },
+    "public_expansion_hagrid": {
+      "images": 2,
+      "no_detection": 0,
+      "correct_top_bin": 1,
+      "wrong_top_bin": 1
+    }
+  },
+  "image_primary_bin_conf025": {
+    "row_bins": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "hand"
+    ],
+    "columns": [
+      "kitchen",
+      "recyclable",
+      "hazardous",
+      "other",
+      "hand",
+      "no_detection"
+    ],
+    "matrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        1,
+        2,
+        0,
+        1
+      ],
+      [
+        0,
+        7,
+        1,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ]
+    ],
+    "source_matrices": {
+      "public_expansion_taco": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          1,
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "public_expansion_ewaste": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          7,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "public_expansion_hagrid": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          1,
+          0
+        ]
+      ]
+    },
+    "images": 17,
+    "coverage": 0.9411764705882353,
+    "primary_bin_accuracy_including_missed": 0.23529411764705882,
+    "primary_bin_accuracy_when_detected": 0.25,
+    "primary_bin_note": "One image prediction (highest-confidence box) is compared with its most frequent ground-truth bin; this complements object-level AP and is not a physical-item benchmark."
+  }
+}

@@ -1,0 +1,356 @@
+{
+  "status": "COMPLETED_OFFLINE_REJECTED",
+  "steps": [
+    {
+      "name": "float_oldval",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\dataset_001\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\training\\final.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation",
+        "--name",
+        "float_oldval",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "started_unix": 1794954855.0920181,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 64.03834128379822
+    },
+    {
+      "name": "replay_float",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\dataset_001\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\evaluation\\stage4_original_val",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\float_oldval",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\replay_float"
+      ],
+      "started_unix": 1794954919.1374972,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 29.822365760803223
+    },
+    {
+      "name": "quantize",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\prepare_deployment.py",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\quant",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\dataset_001",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\training\\final.pt",
+        "--expected-checkpoint-sha256",
+        "64e8bcd12b3adc53b2f051b15b6cd091a0f6f8b685d19aac573ae46eaf26ae75",
+        "--include-hand",
+        "--calibration-from",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\calibration_reference.json",
+        "--expected-calibration-sha256",
+        "8544d52c3e27736a15d1b940e1f0709a2430d676debe524e1c754f6dab165c81"
+      ],
+      "started_unix": 1794954949.3325067,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 27.6832058429718
+    },
+    {
+      "name": "numeric_oldval",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\check_deployment.py",
+        "--deployment",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\quant",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--clang-host",
+        "--exact-q16-head",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\numeric_oldval",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\training\\final.pt",
+        "--expected-checkpoint-sha256",
+        "64e8bcd12b3adc53b2f051b15b6cd091a0f6f8b685d19aac573ae46eaf26ae75",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--photos",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\numeric_allval_001",
+        "--linear-o2",
+        "--compact-scratch"
+      ],
+      "started_unix": 1794954977.2700138,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 428.1615197658539
+    },
+    {
+      "name": "score_oldval",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\score_numeric_validation.py",
+        "--numeric",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\numeric_oldval",
+        "--photos",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\numeric_allval_001",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\dataset_001\\manifest.json",
+        "--policy-replay",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\replay_oldval_004",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\score_oldval"
+      ],
+      "started_unix": 1794955405.439072,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 0.7039148807525635
+    },
+    {
+      "name": "numeric_publicdev",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\check_deployment.py",
+        "--deployment",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\quant",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--clang-host",
+        "--exact-q16-head",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\numeric_publicdev",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\training\\final.pt",
+        "--expected-checkpoint-sha256",
+        "64e8bcd12b3adc53b2f051b15b6cd091a0f6f8b685d19aac573ae46eaf26ae75",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--photos",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\numeric_publicdev_inventory_001",
+        "--linear-o2",
+        "--compact-scratch"
+      ],
+      "started_unix": 1794955406.3937833,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 167.70386958122253
+    },
+    {
+      "name": "score_publicdev",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\score_numeric_validation.py",
+        "--numeric",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\numeric_publicdev",
+        "--photos",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\numeric_publicdev_inventory_001",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\public_dev_001\\manifest.json",
+        "--policy-replay",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\replay_publicdev_004",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\full_orientation_20261118_001\\experiment_001\\evaluation\\score_publicdev"
+      ],
+      "started_unix": 1794955574.106747,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 0.433504581451416
+    }
+  ],
+  "checkpoint_sha256": "64e8bcd12b3adc53b2f051b15b6cd091a0f6f8b685d19aac573ae46eaf26ae75",
+  "board_accessed": false,
+  "test_images_accessed": false,
+  "float_scores": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "float_oldval": {
+      "correct_positive": 1461,
+      "false_background": 3,
+      "correct_personal_battery": 56,
+      "correct_public_glass": 237,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "float_gate": true,
+  "frozen_quantized_backbone_bit_exact": false,
+  "full_finetune_quantization": "Updated checkpoint, exact graph-forward verification and predeclared 160 current-whitelist train calibration identities; not frozen-profile tail QAT.",
+  "unchanged_nonhead_parameter_arrays": 0,
+  "q15_oldval": {
+    "correct_positive": 1457,
+    "false_background": 4,
+    "correct_personal_battery": 49,
+    "correct_public_glass": 235,
+    "denominators": {
+      "positive": 1793,
+      "background": 136,
+      "personal_battery": 60,
+      "public_glass": 242
+    }
+  },
+  "q15_publicdev": {
+    "correct_positive": 700,
+    "false_background": 0,
+    "correct_personal_battery": 0,
+    "correct_public_glass": 0,
+    "denominators": {
+      "positive": 712,
+      "background": 0,
+      "personal_battery": 0,
+      "public_glass": 0
+    }
+  },
+  "gates": {
+    "float": true,
+    "q15_primary": false,
+    "q15_all_waste_classes": false,
+    "q15_all_detection_classes": false,
+    "q15_publicdev": true
+  },
+  "subject_by_class": {
+    "baseline": {
+      "0": {
+        "correct": 145,
+        "images": 176
+      },
+      "1": {
+        "correct": 1067,
+        "images": 1306
+      },
+      "2": {
+        "correct": 125,
+        "images": 156
+      },
+      "3": {
+        "correct": 118,
+        "images": 157
+      }
+    },
+    "candidate": {
+      "0": {
+        "correct": 150,
+        "images": 176
+      },
+      "1": {
+        "correct": 1066,
+        "images": 1306
+      },
+      "2": {
+        "correct": 116,
+        "images": 156
+      },
+      "3": {
+        "correct": 125,
+        "images": 157
+      }
+    }
+  },
+  "detection_gates": {
+    "kitchen": {
+      "TP_before": 221,
+      "TP_after": 213,
+      "precision_before": 0.6260623229461756,
+      "precision_after": 0.6740506329113924,
+      "passed": false
+    },
+    "recyclable": {
+      "TP_before": 1376,
+      "TP_after": 1382,
+      "precision_before": 0.8004653868528214,
+      "precision_after": 0.8211527035056447,
+      "passed": true
+    },
+    "hazardous": {
+      "TP_before": 150,
+      "TP_after": 145,
+      "precision_before": 0.6521739130434783,
+      "precision_after": 0.7552083333333334,
+      "passed": false
+    },
+    "other": {
+      "TP_before": 169,
+      "TP_after": 163,
+      "precision_before": 0.4132029339853301,
+      "precision_after": 0.4137055837563452,
+      "passed": false
+    },
+    "hand": {
+      "TP_before": 234,
+      "TP_after": 292,
+      "precision_before": 0.72,
+      "precision_after": 0.7019230769230769,
+      "passed": false
+    }
+  },
+  "baseline_q15": {
+    "correct_positive": 1455,
+    "false_background": 8,
+    "correct_personal_battery": 55,
+    "correct_public_glass": 232,
+    "denominators": {
+      "positive": 1793,
+      "background": 136,
+      "personal_battery": 60,
+      "public_glass": 242
+    }
+  },
+  "baseline_publicdev": {
+    "correct_positive": 271,
+    "false_background": 0,
+    "correct_personal_battery": 0,
+    "correct_public_glass": 0,
+    "denominators": {
+      "positive": 712,
+      "background": 0,
+      "personal_battery": 0,
+      "public_glass": 0
+    }
+  },
+  "accepted_offline": false,
+  "decision": "NO_AUTOMATIC_DEPLOYMENT",
+  "finished_unix": 1794955575.2516618,
+  "original_deployment_unchanged": true
+}

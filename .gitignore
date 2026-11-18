@@ -31,3 +31,22 @@ extensions/ui_reference/extensions/business/application/build/
 /tmp*cacert.pem
 /project/trash_sorting/source/extensions/business/application/build/
 /project/trash_sorting/releases/**/source/**/build/
+
+# Local disposable output stays outside the source handoff.
+/垃圾文件/
+/compile/
+/constraint_check/
+/device_map/
+/place_route/
+/synthesize/
+/logbackup/
+/flow.log
+/impl.tcl
+/multiseed_summary.csv
+/project/trash_sorting/candidates/**/source/**/build/
+/project/trash_sorting/candidates/**/frozen_*/**/build/
+/evidence/records/**/source/**/build/
+
+# Old local delivery archives/media are retained on disk, not source changes.
+/project/trash_sorting/candidates/overnight_020/*.zip
+/project/trash_sorting/candidates/overnight_020/**/TF_CARD/

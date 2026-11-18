@@ -1,0 +1,342 @@
+{
+  "status": "PASS",
+  "scope": "saved CPU floating val detections replayed through actual C selector; not INT8 or board-camera accuracy",
+  "manifest_sha256": "88e5432496634177f33f1fa017038b501309ed6dfe3467db798fbaa6e7080487",
+  "split": "val",
+  "held_out_test_used": false,
+  "confidence": 0.25,
+  "nms_iou": 0.45,
+  "max_det": 32,
+  "headers": {
+    "yolo_contact_policy.h": "4efa1e9085405cae8e23de8b547df2e35826c686e1785e0eb150c8eccd52e1de",
+    "yolo_interaction_policy.h": "7f7954a9caa6c223e7c67b0d1823d76142f3d4faf06e3d4edd1b5561b5020596",
+    "yolo_target_policy.h": "553c202879b323c34ad11e3d4700f9d0937ef93985cbb94300d0b7fbeba864ee"
+  },
+  "commands": [
+    [
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-UNDEBUG",
+      "-shared",
+      "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\test_contact_policy.c",
+      "-o",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\replay_publicdev_001\\policy.dll"
+    ],
+    [
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-UNDEBUG",
+      "-ID:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\software",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\test_contact_policy.c",
+      "-o",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\replay_publicdev_001\\policy_test.exe"
+    ]
+  ],
+  "reports": {
+    "baseline_publicdev_float_002": {
+      "cohorts": {
+        "all": {
+          "images": 17,
+          "selected": 14,
+          "hand_seen": 1,
+          "correct_class_and_iou050": 1,
+          "correct_class": 2,
+          "false_selected": 0
+        },
+        "source/public_expansion_ewaste": {
+          "images": 8,
+          "selected": 8,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "public": {
+          "images": 17,
+          "selected": 14,
+          "hand_seen": 1,
+          "correct_class_and_iou050": 1,
+          "correct_class": 2,
+          "false_selected": 0
+        },
+        "has_waste": {
+          "images": 15,
+          "selected": 14,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 2
+        },
+        "group/ewaste_photo_15d96f57bc87788204e1": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_1d260ae5bcccddfe8518": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_8c8fcfe9ecb7ede33c67": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_3537dcdc61acf87c58d4": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_eb44ae28df4021283774": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_165125f5e7d37dac6e22": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_f2c6945ce7bd7d76b982": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_39417743dd1cf304ed6a": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "source/public_expansion_hagrid": {
+          "images": 2,
+          "selected": 0,
+          "hand_seen": 1,
+          "false_selected": 0
+        },
+        "no_waste": {
+          "images": 2,
+          "selected": 0,
+          "hand_seen": 1,
+          "false_selected": 0
+        },
+        "group/hagrid_subject_bc7af50ccd5a510a014b4465e414a104": {
+          "images": 1,
+          "selected": 0,
+          "hand_seen": 0,
+          "false_selected": 0
+        },
+        "group/hagrid_subject_aa77becb401a2bc46507fe73ce4260b0": {
+          "images": 1,
+          "selected": 0,
+          "hand_seen": 1,
+          "false_selected": 0
+        },
+        "source/public_expansion_taco": {
+          "images": 7,
+          "selected": 6,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 2
+        },
+        "group/taco_batch_13": {
+          "images": 4,
+          "selected": 4,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 1
+        },
+        "group/taco_batch_5": {
+          "images": 3,
+          "selected": 2,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 1
+        }
+      },
+      "predictions_sha256": "6021cb5a9a05269802d7afb402a36a70a9bb09db447d4d074c93580ff41a4a2b",
+      "weights_sha256": "a4a0b1b04f83af1d114813e0512dd2c2fa5e7306fae16759824f136b3133021a"
+    },
+    "candidate_publicdev_float_002": {
+      "cohorts": {
+        "all": {
+          "images": 17,
+          "selected": 14,
+          "hand_seen": 1,
+          "correct_class_and_iou050": 3,
+          "correct_class": 4,
+          "false_selected": 0
+        },
+        "source/public_expansion_ewaste": {
+          "images": 8,
+          "selected": 8,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 1
+        },
+        "public": {
+          "images": 17,
+          "selected": 14,
+          "hand_seen": 1,
+          "correct_class_and_iou050": 3,
+          "correct_class": 4,
+          "false_selected": 0
+        },
+        "has_waste": {
+          "images": 15,
+          "selected": 14,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 3,
+          "correct_class": 4
+        },
+        "group/ewaste_photo_15d96f57bc87788204e1": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_1d260ae5bcccddfe8518": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_8c8fcfe9ecb7ede33c67": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_3537dcdc61acf87c58d4": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_eb44ae28df4021283774": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_165125f5e7d37dac6e22": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_f2c6945ce7bd7d76b982": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 0,
+          "correct_class": 0
+        },
+        "group/ewaste_photo_39417743dd1cf304ed6a": {
+          "images": 1,
+          "selected": 1,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 1
+        },
+        "source/public_expansion_hagrid": {
+          "images": 2,
+          "selected": 0,
+          "hand_seen": 1,
+          "false_selected": 0
+        },
+        "no_waste": {
+          "images": 2,
+          "selected": 0,
+          "hand_seen": 1,
+          "false_selected": 0
+        },
+        "group/hagrid_subject_bc7af50ccd5a510a014b4465e414a104": {
+          "images": 1,
+          "selected": 0,
+          "hand_seen": 0,
+          "false_selected": 0
+        },
+        "group/hagrid_subject_aa77becb401a2bc46507fe73ce4260b0": {
+          "images": 1,
+          "selected": 0,
+          "hand_seen": 1,
+          "false_selected": 0
+        },
+        "source/public_expansion_taco": {
+          "images": 7,
+          "selected": 6,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 2,
+          "correct_class": 3
+        },
+        "group/taco_batch_13": {
+          "images": 4,
+          "selected": 4,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 2
+        },
+        "group/taco_batch_5": {
+          "images": 3,
+          "selected": 2,
+          "hand_seen": 0,
+          "correct_class_and_iou050": 1,
+          "correct_class": 1
+        }
+      },
+      "predictions_sha256": "0ab8124ca84c45562b9821f29b451880a6d036cced19f63c44bf160c041bfe86",
+      "weights_sha256": "d5876fa2580bed86996b3a829ecf6568939c4d3bab8c25940061b1005df04680"
+    }
+  },
+  "paired_vs_first": {
+    "candidate_publicdev_float_002": {
+      "all": {
+        "both_wrong": 12,
+        "gain": 2,
+        "both_rejected": 2,
+        "both_correct": 1
+      },
+      "source/public_expansion_ewaste": {
+        "both_wrong": 7,
+        "gain": 1
+      },
+      "source/public_expansion_hagrid": {
+        "both_rejected": 2
+      },
+      "source/public_expansion_taco": {
+        "both_wrong": 5,
+        "gain": 1,
+        "both_correct": 1
+      }
+    }
+  }
+}

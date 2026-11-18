@@ -1,0 +1,143 @@
+{
+  "status": "numeric_oldval",
+  "steps": [
+    {
+      "name": "float_oldval",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\dataset_001\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\training\\final.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\evaluation",
+        "--name",
+        "float_oldval",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "started_unix": 1795025818.6796644,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 65.5840311050415
+    },
+    {
+      "name": "replay_float",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\dataset_001\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\evaluation\\stage4_original_val",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\evaluation\\float_oldval",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\evaluation\\replay_float"
+      ],
+      "started_unix": 1795025884.2709408,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 29.20807433128357
+    },
+    {
+      "name": "quantize",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\prepare_deployment.py",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\evaluation\\quant",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\dataset_001",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\training\\final.pt",
+        "--expected-checkpoint-sha256",
+        "3ddd4e77454af04da1f062c6b9d74df49f821d6a0d91dc1ccd4a19b0b26ced39",
+        "--include-hand",
+        "--calibration-from",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\calibration_reference.json",
+        "--expected-calibration-sha256",
+        "272b65ff1aeeb2f2e18d25aad0e76553e034cb52fc184f427171b4c92e5e64eb"
+      ],
+      "started_unix": 1795025914.0392616,
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_s": 34.9095618724823
+    },
+    {
+      "name": "numeric_oldval",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\check_deployment.py",
+        "--deployment",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\evaluation\\quant",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--clang-host",
+        "--exact-q16-head",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\evaluation\\numeric_oldval",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\balanced_replay_fix_20261118_001\\experiment_001\\training\\final.pt",
+        "--expected-checkpoint-sha256",
+        "3ddd4e77454af04da1f062c6b9d74df49f821d6a0d91dc1ccd4a19b0b26ced39",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--photos",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\numeric_allval_001",
+        "--linear-o2",
+        "--compact-scratch"
+      ],
+      "started_unix": 1795025949.18855,
+      "status": "running"
+    }
+  ],
+  "checkpoint_sha256": "3ddd4e77454af04da1f062c6b9d74df49f821d6a0d91dc1ccd4a19b0b26ced39",
+  "board_accessed": false,
+  "test_images_accessed": false,
+  "float_scores": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "float_oldval": {
+      "correct_positive": 1409,
+      "false_background": 11,
+      "correct_personal_battery": 53,
+      "correct_public_glass": 229,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "float_gate": false,
+  "frozen_quantized_backbone_bit_exact": false,
+  "full_finetune_quantization": "Updated checkpoint, exact graph-forward verification and predeclared 160 current-whitelist train calibration identities; not frozen-profile tail QAT.",
+  "unchanged_nonhead_parameter_arrays": 0
+}

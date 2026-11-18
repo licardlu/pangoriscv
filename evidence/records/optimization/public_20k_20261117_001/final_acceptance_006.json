@@ -1,0 +1,133 @@
+{
+  "status": "COMPLETED_TRAINING_OFFLINE_REJECTED_Q15",
+  "decision": "KEEP_ORIGINAL_DEPLOYED_MODEL",
+  "trained_epochs": 10,
+  "training_elapsed_s": 12616.460362672806,
+  "checkpoint_sha256": "4b1efad295ce0f644699750516d2c69950510ef65d7b87a354441014dd0a2db5",
+  "dataset": {
+    "independent_train_file_identities": 7904,
+    "new_train_images": 5070,
+    "new_dev_images": 712,
+    "new_source_train": {
+      "large_public_drinking": 3626,
+      "large_public_bbox384": 1106,
+      "large_public_trashsort": 333,
+      "large_public_batteryobjects": 5
+    },
+    "training_draws": 12662,
+    "legacy_val_images": 1929,
+    "replay_aliases": 4317,
+    "unique_file_primary_bins": {
+      "1": 5502,
+      "3": 405,
+      "2": 1309,
+      "0": 401,
+      "4": 287
+    },
+    "sampled_primary_bins": {
+      "1": 6224,
+      "3": 1206,
+      "2": 2613,
+      "0": 1163,
+      "4": 1456
+    },
+    "final_data": "dataset_004",
+    "active_run": "expanded_clean_004",
+    "test_images_read": 0,
+    "counts_are_not_augmentation_counts": true
+  },
+  "oldval_float": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "candidate_oldval_float_004": {
+      "correct_positive": 1472,
+      "false_background": 2,
+      "correct_personal_battery": 58,
+      "correct_public_glass": 236,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "publicdev_float": {
+    "baseline_publicdev_float_004": {
+      "correct_positive": 279,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 712,
+        "background": 0,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    },
+    "candidate_publicdev_float_004": {
+      "correct_positive": 701,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 712,
+        "background": 0,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    }
+  },
+  "float_gate_pass": true,
+  "original160_ordered_identity_sha256": "f9e83b5deb2db0100958165d646f2d30156a60ab97cff91a53947f60c95d9532",
+  "q15": {
+    "candidate": {
+      "correct_positive": 1455,
+      "false_background": 6,
+      "correct_personal_battery": 48,
+      "correct_public_glass": 236,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "baseline": {
+      "correct_positive": 1455,
+      "false_background": 8,
+      "correct_personal_battery": 55,
+      "correct_public_glass": 232
+    },
+    "pass_gate": false
+  },
+  "q15_arithmetic_status": "PASS",
+  "original_deployment_blob_sha256": "7a0765a6f275f3c06d838f924d73542783ca55e131509aa1b546efc98bd65728",
+  "original_deployment_unchanged": true,
+  "board_accessed": false,
+  "heldout_test_images_opened": false,
+  "scope": "Offline floating and software Q15-oracle/C decode. No claim of FPGA/camera improvement.",
+  "unresolved": [
+    "20000 independent accepted train images not reached (7904).",
+    "Public data contains few new batteries.",
+    "Floating battery gain is lost under frozen calibration quantization (58 float, 48 Q15 vs old Q15 55).",
+    "Public dev is source-group-separated, not proven physical-instance-independent; no background images in that split."
+  ],
+  "failed_quantization_preparations": [
+    "quant_original160_004",
+    "quant_original160_005"
+  ],
+  "successful_calibration": "quant_original160_006",
+  "calibration_scope": "Separate original historical train-only 160 images, never reintroduced to gradient training.",
+  "finished_unix": 1794928820.4803991
+}

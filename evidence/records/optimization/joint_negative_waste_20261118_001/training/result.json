@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "epochs": 3,
+  "elapsed_s": 3600.9543883800507,
+  "checkpoint_sha256": "cb79f58cbf5c47c0a2ed037987745879cd86415981b826ac0bd01dd0cf86fc6a",
+  "frozen_nonselected_state_exact": true,
+  "trainable_tensors": 19,
+  "history": [
+    {
+      "epoch": 1,
+      "batches": 1127,
+      "draws": 18022,
+      "q15_loss": [
+        0.02665047830560748,
+        0.007488904260148517,
+        0.022606062013639374
+      ],
+      "float_loss": [
+        0.025709154600808075,
+        0.007317587933044455,
+        0.021828341006508763
+      ],
+      "elapsed_s": 1195.1339185237885,
+      "distillation_loss": 0.00125359733391542,
+      "matched_anchors_by_class": {
+        "1": 46982,
+        "2": 111337,
+        "3": 22043,
+        "4": 41710,
+        "0": 24282
+      },
+      "strength": 5.0,
+      "teacher": "frozen_initial_deployed_q15",
+      "negative_waste_loss": 0.0004638189042171885,
+      "negative_images_seen": 1532,
+      "negative_waste_strength": 0.5,
+      "negative_waste_topk": 32
+    },
+    {
+      "epoch": 2,
+      "batches": 1127,
+      "draws": 18022,
+      "q15_loss": [
+        0.026242833076327538,
+        0.007435033428205876,
+        0.01991924664733672
+      ],
+      "float_loss": [
+        0.025305653224800842,
+        0.00726523997651342,
+        0.019305846426677712
+      ],
+      "elapsed_s": 2398.9371008872986,
+      "distillation_loss": 0.001227099796629634,
+      "matched_anchors_by_class": {
+        "2": 111337,
+        "1": 46982,
+        "4": 41710,
+        "3": 22043,
+        "0": 24282
+      },
+      "strength": 5.0,
+      "teacher": "frozen_initial_deployed_q15",
+      "negative_waste_loss": 0.00042081858878929677,
+      "negative_images_seen": 1532,
+      "negative_waste_strength": 0.5,
+      "negative_waste_topk": 32
+    },
+    {
+      "epoch": 3,
+      "batches": 1127,
+      "draws": 18022,
+      "q15_loss": [
+        0.02595656108567301,
+        0.007416639376197014,
+        0.019501193875373368
+      ],
+      "float_loss": [
+        0.025025978305120065,
+        0.007248973212979185,
+        0.01891510154873863
+      ],
+      "elapsed_s": 3600.9152252674103,
+      "distillation_loss": 0.0011388229039845164,
+      "matched_anchors_by_class": {
+        "0": 24282,
+        "2": 111337,
+        "3": 22043,
+        "1": 46982,
+        "4": 41710
+      },
+      "strength": 5.0,
+      "teacher": "frozen_initial_deployed_q15",
+      "negative_waste_loss": 0.0004049054150023431,
+      "negative_images_seen": 1532,
+      "negative_waste_strength": 0.5,
+      "negative_waste_topk": 32
+    }
+  ]
+}

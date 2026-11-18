@@ -1,0 +1,996 @@
+License checkout: fabric_shell from D:\FPGA_Project\zi_guang_tong_chuang\pds\new_pds_00e04cf107df.lic
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/input/yolo/sources/implement.pds'.
+Executing : set_arch -input_db_file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/yolo_camera_top_map.adf
+Executing : set_arch -input_db_file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/yolo_camera_top_map.adf successfully.
+Executing : add_constraint D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/yolo_camera_top.pcf
+Executing : add_constraint D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/yolo_camera_top.pcf successfully.
+
+
+Executing : pnr -input_db_file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/yolo_camera_top_map.adf -input_place_db_file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/placed_input.adf -plc_decongestion 4 -early_block_placement Global -optimize_multi_corner_timing -slack_prior_in_global_router TRUE -pin_cost_increasing_speed 300 -share_router_control_signal TRUE -fast_router TRUE -gplace_seed 11 -groute_seed 7 -fix_hold_violation_iterations 300 -fix_hold_violation_threshold 500 -fix_hold_violation_in_route TRUE -fix_hold_violation_threshold_for_clock_path_cross_srb 200 -fix_hold_violation_threshold_for_clk_tree 200
+
+
+Process "Place & Route" started.
+Current time: Mon Nov 16 11:10:35 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/input/yolo/sources/implement.pds'.
+Compiling verification operator library.
+Compiling common defs.
+Compiling prim grid devices.
+Compiling gate devices.
+Compiling gate operators.
+Building architecture model.
+Loading device packaging model.
+pnr strategy configuration : 
+strategy name : 0
+NOTE: The technology fpga was specified.
+NOTE: delay_model specified was generic_cmos.
+NOTE: Using the fpga syntax tables...
+Totals:
+ Calls to malloc = 0
+ Calls to calloc = 5993935
+
+
+Routing started.
+First map gop timing takes 9.11 sec
+Building routing graph takes 17.73 sec.
+Worst slack is 1180, TNS before global route is 0.
+Processing design graph takes 7.45 sec.
+Total memory for routing:
+	273.813548 M.
+Total nets for routing : 69975.
+Rcf routing step 1 processed 0 nets, it takes 0.00 sec.
+Rcf routing step 2 processed 0 nets, it takes 0.00 sec.
+Rcf routing step 3 processed 0 nets, it takes 0.00 sec.
+Unrouted nets 0 at the end of iteration 0.
+Global Routing step 1 processed 46 nets, it takes 0.33 sec.
+Unrouted nets 133 at the end of iteration 0.
+Unrouted nets 91 at the end of iteration 1.
+Unrouted nets 63 at the end of iteration 2.
+Unrouted nets 43 at the end of iteration 3.
+Unrouted nets 34 at the end of iteration 4.
+Unrouted nets 27 at the end of iteration 5.
+Unrouted nets 16 at the end of iteration 6.
+Unrouted nets 15 at the end of iteration 7.
+Unrouted nets 14 at the end of iteration 8.
+Unrouted nets 9 at the end of iteration 9.
+Unrouted nets 7 at the end of iteration 10.
+Unrouted nets 7 at the end of iteration 11.
+Unrouted nets 7 at the end of iteration 12.
+Unrouted nets 7 at the end of iteration 13.
+Unrouted nets 7 at the end of iteration 14.
+Unrouted nets 3 at the end of iteration 15.
+Unrouted nets 3 at the end of iteration 16.
+Unrouted nets 3 at the end of iteration 17.
+Unrouted nets 3 at the end of iteration 18.
+Unrouted nets 3 at the end of iteration 19.
+Unrouted nets 3 at the end of iteration 20.
+Unrouted nets 3 at the end of iteration 21.
+Unrouted nets 1 at the end of iteration 22.
+Unrouted nets 1 at the end of iteration 23.
+Unrouted nets 1 at the end of iteration 24.
+Unrouted nets 1 at the end of iteration 25.
+Unrouted nets 1 at the end of iteration 26.
+Unrouted nets 1 at the end of iteration 27.
+Unrouted nets 1 at the end of iteration 28.
+Unrouted nets 1 at the end of iteration 29.
+Unrouted nets 1 at the end of iteration 30.
+Unrouted nets 1 at the end of iteration 31.
+Unrouted nets 1 at the end of iteration 32.
+Unrouted nets 1 at the end of iteration 33.
+Unrouted nets 1 at the end of iteration 34.
+Unrouted nets 1 at the end of iteration 35.
+Unrouted nets 1 at the end of iteration 36.
+Unrouted nets 1 at the end of iteration 37.
+Unrouted nets 1 at the end of iteration 38.
+Unrouted nets 1 at the end of iteration 39.
+Unrouted nets 1 at the end of iteration 40.
+Unrouted nets 1 at the end of iteration 41.
+Unrouted nets 1 at the end of iteration 42.
+Unrouted nets 1 at the end of iteration 43.
+Unrouted nets 1 at the end of iteration 44.
+Unrouted nets 1 at the end of iteration 45.
+Unrouted nets 1 at the end of iteration 46.
+Unrouted nets 1 at the end of iteration 47.
+Unrouted nets 1 at the end of iteration 48.
+Unrouted nets 1 at the end of iteration 49.
+Unrouted nets 1 at the end of iteration 50.
+Unrouted nets 1 at the end of iteration 51.
+Unrouted nets 1 at the end of iteration 52.
+Unrouted nets 1 at the end of iteration 53.
+Unrouted nets 1 at the end of iteration 54.
+Unrouted nets 1 at the end of iteration 55.
+Unrouted nets 1 at the end of iteration 56.
+Unrouted nets 0 at the end of iteration 57.
+Global Routing step 2 processed 427 nets, it takes 5.58 sec.
+Unrouted nets 59 at the end of iteration 0.
+Unrouted nets 40 at the end of iteration 1.
+Unrouted nets 20 at the end of iteration 2.
+Unrouted nets 19 at the end of iteration 3.
+Unrouted nets 12 at the end of iteration 4.
+Unrouted nets 7 at the end of iteration 5.
+Unrouted nets 2 at the end of iteration 6.
+Unrouted nets 0 at the end of iteration 7.
+Global Routing step 3 processed 87 nets, it takes 3.70 sec.
+Unrouted nets 1809 at the end of iteration 0.
+Unrouted nets 1301 at the end of iteration 1.
+Unrouted nets 1049 at the end of iteration 2.
+Unrouted nets 830 at the end of iteration 3.
+Unrouted nets 667 at the end of iteration 4.
+Unrouted nets 582 at the end of iteration 5.
+Unrouted nets 482 at the end of iteration 6.
+Unrouted nets 401 at the end of iteration 7.
+Unrouted nets 330 at the end of iteration 8.
+Unrouted nets 311 at the end of iteration 9.
+Unrouted nets 290 at the end of iteration 10.
+Unrouted nets 260 at the end of iteration 11.
+Unrouted nets 234 at the end of iteration 12.
+Unrouted nets 181 at the end of iteration 13.
+Unrouted nets 154 at the end of iteration 14.
+Unrouted nets 105 at the end of iteration 15.
+Unrouted nets 94 at the end of iteration 16.
+Unrouted nets 93 at the end of iteration 17.
+Unrouted nets 53 at the end of iteration 18.
+Unrouted nets 50 at the end of iteration 19.
+Unrouted nets 31 at the end of iteration 20.
+Unrouted nets 24 at the end of iteration 21.
+Unrouted nets 21 at the end of iteration 22.
+Unrouted nets 16 at the end of iteration 23.
+Unrouted nets 18 at the end of iteration 24.
+Unrouted nets 14 at the end of iteration 25.
+Unrouted nets 2 at the end of iteration 26.
+Unrouted nets 2 at the end of iteration 27.
+Unrouted nets 0 at the end of iteration 28.
+Global Routing step 4 processed 2707 nets, it takes 49.81 sec.
+Global routing takes 59.59 sec.
+Total 86622 subnets.
+    forward max bucket size 1490 , backward 617.
+        Unrouted nets 65674 at the end of iteration 0.
+    route iteration 0, CPU time elapsed 30.765625 sec.
+    forward max bucket size 1390 , backward 603.
+        Unrouted nets 58048 at the end of iteration 1.
+    route iteration 1, CPU time elapsed 29.453125 sec.
+    forward max bucket size 1326 , backward 900.
+        Unrouted nets 51265 at the end of iteration 2.
+    route iteration 2, CPU time elapsed 28.046875 sec.
+    forward max bucket size 20161 , backward 869.
+        Unrouted nets 45910 at the end of iteration 3.
+    route iteration 3, CPU time elapsed 27.546875 sec.
+    forward max bucket size 12007 , backward 849.
+        Unrouted nets 41350 at the end of iteration 4.
+    route iteration 4, CPU time elapsed 25.625000 sec.
+    forward max bucket size 41379 , backward 884.
+        Unrouted nets 37206 at the end of iteration 5.
+    route iteration 5, CPU time elapsed 25.234375 sec.
+    forward max bucket size 41180 , backward 721.
+        Unrouted nets 37638 at the end of iteration 6.
+    route iteration 6, CPU time elapsed 21.640625 sec.
+    forward max bucket size 29236 , backward 869.
+        Unrouted nets 35406 at the end of iteration 7.
+    route iteration 7, CPU time elapsed 20.484375 sec.
+    forward max bucket size 28489 , backward 1306.
+        Unrouted nets 32196 at the end of iteration 8.
+    route iteration 8, CPU time elapsed 19.125000 sec.
+    forward max bucket size 28407 , backward 859.
+        Unrouted nets 29385 at the end of iteration 9.
+    route iteration 9, CPU time elapsed 18.093750 sec.
+    forward max bucket size 53537 , backward 624.
+        Unrouted nets 26513 at the end of iteration 10.
+    route iteration 10, CPU time elapsed 16.046875 sec.
+    forward max bucket size 52149 , backward 765.
+        Unrouted nets 24054 at the end of iteration 11.
+    route iteration 11, CPU time elapsed 13.781250 sec.
+    forward max bucket size 28686 , backward 1053.
+        Unrouted nets 21939 at the end of iteration 12.
+    route iteration 12, CPU time elapsed 12.703125 sec.
+    forward max bucket size 30984 , backward 717.
+        Unrouted nets 19953 at the end of iteration 13.
+    route iteration 13, CPU time elapsed 11.968750 sec.
+    forward max bucket size 14019 , backward 861.
+        Unrouted nets 18096 at the end of iteration 14.
+    route iteration 14, CPU time elapsed 10.875000 sec.
+    forward max bucket size 39948 , backward 845.
+        Unrouted nets 16349 at the end of iteration 15.
+    route iteration 15, CPU time elapsed 10.406250 sec.
+    forward max bucket size 39468 , backward 1058.
+        Unrouted nets 15072 at the end of iteration 16.
+    route iteration 16, CPU time elapsed 9.171875 sec.
+    forward max bucket size 24664 , backward 889.
+        Unrouted nets 13682 at the end of iteration 17.
+    route iteration 17, CPU time elapsed 8.421875 sec.
+    forward max bucket size 21527 , backward 684.
+        Unrouted nets 12487 at the end of iteration 18.
+    route iteration 18, CPU time elapsed 7.734375 sec.
+    forward max bucket size 11193 , backward 1046.
+        Unrouted nets 11202 at the end of iteration 19.
+    route iteration 19, CPU time elapsed 7.234375 sec.
+    forward max bucket size 2628 , backward 660.
+        Unrouted nets 10402 at the end of iteration 20.
+    route iteration 20, CPU time elapsed 6.812500 sec.
+    forward max bucket size 9748 , backward 680.
+        Unrouted nets 9417 at the end of iteration 21.
+    route iteration 21, CPU time elapsed 6.343750 sec.
+    forward max bucket size 1210 , backward 915.
+        Unrouted nets 8625 at the end of iteration 22.
+    route iteration 22, CPU time elapsed 5.812500 sec.
+    forward max bucket size 2028 , backward 810.
+        Unrouted nets 8088 at the end of iteration 23.
+    route iteration 23, CPU time elapsed 5.593750 sec.
+    forward max bucket size 1030 , backward 603.
+        Unrouted nets 7496 at the end of iteration 24.
+    route iteration 24, CPU time elapsed 5.015625 sec.
+    forward max bucket size 1911 , backward 1104.
+        Unrouted nets 6859 at the end of iteration 25.
+    route iteration 25, CPU time elapsed 5.062500 sec.
+    forward max bucket size 1962 , backward 944.
+        Unrouted nets 6359 at the end of iteration 26.
+    route iteration 26, CPU time elapsed 4.515625 sec.
+    forward max bucket size 8090 , backward 927.
+        Unrouted nets 5862 at the end of iteration 27.
+    route iteration 27, CPU time elapsed 3.984375 sec.
+    forward max bucket size 3417 , backward 835.
+        Unrouted nets 5522 at the end of iteration 28.
+    route iteration 28, CPU time elapsed 4.015625 sec.
+    forward max bucket size 851 , backward 716.
+        Unrouted nets 5063 at the end of iteration 29.
+    route iteration 29, CPU time elapsed 3.843750 sec.
+    forward max bucket size 1791 , backward 719.
+        Unrouted nets 4717 at the end of iteration 30.
+    route iteration 30, CPU time elapsed 3.671875 sec.
+    forward max bucket size 8023 , backward 909.
+        Unrouted nets 4334 at the end of iteration 31.
+    route iteration 31, CPU time elapsed 3.437500 sec.
+    forward max bucket size 11467 , backward 775.
+        Unrouted nets 4114 at the end of iteration 32.
+    route iteration 32, CPU time elapsed 3.343750 sec.
+    forward max bucket size 1415 , backward 913.
+        Unrouted nets 3808 at the end of iteration 33.
+    route iteration 33, CPU time elapsed 3.046875 sec.
+    forward max bucket size 55096 , backward 1205.
+        Unrouted nets 3583 at the end of iteration 34.
+    route iteration 34, CPU time elapsed 3.328125 sec.
+    forward max bucket size 56540 , backward 686.
+        Unrouted nets 3351 at the end of iteration 35.
+    route iteration 35, CPU time elapsed 3.203125 sec.
+    forward max bucket size 43575 , backward 957.
+        Unrouted nets 3181 at the end of iteration 36.
+    route iteration 36, CPU time elapsed 2.921875 sec.
+    forward max bucket size 9319 , backward 1051.
+        Unrouted nets 3062 at the end of iteration 37.
+    route iteration 37, CPU time elapsed 2.562500 sec.
+    forward max bucket size 54038 , backward 994.
+        Unrouted nets 2855 at the end of iteration 38.
+    route iteration 38, CPU time elapsed 2.765625 sec.
+    forward max bucket size 1012 , backward 1059.
+        Unrouted nets 2582 at the end of iteration 39.
+    route iteration 39, CPU time elapsed 2.312500 sec.
+    forward max bucket size 1152 , backward 543.
+        Unrouted nets 2466 at the end of iteration 40.
+    route iteration 40, CPU time elapsed 2.265625 sec.
+    forward max bucket size 53737 , backward 492.
+        Unrouted nets 2211 at the end of iteration 41.
+    route iteration 41, CPU time elapsed 2.406250 sec.
+    forward max bucket size 16198 , backward 525.
+        Unrouted nets 2037 at the end of iteration 42.
+    route iteration 42, CPU time elapsed 2.031250 sec.
+    forward max bucket size 997 , backward 564.
+        Unrouted nets 1860 at the end of iteration 43.
+    route iteration 43, CPU time elapsed 1.859375 sec.
+    forward max bucket size 958 , backward 499.
+        Unrouted nets 1815 at the end of iteration 44.
+    route iteration 44, CPU time elapsed 1.812500 sec.
+    forward max bucket size 11577 , backward 564.
+        Unrouted nets 1728 at the end of iteration 45.
+    route iteration 45, CPU time elapsed 1.843750 sec.
+    forward max bucket size 1419 , backward 585.
+        Unrouted nets 1578 at the end of iteration 46.
+    route iteration 46, CPU time elapsed 1.703125 sec.
+    forward max bucket size 1394 , backward 607.
+        Unrouted nets 1521 at the end of iteration 47.
+    route iteration 47, CPU time elapsed 1.640625 sec.
+    forward max bucket size 786 , backward 548.
+        Unrouted nets 1385 at the end of iteration 48.
+    route iteration 48, CPU time elapsed 1.531250 sec.
+    forward max bucket size 792 , backward 576.
+        Unrouted nets 1280 at the end of iteration 49.
+    route iteration 49, CPU time elapsed 1.546875 sec.
+    forward max bucket size 13835 , backward 632.
+        Unrouted nets 1178 at the end of iteration 50.
+    route iteration 50, CPU time elapsed 1.625000 sec.
+    forward max bucket size 14039 , backward 308.
+        Unrouted nets 1085 at the end of iteration 51.
+    route iteration 51, CPU time elapsed 1.406250 sec.
+    forward max bucket size 892 , backward 580.
+        Unrouted nets 1044 at the end of iteration 52.
+    route iteration 52, CPU time elapsed 1.265625 sec.
+    forward max bucket size 831 , backward 490.
+        Unrouted nets 958 at the end of iteration 53.
+    route iteration 53, CPU time elapsed 1.328125 sec.
+    forward max bucket size 1168 , backward 537.
+        Unrouted nets 903 at the end of iteration 54.
+    route iteration 54, CPU time elapsed 1.218750 sec.
+    forward max bucket size 1140 , backward 491.
+        Unrouted nets 834 at the end of iteration 55.
+    route iteration 55, CPU time elapsed 1.234375 sec.
+    forward max bucket size 1143 , backward 456.
+        Unrouted nets 781 at the end of iteration 56.
+    route iteration 56, CPU time elapsed 1.218750 sec.
+    forward max bucket size 4796 , backward 368.
+        Unrouted nets 721 at the end of iteration 57.
+    route iteration 57, CPU time elapsed 1.218750 sec.
+    forward max bucket size 13164 , backward 451.
+        Unrouted nets 672 at the end of iteration 58.
+    route iteration 58, CPU time elapsed 1.125000 sec.
+    forward max bucket size 3158 , backward 403.
+        Unrouted nets 611 at the end of iteration 59.
+    route iteration 59, CPU time elapsed 1.140625 sec.
+    forward max bucket size 1306 , backward 455.
+        Unrouted nets 603 at the end of iteration 60.
+    route iteration 60, CPU time elapsed 1.078125 sec.
+    forward max bucket size 6559 , backward 315.
+        Unrouted nets 638 at the end of iteration 61.
+    route iteration 61, CPU time elapsed 1.187500 sec.
+    forward max bucket size 827 , backward 299.
+        Unrouted nets 576 at the end of iteration 62.
+    route iteration 62, CPU time elapsed 1.125000 sec.
+    forward max bucket size 1450 , backward 319.
+        Unrouted nets 543 at the end of iteration 63.
+    route iteration 63, CPU time elapsed 1.140625 sec.
+    forward max bucket size 544 , backward 431.
+        Unrouted nets 522 at the end of iteration 64.
+    route iteration 64, CPU time elapsed 1.109375 sec.
+    forward max bucket size 1018 , backward 545.
+        Unrouted nets 472 at the end of iteration 65.
+    route iteration 65, CPU time elapsed 0.906250 sec.
+    forward max bucket size 1006 , backward 777.
+        Unrouted nets 405 at the end of iteration 66.
+    route iteration 66, CPU time elapsed 0.984375 sec.
+    forward max bucket size 732 , backward 279.
+        Unrouted nets 377 at the end of iteration 67.
+    route iteration 67, CPU time elapsed 0.968750 sec.
+    forward max bucket size 816 , backward 442.
+        Unrouted nets 367 at the end of iteration 68.
+    route iteration 68, CPU time elapsed 0.937500 sec.
+    forward max bucket size 650 , backward 332.
+        Unrouted nets 407 at the end of iteration 69.
+    route iteration 69, CPU time elapsed 0.875000 sec.
+    forward max bucket size 536 , backward 436.
+        Unrouted nets 405 at the end of iteration 70.
+    route iteration 70, CPU time elapsed 0.937500 sec.
+    forward max bucket size 647 , backward 320.
+        Unrouted nets 397 at the end of iteration 71.
+    route iteration 71, CPU time elapsed 0.921875 sec.
+    forward max bucket size 995 , backward 478.
+        Unrouted nets 337 at the end of iteration 72.
+    route iteration 72, CPU time elapsed 0.906250 sec.
+    forward max bucket size 689 , backward 404.
+        Unrouted nets 305 at the end of iteration 73.
+    route iteration 73, CPU time elapsed 0.906250 sec.
+    forward max bucket size 815 , backward 533.
+        Unrouted nets 308 at the end of iteration 74.
+    route iteration 74, CPU time elapsed 0.890625 sec.
+    forward max bucket size 751 , backward 535.
+        Unrouted nets 295 at the end of iteration 75.
+    route iteration 75, CPU time elapsed 0.906250 sec.
+    forward max bucket size 26160 , backward 429.
+        Unrouted nets 311 at the end of iteration 76.
+    route iteration 76, CPU time elapsed 1.015625 sec.
+    forward max bucket size 17753 , backward 478.
+        Unrouted nets 293 at the end of iteration 77.
+    route iteration 77, CPU time elapsed 0.906250 sec.
+    forward max bucket size 597 , backward 483.
+        Unrouted nets 294 at the end of iteration 78.
+    route iteration 78, CPU time elapsed 0.921875 sec.
+    forward max bucket size 499 , backward 855.
+        Unrouted nets 284 at the end of iteration 79.
+    route iteration 79, CPU time elapsed 0.921875 sec.
+    forward max bucket size 391 , backward 834.
+        Unrouted nets 250 at the end of iteration 80.
+    route iteration 80, CPU time elapsed 0.843750 sec.
+    forward max bucket size 398 , backward 323.
+        Unrouted nets 261 at the end of iteration 81.
+    route iteration 81, CPU time elapsed 0.921875 sec.
+    forward max bucket size 410 , backward 503.
+        Unrouted nets 245 at the end of iteration 82.
+    route iteration 82, CPU time elapsed 0.859375 sec.
+    forward max bucket size 323 , backward 381.
+        Unrouted nets 239 at the end of iteration 83.
+    route iteration 83, CPU time elapsed 0.843750 sec.
+    forward max bucket size 404 , backward 292.
+        Unrouted nets 246 at the end of iteration 84.
+    route iteration 84, CPU time elapsed 0.921875 sec.
+    forward max bucket size 606 , backward 420.
+        Unrouted nets 243 at the end of iteration 85.
+    route iteration 85, CPU time elapsed 0.843750 sec.
+    forward max bucket size 907 , backward 572.
+        Unrouted nets 250 at the end of iteration 86.
+    route iteration 86, CPU time elapsed 0.781250 sec.
+    forward max bucket size 576 , backward 325.
+        Unrouted nets 220 at the end of iteration 87.
+    route iteration 87, CPU time elapsed 0.875000 sec.
+    forward max bucket size 550 , backward 347.
+        Unrouted nets 186 at the end of iteration 88.
+    route iteration 88, CPU time elapsed 0.796875 sec.
+    forward max bucket size 217 , backward 313.
+        Unrouted nets 176 at the end of iteration 89.
+    route iteration 89, CPU time elapsed 0.828125 sec.
+    forward max bucket size 568 , backward 363.
+        Unrouted nets 162 at the end of iteration 90.
+    route iteration 90, CPU time elapsed 0.765625 sec.
+    forward max bucket size 893 , backward 343.
+        Unrouted nets 145 at the end of iteration 91.
+    route iteration 91, CPU time elapsed 0.843750 sec.
+    forward max bucket size 475 , backward 265.
+        Unrouted nets 133 at the end of iteration 92.
+    route iteration 92, CPU time elapsed 0.765625 sec.
+    forward max bucket size 291 , backward 155.
+        Unrouted nets 127 at the end of iteration 93.
+    route iteration 93, CPU time elapsed 0.718750 sec.
+    forward max bucket size 266 , backward 210.
+        Unrouted nets 104 at the end of iteration 94.
+    route iteration 94, CPU time elapsed 0.765625 sec.
+    forward max bucket size 701 , backward 439.
+        Unrouted nets 93 at the end of iteration 95.
+    route iteration 95, CPU time elapsed 0.734375 sec.
+    forward max bucket size 452 , backward 242.
+        Unrouted nets 100 at the end of iteration 96.
+    route iteration 96, CPU time elapsed 0.781250 sec.
+    forward max bucket size 208 , backward 284.
+        Unrouted nets 98 at the end of iteration 97.
+    route iteration 97, CPU time elapsed 0.781250 sec.
+    forward max bucket size 380 , backward 506.
+        Unrouted nets 93 at the end of iteration 98.
+    route iteration 98, CPU time elapsed 0.796875 sec.
+    forward max bucket size 394 , backward 220.
+        Unrouted nets 86 at the end of iteration 99.
+    route iteration 99, CPU time elapsed 0.750000 sec.
+    forward max bucket size 565 , backward 174.
+        Unrouted nets 66 at the end of iteration 100.
+    route iteration 100, CPU time elapsed 0.781250 sec.
+    forward max bucket size 244 , backward 113.
+        Unrouted nets 68 at the end of iteration 101.
+    route iteration 101, CPU time elapsed 0.671875 sec.
+    forward max bucket size 284 , backward 143.
+        Unrouted nets 76 at the end of iteration 102.
+    route iteration 102, CPU time elapsed 0.750000 sec.
+    forward max bucket size 101 , backward 259.
+        Unrouted nets 66 at the end of iteration 103.
+    route iteration 103, CPU time elapsed 0.765625 sec.
+    forward max bucket size 346 , backward 171.
+        Unrouted nets 68 at the end of iteration 104.
+    route iteration 104, CPU time elapsed 0.750000 sec.
+    forward max bucket size 298 , backward 172.
+        Unrouted nets 73 at the end of iteration 105.
+    route iteration 105, CPU time elapsed 0.718750 sec.
+    forward max bucket size 233 , backward 112.
+        Unrouted nets 47 at the end of iteration 106.
+    route iteration 106, CPU time elapsed 0.734375 sec.
+    forward max bucket size 233 , backward 153.
+        Unrouted nets 36 at the end of iteration 107.
+    route iteration 107, CPU time elapsed 0.734375 sec.
+    forward max bucket size 477 , backward 217.
+        Unrouted nets 32 at the end of iteration 108.
+    route iteration 108, CPU time elapsed 0.734375 sec.
+    forward max bucket size 272 , backward 115.
+        Unrouted nets 40 at the end of iteration 109.
+    route iteration 109, CPU time elapsed 0.718750 sec.
+    forward max bucket size 43 , backward 32.
+        Unrouted nets 42 at the end of iteration 110.
+    route iteration 110, CPU time elapsed 0.750000 sec.
+    forward max bucket size 118 , backward 28.
+        Unrouted nets 43 at the end of iteration 111.
+    route iteration 111, CPU time elapsed 0.734375 sec.
+    forward max bucket size 837 , backward 414.
+        Unrouted nets 51 at the end of iteration 112.
+    route iteration 112, CPU time elapsed 0.750000 sec.
+    forward max bucket size 653 , backward 601.
+        Unrouted nets 61 at the end of iteration 113.
+    route iteration 113, CPU time elapsed 0.703125 sec.
+    forward max bucket size 639 , backward 544.
+        Unrouted nets 71 at the end of iteration 114.
+    route iteration 114, CPU time elapsed 0.734375 sec.
+    forward max bucket size 330 , backward 299.
+        Unrouted nets 83 at the end of iteration 115.
+    route iteration 115, CPU time elapsed 0.750000 sec.
+    forward max bucket size 544 , backward 423.
+        Unrouted nets 96 at the end of iteration 116.
+    route iteration 116, CPU time elapsed 0.781250 sec.
+    forward max bucket size 714 , backward 413.
+        Unrouted nets 101 at the end of iteration 117.
+    route iteration 117, CPU time elapsed 0.796875 sec.
+    forward max bucket size 442 , backward 137.
+        Unrouted nets 118 at the end of iteration 118.
+    route iteration 118, CPU time elapsed 0.750000 sec.
+    forward max bucket size 965 , backward 440.
+        Unrouted nets 105 at the end of iteration 119.
+    route iteration 119, CPU time elapsed 0.796875 sec.
+    forward max bucket size 846 , backward 339.
+        Unrouted nets 95 at the end of iteration 120.
+    route iteration 120, CPU time elapsed 0.765625 sec.
+    forward max bucket size 862 , backward 522.
+        Unrouted nets 109 at the end of iteration 121.
+    route iteration 121, CPU time elapsed 0.703125 sec.
+    forward max bucket size 418 , backward 221.
+        Unrouted nets 90 at the end of iteration 122.
+    route iteration 122, CPU time elapsed 0.750000 sec.
+    forward max bucket size 459 , backward 362.
+        Unrouted nets 89 at the end of iteration 123.
+    route iteration 123, CPU time elapsed 0.828125 sec.
+    forward max bucket size 424 , backward 321.
+        Unrouted nets 84 at the end of iteration 124.
+    route iteration 124, CPU time elapsed 0.812500 sec.
+    forward max bucket size 478 , backward 387.
+        Unrouted nets 77 at the end of iteration 125.
+    route iteration 125, CPU time elapsed 0.765625 sec.
+    forward max bucket size 502 , backward 247.
+        Unrouted nets 82 at the end of iteration 126.
+    route iteration 126, CPU time elapsed 0.750000 sec.
+    forward max bucket size 587 , backward 270.
+        Unrouted nets 78 at the end of iteration 127.
+    route iteration 127, CPU time elapsed 0.781250 sec.
+    forward max bucket size 508 , backward 303.
+        Unrouted nets 66 at the end of iteration 128.
+    route iteration 128, CPU time elapsed 0.781250 sec.
+    forward max bucket size 644 , backward 266.
+        Unrouted nets 73 at the end of iteration 129.
+    route iteration 129, CPU time elapsed 0.750000 sec.
+    forward max bucket size 355 , backward 266.
+        Unrouted nets 55 at the end of iteration 130.
+    route iteration 130, CPU time elapsed 0.718750 sec.
+    forward max bucket size 87 , backward 127.
+        Unrouted nets 53 at the end of iteration 131.
+    route iteration 131, CPU time elapsed 0.781250 sec.
+    forward max bucket size 32 , backward 25.
+        Unrouted nets 48 at the end of iteration 132.
+    route iteration 132, CPU time elapsed 0.734375 sec.
+    forward max bucket size 549 , backward 529.
+        Unrouted nets 54 at the end of iteration 133.
+    route iteration 133, CPU time elapsed 0.750000 sec.
+    forward max bucket size 556 , backward 276.
+        Unrouted nets 54 at the end of iteration 134.
+    route iteration 134, CPU time elapsed 0.734375 sec.
+    forward max bucket size 260 , backward 332.
+        Unrouted nets 44 at the end of iteration 135.
+    route iteration 135, CPU time elapsed 0.781250 sec.
+    forward max bucket size 1814 , backward 187.
+        Unrouted nets 47 at the end of iteration 136.
+    route iteration 136, CPU time elapsed 0.781250 sec.
+    forward max bucket size 725 , backward 248.
+        Unrouted nets 48 at the end of iteration 137.
+    route iteration 137, CPU time elapsed 0.734375 sec.
+    forward max bucket size 803 , backward 184.
+        Unrouted nets 43 at the end of iteration 138.
+    route iteration 138, CPU time elapsed 0.750000 sec.
+    forward max bucket size 171 , backward 261.
+        Unrouted nets 38 at the end of iteration 139.
+    route iteration 139, CPU time elapsed 0.734375 sec.
+    forward max bucket size 152 , backward 67.
+        Unrouted nets 40 at the end of iteration 140.
+    route iteration 140, CPU time elapsed 0.734375 sec.
+    forward max bucket size 225 , backward 141.
+        Unrouted nets 53 at the end of iteration 141.
+    route iteration 141, CPU time elapsed 0.734375 sec.
+    forward max bucket size 454 , backward 356.
+        Unrouted nets 54 at the end of iteration 142.
+    route iteration 142, CPU time elapsed 0.750000 sec.
+    forward max bucket size 239 , backward 180.
+        Unrouted nets 49 at the end of iteration 143.
+    route iteration 143, CPU time elapsed 0.718750 sec.
+    forward max bucket size 517 , backward 106.
+        Unrouted nets 34 at the end of iteration 144.
+    route iteration 144, CPU time elapsed 0.750000 sec.
+    forward max bucket size 299 , backward 241.
+        Unrouted nets 35 at the end of iteration 145.
+    route iteration 145, CPU time elapsed 0.718750 sec.
+    forward max bucket size 299 , backward 222.
+        Unrouted nets 26 at the end of iteration 146.
+    route iteration 146, CPU time elapsed 0.718750 sec.
+    forward max bucket size 135 , backward 280.
+        Unrouted nets 17 at the end of iteration 147.
+    route iteration 147, CPU time elapsed 0.718750 sec.
+    forward max bucket size 941 , backward 655.
+        Unrouted nets 27 at the end of iteration 148.
+    route iteration 148, CPU time elapsed 0.718750 sec.
+    forward max bucket size 642 , backward 344.
+        Unrouted nets 42 at the end of iteration 149.
+    route iteration 149, CPU time elapsed 0.718750 sec.
+    forward max bucket size 517 , backward 198.
+        Unrouted nets 39 at the end of iteration 150.
+    route iteration 150, CPU time elapsed 0.718750 sec.
+    forward max bucket size 338 , backward 143.
+        Unrouted nets 38 at the end of iteration 151.
+    route iteration 151, CPU time elapsed 0.718750 sec.
+    forward max bucket size 330 , backward 64.
+        Unrouted nets 30 at the end of iteration 152.
+    route iteration 152, CPU time elapsed 0.734375 sec.
+    forward max bucket size 55 , backward 66.
+        Unrouted nets 25 at the end of iteration 153.
+    route iteration 153, CPU time elapsed 0.687500 sec.
+    forward max bucket size 55 , backward 122.
+        Unrouted nets 10 at the end of iteration 154.
+    route iteration 154, CPU time elapsed 0.734375 sec.
+    forward max bucket size 211 , backward 185.
+        Unrouted nets 5 at the end of iteration 155.
+    route iteration 155, CPU time elapsed 0.718750 sec.
+    forward max bucket size 22 , backward 15.
+        Unrouted nets 2 at the end of iteration 156.
+    route iteration 156, CPU time elapsed 0.703125 sec.
+    forward max bucket size 12 , backward 13.
+        Unrouted nets 2 at the end of iteration 157.
+    route iteration 157, CPU time elapsed 0.703125 sec.
+    forward max bucket size 11 , backward 12.
+        Unrouted nets 2 at the end of iteration 158.
+    route iteration 158, CPU time elapsed 0.656250 sec.
+    forward max bucket size 6 , backward 11.
+        Unrouted nets 0 at the end of iteration 159.
+    route iteration 159, CPU time elapsed 0.671875 sec.
+Detailed routing takes 159 iterations
+I: Design net coms2_reg_config/clock_20k is routed by general path.
+C: Route-2036: The clock path from coms2_reg_config/clock_20k/opit_0_inv:Q to coms2_reg_config/config_step_reg[1]/opit_0_inv_srl:CLK is routed by SRB.
+I: Design net coms1_reg_config/clock_20k is routed by general path.
+C: Route-2036: The clock path from coms1_reg_config/clock_20k/opit_0_inv:Q to coms1_reg_config/config_step_reg[1]/opit_0_inv_srl:CLK is routed by SRB.
+I: Design net clk_125Mhz is routed by general path.
+C: Route-2036: The clock path from u_gtp/opit_2:DI_TO_CLK to ddr_ref_rst[0]/opit_0_srl:CLK is routed by SRB.
+Detailed routing takes 598.16 sec.
+Start fix hold violation.
+Build tmp routing results takes 2.41 sec.
+Timing analysis takes 1.23 sec.
+Hold violation fix iter 0 takes 62.25 sec, total_step_forward 5754129.
+Incremental timing analysis takes 0.86 sec.
+Hold violation fix iter 1 takes 15.59 sec, total_step_forward 2253387.
+Incremental timing analysis takes 1.02 sec.
+Hold violation fix iter 2 takes 14.20 sec, total_step_forward 2055488.
+Incremental timing analysis takes 0.97 sec.
+Hold violation fix iter 3 takes 14.08 sec, total_step_forward 2024477.
+Incremental timing analysis takes 0.92 sec.
+Hold violation fix iter 4 takes 14.06 sec, total_step_forward 1986179.
+Incremental timing analysis takes 1.03 sec.
+Hold violation fix iter 5 takes 14.80 sec, total_step_forward 1993473.
+Hold Violation Fix in router takes 6 iterations.
+Fix hold violation Finished.
+Hold Violation Fix in router takes 152.94 sec.
+
+Dispose routing result:
+    Collect routing result.
+    Delete unused device instances.
+    Annotate routing result.
+    Change LUT configuration.
+    Dispose misc instances.
+    Annotate routing result again.
+Finish routing takes 9.42 sec.
+Used SRB routing arc is 957352.
+Cleanup routing takes 0.06 sec.
+Routing done.
+Total routing takes 849.39 sec.
+
+
+Device Utilization Summary :
++-------------------------------------------------------------------------------+
+| Logic Utilization           | Used      | Available     | Utilization(%)     
++-------------------------------------------------------------------------------+
+| Use of ADC                  | 0         | 1             | 0                  
+| Use of ANALOG               | 0         | 1             | 0                  
+| Use of APM                  | 146       | 240           | 61                 
+| Use of BKCL                 | 6         | 6             | 100                
+| Use of CCS                  | 1         | 1             | 100                
+| Use of CLMA                 | 10055     | 11675         | 87                 
+|   FF                        | 20683     | 93400         | 23                 
+|   LUT                       | 32762     | 46700         | 71                 
+|   LUT-FF pairs              | 8894      | 46700         | 20                 
+| Use of CLMS                 | 4255      | 4975          | 86                 
+|   FF                        | 7420      | 39800         | 19                 
+|   LUT                       | 12513     | 19900         | 63                 
+|   LUT-FF pairs              | 2992      | 19900         | 16                 
+|   Distributed RAM           | 2307      | 19900         | 12                 
+| Use of DDRPHY_CPD           | 1         | 12            | 9                  
+| Use of DDRPHY_IOCLK_DIV     | 2         | 6             | 34                 
+| Use of DDR_PHY              | 7         | 24            | 30                 
+| Use of DRM                  | 155       | 155           | 100                
+| Use of GPLL                 | 3         | 6             | 50                 
+| Use of GSEB                 | 0         | 218           | 0                  
+| Use of HARD0                | 4164      | 10550         | 40                 
+| Use of HCKB                 | 47        | 96            | 49                 
+|  HCKB dataused              | 2         | 96            | 3                  
+| Use of HCKMUX_TEST          | 0         | 8             | 0                  
+| Use of HSSTLP               | 0         | 2             | 0                  
+| Use of IO                   | 149       | 300           | 50                 
+|   IOBD                      | 75        | 144           | 53                 
+|   IOBS                      | 74        | 156           | 48                 
+| Use of IOCKB                | 0         | 24            | 0                  
+| Use of IOCKMUX_TEST         | 0         | 6             | 0                  
+| Use of IOLHR                | 148       | 300           | 50                 
+| Use of KEYRAM               | 0         | 1             | 0                  
+| Use of MFG_TEST             | 0         | 1             | 0                  
+| Use of MRCKB                | 1         | 12            | 9                  
+| Use of MRCKMUX_TEST         | 0         | 6             | 0                  
+| Use of MRPOSTMUX_TEST       | 0         | 6             | 0                  
+| Use of PCIE                 | 0         | 1             | 0                  
+| Use of PCKMUX_TEST          | 0         | 12            | 0                  
+| Use of PLLMRMUX_TEST        | 0         | 6             | 0                  
+| Use of PLLREFMUX_TEST       | 0         | 6             | 0                  
+| Use of PPLL                 | 2         | 6             | 34                 
+| Use of PREGMUXC_TEST        | 0         | 4             | 0                  
+| Use of PREGMUXLR_TEST       | 0         | 6             | 0                  
+| Use of RCKB                 | 6         | 24            | 25                 
+|  RCKB dataused              | 3         | 24            | 13                 
+| Use of RCKMUX_TEST          | 0         | 6             | 0                  
+| Use of SCANCHAIN            | 0         | 1             | 0                  
+| Use of SCKMUX_TEST          | 0         | 12            | 0                  
+| Use of SFB                  | 0         | 2225          | 0                  
+| Use of SPAD                 | 0         | 8             | 0                  
+| Use of TSERDES              | 14        | 48            | 30                 
+| Use of USCM                 | 9         | 32            | 29                 
+|  USCM dataused              | 0         | 32            | 0                  
+| Use of USCMMUX_TEST         | 0         | 32            | 0                  
++-------------------------------------------------------------------------------+
+
+Finished routing.
+Design 'yolo_camera_top' has been routed successfully.
+Saving design to DB.
+Action pnr: Real time elapsed is 0h:17m:10s
+Action pnr: CPU time elapsed is 0h:16m:22s
+Action pnr: Process CPU time elapsed is 0h:17m:53s
+Current time: Mon Nov 16 11:27:44 2026
+Action pnr: Peak memory pool usage is 4,319 MB
+Action from pnr to pnr: Total Real Time elapsed is 0h:17m:10s
+Action from pnr to pnr: Total CPU time elapsed is 0h:16m:22s
+Action from pnr to pnr: Total Process CPU Time elapsed is 0h:17m:53s
+Process "Place & Route" done.
+Executing : pnr -input_db_file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/yolo_camera_top_map.adf -input_place_db_file D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/mapped_input/placed_input.adf -plc_decongestion 4 -early_block_placement Global -optimize_multi_corner_timing -slack_prior_in_global_router TRUE -pin_cost_increasing_speed 300 -share_router_control_signal TRUE -fast_router TRUE -gplace_seed 11 -groute_seed 7 -fix_hold_violation_iterations 300 -fix_hold_violation_threshold 500 -fix_hold_violation_in_route TRUE -fix_hold_violation_threshold_for_clock_path_cross_srb 200 -fix_hold_violation_threshold_for_clk_tree 200 successfully.
+
+
+Executing : report_timing
+
+
+Process "Report Timing" started.
+Current time: Mon Nov 16 11:27:46 2026
+Compiling architecture definition.
+Analyzing project file 'D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/overnight_020_full_004/input/yolo/sources/implement.pds'.
+Compiling verification operator library.
+Compiling common defs.
+Compiling prim grid devices.
+Compiling gate devices.
+Compiling gate operators.
+Building architecture model.
+Loading device packaging model.
+Reading design from pnr DB.
+Start Report Post-PnR timing.
+NOTE: The technology fpga was specified.
+NOTE: delay_model specified was generic_cmos.
+NOTE: Using the fpga syntax tables...
+Totals:
+ Calls to malloc = 0
+ Calls to calloc = 5993935
+
+W: Flow-4065: The port cmos2_pclk has a sdc constraint, but it do not connect to any pin.
+Constructing timing graph ...
+Timing graph has been constructed successfully
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms1_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I4->L5' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam1_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I4' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L5'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6L5' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/N12/gateop_LUT6DL5_perm/I0' to: 'coms2_reg_config/N12/gateop_LUT6DL5_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3003: The timing arc 'I0->L6' of 'gopLUT6' are non_unate, The timing analyser will assume pos_unate for these arcs in clock propgation. Clock: 'cam2_sccb'  from 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/I0' to: 'coms2_reg_config/u1/N23[0]/LUT6_inst_perm/L6'
+C: STA-3009: The clock dvp2 is not connected to any clock endpoints,it will be treated as a normal port or pin.
+C: STA-3009: The clock dvp2_pixel is not connected to any clock endpoints,it will be treated as a normal port or pin.
+W: Timing-4087: Port 'cmos1_scl' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos1_sda' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos2_scl' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos2_sda' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'iic_tx_sda' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'iic_tx_sda' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[0]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[0]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[1]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[1]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[2]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[2]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[3]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[3]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[4]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[4]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[5]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[5]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[6]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[6]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[7]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[7]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[8]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[8]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[9]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[9]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[10]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[10]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[11]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[11]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[12]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[12]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[13]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[13]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[14]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[14]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[15]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[15]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[16]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[16]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[17]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[17]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[18]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[18]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[19]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[19]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[20]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[20]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[21]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[21]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[22]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[22]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[23]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[23]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[24]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[24]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[25]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[25]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[26]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[26]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[27]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[27]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[28]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[28]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[29]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[29]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[30]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[30]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'mem_dq[31]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'mem_dq[31]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs_n[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs_n[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs_n[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dqs_n[3]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'tf_cmd' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'tf_cmd' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'tf_dat[0]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'tf_dat[0]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'tf_dat[1]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'tf_dat[1]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'tf_dat[2]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'tf_dat[2]' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'tf_dat[3]' is not constrained, it is treated as combinational input.
+W: Timing-4087: Port 'tf_dat[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[4]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[5]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[6]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'b_out[7]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos1_reset' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos2_reset' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos_init_done[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'cmos_init_done[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'ddr_init_done' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'de_out' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[4]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[5]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[6]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'g_out[7]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'hdmi_audio_bclk' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'hdmi_audio_data' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'hdmi_audio_data1' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'hdmi_audio_lrclk' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'hdmi_int_led' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'heart_beat_led' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'hs_out' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'iic_tx_scl' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[4]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[5]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[6]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[7]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[8]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[9]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[10]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[11]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[12]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[13]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_a[14]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_ba[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_ba[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_ba[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_cas_n' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_ck' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_ck_n' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_cke' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_cs_n' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dm[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dm[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dm[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_dm[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_odt' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_ras_n' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_rst_n' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'mem_we_n' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'pix_clk' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[4]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[5]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[6]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'r_out[7]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'rstn_out' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[0]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[1]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[2]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'servo_pwm[3]' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'tf_clk' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'uart_txd' is not constrained, it is treated as combinational output.
+W: Timing-4087: Port 'vs_out' is not constrained, it is treated as combinational output.
+W: Timing-4086: Port 'cmos1_data[0]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[1]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[2]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[3]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[4]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[5]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[6]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_data[7]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_href' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'cmos1_vsync' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key0_n' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[0]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[1]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[2]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'key_n[3]' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'tf_detect_n' is not constrained, it is treated as combinational input.
+W: Timing-4086: Port 'uart_rxd' is not constrained, it is treated as combinational input.
+Report timing is finished successfully.
+Action report_timing: Real time elapsed is 0h:1m:8s
+Action report_timing: CPU time elapsed is 0h:1m:2s
+Action report_timing: Process CPU time elapsed is 0h:1m:18s
+Current time: Mon Nov 16 11:28:53 2026
+Action report_timing: Peak memory pool usage is 3,447 MB
+Action from pnr to report_timing: Total Real Time elapsed is 0h:18m:18s
+Action from pnr to report_timing: Total CPU time elapsed is 0h:17m:24s
+Action from pnr to report_timing: Total Process CPU Time elapsed is 0h:19m:11s
+Process "Report Timing" done.
+Executing : report_timing successfully.
+FULL_APPLICATION_IMPLEMENTATION_COMPLETE

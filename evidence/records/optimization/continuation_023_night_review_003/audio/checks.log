@@ -1,0 +1,89 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 03:35:27 on Nov 17,2026
+vlog -sv "+incdir+D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\tonight_20261117\audio_final_001" D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\candidates\continuation_023\source\extensions\business\application\rtl\trash_voice_rom_player.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\candidates\continuation_023\source\extensions\business\application\rtl\trash_i2s_tx.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\candidates\continuation_023\source\extensions\business\application\rtl\trash_voice_i2s.v D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\tonight_20261117\audio_final_001\tb_overnight_adpcm.sv D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\tests\tb_feedback_voice_route.sv 
+-- Compiling module trash_voice_rom_player
+-- Compiling module trash_i2s_tx
+-- Compiling module trash_voice_i2s
+-- Compiling module tb_overnight_adpcm
+-- Compiling module tb_feedback_voice_route
+
+Top level modules:
+	tb_overnight_adpcm
+	tb_feedback_voice_route
+End time: 03:35:27 on Nov 17,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+Reading D:/FPGA_Project/Modelism/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c tb_overnight_adpcm -do "onerror {quit -code 1}; run -all; quit -code 0" 
+# Start time: 03:35:28 on Nov 17,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_overnight_adpcm(fast)
+# onerror {quit -code 1}
+#  Warning: onerror command for use within macro
+#  run -all
+# ASSET_PASS 1 samples69592
+# ASSET_PASS 2 samples23532
+# ASSET_PASS 3 samples30008
+# ASSET_PASS 4 samples44708
+# ASSET_PASS 5 samples45532
+# ASSET_PASS 6 samples45496
+# ASSET_PASS 7 samples53072
+# ASSET_PASS 8 samples61836
+# ASSET_PASS 9 samples100812
+# ASSET_PASS 10 samples81604
+# ASSET_PASS 11 samples73236
+# ASSET_PASS 12 samples84160
+# ASSET_PASS 13 samples81348
+# ASSET_PASS 14 samples137028
+# ASSET_PASS 1 samples69592
+# TEST_PASS overnight ADPCM: all14 clips bit-exact to audioop, four repeats, stalls, invalid request, preemption, reset; transfers=1001556
+# ** Note: $finish    : D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/build/tonight_20261117/audio_final_001/tb_overnight_adpcm.sv(49)
+#    Time: 18065110 ns  Iteration: 1  Instance: /tb_overnight_adpcm
+# End time: 03:35:31 on Nov 17,2026, Elapsed time: 0:00:03
+# Errors: 0, Warnings: 0
+Reading D:/FPGA_Project/Modelism/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c tb_feedback_voice_route -do "onerror {quit -code 1}; run -all; quit -code 0" 
+# Start time: 03:35:32 on Nov 17,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_feedback_voice_route(fast)
+# onerror {quit -code 1}
+#  Warning: onerror command for use within macro
+#  run -all
+# TEST_PASS voice route: page14 exactly once, quiz suffix isolated, page exit/re-entry and media cancellation
+# ** Note: $finish    : D:/FPGA_Project/zi_guang_tong_chuang/pangoriscv/project/trash_sorting/tests/tb_feedback_voice_route.sv(29)
+#    Time: 520 ns  Iteration: 1  Instance: /tb_feedback_voice_route
+# End time: 03:35:33 on Nov 17,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

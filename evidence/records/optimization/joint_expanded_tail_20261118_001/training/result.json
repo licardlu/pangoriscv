@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "epochs": 3,
+  "elapsed_s": 3887.4155156612396,
+  "checkpoint_sha256": "922bb24bb380d0ef9df950aef9ded0ae59d58974852b359e5abd88cc2112d1a6",
+  "frozen_nonselected_state_exact": true,
+  "trainable_tensors": 19,
+  "history": [
+    {
+      "epoch": 1,
+      "batches": 1080,
+      "draws": 17274,
+      "q15_loss": [
+        0.026440933185491573,
+        0.007416863967362722,
+        0.02215380505620959
+      ],
+      "float_loss": [
+        0.02548560880607477,
+        0.007248619257653546,
+        0.021381060720563658
+      ],
+      "elapsed_s": 1268.5889401435852,
+      "distillation_loss": 0.001265849911861652,
+      "matched_anchors_by_class": {
+        "2": 110721,
+        "3": 21347,
+        "0": 21826,
+        "1": 44898,
+        "4": 41382
+      },
+      "strength": 5.0,
+      "teacher": "frozen_initial_deployed_q15"
+    },
+    {
+      "epoch": 2,
+      "batches": 1080,
+      "draws": 17274,
+      "q15_loss": [
+        0.02601054533108793,
+        0.007368933288725438,
+        0.019750737408564114
+      ],
+      "float_loss": [
+        0.025061865601930078,
+        0.0071949102833901565,
+        0.01909388435058106
+      ],
+      "elapsed_s": 2693.845034122467,
+      "distillation_loss": 0.0012397691849198762,
+      "matched_anchors_by_class": {
+        "2": 110721,
+        "3": 21347,
+        "1": 44898,
+        "4": 41382,
+        "0": 21826
+      },
+      "strength": 5.0,
+      "teacher": "frozen_initial_deployed_q15"
+    },
+    {
+      "epoch": 3,
+      "batches": 1080,
+      "draws": 17274,
+      "q15_loss": [
+        0.025786918945851976,
+        0.007351070152017874,
+        0.019350841382940954
+      ],
+      "float_loss": [
+        0.024826557214233887,
+        0.007173058561144259,
+        0.018750312321073444
+      ],
+      "elapsed_s": 3887.370940208435,
+      "distillation_loss": 0.001093977326645809,
+      "matched_anchors_by_class": {
+        "2": 110721,
+        "1": 44898,
+        "4": 41382,
+        "3": 21347,
+        "0": 21826
+      },
+      "strength": 5.0,
+      "teacher": "frozen_initial_deployed_q15"
+    }
+  ]
+}

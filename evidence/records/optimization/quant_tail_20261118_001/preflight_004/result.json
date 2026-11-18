@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "checkpoint_sha256": "4b1efad295ce0f644699750516d2c69950510ef65d7b87a354441014dd0a2db5",
+  "bundle_sha256": "d538185b01523cb3c1be92027b44d1817bc9f33729091e47fa861431562f5db4",
+  "exact_export_parameter_arrays": 234,
+  "forward_checks": [
+    {
+      "image_sha256": "0bbab66bb7ee6c07dd371955a58983f42c7bc6eb4a6080f88e9e3bea6aaabaea",
+      "elapsed_s": 0.10338687896728516,
+      "nonhead_bit_exact": true
+    },
+    {
+      "image_sha256": "c37ab69de99ab2bd7520811afb93d4fd83ea0b306138e4cb5a12a8019bbbdace",
+      "elapsed_s": 0.08976149559020996,
+      "nonhead_bit_exact": true
+    },
+    {
+      "image_sha256": "45f7ff151b0c2dc5cb9719c670f47c660e666a1a3d95155668ab7a6b58e1c3fd",
+      "elapsed_s": 0.08482909202575684,
+      "nonhead_bit_exact": true
+    },
+    {
+      "image_sha256": "436b97dbdea958e2800613fe0efd3a2cdf0847f017cbc9bb102a27224073cd43",
+      "elapsed_s": 0.08480691909790039,
+      "nonhead_bit_exact": true
+    },
+    {
+      "image_sha256": "ee1c35c9fe403fc97c91add7d60a4fb36a67272a5f64d350eb94e37209c5b248",
+      "elapsed_s": 0.09108495712280273,
+      "nonhead_bit_exact": true
+    }
+  ],
+  "train_only": true,
+  "selected_parameter_gradients": {
+    "model.17.cv3.conv.weight": {
+      "finite": true,
+      "nonzero": 4096
+    },
+    "model.20.cv3.conv.weight": {
+      "finite": true,
+      "nonzero": 16384
+    },
+    "model.23.cv3.conv.weight": {
+      "finite": true,
+      "nonzero": 65536
+    },
+    "model.24.m.0.weight": {
+      "finite": true,
+      "nonzero": 192
+    },
+    "model.24.m.0.bias": {
+      "finite": true,
+      "nonzero": 3
+    },
+    "model.24.m.1.weight": {
+      "finite": true,
+      "nonzero": 3678
+    },
+    "model.24.m.1.bias": {
+      "finite": true,
+      "nonzero": 30
+    },
+    "model.24.m.2.weight": {
+      "finite": true,
+      "nonzero": 7626
+    },
+    "model.24.m.2.bias": {
+      "finite": true,
+      "nonzero": 30
+    }
+  },
+  "one_image_forward_backward_s": 0.12189912796020508,
+  "post_gradient_step_nonhead_export_bit_exact": true,
+  "gradient_target": "Synthetic geometry only for arithmetic gradient connectivity; no checkpoint saved.",
+  "frozen_scale_profile": true,
+  "training_started": false
+}

@@ -1,0 +1,14 @@
+{
+  "url": "https://github.com/ultraembedded/core_mmc",
+  "commit": "b30e552f3abd096bb17b79d48b46c859877894fe",
+  "zip_sha256": "9fbcbdd4d031ff3c20ebc5cede1db24aa73c91a1fb07829a90795e046e56ec75",
+  "license": "Apache-2.0",
+  "local_changes": [
+    "mmc_dat_deserialiser.v: verify CRC16 and end bit; retain errors across blocks until next request",
+    "mmc_card.v: report receive CRC/end-bit errors from active data lanes in CRC_ERR",
+    "mmc_cmd_deserialiser.v: R136 excludes already consumed start bit (index 134 instead of 135)",
+    "mmc_card.v: move FIFO data wire declaration before first use for strict SystemVerilog compilation"
+  ],
+  "verification": ["sd_crc_tb.sv", "sd_response_tb.sv", "sd_card_tb.sv"],
+  "limitations": "Read-only use. DMA and card writes are not validated. No board/physical-card acceptance yet."
+}

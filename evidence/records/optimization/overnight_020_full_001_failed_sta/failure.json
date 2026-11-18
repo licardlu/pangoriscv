@@ -1,0 +1,40 @@
+{
+  "status": "FAILED_FINAL_STA_NO_BITSTREAM_NO_BOARD_WRITE",
+  "utc": "2026-11-16T02:41:53.500549+00:00",
+  "violations": [
+    {
+      "corner": "Slow",
+      "type": "Setup",
+      "launch": "ddrphy_sysclk",
+      "capture": "phy_dq_sysclk_1",
+      "slack_ns": -0.187,
+      "endpoints": 1
+    },
+    {
+      "corner": "Slow",
+      "type": "Hold",
+      "launch": "ddrphy_sysclk",
+      "capture": "ddrphy_sysclk",
+      "slack_ns": -0.013,
+      "endpoints": 1
+    },
+    {
+      "corner": "Fast",
+      "type": "Hold",
+      "launch": "ddrphy_sysclk",
+      "capture": "ddrphy_sysclk",
+      "slack_ns": -0.001,
+      "endpoints": 1
+    }
+  ],
+  "retry": "overnight_020_full_002: unchanged mapped database, redo placement seed11, hold margin500ps; no constraints or clocks relaxed",
+  "files": {
+    "area-gate.json": "8bc0d9278bcc79a17508e4511001ba8b2525899f7828fbf49f0af38a6de2c644",
+    "final_multiseed_summary.csv": "de1aba0c3c029db0cd47247d3f367aca57acc9dc4cb4d15931cf37c88fb92e4b",
+    "implementation.log": "d39fca5638718497831692b36066b3e6f287e3fd5e5367da19edefee526c544a",
+    "inputs.json": "6644c5b145a0736815f642d950e0e0f408db9e1ce09218e571fe1f08589b5899",
+    "routed_resource_usage.csv": "586ba0a007d431dc0abd52b78dda5a12f3cf9e2a17b5606a024658cae4f9e608",
+    "yolo_camera_top.prr": "74c65f18a0ecfda2cd872e071b4fd15974ecdb90ba506816906f6ceb457725ed",
+    "yolo_camera_top.rtr": "40f5007ddad94ea832cb3ba43f49fe9b969d978314ca6a762167e97403eb60e4"
+  }
+}

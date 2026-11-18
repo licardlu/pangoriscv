@@ -1,0 +1,736 @@
+{
+  "status": "DEVELOPMENT_COVERAGE_DIAGNOSTIC",
+  "final_test_images_or_labels_read": false,
+  "scope": "Saved validation decisions only; not a camera or physical-object-generalization measurement.",
+  "train_file_identities": 8508,
+  "train_source_file_identities": {
+    "codingbear": 292,
+    "continuation_empty_hand": 46,
+    "continuation_held_battery": 72,
+    "continuation_held_bottle": 128,
+    "continuation_held_foam_packaging": 23,
+    "continuation_held_glass_jar": 44,
+    "continuation_held_notebook": 12,
+    "continuation_held_pear": 79,
+    "continuation_held_plastic_container": 25,
+    "continuation_held_thermos": 6,
+    "continuation_held_tissue": 61,
+    "continuation_held_tissue_packet": 9,
+    "continuation_no_pickup": 180,
+    "derived_battery_orientation": 376,
+    "extras_reviewed_multi_battery": 21,
+    "extras_reviewed_single_battery": 38,
+    "hagrid_hand_localisation": 147,
+    "large_public_batteryobjects": 5,
+    "large_public_bbox384": 1106,
+    "large_public_drinking": 3626,
+    "large_public_trashsort": 333,
+    "mark_battery": 440,
+    "mark_battery_crop": 440,
+    "personal_empty_hand": 131,
+    "personal_held_battery": 116,
+    "personal_held_bottle": 101,
+    "personal_no_pickup": 155,
+    "reviewed_fruit_complete_objects": 47,
+    "reviewed_hagrid_background_crop": 10,
+    "sumn2u": 327,
+    "targeted_reviewed_background_crop": 14,
+    "targeted_taco_reviewed": 40,
+    "wastesense_reviewed_glass": 58
+  },
+  "train_class_counts": {
+    "kitchen": {
+      "images": 450,
+      "instances": 692
+    },
+    "recyclable": {
+      "images": 5581,
+      "instances": 6583
+    },
+    "hazardous": {
+      "images": 1747,
+      "instances": 2328
+    },
+    "other": {
+      "images": 493,
+      "instances": 629
+    },
+    "hand": {
+      "images": 1585,
+      "instances": 1591
+    }
+  },
+  "train_context_counts": {
+    "waste_without_hand": 6899,
+    "waste_with_hand": 1298,
+    "hand_without_waste": 287,
+    "pure_empty": 24
+  },
+  "val_cohorts": {
+    "all": {
+      "images": 1929,
+      "positive_images": 1793,
+      "no_waste_images": 136,
+      "models": {
+        "deployed": {
+          "correct_positive": 1455,
+          "false_selection_no_waste": 8,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 1456,
+          "false_selection_no_waste": 6,
+          "positive_gain": 120,
+          "positive_loss": 119
+        },
+        "head_distilled": {
+          "correct_positive": 1431,
+          "false_selection_no_waste": 6,
+          "positive_gain": 107,
+          "positive_loss": 131
+        },
+        "tail_qat": {
+          "correct_positive": 1422,
+          "false_selection_no_waste": 1,
+          "positive_gain": 106,
+          "positive_loss": 139
+        }
+      }
+    },
+    "source/sumn2u": {
+      "images": 1221,
+      "positive_images": 1221,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 1056,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 1038,
+          "false_selection_no_waste": 0,
+          "positive_gain": 53,
+          "positive_loss": 71
+        },
+        "head_distilled": {
+          "correct_positive": 1022,
+          "false_selection_no_waste": 0,
+          "positive_gain": 48,
+          "positive_loss": 82
+        },
+        "tail_qat": {
+          "correct_positive": 1035,
+          "false_selection_no_waste": 0,
+          "positive_gain": 57,
+          "positive_loss": 78
+        }
+      }
+    },
+    "has_waste": {
+      "images": 1793,
+      "positive_images": 1793,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 1455,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 1456,
+          "false_selection_no_waste": 0,
+          "positive_gain": 120,
+          "positive_loss": 119
+        },
+        "head_distilled": {
+          "correct_positive": 1431,
+          "false_selection_no_waste": 0,
+          "positive_gain": 107,
+          "positive_loss": 131
+        },
+        "tail_qat": {
+          "correct_positive": 1422,
+          "false_selection_no_waste": 0,
+          "positive_gain": 106,
+          "positive_loss": 139
+        }
+      }
+    },
+    "source_folder/sumn2u/metal": {
+      "images": 144,
+      "positive_images": 144,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 133,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 136,
+          "false_selection_no_waste": 0,
+          "positive_gain": 3,
+          "positive_loss": 0
+        },
+        "head_distilled": {
+          "correct_positive": 136,
+          "false_selection_no_waste": 0,
+          "positive_gain": 3,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 137,
+          "false_selection_no_waste": 0,
+          "positive_gain": 5,
+          "positive_loss": 1
+        }
+      }
+    },
+    "source_folder/sumn2u/paper": {
+      "images": 231,
+      "positive_images": 231,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 183,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 152,
+          "false_selection_no_waste": 0,
+          "positive_gain": 11,
+          "positive_loss": 42
+        },
+        "head_distilled": {
+          "correct_positive": 141,
+          "false_selection_no_waste": 0,
+          "positive_gain": 10,
+          "positive_loss": 52
+        },
+        "tail_qat": {
+          "correct_positive": 155,
+          "false_selection_no_waste": 0,
+          "positive_gain": 15,
+          "positive_loss": 43
+        }
+      }
+    },
+    "source_folder/sumn2u/glass": {
+      "images": 242,
+      "positive_images": 242,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 232,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 236,
+          "false_selection_no_waste": 0,
+          "positive_gain": 5,
+          "positive_loss": 1
+        },
+        "head_distilled": {
+          "correct_positive": 237,
+          "false_selection_no_waste": 0,
+          "positive_gain": 5,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 233,
+          "false_selection_no_waste": 0,
+          "positive_gain": 5,
+          "positive_loss": 4
+        }
+      }
+    },
+    "source/codingbear": {
+      "images": 287,
+      "positive_images": 287,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 244,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 241,
+          "false_selection_no_waste": 0,
+          "positive_gain": 18,
+          "positive_loss": 21
+        },
+        "head_distilled": {
+          "correct_positive": 240,
+          "false_selection_no_waste": 0,
+          "positive_gain": 16,
+          "positive_loss": 20
+        },
+        "tail_qat": {
+          "correct_positive": 237,
+          "false_selection_no_waste": 0,
+          "positive_gain": 20,
+          "positive_loss": 27
+        }
+      }
+    },
+    "source_folder/sumn2u/biological": {
+      "images": 105,
+      "positive_images": 105,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 81,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 83,
+          "false_selection_no_waste": 0,
+          "positive_gain": 7,
+          "positive_loss": 5
+        },
+        "head_distilled": {
+          "correct_positive": 86,
+          "false_selection_no_waste": 0,
+          "positive_gain": 9,
+          "positive_loss": 4
+        },
+        "tail_qat": {
+          "correct_positive": 85,
+          "false_selection_no_waste": 0,
+          "positive_gain": 9,
+          "positive_loss": 5
+        }
+      }
+    },
+    "source_folder/sumn2u/plastic": {
+      "images": 228,
+      "positive_images": 228,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 210,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 213,
+          "false_selection_no_waste": 0,
+          "positive_gain": 6,
+          "positive_loss": 3
+        },
+        "head_distilled": {
+          "correct_positive": 209,
+          "false_selection_no_waste": 0,
+          "positive_gain": 4,
+          "positive_loss": 5
+        },
+        "tail_qat": {
+          "correct_positive": 208,
+          "false_selection_no_waste": 0,
+          "positive_gain": 6,
+          "positive_loss": 8
+        }
+      }
+    },
+    "source_folder/sumn2u/cardboard": {
+      "images": 203,
+      "positive_images": 203,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 179,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 168,
+          "false_selection_no_waste": 0,
+          "positive_gain": 7,
+          "positive_loss": 18
+        },
+        "head_distilled": {
+          "correct_positive": 166,
+          "false_selection_no_waste": 0,
+          "positive_gain": 6,
+          "positive_loss": 19
+        },
+        "tail_qat": {
+          "correct_positive": 174,
+          "false_selection_no_waste": 0,
+          "positive_gain": 8,
+          "positive_loss": 13
+        }
+      }
+    },
+    "source_folder/sumn2u/trash": {
+      "images": 68,
+      "positive_images": 68,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 38,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 50,
+          "false_selection_no_waste": 0,
+          "positive_gain": 14,
+          "positive_loss": 2
+        },
+        "head_distilled": {
+          "correct_positive": 47,
+          "false_selection_no_waste": 0,
+          "positive_gain": 11,
+          "positive_loss": 2
+        },
+        "tail_qat": {
+          "correct_positive": 43,
+          "false_selection_no_waste": 0,
+          "positive_gain": 9,
+          "positive_loss": 4
+        }
+      }
+    },
+    "source/hagrid_hand_localisation": {
+      "images": 29,
+      "positive_images": 0,
+      "no_waste_images": 29,
+      "models": {
+        "deployed": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 1,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 1,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_distilled": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 1,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        }
+      }
+    },
+    "no_waste": {
+      "images": 136,
+      "positive_images": 0,
+      "no_waste_images": 136,
+      "models": {
+        "deployed": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 8,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 6,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_distilled": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 6,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 1,
+          "positive_gain": 0,
+          "positive_loss": 0
+        }
+      }
+    },
+    "hand_without_waste": {
+      "images": 136,
+      "positive_images": 0,
+      "no_waste_images": 136,
+      "models": {
+        "deployed": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 8,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 6,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_distilled": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 6,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 1,
+          "positive_gain": 0,
+          "positive_loss": 0
+        }
+      }
+    },
+    "source/mark_battery": {
+      "images": 51,
+      "positive_images": 51,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 27,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 26,
+          "false_selection_no_waste": 0,
+          "positive_gain": 2,
+          "positive_loss": 3
+        },
+        "head_distilled": {
+          "correct_positive": 26,
+          "false_selection_no_waste": 0,
+          "positive_gain": 1,
+          "positive_loss": 2
+        },
+        "tail_qat": {
+          "correct_positive": 27,
+          "false_selection_no_waste": 0,
+          "positive_gain": 4,
+          "positive_loss": 4
+        }
+      }
+    },
+    "source/personal_空手": {
+      "images": 107,
+      "positive_images": 0,
+      "no_waste_images": 107,
+      "models": {
+        "deployed": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 7,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 5,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_distilled": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 5,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 0,
+          "false_selection_no_waste": 1,
+          "positive_gain": 0,
+          "positive_loss": 0
+        }
+      }
+    },
+    "source/personal_塑料片": {
+      "images": 28,
+      "positive_images": 28,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 19,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 25,
+          "false_selection_no_waste": 0,
+          "positive_gain": 6,
+          "positive_loss": 0
+        },
+        "head_distilled": {
+          "correct_positive": 25,
+          "false_selection_no_waste": 0,
+          "positive_gain": 6,
+          "positive_loss": 0
+        },
+        "tail_qat": {
+          "correct_positive": 20,
+          "false_selection_no_waste": 0,
+          "positive_gain": 3,
+          "positive_loss": 2
+        }
+      }
+    },
+    "waste_with_hand": {
+      "images": 234,
+      "positive_images": 234,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 128,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 151,
+          "false_selection_no_waste": 0,
+          "positive_gain": 47,
+          "positive_loss": 24
+        },
+        "head_distilled": {
+          "correct_positive": 143,
+          "false_selection_no_waste": 0,
+          "positive_gain": 42,
+          "positive_loss": 27
+        },
+        "tail_qat": {
+          "correct_positive": 123,
+          "false_selection_no_waste": 0,
+          "positive_gain": 25,
+          "positive_loss": 30
+        }
+      }
+    },
+    "source/personal_纸团": {
+      "images": 146,
+      "positive_images": 146,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 54,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 77,
+          "false_selection_no_waste": 0,
+          "positive_gain": 40,
+          "positive_loss": 17
+        },
+        "head_distilled": {
+          "correct_positive": 67,
+          "false_selection_no_waste": 0,
+          "positive_gain": 35,
+          "positive_loss": 22
+        },
+        "tail_qat": {
+          "correct_positive": 55,
+          "false_selection_no_waste": 0,
+          "positive_gain": 21,
+          "positive_loss": 20
+        }
+      }
+    },
+    "source/personal_电池": {
+      "images": 60,
+      "positive_images": 60,
+      "no_waste_images": 0,
+      "models": {
+        "deployed": {
+          "correct_positive": 55,
+          "false_selection_no_waste": 0,
+          "positive_gain": 0,
+          "positive_loss": 0
+        },
+        "head_gt": {
+          "correct_positive": 49,
+          "false_selection_no_waste": 0,
+          "positive_gain": 1,
+          "positive_loss": 7
+        },
+        "head_distilled": {
+          "correct_positive": 51,
+          "false_selection_no_waste": 0,
+          "positive_gain": 1,
+          "positive_loss": 5
+        },
+        "tail_qat": {
+          "correct_positive": 48,
+          "false_selection_no_waste": 0,
+          "positive_gain": 1,
+          "positive_loss": 8
+        }
+      }
+    }
+  },
+  "val_subject_by_class": {
+    "kitchen": {
+      "images": 176,
+      "models": {
+        "deployed": 145,
+        "head_gt": 145,
+        "head_distilled": 149,
+        "tail_qat": 151
+      }
+    },
+    "recyclable": {
+      "images": 1306,
+      "models": {
+        "deployed": 1067,
+        "head_gt": 1060,
+        "head_distilled": 1034,
+        "tail_qat": 1028
+      }
+    },
+    "hazardous": {
+      "images": 156,
+      "models": {
+        "deployed": 125,
+        "head_gt": 116,
+        "head_distilled": 118,
+        "tail_qat": 115
+      }
+    },
+    "other": {
+      "images": 157,
+      "models": {
+        "deployed": 118,
+        "head_gt": 135,
+        "head_distilled": 130,
+        "tail_qat": 128
+      }
+    }
+  },
+  "manifest_sha256": "f64624bc6a1900a3477ab8db8c95b63ed737cbf878f3cd544255136f02eb1f39",
+  "decision_sha256": {
+    "deployed": "dc6f54cb70f17ba347cb36e8bf592cd49e679169b357088d7dcf3e954471732c",
+    "head_gt": "f316fb562547c4f09f98e2f569d1c66c25ca9f7c64775e796313472a46cc95ef",
+    "head_distilled": "353213e7038cfda85562efacee6829fcab33314ab5a10e3a4394eaf62aacd7c7",
+    "tail_qat": "c151024885a77826460f94764e635d80189e1ced523a1539283e0283d05bd017"
+  }
+}

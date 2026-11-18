@@ -1,0 +1,53 @@
+{
+  "status": "failed",
+  "steps": [
+    {
+      "name": "training",
+      "status": "completed",
+      "started_unix": 1795024387.7210207,
+      "pid": 3112,
+      "returncode": 0,
+      "elapsed_s": 998.65447473526
+    },
+    {
+      "name": "priority_quantize",
+      "status": "completed",
+      "started_unix": 1795025387.0588493,
+      "pid": 36652,
+      "returncode": 0,
+      "elapsed_s": 304.87277817726135
+    },
+    {
+      "name": "priority_numeric",
+      "status": "completed",
+      "started_unix": 1795025692.2594917,
+      "pid": 18748,
+      "returncode": 0,
+      "elapsed_s": 125.20549988746643
+    },
+    {
+      "name": "priority_score",
+      "status": "completed",
+      "started_unix": 1795025817.4681935,
+      "pid": 24648,
+      "returncode": 0,
+      "elapsed_s": 0.8397035598754883
+    },
+    {
+      "name": "evaluation",
+      "status": "running",
+      "started_unix": 1795025818.3550038,
+      "pid": 9376
+    }
+  ],
+  "deadline_utc": "2026-11-18T18:19:51+00:00",
+  "board_accessed": false,
+  "user_board_removed": true,
+  "actual_replay_paths": 19260,
+  "unique_train_files": 9349,
+  "monitor": "finish_balanced_priority",
+  "reserve_revision": "Keep original hard deadline; avoid preempting almost-completed fixed epoch at an internal12min reserve. Prioritize fixed battery/glass/empty-hand diagnostics before any incomplete full-set checks.",
+  "training_restarted": false,
+  "acceptance_gates_modified": false,
+  "error": "RuntimeError('Original two-hour hard deadline reached during evaluation')"
+}

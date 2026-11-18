@@ -1,0 +1,16 @@
+Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\public_expansion_20261117_001\public_dev_003\val...:   0%|          | 0/17 00:00Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\public_expansion_20261117_001\public_dev_003\val... 1 images, 0 backgrounds, 0 corrupt:   6%|▌         | 1/17 00:04Scanning D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\public_expansion_20261117_001\public_dev_003\val... 17 images, 0 backgrounds, 0 corrupt: 100%|██████████| 17/17 00:04
+New cache created: D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\build\public_expansion_20261117_001\public_dev_003\val.cache
+                 Class     Images  Instances          P          R      mAP50   mAP50-95:   0%|          | 0/2 00:00                 Class     Images  Instances          P          R      mAP50   mAP50-95:  50%|█████     | 1/2 00:01                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|██████████| 2/2 00:01                 Class     Images  Instances          P          R      mAP50   mAP50-95: 100%|██████████| 2/2 00:01
+                   all         17         21      0.388       0.25       0.29      0.123
+            recyclable         17          8          0          0     0.0185    0.00741
+             hazardous         17          9          0          0     0.0934      0.056
+                 other         17          1      0.551          1      0.995      0.398
+                  hand         17          3          1          0     0.0541     0.0325
+Traceback (most recent call last):
+  File "D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\training\train_four_bins.py", line 380, in <module>
+    main()
+  File "D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\training\train_four_bins.py", line 216, in main
+    metrics['waste_only_mean_AP50']=float(np.mean([detail['per_class'][n]['AP50'] for n in class_names[:4]]))
+  File "D:\FPGA_Project\zi_guang_tong_chuang\pangoriscv\project\trash_sorting\training\train_four_bins.py", line 216, in <listcomp>
+    metrics['waste_only_mean_AP50']=float(np.mean([detail['per_class'][n]['AP50'] for n in class_names[:4]]))
+KeyError: 'kitchen'

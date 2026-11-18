@@ -1,0 +1,63 @@
+{
+  "hypothesis": "Head-only adaptation failed to recover battery. Train three feature-producing tail convolutions through exact Q15 forward with STE and fixed initial calibration scales, retaining float supervision.",
+  "checkpoint": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\expanded_clean_004\\weights\\best.pt",
+  "checkpoint_sha256": "4b1efad295ce0f644699750516d2c69950510ef65d7b87a354441014dd0a2db5",
+  "manifest_sha256": "0768ef083ea3f607b91aca883472cadc5c8fd0af3bff26ce5e86d6c95309ae88",
+  "scale_profile": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\quant_original160_006\\bundle",
+  "bundle_sha256": "d538185b01523cb3c1be92027b44d1817bc9f33729091e47fa861431562f5db4",
+  "parameters_sha256": "c11431923349306ff6d1ae22e9e9f9360547da48663368f17cb7779f377c7c69",
+  "initialization": "Same expanded float best; not previous failed adapted checkpoints",
+  "feature_ops": [
+    48,
+    57,
+    64
+  ],
+  "unique_train": 7904,
+  "draws_per_epoch": 12662,
+  "epochs": 3,
+  "batch": 16,
+  "seed": 20261118,
+  "conv_lr0": 2e-05,
+  "conv_lr_final": 2e-06,
+  "head_lr0": 0.0001,
+  "head_lr_final": 1e-05,
+  "optimizer": "AdamW",
+  "weight_decay": 0.0005,
+  "quant_loss_weight": 0.75,
+  "float_loss_weight": 0.25,
+  "trainable_prefixes": [
+    "model.17.cv3.conv.",
+    "model.20.cv3.conv.",
+    "model.23.cv3.conv.",
+    "model.24.m."
+  ],
+  "frozen": "All other parameters, all BN stats/affine, anchors, all activation/preactivation scales and LUTs.",
+  "integer_coefficients": "Per-output weight scale and Q15 multiplier recomputed from current weights; export uses the same frozen scale profile, no posthoc calibration.",
+  "gradient": "STE for round-half-away, clamp gradients for saturation; analytic activation for LUT gradient; float64 integer forward accumulations bounded below 2**53.",
+  "checkpoint_selection": "Final third epoch only, no threshold/calibration/epoch sweep.",
+  "acceptance": {
+    "subject_correct_min": 1455,
+    "personal_battery_min": 55,
+    "public_glass_min": 232,
+    "background_false_max": 8,
+    "per_waste_class_subject_correct": "at least deployed baseline with same selector",
+    "each_class_detection_TP_min": {
+      "kitchen": 221,
+      "recyclable": 1376,
+      "hazardous": 150,
+      "other": 169,
+      "hand": 234
+    },
+    "each_class_precision_min": {
+      "kitchen": 0.6260623229461756,
+      "recyclable": 0.8004653868528214,
+      "hazardous": 0.6521739130434783,
+      "other": 0.4132029339853301,
+      "hand": 0.72
+    },
+    "strict_improvement_required": true,
+    "public_dev": "no worse than deployed baseline on identical 712 images",
+    "float": "subject>=1457, battery>=54, glass>=231, background_false<=8"
+  },
+  "scope": "Offline training/software arithmetic only, no FPGA, synthesis, routing, UART, TF, Flash, deployment replacement or final-test image/label access."
+}

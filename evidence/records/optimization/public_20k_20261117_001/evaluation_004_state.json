@@ -1,0 +1,221 @@
+{
+  "status": "failed",
+  "steps": [
+    {
+      "name": "candidate_oldval_float_004",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\dataset_004\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\expanded_clean_004\\weights\\best.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs",
+        "--name",
+        "candidate_oldval_float_004",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "status": "completed",
+      "started_unix": 1794926554.942947,
+      "returncode": 0,
+      "finished_unix": 1794926649.9484181
+    },
+    {
+      "name": "baseline_publicdev_float_004",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\public_dev_001\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\runs\\continuation_stage4_002\\weights\\best.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs",
+        "--name",
+        "baseline_publicdev_float_004",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "status": "completed",
+      "started_unix": 1794926649.9575796,
+      "returncode": 0,
+      "finished_unix": 1794926695.6540592
+    },
+    {
+      "name": "candidate_publicdev_float_004",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\training\\train_four_bins.py",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\public_dev_001\\data.yaml",
+        "--weights",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\expanded_clean_004\\weights\\best.pt",
+        "--project",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs",
+        "--name",
+        "candidate_publicdev_float_004",
+        "--evaluate",
+        "val",
+        "--batch",
+        "16",
+        "--threads",
+        "4"
+      ],
+      "status": "completed",
+      "started_unix": 1794926695.6611135,
+      "returncode": 0,
+      "finished_unix": 1794926732.9056244
+    },
+    {
+      "name": "replay_oldval_004",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\dataset_004\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\evaluation\\stage4_original_val",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\candidate_oldval_float_004",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\replay_oldval_004"
+      ],
+      "status": "completed",
+      "started_unix": 1794926732.9143195,
+      "returncode": 0,
+      "finished_unix": 1794926770.1835985
+    },
+    {
+      "name": "replay_publicdev_004",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\replay_policy.py",
+        "--manifest",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\public_dev_001\\manifest.json",
+        "--source-dir",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\baseline_publicdev_float_004",
+        "--evaluation",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\candidate_publicdev_float_004",
+        "--cc",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\cc_adapter.exe",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\replay_publicdev_004"
+      ],
+      "status": "completed",
+      "started_unix": 1794926770.557641,
+      "returncode": 0,
+      "finished_unix": 1794926800.7182884
+    },
+    {
+      "name": "quant_original160_004",
+      "command": [
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\trash_train_env\\Scripts\\python.exe",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tools\\overnight\\prepare_deployment.py",
+        "--out",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\quant_original160_004",
+        "--yolo",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\overnight_20261116\\upstream\\yolov5-7.0",
+        "--data",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\dataset_004",
+        "--checkpoint",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_20k_20261117_001\\runs\\expanded_clean_004\\weights\\best.pt",
+        "--expected-checkpoint-sha256",
+        "4b1efad295ce0f644699750516d2c69950510ef65d7b87a354441014dd0a2db5",
+        "--include-hand",
+        "--calibration-from",
+        "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\tonight_20261117\\quant_frozen_replay_001\\provenance.json",
+        "--expected-calibration-sha256",
+        "61eb1673c25d79748b680612f5a7ca4fad40d7c7afb5c8de95c0eb377491649c"
+      ],
+      "status": "failed",
+      "started_unix": 1794926800.795374,
+      "returncode": 1,
+      "finished_unix": 1794926877.957988
+    }
+  ],
+  "plan_sha256": "da2009b51a5c5bbf57470d9fc3c0521c5b51c5d950c48b565c9f4d125f6a9956",
+  "test_images_accessed": false,
+  "board_accessed": false,
+  "deployment_replaced": false,
+  "original_blob_sha256": "7a0765a6f275f3c06d838f924d73542783ca55e131509aa1b546efc98bd65728",
+  "candidate_checkpoint_sha256": "4b1efad295ce0f644699750516d2c69950510ef65d7b87a354441014dd0a2db5",
+  "oldval_float": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "candidate_oldval_float_004": {
+      "correct_positive": 1472,
+      "false_background": 2,
+      "correct_personal_battery": 58,
+      "correct_public_glass": 236,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "publicdev_float": {
+    "baseline_publicdev_float_004": {
+      "correct_positive": 279,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 712,
+        "background": 0,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    },
+    "candidate_publicdev_float_004": {
+      "correct_positive": 701,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 712,
+        "background": 0,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    }
+  },
+  "float_gate_pass": true,
+  "publicdev_no_regression": true,
+  "error": "RuntimeError('Failed quant_original160_004; see saved log')",
+  "finished_unix": 1794926877.9589953,
+  "original_blob_unchanged": true
+}

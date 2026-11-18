@@ -1,0 +1,95 @@
+{
+  "status": "TRAIN_NEGATIVE_FIT_DIAGNOSTIC_COMPLETED",
+  "scope": "CPU float training-fit only; not generalization, Q15, FPGA, or camera accuracy",
+  "manifest_sha256": "3e99feddaf410ee5d0dde82c4e78e1925886fd5142152a31a419996e8de85ce0",
+  "inventory_sha256": "a8bffc7174832e2920d8950e253d9a58759930c4075130ecdf9fec6876384a80",
+  "script_sha256": "a04ece5547ecb80fae81e7fdb7d095cd3a344d8ef6999b7794c235a002f75836",
+  "headers": {
+    "yolo_contact_policy.h": "4efa1e9085405cae8e23de8b547df2e35826c686e1785e0eb150c8eccd52e1de",
+    "yolo_interaction_policy.h": "7f7954a9caa6c223e7c67b0d1823d76142f3d4faf06e3d4edd1b5561b5020596",
+    "yolo_target_policy.h": "553c202879b323c34ad11e3d4700f9d0937ef93985cbb94300d0b7fbeba864ee"
+  },
+  "policy_dll_sha256": "9dc6260c384fb5ed06f5c11c8f27172604269c603dd11d3ffc91d9b318f348df",
+  "split": "train",
+  "unique_images": 287,
+  "repeated_sampling_rows_ignored": 441,
+  "thresholds": {
+    "confidence": 0.25,
+    "nms_iou": 0.45,
+    "max_det": 32,
+    "single_label": true
+  },
+  "sources": {
+    "continuation_empty_hand": 46,
+    "hagrid_hand_localisation": 147,
+    "personal_empty_hand": 94
+  },
+  "reports": {
+    "stage4": {
+      "checkpoint_sha256": "a4a0b1b04f83af1d114813e0512dd2c2fa5e7306fae16759824f136b3133021a",
+      "cohorts": {
+        "all": {
+          "unique_train_images": 287,
+          "raw_waste_detection_images": 8,
+          "false_selected_images": 6,
+          "hand_seen_images": 287
+        },
+        "source/continuation_empty_hand": {
+          "unique_train_images": 46,
+          "raw_waste_detection_images": 1,
+          "false_selected_images": 1,
+          "hand_seen_images": 46
+        },
+        "source/hagrid_hand_localisation": {
+          "unique_train_images": 147,
+          "raw_waste_detection_images": 5,
+          "false_selected_images": 4,
+          "hand_seen_images": 147
+        },
+        "source/personal_empty_hand": {
+          "unique_train_images": 94,
+          "raw_waste_detection_images": 2,
+          "false_selected_images": 1,
+          "hand_seen_images": 94
+        }
+      }
+    },
+    "conservative": {
+      "checkpoint_sha256": "8a0aa1607048c02499b9a426655e788e50f4c81f51779cd081a9b51287248fa2",
+      "cohorts": {
+        "all": {
+          "unique_train_images": 287,
+          "raw_waste_detection_images": 7,
+          "false_selected_images": 5,
+          "hand_seen_images": 287
+        },
+        "source/continuation_empty_hand": {
+          "unique_train_images": 46,
+          "raw_waste_detection_images": 1,
+          "false_selected_images": 1,
+          "hand_seen_images": 46
+        },
+        "source/hagrid_hand_localisation": {
+          "unique_train_images": 147,
+          "raw_waste_detection_images": 4,
+          "false_selected_images": 3,
+          "hand_seen_images": 147
+        },
+        "source/personal_empty_hand": {
+          "unique_train_images": 94,
+          "raw_waste_detection_images": 2,
+          "false_selected_images": 1,
+          "hand_seen_images": 94
+        }
+      }
+    }
+  },
+  "torch": "1.12.0+cpu",
+  "opencv": "4.8.1",
+  "elapsed_s": 25.178629398345947,
+  "val_images_opened": false,
+  "test_images_opened": false,
+  "labels_changed": false,
+  "training_performed": false,
+  "hardware_accessed": false
+}

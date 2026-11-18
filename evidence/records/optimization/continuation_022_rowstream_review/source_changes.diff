@@ -1,0 +1,1138 @@
+--- baseline/extensions\media\media_page_router.sv
++++ candidate/extensions\media\media_page_router.sv
+@@ -1,22 +1,41 @@
+-// KEY0 owns three pages. The legacy serial debug command can still show
+-// the score page; long press preserves the existing saved-score timer.
+-module media_page_router(
++// Single click starts/stops recognition. Double click toggles score/animation
++// from either idle or recognition. Serial debug/long press can show the demo.
++module media_page_router #(
++    parameter [1:0] RESET_PAGE=0,
++    parameter integer AUTO_ONEHOT=0
++)(
+     input wire clk,rst,next_page,long_press,debug_page_async,
+     input tri0 toggle_recognition,
++    input tri0 [2:0] automatic_request_async,
++    output reg automatic_blocked,
+     output wire [1:0] page,
+     output reg benchmark_start_toggle
+ );
+     reg [1:0] selected;
+     (* ASYNC_REG="TRUE" *) reg [1:0] debug_sync;
++    (* ASYNC_REG="TRUE" *) reg [2:0] auto_meta,auto_sync;
++    wire [1:0] auto_command=AUTO_ONEHOT ?
++        (auto_sync==3'b001 ? 2'd0:auto_sync==3'b010 ? 2'd1:
++         auto_sync==3'b100 ? 2'd2:2'd3) : auto_sync[1:0];
+     assign page=debug_sync[1]?2'd1:selected;
+     always @(posedge clk)begin
+-        if(rst)begin selected<=0;benchmark_start_toggle<=0;debug_sync<=0;end
++        if(rst)begin selected<=RESET_PAGE;benchmark_start_toggle<=0;debug_sync<=0;
++            auto_meta<=AUTO_ONEHOT?3'b001:0;auto_sync<=AUTO_ONEHOT?3'b001:0;automatic_blocked<=0;end
+         else begin
+             debug_sync<={debug_sync[0],debug_page_async};
++            auto_meta<=automatic_request_async;auto_sync<=auto_meta;
++            if(auto_command==0)automatic_blocked<=0;
++            // Auto idle/wake uses the existing smooth display transition.
++            // Manual keys take priority and block auto until explicitly disabled.
++            if(!automatic_blocked && selected!=1 && !debug_sync[1])begin
++                if(auto_command==1)selected<=0;
++                if(auto_command==2)selected<=2;
++            end
++            if(toggle_recognition || next_page || long_press)automatic_blocked<=1;
+             if(toggle_recognition)selected<=selected==0?2'd2:2'd0;
+             if(next_page)begin
+-                selected<=selected==2?2'd0:selected+1'b1;
+-                if(selected==0)benchmark_start_toggle<=!benchmark_start_toggle;
++                selected<=selected==1?2'd2:2'd1;
++                if(selected!=1)benchmark_start_toggle<=!benchmark_start_toggle;
+             end
+             if(long_press)begin selected<=1;benchmark_start_toggle<=!benchmark_start_toggle;end
+         end
+--- baseline/yolo\build_pre_pnr.tcl
++++ candidate/yolo\build_pre_pnr.tcl
+@@ -73,6 +73,7 @@
+ add_design [file join $src_dir 046_bridge_to_cdc.v]
+ add_design [file join $src_dir 047_axi_cdc.v]
+ add_design [file join $src_dir 048_camera_snapshot.v]
++add_design [file join $src_dir 073_camera_pair_snapshot.sv]
+ add_design [file join $src_dir 049_video_ai_frontend.v]
+ add_design [file join $src_dir 050_ddr_native_arbiter.v]
+ add_design [file join $src_dir 051_yolo_ai_client.v]
+--- baseline/yolo\portable\052_yolo_camera_top.v
++++ candidate/yolo\portable\052_yolo_camera_top.v
+@@ -177,6 +177,7 @@
+     reg  [15:0]                 cnt_1                      ;
+     // Declare reset state before the display/peripheral consumers.
+     reg [1:0] ai_reset=0,ddr_reset=0,cam_reset=0,pix_reset=0;
++    wire ai_ready;
+     reg [1:0] peripheral_reset=0;
+     reg [18:0] peripheral_por_count=0;
+     wire [27:0] native_awaddr,native_araddr;
+@@ -189,6 +190,7 @@
+ //PLL
+ 
+     wire ai_clk54;
++    wire cfg_clk,clk_25M,locked,core_clk;
+     pll u_pll (
+         .clkin1   (  sys_clk    ),//27MHz
+         .clkout0  (  pix_clk    ),//74.25MHz 720p60
+@@ -324,6 +326,11 @@
+ 
+ // The snapshot RAM spans clock regions; the DVP divider alone is regional.
+ GTP_CLKBUFG camera_pixel_global(.CLKIN(cmos1_pclk_16bit),.CLKOUT(pclk_in_test));
++wire right_capture_clk;
++reg [1:0] right_capture_reset=0;
++GTP_CLKBUFG camera2_pixel_global(.CLKIN(cmos2_pclk_16bit),.CLKOUT(right_capture_clk));
++always @(posedge right_capture_clk)
++    if(!ai_ready)right_capture_reset<=0;else right_capture_reset<={right_capture_reset[0],1'b1};
+ assign     vs_in_test      =    cam_vs     ;
+ assign     de_in_test      =    cam_de     ;
+ // DDR3 self-test pattern: an FPGA-generated image written into the frame buffer
+@@ -505,6 +512,8 @@
+      wire [23:0] benchmark_rgb;wire benchmark_page_pixel;
+      wire benchmark_debug_page,benchmark_navigation_toggle,benchmark_reference_start;
+      wire recognition_navigation_toggle;
++     wire [2:0] automatic_navigation_request;
++     wire automatic_navigation_blocked;
+      wire inference_clk;
+      wire [1:0] navigation_page;
+      wire [1:0] display_navigation_page;
+@@ -516,9 +525,11 @@
+         .clk(sys_clk),.rst(!peripheral_reset[1]),.key0_n(key0_n),
+         .toggle_page(benchmark_navigation_toggle),.start_reference(benchmark_reference_start),
+         .toggle_recognition(recognition_navigation_toggle));
+-     media_page_router page_router(.clk(sys_clk),.rst(!peripheral_reset[1]),
++     media_page_router #(.RESET_PAGE(2),.AUTO_ONEHOT(1)) page_router(.clk(sys_clk),.rst(!peripheral_reset[1]),
+         .next_page(benchmark_navigation_toggle),.long_press(benchmark_reference_start),
+         .toggle_recognition(recognition_navigation_toggle),
++        .automatic_request_async(automatic_navigation_request),
++        .automatic_blocked(automatic_navigation_blocked),
+         .debug_page_async(benchmark_debug_page),.page(navigation_page),
+         .benchmark_start_toggle(benchmark_start_toggle));
+      // One-hot transfer prevents binary 1->2 skew from transiently selecting
+@@ -809,7 +820,7 @@
+     // Static clock choice; no runtime/fabric clock switching. UART firmware
+     // CPU_HZ must match. Pixel/DDR/camera PLL parameters are unchanged.
+     assign inference_clk=AI_FAST_CLOCK==2 ? ai_clk54 : AI_FAST_CLOCK==1 ? pix_clk : sys_clk;
+-    wire ai_ready=locked && ddr_init_done;
++    assign ai_ready=locked && ddr_init_done;
+     always @(posedge inference_clk or negedge ai_ready)
+         if(!ai_ready) ai_reset<=0;else ai_reset<={ai_reset[0],1'b1};
+     always @(posedge core_clk or negedge ai_ready)
+@@ -929,7 +940,7 @@
+         .d3_araddr(ai_araddr),.d3_arlen(ai_arlen),.d3_arvalid(ai_arvalid),
+         .d3_arready(ai_arready),.d3_rdata(shared_rdata),.d3_rvalid(ai_rvalid),
+         .d3_rlast(ai_rlast),.d3_rready(ai_rready));
+-    video_ai_frontend #(.RESULT_TTL(120),.GUIDE_ENABLE(0),.OSD_TEXT(0),.OSD_BORDER(4),
++    video_ai_frontend #(.STEREO_CAPTURE(1),.RESULT_TTL(120),.GUIDE_ENABLE(0),.OSD_TEXT(0),.OSD_BORDER(4),
+         .FOUR_BIN_CLASSES(FOUR_BIN_CLASSES),.GAME_TARGET_LOCK(FOUR_BIN_CLASSES),.VIEW_Y1(STATUS_HEIGHT),
+         .VIEW_HEIGHT(VIDEO_HEIGHT),.VIEW_X1(0),.VIEW_X2(1279)) frontend(
+         .cpu_clk(inference_clk),.cpu_rstn(ai_reset[1]),.quiz_hold(quiz_hold_sync[1]),
+@@ -937,6 +948,11 @@
+         .rd_addr(vid_rd_addr),.rd_en(vid_rd_en),.rd_data(frontend_vid_rd_data),
+         .cam_clk(pclk_in_test),.cam_rstn(cam_reset[1]),
+         .cam_vs(vs_in_test),.cam_de(de_in_test),.cam_pixel(i_rgb565),
++        .right_cam_clk(right_capture_clk),.right_cam_rstn(right_capture_reset[1]),
++        .right_cam_vs(cmos2_vsync_d0),.right_cam_de(cmos2_href_16bit),
++        .right_cam_pixel({cmos2_d_16bit[4:0],cmos2_d_16bit[10:5],cmos2_d_16bit[15:11]}),
++        .automatic_request(automatic_navigation_request),
++        .automatic_blocked_async(automatic_navigation_blocked),
+         .pix_clk(pix_clk),.pix_rstn(pix_reset[1]),
+         .pix_vs(display_vs_pipe[1]),.pix_de(display_de_pipe[1]),
+         .pix_in(disp_px),.pix_out(osd_px),
+--- baseline/yolo\software\benchmark_ui.c
++++ candidate/yolo\software\benchmark_ui.c
+@@ -14,6 +14,7 @@
+ static unsigned waiting,remaining,duration,progress;
+ static uint32_t random_state=0x6d2b79f5u,demo_score;
+ static uint64_t started;
++typedef struct {unsigned row;uint8_t data[80];} benchmark_line_t;
+ #ifndef BENCHMARK_UI_TEST
+ static uint64_t benchmark_clock(void) {
+     uint32_t hi,lo,again;
+@@ -25,10 +26,12 @@
+     return ((uint64_t)hi<<32)|lo;
+ }
+ #endif
+-static void text(uint8_t *cells,unsigned row,unsigned col,const char *s) {
+-    while(*s&&col<80)cells[row*80+col++]=(uint8_t)*s++;
++static void text(benchmark_line_t *cells,unsigned row,unsigned col,const char *s) {
++    if(row!=cells->row)return;
++    while(*s&&col<80)cells->data[col++]=(uint8_t)*s++;
+ }
+-static void decimal(uint8_t *cells,unsigned row,unsigned col,uint64_t n,unsigned fraction) {
++static void decimal(benchmark_line_t *cells,unsigned row,unsigned col,uint64_t n,unsigned fraction) {
++    if(row!=cells->row)return;
+     char value[24],reverse[24];unsigned used=0,out=0,i;
+     do {reverse[used++]=(char)('0'+n%10);n/=10;}while(n);
+     while(used<=fraction)reverse[used++]='0';
+@@ -39,10 +42,13 @@
+     value[out]=0;text(cells,row,col,value);
+ }
+ static void draw(unsigned state) {
+-    /* Draw is synchronous and never nested; keep the 3520-byte canvas on
+-     * the existing 8 KiB stack instead of reserving permanent player RAM. */
+-    uint8_t cells[80*44];
+-    memset(cells,' ',sizeof cells);
++    /* Stream one row at a time into the existing back buffer and publish
++     * once. No full canvas is kept on the nested stereo/UI call stack. */
++    benchmark_line_t line,*cells=&line;
++    while(acc_rd(0xd0)&16u){}
++    acc_wr(BENCH_TEXT_ADDR,0);
++    for(cells->row=0;cells->row<44;cells->row++) {
++    memset(cells->data,' ',sizeof cells->data);
+     text(cells,2,3,BM_TITLE);
+     text(cells,3,65,state==0?BM_WAIT:state==1?BM_RUNNING:BM_DONE);
+     text(cells,6,3,BM_DEMO_NOTE);
+@@ -59,17 +65,16 @@
+     text(cells,31,44,"CRC");text(cells,31,56,"N/A (DEMO)");
+     text(cells,34,5,BM_NEXT);
+     text(cells,38,5,"[------------------------------]");
+-    for(unsigned j=0;j<progress*30/100;j++)cells[38*80+6+j]='=';
++    if(cells->row==38)for(unsigned j=0;j<progress*30/100;j++)cells->data[6+j]='=';
+     text(cells,42,3,BM_FOOTER);
+     if(state==2) {
+         decimal(cells,14,5,demo_score,2);
+     }
+-    while(acc_rd(0xd0)&16u){}
+-    acc_wr(BENCH_TEXT_ADDR,0);
+-    for(unsigned i=0;i<sizeof cells;i+=4) {
+-        uint32_t word=(uint32_t)cells[i]|((uint32_t)cells[i+1]<<8)|
+-            ((uint32_t)cells[i+2]<<16)|((uint32_t)cells[i+3]<<24);
++    for(unsigned i=0;i<sizeof cells->data;i+=4) {
++        uint32_t word=(uint32_t)cells->data[i]|((uint32_t)cells->data[i+1]<<8)|
++            ((uint32_t)cells->data[i+2]<<16)|((uint32_t)cells->data[i+3]<<24);
+         acc_wr(BENCH_TEXT_DATA,word);
++    }
+     }
+     acc_wr(BENCH_TEXT_COMMIT,1);acc_fence();
+ }
+--- baseline/yolo\software\platform_main.c
++++ candidate/yolo\software\platform_main.c
+@@ -50,6 +50,9 @@
+ 
+ #if !defined(BBOX_OSD_TEST) || defined(BBOX_OSD_MMIO_TEST)
+ static yolo_box_t boxes[YOLO_MAX_RESULTS];
++#ifndef BBOX_OSD_TEST
++static int stereo_accept_target(const yolo_box_t*);
++#endif
+ 
+ static int display_results(uint32_t count)
+ {
+@@ -77,6 +80,10 @@
+ {
+     yolo_target_t target=yolo_select_contact_target(boxes,*count,waste_classes,
+                                                    hand_class,width,height);
++#ifndef BBOX_OSD_TEST
++    if(commit && target.object_index>=0 && !stereo_accept_target(boxes+target.object_index))
++        target.object_index=-1;
++#endif
+     if(target.object_index>=0) {boxes[0]=boxes[target.object_index];*count=1;}
+     else *count=0;
+     return commit ? display_results(*count) : YOLO_OK;
+@@ -89,6 +96,12 @@
+ #include "deployment_model.h"
+ #include "yolo_frame_workspace.h"
+ #include "benchmark.h"
++#include "stereo_calibration.h"
++static uint8_t stereo_enabled;
++static stereo_gate_t stereo_gate;
++static stereo_measurement_t stereo_last;
++static uint32_t stereo_poll_tick;
++static int stereo_monitor(void);
+ #ifdef MEDIA_ENABLE
+ #include "media_board.h"
+ #include "media_player.h"
+@@ -250,14 +263,176 @@
+ static int capture_input(void)
+ {
+     uint32_t left;
++    if(acc_rd(0x80)&1u)return YOLO_IO;
+     acc_wr(0x74,1);
+     acc_fence();
+     for(left=0;left<POLL_LIMIT;left++) {
+         uint32_t s=acc_rd(0x80);
+         if(s&4) return YOLO_IO;
+-        if((s&3)==2) return prepare_snapshot_input();
++        // A paired grayscale snapshot is never a valid RGB inference input.
++        if((s&11)==2) return prepare_snapshot_input();
+     }
+     return YOLO_TIMEOUT;
++}
++
++/* Stereo diagnostics never create a quiz. The snapshot is immutable until a
++ * later capture. Frame-start ticks share CPU_HZ but are NOT exposure times. */
++static uint32_t stereo_metadata(uint16_t address);
++static int stereo_poll_cancel(void){
++    benchmark_poll();
++#ifdef MEDIA_ENABLE
++    media_player_poll();
++    if(media_board_page()==1)return 1;
++#endif
++    return (stereo_metadata(0xff04)&4u)!=0;
++}
++#ifndef STEREO_POLL_INTERVAL
++#define STEREO_POLL_INTERVAL 256u
++#endif
++static int capture_stereo_pair(uint32_t metadata[9],int diagnostic,int retain_game_capture)
++{
++    uint32_t initial=acc_rd(0x80);
++    if(!(initial&16u))return YOLO_INVALID;
++    if(initial&5u)return YOLO_IO;
++    if(acc_rd(0x98)&0x0au)return YOLO_INVALID;
++    if(diagnostic)autonomous=0;
++    acc_wr(0x74,retain_game_capture?7:3);acc_fence();
++    uint32_t state=0;int cancelled=0;
++    for(uint32_t left=0;left<POLL_LIMIT;left++){
++        if(left%STEREO_POLL_INTERVAL==0){
++            int stop=stereo_poll_cancel();
++            if(!diagnostic && stop)cancelled=1;
++        }
++        state=acc_rd(0x80);
++        if(state&4u)return YOLO_IO;
++        if((state&11u)==10u){
++            // Drain the in-flight capture before returning cancellation, so
++            // a following RGB request cannot reuse a pending grayscale frame.
++            if(cancelled)return YOLO_CANCELLED;
++            metadata[0]=0x53545031u;metadata[1]=320;metadata[2]=180;
++            metadata[3]=state;metadata[4]=CPU_HZ;
++            for(uint32_t i=0;i<4;i++){
++                acc_wr(0x78,0xff00u+i);acc_fence();
++                metadata[5+i]=acc_rd(0x7c);
++            }
++            return metadata[8]==0x53545031u?0:YOLO_INVALID;
++        }
++    }
++    return YOLO_TIMEOUT;
++}
++
++static uint32_t stereo_metadata(uint16_t address){
++    acc_wr(0x78,address);acc_fence();return acc_rd(0x7c);
++}
++static void stereo_page(unsigned page){acc_wr(0x74,0x80u|(page<<4));acc_fence();}
++static uint32_t stereo_milliseconds(void){
++#ifdef __riscv
++    uint32_t hi,lo,again;
++    do{
++        __asm__ volatile("csrr %0,mcycleh":"=r"(hi));
++        __asm__ volatile("csrr %0,mcycle":"=r"(lo));
++        __asm__ volatile("csrr %0,mcycleh":"=r"(again));
++    }while(hi!=again);
++    return (uint32_t)((((uint64_t)hi<<32)|lo)/(CPU_HZ/1000u));
++#else
++    return yolo_clock()/(CPU_HZ/1000u);
++#endif
++}
++static unsigned frame_skew_ms(const uint32_t metadata[9]){
++    uint32_t difference=metadata[6]-metadata[7];
++    if(difference>0x80000000u)difference=0u-difference;
++    return (unsigned)(((uint64_t)difference*1000u+CPU_HZ-1u)/CPU_HZ);
++}
++static uint16_t stereo_raw_word(int x,int y){
++    acc_wr(0x78,(uint32_t)y*320u+(uint32_t)x);acc_fence();
++    return (uint16_t)acc_rd(0x7c);
++}
++typedef struct {unsigned reads;uint8_t cancelled;} stereo_reader_t;
++static int stereo_read_pixel(void*ctx,unsigned side,int x,int y,uint8_t*out){
++    stereo_reader_t*reader=ctx;
++    if(reader->cancelled)return -1;
++    if(x<0||y<0||x>=320||y>=180)return -1;
++    if((++reader->reads&255u)==0){
++        if(stereo_poll_cancel()){reader->cancelled=1;return -1;}
++    }
++    uint16_t pixel=stereo_raw_word(x,y);
++    *out=side?(uint8_t)(pixel>>8):(uint8_t)pixel;return 0;
++}
++static uint8_t stereo_gray565(uint16_t p){
++    unsigned r=((p>>11)&31u)*8u+((p>>13)&7u);
++    unsigned g=((p>>5)&63u)*4u+((p>>9)&3u);
++    unsigned b=(p&31u)*8u+((p>>2)&7u);
++    return (uint8_t)((r+g*2u+b)/4u);
++}
++static int stereo_accept_target(const yolo_box_t*box){
++    if(!stereo_enabled)return 1; // Explicit manual mode preserves original behavior.
++    if(!box || (stereo_calibration.verified&7u)!=7u || (acc_rd(0x80)&8u))return 0;
++    int x=(int)(box->x1*.25f),y=(int)(box->y1*.25f);
++    int w=(int)((box->x2-box->x1)*.25f),h=(int)((box->y2-box->y1)*.25f),roi[4];
++    if(stereo_rectified_roi(&stereo_calibration,x,y,w,h,roi))return 0;
++    // Color inference and the pair use the same physical sensor but different
++    // frames. Reject changed scene patches; never silently reuse an old depth.
++    uint8_t fingerprint[25];
++    for(int j=0;j<5;j++)for(int i=0;i<5;i++)
++        fingerprint[j*5+i]=stereo_gray565(stereo_raw_word(x+w*(i+1)/6,y+h*(j+1)/6));
++    uint32_t metadata[9];
++    if(capture_stereo_pair(metadata,0,1))return 0;
++    unsigned difference=0;
++    for(int j=0;j<5;j++)for(int i=0;i<5;i++){
++        int d=(int)(uint8_t)stereo_raw_word(x+w*(i+1)/6,y+h*(j+1)/6)-fingerprint[j*5+i];
++        unsigned magnitude=(unsigned)(d<0?-d:d);
++        if(magnitude>48)return 0;
++        difference+=magnitude;
++    }
++    if(difference>25u*12u)return 0;
++    stereo_reader_t reader={0};
++    stereo_last=stereo_measure(&stereo_calibration,stereo_read_pixel,&reader,
++        roi[0],roi[1],roi[2],roi[3],frame_skew_ms(metadata),&frame_workspace.stereo);
++    return !reader.cancelled && stereo_last.status==STEREO_NEAR && !(stereo_metadata(0xff04)&4u);
++}
++static int stereo_monitor(void){
++    if(!stereo_enabled)return 1;
++    if((stereo_metadata(0xff04)&4u) || (stereo_calibration.verified&7u)!=7u){
++        stereo_enabled=0;stereo_page(0);stereo_gate_update(&stereo_gate,0,0,1);return 1;
++    }
++#ifdef MEDIA_ENABLE
++    if(media_board_page()==1)return 0;
++#endif
++    if(acc_rd(0x98)&0x0au)return 0;
++    uint32_t now=yolo_clock();
++    if((uint32_t)(now-stereo_poll_tick)<CPU_HZ/10u)return 0;
++    stereo_poll_tick=now;
++    uint32_t metadata[9];
++    int capture_status=capture_stereo_pair(metadata,0,0);
++    if(capture_status==YOLO_CANCELLED){
++        stereo_enabled=0;stereo_page(0);stereo_gate_update(&stereo_gate,0,0,1);return 0;
++    }
++    if(capture_status){
++        stereo_last=(stereo_measurement_t){0};
++    }else{
++        stereo_reader_t reader={0};
++        stereo_last=stereo_measure(&stereo_calibration,stereo_read_pixel,&reader,
++            96,30,128,120,frame_skew_ms(metadata),&frame_workspace.stereo);
++        if(reader.cancelled || (stereo_metadata(0xff04)&4u)){
++            stereo_enabled=0;stereo_page(0);stereo_gate_update(&stereo_gate,0,0,1);return 0;
++        }
++    }
++    int active=stereo_gate_update(&stereo_gate,stereo_last.status,
++        stereo_milliseconds(),0);
++    stereo_page(active?1:2);
++    return active && stereo_last.status==STEREO_NEAR;
++}
++
++static int read_stereo_chunk(uint32_t offset,uint8_t data[256])
++{
++    uint32_t state=acc_rd(0x80);
++    if((state&15u)!=10u || offset>57600u-128u || (offset&127u))return YOLO_INVALID;
++    acc_wr(0x78,offset);acc_fence();
++    for(uint32_t i=0;i<128;i++){
++        uint32_t pixel=acc_rd(0xbc);
++        data[i*2]=(uint8_t)pixel;data[i*2+1]=(uint8_t)(pixel>>8);
++    }
++    return YOLO_OK;
+ }
+ 
+ /* Reprocess the same immutable camera snapshot twice. This verifies the full
+@@ -341,6 +516,7 @@
+     }
+     return status;
+ }
++#ifndef STEREO_PLATFORM_TEST
+ int main(void)
+ {
+     unsigned char header[16],payload[256];
+@@ -362,6 +538,7 @@
+     input_loaded=320u*320u*8u;
+ #endif
+     benchmark_init();
++    stereo_enabled=(stereo_calibration.verified&7u)==7u;
+ #ifdef MEDIA_ENABLE
+     media_board_init();
+ #ifndef VEXII_SIM_PRELOAD
+@@ -374,7 +551,8 @@
+         media_player_poll();
+ #endif
+         if(autonomous && !(UART[1]&0x3f000000u)) {
+-            if(!benchmark_page_active()
++            int depth_ready=stereo_monitor();
++            if(depth_ready && !benchmark_page_active()
+ #ifdef MEDIA_ENABLE
+                && !media_navigation_active()
+ #endif
+@@ -423,6 +601,25 @@
+         } else if((cmd==3 || cmd==6 || cmd==12) && n==0) {
+             infer_reply(&io,limit,cmd==12 ? 2 : cmd==6);
+             continue;
++        } else if(cmd==21 && n==0 && address==0) {
++            uint32_t metadata[9]={0};
++            status=(uint8_t)capture_stereo_pair(metadata,1,0);
++            reply(status,status?0:metadata,status?0:sizeof metadata);continue;
++        } else if(cmd==22 && n==0) {
++            status=(uint8_t)read_stereo_chunk(address,payload);
++            reply(status,status?0:payload,status?0:256);continue;
++        } else if(cmd==23 && n==0 && address<=2u) {
++            if(address==1u && (stereo_calibration.verified&7u)!=7u){
++                reply(YOLO_INVALID,0,0);continue;
++            }
++            if(address){
++                stereo_enabled=address==1u;stereo_page(0);
++                stereo_gate_update(&stereo_gate,0,0,1);
++            }
++            uint32_t info[8]={0x53444731u,stereo_enabled,stereo_calibration.verified,
++                stereo_last.status,stereo_last.valid_points,stereo_last.median_mm,
++                stereo_last.uncertainty_mm,stereo_metadata(0xff04)};
++            reply(0,info,sizeof info);continue;
+         } else if(cmd==7 && n==0 && model_verified) {
+             reply(0,0,0);
+             /* Poll between frames so page requests and maintenance UART work
+@@ -509,4 +706,5 @@
+         reply(status,0,0);
+     }
+ }
+-#endif
++#endif /* STEREO_PLATFORM_TEST */
++#endif
+--- baseline/yolo\software\stereo_calibration.h
++++ candidate/yolo\software\stereo_calibration.h
+@@ -0,0 +1,9 @@
++#ifndef STEREO_CALIBRATION_H
++#define STEREO_CALIBRATION_H
++#include "stereo_depth.h"
++/* No real calibration supplied yet. Never substitute the nominal 30mm
++ * baseline for intrinsics, rectification or measured distance/sync evidence.
++ * The exporter replaces this candidate file only after actual calibration. */
++static const stereo_calibration_t stereo_calibration={.width=320,.height=180,
++    .max_disparity=96,.max_skew_ms=5,.limit_mm=200,.error_mm=5,.verified=0};
++#endif
+--- baseline/yolo\software\stereo_depth.c
++++ candidate/yolo\software\stereo_depth.c
+@@ -0,0 +1,175 @@
++#include "stereo_depth.h"
++#include <math.h>
++#include <string.h>
++#include <limits.h>
++
++static int sample(const stereo_calibration_t*c,stereo_raw_read_t read,void*ctx,
++                  unsigned side,int x,int y,uint8_t*out)
++{
++    *out=0;
++    const stereo_camera_t*k=c->camera+side;
++    const float*m=k->inverse_rectified;
++    float z=m[6]*x+m[7]*y+m[8];
++    if(!isfinite(z)||fabsf(z)<1e-8f)return -1;
++    float a=(m[0]*x+m[1]*y+m[2])/z,b=(m[3]*x+m[4]*y+m[5])/z;
++    float r=a*a+b*b,radial=1+r*(k->dist[0]+r*(k->dist[1]+r*k->dist[4]));
++    float u=k->fx*(a*radial+2*k->dist[2]*a*b+k->dist[3]*(r+2*a*a))+k->cx;
++    float v=k->fy*(b*radial+k->dist[2]*(r+2*b*b)+2*k->dist[3]*a*b)+k->cy;
++    if(!isfinite(u)||!isfinite(v)||u<0||v<0||u>=c->width-1||v>=c->height-1)return -1;
++    int ix=(int)u,iy=(int)v;
++    uint8_t p[4];
++    if(read(ctx,side,ix,iy,p)||read(ctx,side,ix+1,iy,p+1)||
++       read(ctx,side,ix,iy+1,p+2)||read(ctx,side,ix+1,iy+1,p+3))return -1;
++    float fx=u-ix,fy=v-iy;
++    float value=(p[0]*(1-fx)+p[1]*fx)*(1-fy)+(p[2]*(1-fx)+p[3]*fx)*fy;
++    *out=(uint8_t)(value+.5f);return 0;
++}
++static int patch(const stereo_calibration_t*c,stereo_raw_read_t read,void*ctx,
++                 unsigned side,int x,int y,uint8_t*out)
++{
++    unsigned sum=0,squares=0;
++    for(int j=-2;j<=2;j++)for(int i=-2;i<=2;i++){
++        uint8_t value;
++        if(sample(c,read,ctx,side,x+i,y+j,&value))return -1;
++        out[(j+2)*5+i+2]=value;sum+=value;squares+=(unsigned)value*value;
++    }
++    // Reject low texture before searching: variance > 25 intensity units^2.
++    return squares*25u-sum*sum>25u*625u?0:-1;
++}
++static int match(const stereo_calibration_t*c,stereo_raw_read_t read,void*ctx,
++                 unsigned side,int x,int y,int direction,stereo_workspace_t*w)
++{
++    int dmax=c->max_disparity,start=direction<0?x-dmax-2:x-1;
++    int width=dmax+4;
++    for(int j=0;j<5;j++)for(int i=0;i<width;i++){
++        unsigned p=j*STEREO_BAND+i;
++        w->valid[p]=sample(c,read,ctx,side,start+i,y+j-2,&w->band[p])==0;
++    }
++    unsigned template_sum=0;
++    for(int i=0;i<25;i++)template_sum+=w->patch[i];
++    uint32_t scores[STEREO_MAX_DISPARITY+1];
++    unsigned best=UINT_MAX;int best_d=0;
++    for(int d=1;d<=dmax;d++){
++        int offset=x+direction*d-2-start;
++        unsigned sum=0;int valid=1;
++        for(int j=0;j<5;j++)for(int i=0;i<5;i++){
++            unsigned p=j*STEREO_BAND+offset+i;
++            if(!w->valid[p])valid=0;
++            sum+=w->band[p];
++        }
++        unsigned cost=0;
++        if(valid)for(int j=0;j<5;j++)for(int i=0;i<5;i++){
++            int residual=(int)w->patch[j*5+i]*25-(int)template_sum-
++                         ((int)w->band[j*STEREO_BAND+offset+i]*25-(int)sum);
++            cost+=(unsigned)(residual<0?-residual:residual);
++        }
++        scores[d]=valid?cost:UINT_MAX;
++        if(scores[d]<best){best=scores[d];best_d=d;}
++    }
++    if(!best_d||best_d==dmax||best>25u*25u*24u)return 0;
++    unsigned second=UINT_MAX;
++    for(int d=1;d<=dmax;d++)if(d<best_d-1||d>best_d+1)
++        if(scores[d]<second)second=scores[d];
++    if(second==UINT_MAX || (uint64_t)second*100u<=(uint64_t)best*120u+625u)return 0;
++    return best_d;
++}
++static void sort(uint16_t*a,unsigned n)
++{
++    for(unsigned i=1;i<n;i++){
++        uint16_t value=a[i];unsigned j=i;
++        while(j&&a[j-1]>value){a[j]=a[j-1];j--;}
++        a[j]=value;
++    }
++}
++int stereo_rectified_roi(const stereo_calibration_t*c,int x,int y,int w,int h,int out[4])
++{
++    if(!c||!out||w<12||h<12||x<0||y<0||w>c->width||h>c->height||
++       x>c->width-w||y>c->height-h)return -1;
++    const stereo_camera_t*k=&c->camera[0];
++    if(!(k->fx>0)||!(k->fy>0))return -1;
++    float lowx=c->width,lowy=c->height,highx=0,highy=0;
++    for(unsigned corner=0;corner<4;corner++){
++        float dx=((corner&1?x+w-1:x)-k->cx)/k->fx;
++        float dy=((corner&2?y+h-1:y)-k->cy)/k->fy;
++        float a=dx,b=dy;
++        for(int i=0;i<8;i++){
++            float r=a*a+b*b,radial=1+r*(k->dist[0]+r*(k->dist[1]+r*k->dist[4]));
++            if(!isfinite(radial)||fabsf(radial)<1e-8f)return -1;
++            float ta=2*k->dist[2]*a*b+k->dist[3]*(r+2*a*a);
++            float tb=k->dist[2]*(r+2*b*b)+2*k->dist[3]*a*b;
++            a=(dx-ta)/radial;b=(dy-tb)/radial;
++        }
++        const float*m=k->forward_rectified;
++        float z=m[6]*a+m[7]*b+m[8];
++        float u=(m[0]*a+m[1]*b+m[2])/z,v=(m[3]*a+m[4]*b+m[5])/z;
++        if(!isfinite(u)||!isfinite(v)||u<0||v<0||u>=c->width||v>=c->height)return -1;
++        if(u<lowx)lowx=u;
++        if(u>highx)highx=u;
++        if(v<lowy)lowy=v;
++        if(v>highy)highy=v;
++    }
++    out[0]=(int)lowx;out[1]=(int)lowy;
++    if((float)out[0]<lowx)out[0]++;
++    if((float)out[1]<lowy)out[1]++;
++    out[2]=(int)highx-out[0];out[3]=(int)highy-out[1];
++    return out[0]>=2&&out[1]>=2&&out[0]+out[2]<=c->width-2&&
++           out[1]+out[3]<=c->height-2&&out[2]>=12&&out[3]>=12?0:-1;
++}
++stereo_measurement_t stereo_measure(const stereo_calibration_t*c,stereo_raw_read_t read,void*ctx,
++                                  int x,int y,int width,int height,uint32_t skew_ms,
++                                  stereo_workspace_t*w)
++{
++    stereo_measurement_t out={0};
++    if(!c||!read||!w||(c->verified&7u)!=7u||skew_ms>c->max_skew_ms||
++       !c->focal_baseline_q8||!c->limit_mm||c->max_disparity<4||
++       c->max_disparity>STEREO_MAX_DISPARITY||c->width<16||c->height<16||
++       width<12||height<12||x<2||y<2||width>c->width||height>c->height||
++       x>c->width-width-2||y>c->height-height-2)return out;
++    for(unsigned side=0;side<2;side++){
++        const stereo_camera_t*k=c->camera+side;
++        if(!isfinite(k->fx)||!isfinite(k->fy)||k->fx<=0||k->fy<=0)return out;
++    }
++    out.total_points=9;
++    for(int row=1;row<=3;row++)for(int col=1;col<=3;col++){
++        int px=x+width*col/4,py=y+height*row/4;
++        if(patch(c,read,ctx,0,px,py,w->patch))continue;
++        int d=match(c,read,ctx,1,px,py,-1,w);
++        if(d<=1)continue;
++        if(patch(c,read,ctx,1,px-d,py,w->patch))continue;
++        int reverse=match(c,read,ctx,0,px-d,py,1,w);
++        if(reverse<d-1||reverse>d+1)continue;
++        uint32_t depth=(c->focal_baseline_q8+(unsigned)d*128u)/((unsigned)d*256u);
++        uint32_t uncertainty=c->error_mm+
++            (c->focal_baseline_q8+((unsigned)d*(d-1)*256u)-1)/((unsigned)d*(d-1)*256u);
++        if(!depth||depth>UINT16_MAX||uncertainty>UINT16_MAX)continue;
++        unsigned i=out.valid_points++;
++        w->depths[i]=(uint16_t)depth;w->uncertainty[i]=(uint16_t)uncertainty;
++    }
++    if(out.valid_points<5)return out;
++    sort(w->depths,out.valid_points);sort(w->uncertainty,out.valid_points);
++    out.low_mm=w->depths[0];out.high_mm=w->depths[out.valid_points-1];
++    out.median_mm=w->depths[out.valid_points/2];
++    out.uncertainty_mm=w->uncertainty[out.valid_points-1];
++    if((unsigned)(out.high_mm-out.low_mm)>20u+out.median_mm/10u)return out;
++    if((uint32_t)out.high_mm+out.uncertainty_mm<=c->limit_mm)out.status=STEREO_NEAR;
++    else if(out.low_mm>(uint32_t)c->limit_mm+out.uncertainty_mm)out.status=STEREO_FAR;
++    return out;
++}
++int stereo_gate_update(stereo_gate_t*g,unsigned observation,uint32_t now_ms,int reset)
++{
++    if(!g)return 0;
++    if(reset){memset(g,0,sizeof(*g));return 0;}
++    if(observation==STEREO_NEAR){
++        g->far_count=0;g->last_near_ms=now_ms;
++        if(g->near_count<2)g->near_count++;
++        if(g->near_count>=2)g->active=1;
++    }else{
++        g->near_count=0;
++        if(observation==STEREO_FAR){
++            if(g->far_count<2)g->far_count++;
++            if(g->far_count>=2)g->active=0;
++        }else g->far_count=0;
++        if((uint32_t)(now_ms-g->last_near_ms)>1500u)g->active=0;
++    }
++    return g->active;
++}
+--- baseline/yolo\software\stereo_depth.h
++++ candidate/yolo\software\stereo_depth.h
+@@ -0,0 +1,37 @@
++#ifndef STEREO_DEPTH_H
++#define STEREO_DEPTH_H
++#include <stdint.h>
++#define STEREO_MAX_DISPARITY 96
++#define STEREO_BAND (STEREO_MAX_DISPARITY+5)
++enum {STEREO_UNKNOWN=0,STEREO_NEAR=1,STEREO_FAR=2};
++enum {STEREO_CALIBRATED=1,STEREO_DISTANCE_VERIFIED=2,STEREO_SYNC_VERIFIED=4};
++typedef struct {
++    float fx,fy,cx,cy,dist[5],inverse_rectified[9],forward_rectified[9];
++} stereo_camera_t;
++typedef struct {
++    stereo_camera_t camera[2];
++    uint16_t width,height,max_disparity,max_skew_ms;
++    uint16_t limit_mm,error_mm;
++    uint32_t focal_baseline_q8;
++    uint8_t verified;
++} stereo_calibration_t;
++typedef struct {
++    uint8_t band[5*STEREO_BAND],valid[5*STEREO_BAND],patch[25];
++    uint16_t depths[9],uncertainty[9];
++} stereo_workspace_t;
++typedef int (*stereo_raw_read_t)(void*,unsigned,int,int,uint8_t*);
++typedef struct {
++    uint8_t status,valid_points,total_points;
++    uint16_t median_mm,low_mm,high_mm,uncertainty_mm;
++} stereo_measurement_t;
++/* Input ROI is in RECTIFIED left coordinates. Reader supplies frozen RAW
++ * grayscale views. No frame buffer allocations or hardware access here. */
++stereo_measurement_t stereo_measure(const stereo_calibration_t*,stereo_raw_read_t,void*,
++                                  int x,int y,int w,int h,uint32_t skew_ms,
++                                  stereo_workspace_t*);
++int stereo_rectified_roi(const stereo_calibration_t*,int x,int y,int w,int h,int result[4]);
++typedef struct {uint8_t near_count,far_count,active;uint32_t last_near_ms;} stereo_gate_t;
++/* UNKNOWN never confirms a near object. It may retain a display for 1500ms,
++ * but callers must require a fresh NEAR measurement before committing a quiz. */
++int stereo_gate_update(stereo_gate_t*,unsigned observation,uint32_t now_ms,int reset);
++#endif
+--- baseline/yolo\software\yolo_frame_workspace.h
++++ candidate/yolo\software\yolo_frame_workspace.h
+@@ -1,6 +1,7 @@
+ #ifndef YOLO_FRAME_WORKSPACE_H
+ #define YOLO_FRAME_WORKSPACE_H
+ #include "yolo_decode.h"
++#include "stereo_depth.h"
+ 
+ /* Acquisition -> graph execution -> decoding are strictly sequential.
+  * Nothing stored here survives a phase transition. Runtime callbacks must
+@@ -10,6 +11,7 @@
+ typedef union {
+     yolo_decode_workspace_t decode;
+     uint8_t input_row[320u*8u];
++    stereo_workspace_t stereo;
+ } yolo_frame_workspace_t;
+ 
+ #if defined(VEXII_PLATFORM) || !defined(__riscv)
+--- baseline/yolo\software\yolo_runtime.c
++++ candidate/yolo\software\yolo_runtime.c
+@@ -4,7 +4,7 @@
+ 
+ /* Opt-in candidate: retain size optimization elsewhere and leave arithmetic
+  * and MMIO unchanged. Board profiles, not compiler flags, establish speed. */
+-#if defined(__GNUC__) && defined(YOLO_LINEAR_O2)
++#if defined(__GNUC__) && !defined(__clang__) && defined(YOLO_LINEAR_O2)
+ #define YOLO_LINEAR_OPT __attribute__((optimize("O2")))
+ #else
+ #define YOLO_LINEAR_OPT
+@@ -18,10 +18,19 @@
+  * Legacy 32 KiB platforms keep the scalar path and its smaller RAM footprint. */
+ #if defined(VEXII_PLATFORM) || !defined(__riscv)
+ #define YOLO_CACHED_RUNTIME 1
++#ifdef YOLO_COMPACT_SCRATCH
++#define HEAD_Q24_BLOCK 4
++#define HEAD_Q16_ELEMENTS 2048
++#define POOL_ROW_ELEMENTS 768
++#else
++#define HEAD_Q24_BLOCK 8
++#define HEAD_Q16_ELEMENTS 4096
++#define POOL_ROW_ELEMENTS 1536
++#endif
+ static union {
+-    int32_t head_q24[8][256];
+-    int16_t head_q16[4096];
+-    int8_t pool[5][1536];
++    int32_t head_q24[HEAD_Q24_BLOCK][256];
++    int16_t head_q16[HEAD_Q16_ELEMENTS];
++    int8_t pool[5][POOL_ROW_ELEMENTS];
+     unsigned char scale_lut[4][256];
+     yolo_frame_workspace_t frame;
+     struct {
+@@ -132,7 +141,12 @@
+ static YOLO_LINEAR_OPT int execute_bulk_linear(const yolo_io_t *io, const yolo_op_t *op,
+                                const yolo_tensor_t *tensors)
+ {
++#ifdef YOLO_COMPACT_SCRATCH
++    /* Leave room for caller frames and media polling inside a stereo pass. */
++    enum { CHUNK_BYTES = 512 };
++#else
+     enum { CHUNK_BYTES = 1024 };
++#endif
+     unsigned char input[4][CHUNK_BYTES];
+     unsigned char output[CHUNK_BYTES];
+     const yolo_tensor_t *out = &tensors[op->output];
+@@ -357,7 +371,7 @@
+ }
+ 
+ #ifdef YOLO_CACHED_RUNTIME
+-#ifdef __GNUC__
++#if defined(__GNUC__) && !defined(__clang__)
+ __attribute__((optimize("O3")))
+ #endif
+ static int64_t head_dot(const int8_t *input,const int32_t *weight,
+@@ -379,7 +393,7 @@
+     return sum;
+ }
+ 
+-#ifdef __GNUC__
++#if defined(__GNUC__) && !defined(__clang__)
+ __attribute__((optimize("O3")))
+ #endif
+ static int32_t head_dot_q16_i16(const int8_t *input,const int16_t *weight,
+@@ -510,10 +524,10 @@
+         return YOLO_INVALID;
+     int q16=(yolo_runtime_options&YOLO_FAST_INT_HEAD)!=0;
+     if(q16) return head_cached_q16(io,op,in,out);
+-    for(oc=0;oc<out->padded_c;oc+=8) {
+-        float biases[8]={0},weights[256];
+-        int safe[8]={0};
+-        for(j=0;j<8 && oc+j<out->c;j++) {
++    for(oc=0;oc<out->padded_c;oc+=HEAD_Q24_BLOCK) {
++        float biases[HEAD_Q24_BLOCK]={0},weights[256];
++        int safe[HEAD_Q24_BLOCK]={0};
++        for(j=0;j<HEAD_Q24_BLOCK && oc+j<out->c;j++) {
+             int rc=float_read(io,op->head_bias+(oc+j)*4,&biases[j]);
+             if(rc) return rc;
+             rc=read_bytes(io,op->head_weight+(oc+j)*in->c*4,weights,in->c*4u);
+@@ -537,10 +551,10 @@
+         }
+         for(px=0;px<(uint32_t)out->h*out->w;px++) {
+             int8_t input[256];
+-            float values[8]={0};
++            float values[HEAD_Q24_BLOCK]={0};
+             int rc=read_bytes(io,in->address+px*in->c,input,in->c);
+             if(rc) return rc;
+-            for(j=0;j<8 && oc+j<out->c;j++) {
++            for(j=0;j<HEAD_Q24_BLOCK && oc+j<out->c;j++) {
+                 int64_t sum=head_dot(input,scratch.head_q24[j],in->c,safe[j]);
+                 values[j]=(float)sum*(in->scale/16777216.0f)+biases[j];
+             }
+--- baseline/yolo\sources\049_video_ai_frontend.v
++++ candidate/yolo\sources\049_video_ai_frontend.v
+@@ -2,6 +2,7 @@
+ // stable across CDC until the pixel domain acknowledges it.
+ `timescale 1ns/1ps
+ module video_ai_frontend #(
++    parameter integer STEREO_CAPTURE=0,
+     // Number of display frames for which the last detection remains visible
+     // after the first explicitly empty inference. Slow inference alone must
+     // not erase a valid result. The board wrapper sets a frame-rate-specific
+@@ -39,6 +40,12 @@
+     output reg [31:0] rd_data,
+     input wire cam_clk,cam_rstn,cam_vs,cam_de,
+     input wire [15:0] cam_pixel,
++    input wire right_cam_clk,right_cam_rstn,right_cam_vs,right_cam_de,
++    input wire [15:0] right_cam_pixel,
++    // Registered one-hot CDC: disabled/recognition/animation. The receiver
++    // ignores all-zero/multi-hot samples instead of decoding a transient page.
++    output reg [2:0] automatic_request,
++    input tri0 automatic_blocked_async,
+     input wire pix_clk,pix_rstn,pix_vs,pix_de,
+     input wire [15:0] pix_in,
+     output reg [15:0] pix_out,
+@@ -54,12 +61,33 @@
+     reg [15:0] snapshot_address;
+     wire [15:0] snapshot_data,frame_id;
+     wire cap_busy,cap_ready,cap_error;
++    wire captured_pair;
++    wire [15:0] right_frame_id;
++    wire [31:0] left_frame_tick,right_frame_tick;
++    (* ASYNC_REG="TRUE" *)reg [1:0] blocked_sync;
++    generate if(STEREO_CAPTURE) begin: stereo_capture
++    camera_pair_snapshot capture(
++        .cpu_clk(cpu_clk),.cpu_rstn(cpu_rstn),
++        .request(wr_en && wr_addr==8'h74 && wr_data[0]),.pair_mode(wr_data[1]),
++        .read_address(snapshot_address),.read_data(snapshot_data),
++        .busy(cap_busy),.ready(cap_ready),.error(cap_error),.captured_pair(captured_pair),
++        .frame_id(frame_id),.right_frame_id(right_frame_id),
++        .left_frame_tick(left_frame_tick),.right_frame_tick(right_frame_tick),
++        .left_clk(cam_clk),.left_rstn(cam_rstn),.left_vs(cam_vs),.left_de(cam_de),.left_pixel(cam_pixel),
++        .right_clk(right_cam_clk),.right_rstn(right_cam_rstn),.right_vs(right_cam_vs),
++        .right_de(right_cam_de),.right_pixel(right_cam_pixel));
++    end else begin: legacy_capture
++    assign captured_pair=0;
++    assign right_frame_id=0;
++    assign left_frame_tick=0;
++    assign right_frame_tick=0;
+     camera_snapshot capture(
+         .cpu_clk(cpu_clk),.cpu_rstn(cpu_rstn),
+         .request(wr_en && wr_addr==8'h74 && wr_data[0]),
+         .read_address(snapshot_address),.read_data(snapshot_data),
+         .busy(cap_busy),.ready(cap_ready),.error(cap_error),.frame_id(frame_id),
+         .cam_clk(cam_clk),.cam_rstn(cam_rstn),.vsync(cam_vs),.de(cam_de),.pixel(cam_pixel));
++    end endgenerate
+     reg [2:0] selected;
+     reg [31:0] stage_xy1[0:7],stage_xy2[0:7],stage_class[0:7];
+     reg [31:0] payload_xy1[0:7],payload_xy2[0:7],payload_class[0:7];
+@@ -94,12 +122,14 @@
+             result_commit<=0;result_valid<=0;result_class_id<=0;result_count<=0;
+             round_locked<=0;round_active_seen<=0;capture_eligible<=0;
+             clear_pending<=0;payload_force_clear<=0;
++            automatic_request<=3'b001;blocked_sync<=0;
+             for(i=0;i<8;i=i+1) begin
+                 stage_xy1[i]<=0;stage_xy2[i]<=0;stage_class[i]<=0;
+                 payload_xy1[i]<=0;payload_xy2[i]<=0;payload_class[i]<=0;
+             end
+         end else begin
+             ack_sync<={ack_sync[0],ack_toggle};
++            blocked_sync<={blocked_sync[0],automatic_blocked_async};
+             result_commit<=0;
+             if(GAME_TARGET_LOCK && round_locked) begin
+                 if(quiz_hold) round_active_seen<=1;
+@@ -113,8 +143,13 @@
+             if(rd_en && rd_addr==8'hbc && snapshot_address<57600)
+                 snapshot_address<=snapshot_address+1'b1;
+             if(wr_en) case(wr_addr)
+-                8'h74:if(wr_data[0] && GAME_TARGET_LOCK)
+-                    capture_eligible<=!round_locked && !quiz_hold && !clear_pending;
++                8'h74:begin
++                    if(wr_data[7] && wr_data[5:4]!=3)automatic_request<=3'b001<<wr_data[5:4];
++                    if(wr_data[0] && !cap_busy && GAME_TARGET_LOCK)begin
++                        if(!wr_data[1])capture_eligible<=!round_locked && !quiz_hold && !clear_pending;
++                        else if(!wr_data[2])capture_eligible<=0;
++                    end
++                end
+                 8'h78:snapshot_address<=wr_data[15:0];
+                 8'h84:selected<=wr_data[2:0];
+                 8'h88:stage_xy1[selected]<=wr_data;
+@@ -164,10 +199,22 @@
+     endfunction
+     always @(*) begin
+         case(rd_addr)
+-            8'h7c:rd_data={16'b0,snapshot_data};
++            8'h7c:begin
++                rd_data={16'b0,snapshot_data};
++                if(STEREO_CAPTURE)case(snapshot_address)
++                    16'hff00:rd_data={right_frame_id,frame_id};
++                    16'hff01:rd_data=left_frame_tick;
++                    16'hff02:rd_data=right_frame_tick;
++                    16'hff03:rd_data=32'h53545031; // STP1; frame ticks, NOT exposure ticks
++                    16'hff04:rd_data={29'b0,blocked_sync[1],
++                        automatic_request[2]?2'd2:automatic_request[1]?2'd1:2'd0};
++                    default:;
++                endcase
++            end
+             8'hbc:rd_data=snapshot_address<57600 ?
+-                {8'b0,q5(snapshot_data[4:0]),q6(snapshot_data[10:5]),q5(snapshot_data[15:11])} : 32'b0;
+-            8'h80:rd_data={frame_id,13'b0,cap_error,cap_ready,cap_busy};
++                (captured_pair ? {16'b0,snapshot_data} :
++                {8'b0,q5(snapshot_data[4:0]),q6(snapshot_data[10:5]),q5(snapshot_data[15:11])}) : 32'b0;
++            8'h80:rd_data={frame_id,11'b0,(STEREO_CAPTURE!=0),captured_pair,cap_error,cap_ready,cap_busy};
+             8'h98:rd_data={28'b0,clear_pending,quiz_hold && (GAME_TARGET_LOCK!=0),
+                            round_locked,osd_busy};
+             default:rd_data=0;
+--- baseline/yolo\sources\073_camera_pair_snapshot.sv
++++ candidate/yolo\sources\073_camera_pair_snapshot.sv
+@@ -0,0 +1,198 @@
++// Equal frame-memory capacity to camera_snapshot: two N*8 banks replace N*16.
++// mode=0: bank0/1 are the low/high bytes of the left RGB565 frame.
++// mode=1: bank0/1 are left/right grayscale frames, acquired independently.
++// Timestamps are common CPU-clock FRAME START counts, never exposure times.
++`timescale 1ns/1ps
++module camera_pair_snapshot #(
++    parameter integer IN_W=1280, IN_H=720, STEP=4,
++    parameter integer OUT_W=IN_W/STEP, OUT_H=IN_H/STEP,
++    parameter integer TIMEOUT_CYCLES=27000000
++)(
++    input wire cpu_clk,cpu_rstn,request,pair_mode,
++    input wire [15:0] read_address,
++    output reg [15:0] read_data,
++    output reg busy,ready,error,captured_pair,
++    output reg [15:0] frame_id,right_frame_id,
++    output reg [31:0] left_frame_tick,right_frame_tick,
++    input wire left_clk,left_rstn,left_vs,left_de,
++    input wire [15:0] left_pixel,
++    input wire right_clk,right_rstn,right_vs,right_de,
++    input wire [15:0] right_pixel
++);
++    localparam integer N=OUT_W*OUT_H;
++    localparam integer TW=$clog2(TIMEOUT_CYCLES+1);
++    localparam [2:0] IDLE=0, MODE_WAIT=1, CAPTURE_WAIT=2, QUARANTINE=3;
++    reg [2:0] state;
++    reg mode,request_toggle;
++    reg [TW-1:0] timer;
++    reg [31:0] ticks;
++    // Register Gray at the source: a combinational binary->Gray expression
++    // can glitch while binary carry bits settle, defeating the CDC coding.
++    reg [31:0] gray_ticks;
++    wire [31:0] next_ticks=ticks+1'b1;
++    wire [15:0] left_index,right_index;
++    wire left_we,right_we,left_done,right_done,left_bad,right_bad;
++    wire [15:0] left_id,right_id;
++    wire [31:0] left_tick,right_tick;
++    wire left_mode,right_mode;
++    (* ASYNC_REG="TRUE" *)reg [1:0] lm_sync,rm_sync,ld_sync,rd_sync;
++    reg left_seen,right_seen;
++    wire lcomplete=ld_sync[1]!=left_seen;
++    wire rcomplete=rd_sync[1]!=right_seen;
++
++    camera_pair_capture_lane #(.IN_W(IN_W),.IN_H(IN_H),.STEP(STEP),.N(N)) left_lane(
++        .clk(left_clk),.rstn(left_rstn),.request_toggle(request_toggle),
++        .mode_async(mode),.right_only(1'b0),.mode_ack(left_mode),
++        .ticks_gray(gray_ticks),.vs(left_vs),.de(left_de),
++        .write_enable(left_we),.write_address(left_index),.done_toggle(left_done),
++        .frame_id(left_id),.frame_tick(left_tick),.error(left_bad));
++    camera_pair_capture_lane #(.IN_W(IN_W),.IN_H(IN_H),.STEP(STEP),.N(N)) right_lane(
++        .clk(right_clk),.rstn(right_rstn),.request_toggle(request_toggle),
++        .mode_async(mode),.right_only(1'b1),.mode_ack(right_mode),
++        .ticks_gray(gray_ticks),.vs(right_vs),.de(right_de),
++        .write_enable(right_we),.write_address(right_index),.done_toggle(right_done),
++        .frame_id(right_id),.frame_tick(right_tick),.error(right_bad));
++
++    function automatic [7:0] gray565(input [15:0] pixel);
++        reg [7:0] r,g,b;
++        reg [9:0] sum;
++        begin
++            r={pixel[15:11],pixel[15:13]};
++            g={pixel[10:5],pixel[10:9]};
++            b={pixel[4:0],pixel[4:2]};
++            sum={2'b0,r}+{1'b0,g,1'b0}+{2'b0,b};
++            gray565=sum[9:2];
++        end
++    endfunction
++    reg [7:0] bank0[0:N-1],bank1[0:N-1];
++    wire bank1_clk;
++    // Dedicated glitch-free clock mux. All lane writes are inactive during
++    // mode handshake; launch occurs only after both domains acknowledge mode.
++    GTP_CLKBUFGMUX #(.TRIGGER_MODE("NEGEDGE"),.SIM_DEVICE("LOGOS2"))
++        bank1_clock(.CLKIN0(left_clk),.CLKIN1(right_clk),
++                              .SEL(mode),.CLKOUT(bank1_clk));
++    always @(posedge left_clk)
++        if(left_we) bank0[left_index]<=left_mode?gray565(left_pixel):left_pixel[7:0];
++    always @(posedge bank1_clk) begin
++        if(mode) begin
++            if(right_we)bank1[right_index]<=gray565(right_pixel);
++        end else if(left_we)bank1[left_index]<=left_pixel[15:8];
++    end
++    always @(posedge cpu_clk) begin
++        if(ready && read_address<N)read_data<={bank1[read_address],bank0[read_address]};
++        else read_data<=0;
++        if(!cpu_rstn) begin
++            state<=IDLE;mode<=0;request_toggle<=0;timer<=0;ticks<=0;gray_ticks<=0;
++            lm_sync<=0;rm_sync<=0;ld_sync<=0;rd_sync<=0;
++            left_seen<=0;right_seen<=0;busy<=0;ready<=0;error<=0;
++            captured_pair<=0;frame_id<=0;right_frame_id<=0;
++            left_frame_tick<=0;right_frame_tick<=0;
++        end else begin
++            ticks<=next_ticks;gray_ticks<=(next_ticks>>1)^next_ticks;
++            lm_sync<={lm_sync[0],left_mode};rm_sync<={rm_sync[0],right_mode};
++            ld_sync<={ld_sync[0],left_done};rd_sync<={rd_sync[0],right_done};
++            if(state==IDLE) begin
++                if(request) begin
++                    mode<=pair_mode;captured_pair<=pair_mode;
++                    busy<=1;ready<=0;error<=0;timer<=0;
++                    state<=MODE_WAIT;
++                end
++            end else if(state!=QUARANTINE) begin
++                timer<=timer+1'b1;
++                if(timer==TIMEOUT_CYCLES-1) begin
++                    // A stopped camera may finish much later. Do not accept a
++                    // new request or publish partial/stale RAM. Reset recovers.
++                    error<=1;ready<=0;state<=QUARANTINE;
++                end else if(state==MODE_WAIT && lm_sync[1]==mode &&
++                            rm_sync[1]==mode) begin
++                    left_seen<=ld_sync[1];right_seen<=rd_sync[1];
++                    request_toggle<=!request_toggle;state<=CAPTURE_WAIT;
++                end else if(state==CAPTURE_WAIT && lcomplete && (!mode || rcomplete)) begin
++                    frame_id<=left_id;left_frame_tick<=left_tick;
++                    right_frame_id<=mode?right_id:0;right_frame_tick<=mode?right_tick:0;
++                    busy<=0;error<=left_bad || (mode && right_bad);
++                    ready<=!left_bad && !(mode && right_bad);state<=IDLE;
++                end
++            end
++        end
++    end
++endmodule
++
++// One immutable capture controller per sensor. No frame memory here.
++module camera_pair_capture_lane #(
++    parameter integer IN_W=1280,IN_H=720,STEP=4,N=(IN_W/STEP)*(IN_H/STEP)
++)(
++    input wire clk,rstn,request_toggle,mode_async,right_only,
++    output wire mode_ack,
++    input wire [31:0] ticks_gray,
++    input wire vs,de,
++    output wire write_enable,
++    output wire [15:0] write_address,
++    output reg done_toggle,error,
++    output reg [15:0] frame_id,
++    output reg [31:0] frame_tick
++);
++    localparam integer XW=$clog2(IN_W+2),YW=$clog2(IN_H+2);
++    (* ASYNC_REG="TRUE" *)reg [1:0] req_sync,mode_sync;
++    reg settled_mode;
++    reg [3:0] settle_count;
++    (* ASYNC_REG="TRUE" *)reg [31:0] tick_sync0,tick_sync1;
++    reg seen,pending,active,vs_d,de_d,malformed;
++    reg [XW-1:0] x;
++    reg [YW-1:0] y;
++    reg [15:0] index,counter;
++    wire frame_start=vs_d && !vs;
++    assign mode_ack=settled_mode;
++    assign write_address=index;
++    assign write_enable=active && !frame_start && de && x<IN_W && y<IN_H &&
++                        x%STEP==0 && y%STEP==0 && index<N;
++    function automatic [31:0] binary_tick(input [31:0] gray);
++        integer k;
++        begin
++            binary_tick[31]=gray[31];
++            for(k=30;k>=0;k=k-1)binary_tick[k]=binary_tick[k+1]^gray[k];
++        end
++    endfunction
++    always @(posedge clk) begin
++        if(!rstn) begin
++            req_sync<=0;mode_sync<=0;tick_sync0<=0;tick_sync1<=0;
++            settled_mode<=0;settle_count<=0;
++            seen<=0;pending<=0;active<=0;vs_d<=0;de_d<=0;malformed<=0;
++            x<=0;y<=0;index<=0;counter<=0;done_toggle<=0;error<=0;
++            frame_id<=0;frame_tick<=0;
++        end else begin
++            req_sync<={req_sync[0],request_toggle};mode_sync<={mode_sync[0],mode_async};
++            if(mode_sync[1]==settled_mode)settle_count<=0;
++            else if(settle_count==8)begin settled_mode<=mode_sync[1];settle_count<=0;end
++            else settle_count<=settle_count+1'b1;
++            tick_sync0<=ticks_gray;tick_sync1<=tick_sync0;
++            vs_d<=vs;de_d<=de;
++            if(req_sync[1]!=seen) begin
++                seen<=req_sync[1];
++                if(!right_only || mode_sync[1])pending<=1;
++            end
++            if(frame_start) begin
++                counter<=counter+1'b1;x<=0;y<=0;
++                if(active) begin
++                    active<=0;error<=malformed || index!=N || y!=IN_H;
++                    done_toggle<=!done_toggle;
++                end else if(pending) begin
++                    pending<=0;active<=1;index<=0;malformed<=0;error<=0;
++                    frame_id<=counter;frame_tick<=binary_tick(tick_sync1);
++                end
++            end else if(active) begin
++                if(de) begin
++                    if(x<IN_W+1)x<=x+1'b1;
++                    else malformed<=1;
++                    if(write_enable)index<=index+1'b1;
++                end
++                if(de_d && !de) begin
++                    if(x!=IN_W)malformed<=1;
++                    x<=0;
++                    if(y<IN_H+1)y<=y+1'b1;
++                    else malformed<=1;
++                end
++            end
++        end
++    end
++endmodule

@@ -1,0 +1,129 @@
+{
+  "status": "COMPLETED_REJECTED_CANDIDATE",
+  "reason": "Float gate: fewer correct positive/glass despite improved background/battery counts",
+  "dataset": {
+    "base_train_rows": 3275,
+    "old_val_images": 1929,
+    "total_train_rows": 3363,
+    "new_unique_images": 105,
+    "new_train_images": 88,
+    "new_public_dev_images": 17,
+    "new_by_source_split": {
+      "public_expansion_ewaste": {
+        "train": 30,
+        "public_dev": 8
+      },
+      "public_expansion_hagrid": {
+        "train": 22,
+        "public_dev": 2
+      },
+      "public_expansion_taco": {
+        "train": 36,
+        "public_dev": 7
+      }
+    },
+    "old_val_unchanged": true,
+    "held_out_test_images_opened": 0,
+    "limitation": "Public development split uses conservative TACO batches and HaGRID subjects; e-waste source physical identities unknown. Not independent camera or physical-instance accuracy."
+  },
+  "oldval_float": {
+    "stage4_original_val": {
+      "correct_positive": 1457,
+      "false_background": 8,
+      "correct_personal_battery": 54,
+      "correct_public_glass": 231,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    },
+    "candidate_oldval_float_001": {
+      "correct_positive": 1455,
+      "false_background": 5,
+      "correct_personal_battery": 55,
+      "correct_public_glass": 229,
+      "denominators": {
+        "positive": 1793,
+        "background": 136,
+        "personal_battery": 60,
+        "public_glass": 242
+      }
+    }
+  },
+  "publicdev_float": {
+    "baseline_publicdev_float_002": {
+      "correct_positive": 1,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 15,
+        "background": 2,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    },
+    "candidate_publicdev_float_002": {
+      "correct_positive": 3,
+      "false_background": 0,
+      "correct_personal_battery": 0,
+      "correct_public_glass": 0,
+      "denominators": {
+        "positive": 15,
+        "background": 2,
+        "personal_battery": 0,
+        "public_glass": 0
+      }
+    }
+  },
+  "checkpoint": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\public_expansion_20261117_001\\runs\\train_001\\weights\\best.pt",
+  "checkpoint_sha256": "d5876fa2580bed86996b3a829ecf6568939c4d3bab8c25940061b1005df04680",
+  "input_identities": {
+    "build\\public_expansion_20261117_001\\dataset_003\\manifest.json": "5f3894be3e237832a6e03ccffe49975cee13d9e7c6a29b08124e0bbc647b3b00",
+    "build\\public_expansion_20261117_001\\public_dev_003\\manifest.json": "88e5432496634177f33f1fa017038b501309ed6dfe3467db798fbaa6e7080487",
+    "build\\public_expansion_20261117_001\\dedup_inventory.json": "6c88c8da2a2978c34508ca62a2581c6f8426f44d3765f4a2a05a76a1fe1a5080",
+    "build\\public_expansion_20261117_001\\runs\\train_001\\weights\\best.pt": "d5876fa2580bed86996b3a829ecf6568939c4d3bab8c25940061b1005df04680",
+    "build\\overnight_20261116\\runs\\continuation_stage4_002\\weights\\best.pt": "a4a0b1b04f83af1d114813e0512dd2c2fa5e7306fae16759824f136b3133021a",
+    "project\\trash_sorting\\candidates\\continuation_023\\source\\yolo\\model\\model.bin": "7a0765a6f275f3c06d838f924d73542783ca55e131509aa1b546efc98bd65728"
+  },
+  "no_quantization_after_failed_float_gate": true,
+  "board_accessed": false,
+  "held_out_test_used": false,
+  "deployment_changed": false,
+  "training_epochs": 3,
+  "training_seconds": 1049.0180640220642,
+  "limitation": "Repeated development validation; not independent physical instances, Q15 or camera accuracy. Public-dev only17 images.",
+  "artifact_hashes": {
+    "baseline_publicdev_float_001.log": "5e437c6d4deade61ed92fa8e9c71bb313595f29c3494d4192ec6b7ba0ba48e69",
+    "dataset_report.json": "0487e0484dddd28a15b9cf9a8f28433e6b3dd0008fbd2f89c7e8394970960a42",
+    "dedup_report.json": "34b32d7c257688ef9597db06613a207d783d16c003588cc726d979737ef285b8",
+    "evaluation_state.json": "6209ecdf2d70388ec0c30f6a91a6eb2d2d5f1aa3c03c36f91425dce34c18087c",
+    "evaluation_state_retry_002.json": "1a50c9e2ddcd9f20586861cd706ef8d0451e94376df32ac86637a5627fc7330d",
+    "preflight_integrity.json": "f33bcaf97f566c6ec82aab1790d65834f8dc1fda361ae6441fe6398e4c076271",
+    "review_ledger.json": "9e6db96c5ab38ccf0abbd1260d8d399c07cdc3f7fbb4713ecb70cf77d8378a2e",
+    "replay_oldval_001\\decisions.json": "214ccad4de331e4034bce6d5c0d9a9291407bb59b2e1d03546042eed98a7e057",
+    "replay_oldval_001\\result.json": "b1b5289667a38e8d16d92258dd6ac0af1301bea02725fefd23d81f8ee67bafa3",
+    "replay_publicdev_001\\decisions.json": "2ae5f5116dfb9f93fd02efc3580379c9d55d116e2e3bf1531422c9a4452a792a",
+    "replay_publicdev_001\\result.json": "e6a8e1667b07814381c36c6441f53b43290517b6de6d02078180f0bca16e9676",
+    "runs\\baseline_publicdev_float_002\\metrics.json": "0f9a65719a99251785304e762b05ab852408917384763f33be5f078fa1ec986f",
+    "runs\\candidate_oldval_float_001\\metrics.json": "ec121ebcb9a1a7ea85a6104415fbcb61cb96faa72eb3f653f1bfeb1885936de4",
+    "runs\\candidate_oldval_float_001\\provenance.json": "5d0ffa767605027ae33b345e04a4c8e4a1d90f2d7863b05a7c944d2299c4b5bb",
+    "runs\\candidate_publicdev_float_002\\metrics.json": "a2f9b71782ae5d597b16f898eef3c6bd608ca6ff5d7907be4ef1dc0d16054d31",
+    "runs\\train_001\\hyp.yaml": "efc6120e5120d47568ffe8e7aee4ef1918aeb06e900ad3b5a04b6c95fa6f9c1c",
+    "runs\\train_001\\opt.yaml": "4b6f8bb38e5348da7ecf508e6e2d9f435f8319c571f1de688f27601fabeace58",
+    "runs\\train_001\\progress.json": "3394cbdf6b79e3f81cf4add41526d22c8d5d258a2ff2ff4f150c955212262dfe",
+    "runs\\train_001\\provenance.json": "d55fb947ee670a822a1d97864322786124f8d539c213f4af27e5f85c42b29210",
+    "runs\\train_001\\results.csv": "a3cd61674cebfb9bc9bbf9022f1128f61d42dd4e4fe894c2065eb40e17d869a2",
+    "sources\\audit_public_expansion.py": "16459306d6b3b46d1c747192872d7db38713c39a92125a821669813ce87d819e",
+    "sources\\collect_public_expansion.py": "41504ff2653ba310b479698b1dbeab071b3f52b819b127368b00f514c93de70c",
+    "sources\\evaluate_public_expansion.py": "67ce803e107e2665c7066b3cdb999eeea605b9908681116a856a4c7143c7aaa5",
+    "sources\\freeze_public_expansion.py": "7709463107c9d4542fe1a21d4dd34527f43c3b798d79550df42ffedf95e98586",
+    "sources\\inventory_public_hands.py": "67bc3adc7fd787c1e512802d02e5de769c7d8ecc5479b2d4a214f1f814b25442",
+    "sources\\PUBLIC_EXPANSION_20261117.md": "387730b70ef6fe7848bcb3bda45cde2d355b37c20793107f35ed54734b66ad90",
+    "sources\\record_public_expansion.py": "c4daf3466a944d3a3063dc43bb5b3676ca9494d84b56c0a9ef93edfe56da7beb",
+    "sources\\review_public_expansion.py": "2fd4592e175939f28494dbeb332e485df21361eace43b9c0ea2706a1b199fd8c",
+    "sources\\train_four_bins.py": "2b9f4c0d3364af0ab5a6afb46811ea72ed500e43964775201e7257843463d25f"
+  }
+}

@@ -44,9 +44,27 @@ def main():
                         help='Diagnostic camera frames without committing quizzes; requires cmd12 release')
     parser.add_argument('--collect-profile',action='store_true',help='Collect stage/operator cycles for each timed frame')
     parser.add_argument('--verify-input',action='store_true',help='Compare legacy/stream full input CRC on one frozen camera snapshot')
+    parser.add_argument('--leave-idle',action='store_true',
+                        help='After non-committing checks start autonomous service but retain startup animation for manual key testing')
+    parser.add_argument('--verify-stereo-pair',action='store_true',
+                        help='Read complete frozen left/right snapshots and verify return to RGB via --verify-input; no distance calibration claim')
+    parser.add_argument('--initial-uart-timeout', type=float, default=30,
+                        help='Bound the first read-only firmware reply before allowing model writes')
+    parser.add_argument('--experimental-timing-failure', action='store_true',
+                        help='User-authorized SRAM experiment; retain failing STA status in all evidence')
+    parser.add_argument('--reuse-jtag-evidence',type=Path,
+                        help='Recover UART after USB-only reconnect without reconfiguring; reuse an exact-bit verified JTAG evidence directory')
     args = parser.parse_args()
+    if not 5 <= args.initial_uart_timeout <= 120:
+        parser.error('--initial-uart-timeout must be 5..120 seconds')
     release = args.release_dir.resolve()
     acceptance = json.loads((release / "manifest.json").read_text(encoding="utf8"))
+    if args.leave_idle and not acceptance.get('recognition_single_click'):
+        raise ValueError('Idle handoff requires the single-click recognition firmware')
+    if args.leave_idle and (args.measure_frames or not args.probe_frames):
+        raise ValueError('Idle handoff requires non-committing probes and no committing frame measurements')
+    if args.verify_stereo_pair and not args.verify_input:
+        raise ValueError('Stereo pair verification must also verify the return to RGB input')
     if args.probe_frames < 0 or args.probe_frames > 100:
         raise ValueError('Probe frames must be 0..100')
     if args.probe_frames and acceptance.get('camera_probe_command') != 12:
@@ -55,7 +73,9 @@ def main():
         raise ValueError('Camera probes require device stage profiles')
     bit = release / "yolo_camera_top.sbit"
     bit_sha = hashlib.sha256(bit.read_bytes()).hexdigest()
-    if (bit_sha != acceptance["bitstream_sha256"] or not acceptance["timing_pass"]
+    timing_allowed = acceptance['timing_pass'] or (
+        args.experimental_timing_failure and acceptance.get('experimental_timing_failure') is True)
+    if (bit_sha != acceptance["bitstream_sha256"] or not timing_allowed
             or acceptance["peripheral_test_mode"] != 0
             or acceptance["servo_reversed_mask"] != "1111"):
         raise ValueError("Release identity or acceptance mismatch")
@@ -93,6 +113,8 @@ def main():
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     state = dict(started_utc=datetime.now(timezone.utc).isoformat(),
+                 timing_pass=acceptance['timing_pass'],
+                 experimental_timing_failure=not acceptance['timing_pass'],
                  bitstream_sha256=bit_sha, model_sha256=model_sha,
                  model_crc32=f"0x{model['blob_crc32']:08x}", port=args.port,
                  classes=list(names),four_bin_classes=acceptance.get('four_bin_classes',0),
@@ -108,18 +130,51 @@ def main():
 
     save()
     try:
-        subprocess.run([
-            sys.executable, str(ROOT / "extensions/yolo/scripts/program_board.py"),
-            "--sbit", str(bit), "--out", str(out / "jtag"),
-            "--pds", str(args.pds.resolve())], check=True)
+        if args.reuse_jtag_evidence:
+            jtag=json.loads((args.reuse_jtag_evidence/'result.json').read_text())
+            if not (jtag.get('programming_requested') and jtag.get('trace_complete')
+                    and jtag.get('configuration_active_verified') and jtag.get('sha256')==bit_sha
+                    and jtag.get('configuration_status_hex')==['081ffca0','081ffca0']):
+                raise ValueError('Previous JTAG evidence does not prove this exact configured bitstream')
+            state.update(configuration_evidence_reused=str(args.reuse_jtag_evidence.resolve()),
+                         jtag_programmed_this_attempt=False,
+                         configuration_reuse_scope='USB-UART-only reconnect after this exact bit was programmed; no power cycle reported')
+        else:
+            subprocess.run([
+                sys.executable, str(ROOT / "extensions/yolo/scripts/program_board.py"),
+                "--sbit", str(bit), "--out", str(out / "jtag"),
+                "--pds", str(args.pds.resolve())], check=True)
+            state['jtag_programmed_this_attempt']=True
         state["board_programmed"] = True
         save()
         with (out / "uart.log").open("w", encoding="utf8") as log:
             with redirect_stdout(Tee(sys.stdout, log)):
-                with serial.Serial(args.port, 115200, timeout=600, write_timeout=10) as port:
+                with serial.Serial(args.port, 115200, timeout=args.initial_uart_timeout, write_timeout=10) as port:
                     # A valid reply proves the newly loaded CPU firmware is serving UART.
                     loader.transact(port, 8)
+                    port.timeout = 600
                     print("FIRMWARE_UART_REPLY_PASS", flush=True)
+                    if args.leave_idle:
+                        # Startup animation services SD/media between UART
+                        # packets. Pause it during bulk maintenance transfers
+                        # so a long media poll cannot overflow the RX FIFO.
+                        paused=struct.unpack('<I',loader.transact(port,19,1))[0]
+                        if paused!=1:raise ValueError('Media maintenance pause failed')
+                        state['media_paused_for_transfer']=True
+                        save();print('MEDIA_MAINTENANCE_PAUSE_PASS',flush=True)
+                    if acceptance.get('benchmark_mode') == 'simulated_demo':
+                        diagnostic = loader.transact(port, 15)
+                        if len(diagnostic) != 16:
+                            raise ValueError('Unexpected demo firmware diagnostic length')
+                        benchmark_status, quiz_status, key_status, mode = struct.unpack('<4I', diagnostic)
+                        state['demo_firmware_identity'] = dict(
+                            mode=f'0x{mode:08x}', passed=mode == 0x44454d4f,
+                            benchmark_status=benchmark_status, quiz_status=quiz_status,
+                            key_status=key_status, is_real_measurement=False)
+                        save()
+                        if mode != 0x44454d4f:
+                            raise ValueError('Loaded firmware does not identify as simulated DEMO')
+                        print('DEMO_FIRMWARE_IDENTITY_PASS', flush=True)
                     started = time.monotonic()
                     loader.write_image(port, model["blob_base"], blob)
                     state.update(model_loaded=True,
@@ -129,6 +184,51 @@ def main():
                     state["model_crc_verified"] = True
                     print("DEVICE_MODEL_CRC_PASS", state["model_crc32"], flush=True)
                     save()
+                    if acceptance.get('benchmark_mode') == 'simulated_demo':
+                        boot = loader.transact(port, 20)
+                        media = loader.transact(port, 16)
+                        if len(boot) != 32 or len(media) != 36:
+                            raise ValueError('Unexpected boot/media diagnostic length')
+                        boot_words, media_words = struct.unpack('<8I', boot), struct.unpack('<9I', media)
+                        if (boot_words[0] != 0x424f5431 or boot_words[1] != 1 or
+                                boot_words[5] != len(blob) or boot_words[6] != model['blob_crc32'] or
+                                boot_words[7] > 2 or media_words[0] != 0x4d454431 or
+                                media_words[8] != acceptance['cpu_hz']):
+                            raise ValueError('New application/model/media diagnostic identity mismatch')
+                        state['application_diagnostics'] = dict(
+                            passed=True, boot=list(boot_words), media=list(media_words),
+                            tf_boot_error_before_uart=boot_words[3],
+                            scope='Read-only firmware/model/media identity after verified UART load; no physical display or audio assessment')
+                        save()
+                        print('APPLICATION_DIAGNOSTIC_IDENTITY_PASS', flush=True)
+                    if args.verify_stereo_pair:
+                        gate=struct.unpack('<8I',loader.transact(port,23))
+                        if gate[0]!=0x53444731 or gate[1] or gate[2]:
+                            raise ValueError('Expected uncalibrated disabled automatic distance gate')
+                        pair=struct.unpack('<9I',loader.transact(port,21))
+                        if (pair[0]!=0x53545031 or pair[1:3]!=(320,180) or
+                                pair[3]&31!=26 or pair[4]!=acceptance['cpu_hz'] or pair[8]!=pair[0]):
+                            raise ValueError('Invalid complete stereo snapshot metadata')
+                        packed=bytearray()
+                        for offset in range(0,57600,128):
+                            chunk=loader.transact(port,22,offset)
+                            if len(chunk)!=256:raise ValueError('Truncated stereo snapshot')
+                            packed.extend(chunk)
+                        if loader.transact(port,22,0)!=packed[:256] or loader.transact(port,22,57472)!=packed[-256:]:
+                            raise ValueError('Frozen stereo snapshot changed during read')
+                        (out/'stereo_pair.bin').write_bytes(packed)
+                        for side,name in enumerate(('left','right')):
+                            data=bytes(packed[side::2])
+                            (out/('stereo_'+name+'.pgm')).write_bytes(b'P5\n320 180\n255\n'+data)
+                        difference=((pair[7]-pair[6]+0x80000000)&0xffffffff)-0x80000000
+                        state['stereo_pair']=dict(passed=True,metadata=list(pair),
+                            packed_sha256=hashlib.sha256(packed).hexdigest(),
+                            left_distinct_levels=len(set(packed[0::2])),right_distinct_levels=len(set(packed[1::2])),
+                            frame_start_skew_ms=difference*1000/pair[4],
+                            timestamp_source='frame_start_common_clock',
+                            exposure_sync_verified=False,physical_distance_verified=False,
+                            distance_gate_enabled=False)
+                        save();print('STEREO_PAIR_CAPTURE_PASS frame-start skew ms',state['stereo_pair']['frame_start_skew_ms'],flush=True)
                     if args.verify_input:
                         old,new,old_cycles,new_cycles=struct.unpack('<4I',loader.transact(port,11))
                         state['input_equivalence']=dict(legacy_crc32=f'0x{old:08x}',
@@ -198,6 +298,24 @@ def main():
                         state['camera_probe_max_seconds']=max(x['seconds'] for x in state['camera_probe_frames'])
                         state['camera_probe_scope']='cmd12 real camera capture, full inference, decode and single-target selection after one warmup; NO display/quiz commit, voice, answer or servo; not full game latency'
                         save()
+                    if args.leave_idle:
+                        # cmd12 above checks real camera inference without creating
+                        # a quiz. Keep the startup page for the user's first click.
+                        paused=struct.unpack('<I',loader.transact(port,19,2))[0]
+                        if paused:raise ValueError('Media playback resume failed')
+                        state['media_resumed_after_transfer']=True
+                        loader.transact(port,7)
+                        boot_words=struct.unpack('<8I',loader.transact(port,20))
+                        if boot_words[0]!=0x424f5431 or boot_words[2]!=1 or boot_words[7]!=2:
+                            raise ValueError('Startup animation/autonomous handoff state mismatch')
+                        state.update(camera_inference_pass=True,autonomous_started=True,
+                            autonomous_frame_received=False,initial_page='animation',
+                            first_question_pending=False,
+                            autonomous_frame_note='Idle by design; single physical KEY0 click starts recognition',
+                            handoff_boot_diagnostic=list(boot_words),
+                            completed_utc=datetime.now(timezone.utc).isoformat())
+                        save();print('IDLE_ANIMATION_HANDOFF_PASS single-click to recognize',flush=True)
+                        return
                     started = time.monotonic()
                     detections = loader.parse_detections(loader.transact(port, 6),names)
                     state.update(camera_inference_pass=True, detections=detections,

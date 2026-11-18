@@ -1,0 +1,36 @@
+test_calibration_roi_is_enforced (__main__.StereoGeometry) ... ok
+test_invalid_roi_and_search_range (__main__.StereoGeometry) ... ok
+test_known_near_and_far_planes (__main__.StereoGeometry) ... ok
+test_manifest_repetition_and_depth_identity_gates (__main__.StereoGeometry) ... ok
+test_recovers_known_30mm_geometry (__main__.StereoGeometry) ... ok
+test_reversed_views_not_near (__main__.StereoGeometry) ... ok
+test_textureless_unknown (__main__.StereoGeometry) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 1.805s
+
+OK
+{
+  "calibration_sha256": "b67f556b48b6ec2073788df60329381f818ea93bfc9b98d20a7dfbefef5a9d21",
+  "manifest_sha256": "d88b63a52da6c2b3dd21ee18ff2e3474ac0b3d01bd7519e0197ba66e8698459d",
+  "rectified_left_roi": [
+    140,
+    25,
+    90,
+    120
+  ],
+  "board_modified": false,
+  "results": [
+    {
+      "left": "l.png",
+      "right": "r.png",
+      "sha256": [
+        "ab81dcbb89de7dae8f3a38b8901c63eefee25dc7b058ae5d38f6c5aec1f23adc",
+        "9a803f86902bbea400d74ee613481dc85a408a360b835874cef615eca5b9d91e"
+      ],
+      "exposure_skew_ms": 10.0,
+      "status": "UNKNOWN",
+      "reason": "exposure skew exceeds 5 ms"
+    }
+  ]
+}

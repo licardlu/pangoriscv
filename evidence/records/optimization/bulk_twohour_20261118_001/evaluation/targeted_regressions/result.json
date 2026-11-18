@@ -1,0 +1,938 @@
+{
+  "status": "COMPLETED_FIXED_POLICY_DEVELOPMENT_DIAGNOSTIC",
+  "cohorts": {
+    "personal_battery": {
+      "positive": 60,
+      "baseline_correct": 55,
+      "candidate_correct": 44,
+      "gains": 1,
+      "regressions": 12,
+      "correct": 44,
+      "float_correct_q15_wrong": 6,
+      "no_selection": 9,
+      "wrong_class": 6,
+      "localization": 1
+    },
+    "public_glass": {
+      "positive": 242,
+      "baseline_correct": 232,
+      "candidate_correct": 231,
+      "gains": 4,
+      "regressions": 5,
+      "correct": 231,
+      "float_correct_q15_wrong": 5,
+      "localization": 7,
+      "wrong_class": 1,
+      "no_selection": 3
+    },
+    "empty_hand": {
+      "background": 136,
+      "baseline_false": 8,
+      "candidate_false": 7,
+      "new_false": 6,
+      "removed_false": 7,
+      "correct_rejection": 129,
+      "float_correct_q15_wrong": 0,
+      "false_selection": 7
+    }
+  },
+  "errors": {
+    "personal_battery": [
+      {
+        "stem": "N0796",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          190.16917419433594,
+          553.5795288085938,
+          887.1043090820312,
+          785.504150390625,
+          0.8503865599632263,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          194.55325317382812,
+          560.6149291992188,
+          891.4852905273438,
+          773.397216796875,
+          0.5373246669769287,
+          1.0
+        ]
+      },
+      {
+        "stem": "N0797",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          203.26541137695312,
+          525.4664306640625,
+          920.8660888671875,
+          741.6376342773438,
+          0.6349214911460876,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": true,
+        "float_selected": [
+          211.78317260742188,
+          510.17974853515625,
+          899.3502807617188,
+          734.3948364257812,
+          0.7041893005371094,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0804",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          199.03457641601562,
+          824.3221435546875,
+          915.265625,
+          1166.191162109375,
+          0.5445370078086853,
+          1
+        ],
+        "original_selected": [
+          220.24261474609375,
+          825.6737670898438,
+          885.0823974609375,
+          1170.0548095703125,
+          0.901775062084198,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          210.84971618652344,
+          833.8693237304688,
+          903.0126953125,
+          1170.3673095703125,
+          0.41638898849487305,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0808",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          505.4823303222656,
+          387.86572265625,
+          734.2741088867188,
+          1123.9344482421875,
+          0.7680358290672302,
+          1
+        ],
+        "original_selected": [
+          489.36737060546875,
+          386.64031982421875,
+          726.955078125,
+          1121.8358154296875,
+          0.621588945388794,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          501.5852966308594,
+          398.70166015625,
+          733.7536010742188,
+          1118.4375,
+          0.7167053818702698,
+          1.0
+        ]
+      },
+      {
+        "stem": "N0810",
+        "kind": "no_selection",
+        "regression": false,
+        "selected": null,
+        "original_selected": null,
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0812",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          534.3634643554688,
+          440.6678771972656,
+          771.570068359375,
+          1116.714599609375,
+          0.8496870398521423,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0813",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          0.0,
+          849.7271728515625,
+          763.8572387695312,
+          1090.81201171875,
+          0.4181961417198181,
+          1
+        ],
+        "original_selected": [
+          8.352851867675781,
+          859.59912109375,
+          737.705078125,
+          1096.3428955078125,
+          0.5594518780708313,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": [
+          0.0,
+          853.8406372070312,
+          747.7018432617188,
+          1091.1500244140625,
+          0.41307300329208374,
+          1.0
+        ]
+      },
+      {
+        "stem": "N0814",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          186.64569091796875,
+          615.8563842773438,
+          925.6571655273438,
+          937.8967895507812,
+          0.5533425211906433,
+          1
+        ],
+        "original_selected": [
+          180.77651977539062,
+          635.4624633789062,
+          861.7704467773438,
+          931.8930053710938,
+          0.5924183130264282,
+          2
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          157.17453002929688,
+          618.8973999023438,
+          925.9814453125,
+          933.85498046875,
+          0.4623372256755829,
+          1.0
+        ]
+      },
+      {
+        "stem": "N0817",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          540.7618408203125,
+          338.6598815917969,
+          771.2594604492188,
+          969.1141357421875,
+          0.8967710733413696,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": true,
+        "float_selected": [
+          560.358642578125,
+          358.495849609375,
+          761.5584716796875,
+          954.7699584960938,
+          0.684146523475647,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0819",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          463.0789794921875,
+          326.01483154296875,
+          766.0376586914062,
+          1160.1966552734375,
+          0.7617194056510925,
+          1
+        ],
+        "original_selected": [
+          460.30035400390625,
+          337.13092041015625,
+          760.339599609375,
+          1161.451904296875,
+          0.7282417416572571,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": [
+          476.6227722167969,
+          339.37384033203125,
+          761.1795043945312,
+          1155.863525390625,
+          0.7193251252174377,
+          1.0
+        ]
+      },
+      {
+        "stem": "N0821",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          574.0645751953125,
+          313.97589111328125,
+          800.3096923828125,
+          954.7109375,
+          0.527826726436615,
+          1
+        ],
+        "original_selected": [
+          574.3923950195312,
+          337.50531005859375,
+          786.9163208007812,
+          931.0745239257812,
+          0.44092127680778503,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          573.3196411132812,
+          311.80218505859375,
+          802.2891845703125,
+          962.9766845703125,
+          0.33055591583251953,
+          1.0
+        ]
+      },
+      {
+        "stem": "N0824",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          477.5765075683594,
+          544.5653686523438,
+          692.4671020507812,
+          1156.3101806640625,
+          0.852689266204834,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": true,
+        "float_selected": [
+          498.2292785644531,
+          555.785400390625,
+          695.1199951171875,
+          1143.0982666015625,
+          0.7286587953567505,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0831",
+        "kind": "no_selection",
+        "regression": false,
+        "selected": null,
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": true,
+        "float_selected": [
+          422.77008056640625,
+          408.9923095703125,
+          865.6964111328125,
+          747.385498046875,
+          0.8885126709938049,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0836",
+        "kind": "localization",
+        "regression": false,
+        "selected": [
+          318.989990234375,
+          624.0460205078125,
+          442.445068359375,
+          848.876953125,
+          0.7796541452407837,
+          2
+        ],
+        "original_selected": [
+          309.56072998046875,
+          612.5455322265625,
+          454.6275329589844,
+          854.3642578125,
+          0.8850352168083191,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": [
+          315.2287902832031,
+          626.0086059570312,
+          444.1206359863281,
+          859.4480590820312,
+          0.8508803844451904,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0839",
+        "kind": "no_selection",
+        "regression": false,
+        "selected": null,
+        "original_selected": [
+          199.58888244628906,
+          928.8533935546875,
+          468.0000305175781,
+          1184.2498779296875,
+          0.3589702248573303,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": [
+          202.6407928466797,
+          935.6340942382812,
+          460.7521057128906,
+          1245.8349609375,
+          0.33511239290237427,
+          2.0
+        ]
+      },
+      {
+        "stem": "N0840",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          654.705810546875,
+          262.18505859375,
+          975.5361938476562,
+          992.0223999023438,
+          0.6873907446861267,
+          2
+        ],
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          654.8162841796875,
+          266.3726806640625,
+          986.480712890625,
+          1012.6990356445312,
+          0.6046273112297058,
+          2.0
+        ]
+      }
+    ],
+    "public_glass": [
+      {
+        "stem": "sumn2u_0450976b01086c876669",
+        "kind": "localization",
+        "regression": false,
+        "selected": [
+          109.89920806884766,
+          156.85658264160156,
+          212.12564086914062,
+          268.2947692871094,
+          0.834534764289856,
+          1
+        ],
+        "original_selected": [
+          111.42877960205078,
+          153.76712036132812,
+          211.7115478515625,
+          268.4981689453125,
+          0.9113113880157471,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          191.6092071533203,
+          157.00686645507812,
+          290.8868713378906,
+          261.1812744140625,
+          0.8141077160835266,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_0b7c7d342712910d99e8",
+        "kind": "localization",
+        "regression": true,
+        "selected": [
+          170.92295837402344,
+          127.99406433105469,
+          381.56561279296875,
+          315.63336181640625,
+          0.792698323726654,
+          1
+        ],
+        "original_selected": [
+          0.0,
+          130.6051025390625,
+          362.747802734375,
+          308.788330078125,
+          0.6501792073249817,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          0.0,
+          125.20008087158203,
+          363.3310546875,
+          316.4239501953125,
+          0.682855486869812,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_150145754cdcabff95d3",
+        "kind": "localization",
+        "regression": false,
+        "selected": [
+          4.861248970031738,
+          106.9281234741211,
+          182.92831420898438,
+          267.1549987792969,
+          0.6445855498313904,
+          1
+        ],
+        "original_selected": [
+          1.2470673322677612,
+          104.941650390625,
+          173.79913330078125,
+          269.3585205078125,
+          0.5924361944198608,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          3.5190858840942383,
+          105.67575073242188,
+          180.155517578125,
+          266.7874450683594,
+          0.6936361193656921,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_3812e87961f6b620bfce",
+        "kind": "wrong_class",
+        "regression": true,
+        "selected": [
+          45.178016662597656,
+          1.887323021888733,
+          337.7250061035156,
+          372.9706726074219,
+          0.5349231362342834,
+          0
+        ],
+        "original_selected": [
+          54.040550231933594,
+          1.8177613019943237,
+          330.1596374511719,
+          373.34100341796875,
+          0.8415775895118713,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          56.17314147949219,
+          4.531109809875488,
+          329.4601745605469,
+          370.7077331542969,
+          0.7058436870574951,
+          0.0
+        ]
+      },
+      {
+        "stem": "sumn2u_3f6582146df52d4d6138",
+        "kind": "localization",
+        "regression": false,
+        "selected": [
+          32.97719192504883,
+          100.55537414550781,
+          141.071044921875,
+          223.2239990234375,
+          0.8277984857559204,
+          1
+        ],
+        "original_selected": [
+          29.32349395751953,
+          101.11807250976562,
+          143.0642852783203,
+          221.69393920898438,
+          0.8615519404411316,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          30.97254753112793,
+          100.31094360351562,
+          141.5526885986328,
+          220.36917114257812,
+          0.7606146931648254,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_4fc5f7c86999ed9f56e4",
+        "kind": "no_selection",
+        "regression": false,
+        "selected": null,
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "sumn2u_63b05d144a695f78afd0",
+        "kind": "localization",
+        "regression": true,
+        "selected": [
+          0.0,
+          115.68701171875,
+          267.8321533203125,
+          248.63644409179688,
+          0.3697880804538727,
+          1
+        ],
+        "original_selected": [
+          0.0,
+          98.41083526611328,
+          350.4380187988281,
+          283.30279541015625,
+          0.488028347492218,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          0.0,
+          90.70841217041016,
+          342.6991271972656,
+          287.2044372558594,
+          0.5004514455795288,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_6a94ddf2ee449ee31c9f",
+        "kind": "localization",
+        "regression": false,
+        "selected": [
+          100.27801513671875,
+          8.563257217407227,
+          289.1615905761719,
+          361.7975769042969,
+          0.8440601825714111,
+          1
+        ],
+        "original_selected": [
+          106.85517883300781,
+          15.948760986328125,
+          285.3387756347656,
+          351.0013122558594,
+          0.8431919813156128,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          104.94453430175781,
+          15.259808540344238,
+          289.1648254394531,
+          359.73046875,
+          0.6060400009155273,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_86fc231a57915fe6b0ab",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          43.51627731323242,
+          232.72821044921875,
+          384.0,
+          339.8492736816406,
+          0.41049227118492126,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          34.6002311706543,
+          220.59677124023438,
+          384.0,
+          341.06048583984375,
+          0.39734140038490295,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_f15ab924fc0b366fe589",
+        "kind": "localization",
+        "regression": false,
+        "selected": [
+          51.061798095703125,
+          30.696863174438477,
+          348.5370178222656,
+          341.2327575683594,
+          0.3840351104736328,
+          1
+        ],
+        "original_selected": [
+          78.02921295166016,
+          33.15959548950195,
+          329.1512756347656,
+          151.47525024414062,
+          0.833126962184906,
+          0
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": [
+          78.27162170410156,
+          29.012622833251953,
+          332.5476379394531,
+          153.84979248046875,
+          0.664739191532135,
+          1.0
+        ]
+      },
+      {
+        "stem": "sumn2u_f96a70f2cf1d1f40f7de",
+        "kind": "no_selection",
+        "regression": true,
+        "selected": null,
+        "original_selected": [
+          13.152887344360352,
+          8.17368221282959,
+          367.2586669921875,
+          373.3371887207031,
+          0.6961673498153687,
+          1
+        ],
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": true,
+        "float_selected": [
+          0.0,
+          0.0,
+          384.0,
+          384.0,
+          0.3908178210258484,
+          1.0
+        ]
+      }
+    ],
+    "empty_hand": [
+      {
+        "stem": "N0544",
+        "kind": "false_selection",
+        "regression": true,
+        "selected": [
+          77.86788940429688,
+          266.5301208496094,
+          1099.7078857421875,
+          1206.4752197265625,
+          0.4254133403301239,
+          1
+        ],
+        "original_selected": null,
+        "hand_seen": false,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0556",
+        "kind": "false_selection",
+        "regression": true,
+        "selected": [
+          318.52484130859375,
+          606.2380981445312,
+          782.33544921875,
+          1172.061279296875,
+          0.3134717643260956,
+          1
+        ],
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0558",
+        "kind": "false_selection",
+        "regression": true,
+        "selected": [
+          116.43295288085938,
+          665.51611328125,
+          969.9363403320312,
+          1328.7227783203125,
+          0.4162156879901886,
+          1
+        ],
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": false,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0592",
+        "kind": "false_selection",
+        "regression": true,
+        "selected": [
+          201.103515625,
+          477.7153015136719,
+          954.6725463867188,
+          1221.28857421875,
+          0.39043349027633667,
+          1
+        ],
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0593",
+        "kind": "false_selection",
+        "regression": true,
+        "selected": [
+          221.84092712402344,
+          472.91973876953125,
+          951.726806640625,
+          1281.5047607421875,
+          0.4850850999355316,
+          1
+        ],
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "N0598",
+        "kind": "false_selection",
+        "regression": true,
+        "selected": [
+          354.868896484375,
+          624.2898559570312,
+          1002.4319458007812,
+          1214.2686767578125,
+          0.568782389163971,
+          1
+        ],
+        "original_selected": null,
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": null
+      },
+      {
+        "stem": "hand_de099ebd-7513-44fd-977c-e3c48a732e16_0",
+        "kind": "false_selection",
+        "regression": false,
+        "selected": [
+          135.09759521484375,
+          18.592939376831055,
+          195.0,
+          113.77693176269531,
+          0.3887273669242859,
+          1
+        ],
+        "original_selected": [
+          0.0,
+          99.59181213378906,
+          67.85748291015625,
+          195.0,
+          0.3210071325302124,
+          1
+        ],
+        "hand_seen": true,
+        "original_hand_seen": true,
+        "float_correct": false,
+        "float_selected": [
+          134.92198181152344,
+          20.524200439453125,
+          195.0,
+          115.00102233886719,
+          0.2669876515865326,
+          1.0
+        ]
+      }
+    ]
+  },
+  "thresholds_changed": false,
+  "weights_changed": false,
+  "final_test_read": false,
+  "limitations": [
+    "Existing repeatedly used development data, not independent test.",
+    "Empty-hand cases do not establish cluttered empty-background rejection.",
+    "No-selection taxonomy includes fixed policy rejection and detector absence; no confidence tuning."
+  ],
+  "evidence_sha256": {
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\quant_head_adapt_20261118_001\\baseline_q15_current_policy\\decisions.json": "dc6f54cb70f17ba347cb36e8bf592cd49e679169b357088d7dcf3e954471732c",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation\\score_oldval\\decisions.json": "e8ef4f0e8386813f1385c940958c71841265113888ec1f3f3dd8a4cc46821ea5",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\build\\bulk_twohour_20261118_001\\experiment_001\\evaluation\\replay_float\\decisions.json": "09bb823956f1a8e2216a275fe1ac547d30d4689cf1c9c2d9d946cfb2c35116cc"
+  }
+}

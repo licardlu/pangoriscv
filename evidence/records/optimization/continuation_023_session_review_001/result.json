@@ -1,0 +1,95 @@
+{
+  "status": "FEEDBACK_SESSION_BOUNDARY_PASS",
+  "created_utc": "2026-11-16T21:16:05.144256+00:00",
+  "source_snapshot": "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\evidence\\records\\optimization\\continuation_023_night_review_003",
+  "snapshot_files_verified": 804,
+  "source_unchanged": true,
+  "pnr_performed": false,
+  "board_modified": false,
+  "limits": [
+    "Accelerated clocks/debounce/frame cadence; not physical timing or audio quality.",
+    "No CPU workload runs here; CPU safe-point behavior has separate host evidence."
+  ],
+  "cases": [
+    {
+      "CPU_HALF": 5,
+      "PIX_HALF": 7,
+      "CPU_OFFSET": 0
+    },
+    {
+      "CPU_HALF": 13,
+      "PIX_HALF": 13,
+      "CPU_OFFSET": 3
+    },
+    {
+      "CPU_HALF": 3,
+      "PIX_HALF": 5,
+      "CPU_OFFSET": 2
+    }
+  ],
+  "commands": [
+    [
+      "D:\\FPGA_Project\\Modelism\\win64\\vlib.exe",
+      "work"
+    ],
+    [
+      "D:\\FPGA_Project\\Modelism\\win64\\vlog.exe",
+      "-sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\benchmark_key_router.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\key_debounce4.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_peripherals.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_quiz_controller.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\servo_pwm4.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_voice_i2s.v",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_voice_rom_player.v",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_i2s_tx.v",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\benchmark_page.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\media\\media_page_router.sv",
+      "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\tb_feedback_session_boundary.sv"
+    ],
+    [
+      "D:\\FPGA_Project\\Modelism\\win64\\vsim.exe",
+      "-c",
+      "tb_feedback_session_boundary",
+      "-gCPU_HALF=5",
+      "-gPIX_HALF=7",
+      "-gCPU_OFFSET=0",
+      "-do",
+      "onerror {quit -code 1}; run -all; quit -code 0"
+    ],
+    [
+      "D:\\FPGA_Project\\Modelism\\win64\\vsim.exe",
+      "-c",
+      "tb_feedback_session_boundary",
+      "-gCPU_HALF=13",
+      "-gPIX_HALF=13",
+      "-gCPU_OFFSET=3",
+      "-do",
+      "onerror {quit -code 1}; run -all; quit -code 0"
+    ],
+    [
+      "D:\\FPGA_Project\\Modelism\\win64\\vsim.exe",
+      "-c",
+      "tb_feedback_session_boundary",
+      "-gCPU_HALF=3",
+      "-gPIX_HALF=5",
+      "-gCPU_OFFSET=2",
+      "-do",
+      "onerror {quit -code 1}; run -all; quit -code 0"
+    ]
+  ],
+  "runner_sha256": "431568c139bbba2e80a7bf1fc8425baf38d4bc85bd4618511c3095fd12cc8bae",
+  "files": {
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\benchmark_key_router.sv": "38918c9dbaf3099fbe1ba73ae2b7fa11a46799b8da7867e1a687df98ccf04b35",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\key_debounce4.sv": "19c7317bd3a32a657a45150f2c6595f02e39a33e4f6f7dc2e8e2faa9604b71f2",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_peripherals.sv": "31261886205e39ac0cc280d2172db3fa0e2d9c2bf6655b57341aa72540ab409e",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_quiz_controller.sv": "87fe96f08d976b6952260bf43de0085771d51878c8779c81fa692f83bac2df83",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\servo_pwm4.sv": "7547eb41ca4303c218d7b042b406c7dc5b5ad12807d17c185715b297c3c452e2",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_voice_i2s.v": "c71e9627a672da4d73341632b6c72e610061a817a566da0156dea939b610abc4",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_voice_rom_player.v": "61b17cbe4dc714878116eb3c6d961d8ccb347808884a9f72ef9b6a0e91bff3d1",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\trash_i2s_tx.v": "7609202a14496db7f41121705f82137843628d24d9dc11e242186030c7879f1f",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\business\\application\\rtl\\benchmark_page.sv": "8ec3eb01c2e5bd4b2a5bb30a462dccab31f4f3a20708c0066e3c8b119ac0ecbc",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\candidates\\continuation_023\\source\\extensions\\media\\media_page_router.sv": "e754f0bb9f213847465944b69a576f76c0ae9c2b2bb20e7f81f7467911a86caa",
+    "D:\\FPGA_Project\\zi_guang_tong_chuang\\pangoriscv\\project\\trash_sorting\\tests\\tb_feedback_session_boundary.sv": "fc7385f246217c788785fea5957db5fb5d48454286cea2990d204f650ca3862a"
+  }
+}

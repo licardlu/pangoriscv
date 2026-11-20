@@ -1,0 +1,46 @@
+{
+  "epoch": 1,
+  "epochs": 20,
+  "elapsed_s": 1291.772347688675,
+  "precision": 0.0,
+  "recall": 0.0,
+  "mAP50": 0.0,
+  "mAP50_95": 0.0,
+  "best_fitness": 0.0,
+  "fitness": 0.0,
+  "teacher_preservation": {
+    "batches": 301,
+    "mean_preservation_loss": 0.0012935965427583098,
+    "matched_anchors_by_class": {
+      "0": 40104,
+      "1": 80605,
+      "2": 143698,
+      "3": 35933,
+      "4": 64197
+    },
+    "strength": 5.0,
+    "validation_teacher_used": false,
+    "background_preservation": {
+      "eligible_anchors": 66037558,
+      "selected_anchors": 611590,
+      "images_with_selected": 19114,
+      "positive_drift_anchors": 608728,
+      "strength": 0.1,
+      "mean_loss": 8.700376955151982e-05,
+      "scope": "Teacher obj<=.1, exclude every GT assignment and GT rectangles expanded1cell; top32/image; suppress objectness increases only"
+    }
+  },
+  "disjoint_hand_targets": {
+    "training_batches_with_hand": 602,
+    "hand_assignments": 236006,
+    "waste_assignments": 1100834,
+    "removed_hand_assignments": 12858
+  },
+  "hard_negative_objectness": {
+    "training_batches": 301,
+    "eligible_images": 1082,
+    "images_with_hard_negatives": 157,
+    "mined_anchors": 900,
+    "added_batch_loss_sum": 1.1100825036410242
+  }
+}

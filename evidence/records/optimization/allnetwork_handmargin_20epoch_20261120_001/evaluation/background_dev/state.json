@@ -1,0 +1,83 @@
+{
+  "status": "COMPLETED_DEVELOPMENT_DIAGNOSTIC",
+  "checkpoint_sha256": "74707c2d714dbb1ddc4761c1731f87df84c6130fd96aeb7f8482a67dbf44fcde",
+  "manifest_sha256": "f74907981f3dee7ce91fd9a760f244dff8ad751b58959bc8a1e395ed16de2f06",
+  "steps": [
+    {
+      "name": "numeric",
+      "started_unix": 1795151126.9427228,
+      "status": "completed",
+      "elapsed_s": 35.27942991256714
+    },
+    {
+      "name": "score",
+      "started_unix": 1795151162.2221527,
+      "status": "completed",
+      "elapsed_s": 0.35028862953186035
+    }
+  ],
+  "counts": {
+    "correct_positive": 5,
+    "false_background": 5,
+    "correct_personal_battery": 0,
+    "correct_public_glass": 0,
+    "denominators": {
+      "positive": 17,
+      "background": 10,
+      "personal_battery": 0,
+      "public_glass": 0
+    }
+  },
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 0,
+      "FP": 2,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": null
+    },
+    "recyclable": {
+      "TP": 5,
+      "FP": 6,
+      "GT": 11,
+      "precision": 0.45454545454545453,
+      "recall": 0.45454545454545453
+    },
+    "hazardous": {
+      "TP": 0,
+      "FP": 2,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": null
+    },
+    "other": {
+      "TP": 4,
+      "FP": 12,
+      "GT": 12,
+      "precision": 0.25,
+      "recall": 0.3333333333333333
+    },
+    "hand": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 0,
+      "precision": 0,
+      "recall": null
+    }
+  },
+  "empty_misselections": [
+    "held_taco_1053_empty_0",
+    "held_taco_1055_empty_0",
+    "held_taco_1055_empty_1",
+    "held_taco_1066_empty_0",
+    "held_taco_1066_empty_1"
+  ],
+  "gates_modified": false,
+  "board_accessed": false,
+  "test_files_read": false,
+  "limitations": [
+    "Only 27 development views; empty crops correlated within source photos.",
+    "No hazardous/kitchen/hand GT; outdoor scenes do not validate the actual camera station.",
+    "Existing identities and available stored pHash used for exclusion; no proof of global physical-object independence."
+  ]
+}

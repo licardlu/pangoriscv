@@ -31,6 +31,7 @@ def main():
     p.add_argument('--full-finetune',action='store_true',help='Evaluate a predeclared final full-network continuation with its train-only calibration list')
     p.add_argument('--reuse-float-from',type=Path,help='Reuse completed identity-checked float checks from a failed export evaluation')
     p.add_argument('--image-identity-recovery',action='store_true',help='Verify and use an explicitly recorded upstream JPEG-repair manifest; keep frozen plan/calibration unchanged')
+    p.add_argument('--frozen-calibration-only',action='store_true',help='Open only the exact identity-pinned train calibration paths during full export')
     a=p.parse_args();exp=a.experiment.resolve();root=exp.parent
     assert not (a.qat_tail and a.full_finetune)
     if a.full_finetune:
@@ -105,7 +106,7 @@ def main():
             run('quantize',[tools/'prepare_deployment.py','--out',quant,'--yolo',yolo,
                 '--data',data if a.full_finetune else PARENT/'calibration_reference_001','--checkpoint',cp,
                 '--expected-checkpoint-sha256',digest,'--include-hand','--calibration-from',calibration,
-                '--expected-calibration-sha256',sha(calibration)])
+                '--expected-calibration-sha256',sha(calibration)]+(['--frozen-calibration-only'] if a.frozen_calibration_only else []))
         import numpy as np
         comparison_profile=Path(plan['scale_profile']) if a.qat_tail else DEP
         old=np.load(comparison_profile/'parameters.npz');new=np.load(quant/'bundle/parameters.npz')

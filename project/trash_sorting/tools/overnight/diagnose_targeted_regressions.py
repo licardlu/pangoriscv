@@ -20,6 +20,10 @@ def main():
     truth={Path(r['prepared_image']).stem:r for r in manifest if r['split']=='val'}
     baseline=ROOT/'build/quant_head_adapt_20261118_001/baseline_q15_current_policy/decisions.json'
     before=read(baseline);after=read(exp/'evaluation/score_oldval/decisions.json')
+    inventory=read(ROOT/'build/overnight_20261116/numeric_allval_001/inventory.json')
+    photos={r['id']:r for r in inventory}
+    sizes={Path(r['path']).stem:r['display_size'] for r in inventory}
+    raw={Path(photos[r['id']]['path']).stem:r['detections'] for r in read(exp/'evaluation/numeric_oldval/predictions.json')}
     floatdecisions=read(exp/'evaluation/replay_float/decisions.json')['float_oldval']
     assert set(before)==set(after)==set(truth)
     groups={k:[] for k in ['personal_battery','public_glass','empty_hand']};records={};counts={}
@@ -37,6 +41,14 @@ def main():
                 kind='no_selection' if not selected else 'wrong_class' if not any(int(b[0])==int(selected[5]) for b in waste) else 'localization' if wrong else 'correct'
                 stat['positive']+=1;stat['baseline_correct']+=not oldwrong;stat['candidate_correct']+=not wrong
                 stat['gains']+=oldwrong and not wrong;stat['regressions']+=not oldwrong and wrong
+                w,h=sizes[stem]
+                matching=[d for d in raw[stem] if any(int(d['category'])==int(c) and
+                    iou(d['box'],[(cx-bw/2)*w,(cy-bh/2)*h,(cx+bw/2)*w,(cy+bh/2)*h])>=.5
+                    for c,cx,cy,bw,bh in waste)]
+                failure_stage=('correct' if not wrong else 'selector_rejected_existing_correct_detection' if matching and not selected
+                    else 'selector_chose_other_despite_correct_detection' if matching
+                    else 'no_correct_decoded_detection_at_fixed025')
+                if wrong:stat[failure_stage]+=1
             else:
                 wrong=bool(selected);oldwrong=bool(old['selected']);kind='false_selection' if wrong else 'correct_rejection'
                 stat['background']+=1;stat['baseline_false']+=oldwrong;stat['candidate_false']+=wrong
@@ -46,6 +58,8 @@ def main():
             stat['float_correct_q15_wrong']+=bool(waste and floated['correct_class_and_iou050'] and wrong)
             if wrong:
                 details.append(dict(stem=stem,kind=kind,regression=not oldwrong,selected=selected,
+                    failure_stage=failure_stage if waste else 'false_selection_on_gt_no_waste',
+                    correct_raw_detections=matching if waste else [],raw_detections=raw[stem],
                     original_selected=old['selected'],hand_seen=new['hand_seen'],original_hand_seen=old['hand_seen'],
                     float_correct=bool(floated['correct_class_and_iou050']),float_selected=floated['selected']))
         counts[cohort]=dict(stat);records[cohort]=details
@@ -53,8 +67,8 @@ def main():
         cohorts=counts,errors=records,thresholds_changed=False,weights_changed=False,final_test_read=False,
         limitations=['Existing repeatedly used development data, not independent test.',
                     'Empty-hand cases do not establish cluttered empty-background rejection.',
-                    'No-selection taxonomy includes fixed policy rejection and detector absence; no confidence tuning.'],
-        evidence_sha256={str(p):sha(p) for p in [baseline,exp/'evaluation/score_oldval/decisions.json',exp/'evaluation/replay_float/decisions.json']}))
+                    'Decoded detections use the unchanged conf.25/NMS/max32 policy; absence here does not prove raw-logit absence. Correct decoded boxes rejected by the selector are separated without changing thresholds.'],
+        evidence_sha256={str(p):sha(p) for p in [baseline,exp/'evaluation/score_oldval/decisions.json',exp/'evaluation/replay_float/decisions.json',exp/'evaluation/numeric_oldval/predictions.json']}))
     font=ImageFont.truetype('C:/Windows/Fonts/arial.ttf',14)
     selections=[]
     for cohort,details in records.items():

@@ -1,0 +1,50 @@
+{
+  "epoch": 20,
+  "epochs": 20,
+  "elapsed_s": 24408.960158586502,
+  "precision": 0.7565456572475425,
+  "recall": 0.6538091384038436,
+  "mAP50": 0.741161560210053,
+  "mAP50_95": 0.5088873140631113,
+  "best_fitness": 0.5321147386778055,
+  "fitness": 0.5321147386778055,
+  "teacher_preservation": {
+    "batches": 301,
+    "mean_preservation_loss": 0.0012941771724293831,
+    "matched_anchors_by_class": {
+      "0": 40604,
+      "1": 78692,
+      "2": 143208,
+      "3": 36208,
+      "4": 64314
+    },
+    "strength": 5.0,
+    "validation_teacher_used": false
+  },
+  "disjoint_hand_targets": {
+    "training_batches_with_hand": 602,
+    "hand_assignments": 237064,
+    "waste_assignments": 1090418,
+    "removed_hand_assignments": 12664
+  },
+  "waste_hand_margin": {
+    "training_batches": 301,
+    "unscaled_batch_mean_sum": 28.686614582315087,
+    "waste_anchors_by_class": {
+      "0": 62240,
+      "1": 200021,
+      "2": 219811,
+      "3": 63137
+    },
+    "strength": 0.01,
+    "margin": 1.0,
+    "scope": "Only complete GT waste anchors; hand GT untouched; class logits only"
+  },
+  "hard_negative_objectness": {
+    "training_batches": 301,
+    "eligible_images": 1050,
+    "images_with_hard_negatives": 133,
+    "mined_anchors": 775,
+    "added_batch_loss_sum": 1.0634776658844203
+  }
+}

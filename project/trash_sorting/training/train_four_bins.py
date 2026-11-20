@@ -31,6 +31,10 @@ def main():
     ap.add_argument('--freeze', type=int, default=0)
     ap.add_argument('--freeze-bn',action='store_true',
                     help='Keep frozen blocks in eval mode, including BatchNorm statistics')
+    ap.add_argument('--hold-bn-statistics',action='store_true',
+                    help='Keep all pretrained BN running statistics; BN affine parameters still train')
+    ap.add_argument('--save-period',type=int,default=5,
+                    help='Periodic extra checkpoints; -1 keeps rolling last/best only')
     ap.add_argument('--batch', type=int, default=16)
     ap.add_argument('--threads', type=int, default=4)
     ap.add_argument('--lr0', type=float, default=.001)
@@ -39,19 +43,25 @@ def main():
     ap.add_argument('--cache', choices=('none', 'ram'), default='ram')
     ap.add_argument('--hard-negative-objectness', type=float, default=0.,
                     help='Train only: extra GT-gated false objectness loss on waste-free images')
+    ap.add_argument('--waste-hand-margin', type=float, default=0.,
+                    help='Train only: extra true-waste versus hand class separation at waste GT anchors')
     ap.add_argument('--evaluate', choices=['val', 'test'])
     ap.add_argument('--baseline-legacy', action='store_true', help='Map old six raw classes to the four bins for comparison')
     ap.add_argument('--deployment-decode', action='store_true',
                     help='Evaluate four classes with the same single-label/.45 NMS/max32 policy as five classes')
     ap.add_argument('--preserve-teacher',type=Path,
-                    help='Training only: original4 teacher, constrained to correct labeled waste anchors')
+                    help='Training only: original4/5 teacher, constrained to correct GT-matched anchors')
     ap.add_argument('--expected-teacher-sha256')
     ap.add_argument('--preservation-strength',type=float,default=5.)
+    ap.add_argument('--teacher-background-strength',type=float,default=0.,
+                    help='Train only: retain low-objectness background outside protected GT support')
     ap.add_argument('--disjoint-hand-targets', action='store_true',
                     help='Training only: remove hand anchor assignments that conflict with true waste')
     a = ap.parse_args()
     if a.fixed_final and a.evaluate:
         ap.error('--fixed-final applies to training only')
+    if a.waste_hand_margin < 0 or (a.waste_hand_margin and a.evaluate):
+        ap.error('Waste/hand margin is nonnegative and training-only')
     if a.hard_negative_objectness < 0 or (a.hard_negative_objectness and a.evaluate):
         ap.error('Hard-negative objectness is a positive training-only option')
     if a.evaluate and a.imgsz != 320:
@@ -60,8 +70,12 @@ def main():
         ap.error('--baseline-legacy is only valid with --evaluate')
     if a.disjoint_hand_targets and a.evaluate:
         ap.error('--disjoint-hand-targets changes training supervision only')
+    if a.hold_bn_statistics and a.evaluate:
+        ap.error('--hold-bn-statistics is training-only')
     if a.preserve_teacher and (a.evaluate or not a.expected_teacher_sha256 or a.preservation_strength<=0):
         ap.error('Teacher preservation is training-only and requires identity and positive strength')
+    if a.teacher_background_strength < 0 or (a.teacher_background_strength and (a.evaluate or not a.preserve_teacher)):
+        ap.error('Teacher background retention requires original teacher and training mode')
     if a.preserve_teacher and hashlib.sha256(a.preserve_teacher.read_bytes()).hexdigest()!=a.expected_teacher_sha256:
         ap.error('Teacher checkpoint identity mismatch')
     a.yolo, a.data, a.weights, a.project = [p.resolve() for p in [a.yolo, a.data, a.weights, a.project]]
@@ -251,6 +265,21 @@ def main():
         (out/'image_decisions.json').write_text(json.dumps(image_decisions,indent=2))
         (out/'metrics.json').write_text(json.dumps(metrics,indent=2))
     else:
+        if a.hold_bn_statistics:
+            train_file=a.yolo/'train.py';source=train_file.read_text(encoding='utf8')
+            marker='        # LOCAL_HOLD_BN_STATISTICS: all affine parameters remain trainable\n'
+            if marker not in source:
+                needle='        model.train()\n'
+                if source.count(needle)!=1:raise ValueError('Unexpected upstream model.train location')
+                source=source.replace(needle,needle+marker+
+                    "        if getattr(opt, 'hold_bn_statistics', False):\n"
+                    '            for bn_module in model.modules():\n'
+                    '                if isinstance(bn_module, nn.BatchNorm2d):\n'
+                    '                    bn_module.eval()\n')
+                train_file.write_text(source,encoding='utf8')
+            provenance['hold_bn_statistics_note']='BN running buffers retained; convolution, head and BN affine parameters remain trainable unless separately frozen'
+            provenance['training_patch_sha256']=hashlib.sha256(train_file.read_bytes()).hexdigest()
+            (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
         if a.freeze_bn:
             if a.freeze<=0:
                 raise ValueError('freeze-bn requires freeze > 0')
@@ -289,6 +318,7 @@ def main():
         preservation_losses=[]
         disjoint_losses=[]
         hard_negative_losses=[]
+        margin_losses=[]
         if a.hard_negative_objectness:
             from hard_negative_objectness import hard_negative_loss_class
             train.ComputeLoss = hard_negative_loss_class(train.ComputeLoss, hard_negative_losses,
@@ -297,6 +327,14 @@ def main():
                 (Path(__file__).parent/'hard_negative_objectness.py').read_bytes()).hexdigest(),
                 hard_negative_scope='Reviewed GT-waste-free images only; all positive anchors excluded; top8 per image, score>=.10; objectness only',
                 runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+            (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
+        if a.waste_hand_margin:
+            from waste_hand_margin import waste_hand_loss_class
+            train.ComputeLoss = waste_hand_loss_class(train.ComputeLoss, margin_losses,
+                                                       strength=a.waste_hand_margin)
+            provenance.update(waste_hand_margin_strength=a.waste_hand_margin,
+                              waste_hand_margin_sha256=hashlib.sha256(
+                                  (Path(__file__).parent/'waste_hand_margin.py').read_bytes()).hexdigest())
             (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
         if a.disjoint_hand_targets:
             from disjoint_hand_loss import disjoint_loss_class
@@ -308,20 +346,36 @@ def main():
             from teacher_preservation import PreservationLoss
             teacher_cp=torch.load(a.preserve_teacher,map_location='cpu')
             teacher=(teacher_cp.get('ema') or teacher_cp['model']).float().eval()
-            if [teacher.names[i] for i in range(teacher.model[-1].nc)]!=['kitchen','recyclable','hazardous','other']:
-                raise ValueError('Expected original four-bin teacher')
+            teacher_nc=teacher.model[-1].nc
+            expected=['kitchen','recyclable','hazardous','other']+(['hand'] if teacher_nc==5 else [])
+            if teacher_nc not in (4,5) or [teacher.names[i] for i in range(teacher_nc)]!=expected:
+                raise ValueError('Expected original four-bin or five-class teacher')
             original_loss_class=train.ComputeLoss
             def make_preserved_loss(model,*args,**kwargs):
+                provenance['parameter_audit']={
+                    'total_parameters':sum(v.numel() for v in model.parameters()),
+                    'trainable_parameters':sum(v.numel() for v in model.parameters() if v.requires_grad),
+                    'frozen_parameters':sum(v.numel() for v in model.parameters() if not v.requires_grad),
+                    'all_parameters_trainable':all(v.requires_grad for v in model.parameters())}
+                if a.freeze==0:assert provenance['parameter_audit']['all_parameters_trainable']
+                (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
                 loss=PreservationLoss(original_loss_class(model,*args,**kwargs),model,
-                                      teacher.to(next(model.parameters()).device),a.preservation_strength)
+                                      teacher.to(next(model.parameters()).device),a.preservation_strength,
+                                      background_strength=a.teacher_background_strength)
                 preservation_losses.append(loss)
                 return loss
             train.ComputeLoss=make_preserved_loss
             provenance.update(training_patch_sha256=hashlib.sha256(train_file.read_bytes()).hexdigest(),
                               preservation_script_sha256=hashlib.sha256((Path(__file__).parent/'teacher_preservation.py').read_bytes()).hexdigest(),
                               teacher_sha256=a.expected_teacher_sha256,
-                              preservation_scope='Only teacher-correct actual waste GT anchors: IoU>=.5/conf>=.25; no pseudo labels, no validation teacher; equal present-class weighting')
+                              teacher_classes=teacher_nc,
+                              teacher_background_strength=a.teacher_background_strength,
+                              preservation_scope='Only teacher-correct actual GT anchors in its native taxonomy: IoU>=.5/conf>=.25; no pseudo labels, no validation teacher; equal present-class weighting')
             (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
+            if a.teacher_background_strength:
+                provenance['teacher_background_sha256']=hashlib.sha256(
+                    (Path(__file__).parent/'teacher_background.py').read_bytes()).hexdigest()
+                (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
         from utils.callbacks import Callbacks
         # Avoid the upstream network git/version probe and automatic pip changes.
         # Actual dependencies are imported above, and their versions are recorded.
@@ -351,6 +405,13 @@ def main():
                 status['disjoint_hand_targets'] = disjoint_losses[0].take_assignment_stats()
                 if status['disjoint_hand_targets'].get('training_batches_with_hand', 0)==0:
                     raise ValueError('Disjoint hand targets enabled but never used in training')
+            if margin_losses:
+                if len(margin_losses)!=1:raise ValueError('Unexpected margin loss instances')
+                status['waste_hand_margin']=margin_losses[0].take_margin_stats()
+                if status['waste_hand_margin'].get('training_batches',0)==0:
+                    raise ValueError('Waste/hand margin enabled but unused')
+                with (out/'waste_hand_margin_epochs.jsonl').open('a',encoding='utf8') as handle:
+                    handle.write(json.dumps(dict(epoch=int(epoch)+1,**status['waste_hand_margin']))+'\n')
             if hard_negative_losses:
                 if len(hard_negative_losses)!=1:raise ValueError('Unexpected hard-negative loss instances')
                 stats=hard_negative_losses[0].take_hard_negative_stats()
@@ -367,9 +428,10 @@ def main():
                         epochs=a.epochs, batch_size=a.batch, device='cpu', workers=0,
                         project=str(a.project), name=a.name, exist_ok=True,
                         hyp=str(hp), optimizer='AdamW', freeze=[a.freeze],freeze_bn=a.freeze_bn,
+                        hold_bn_statistics=a.hold_bn_statistics,
                         preserve_teacher=bool(a.preserve_teacher),
                         noautoanchor=bool(a.preserve_teacher),
-                        patience=8, save_period=5, cache=False if a.cache=='none' else 'ram', seed=20261111,
+                        patience=8, save_period=a.save_period, cache=False if a.cache=='none' else 'ram', seed=20261111,
                         noplots=False, cos_lr=True)
         if a.fixed_final:
             settings.update(noval=True, patience=a.epochs+1)

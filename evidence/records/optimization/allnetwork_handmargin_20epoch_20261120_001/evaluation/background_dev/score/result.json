@@ -1,0 +1,108 @@
+{
+  "status": "PASS",
+  "scope": "software Q15 convolution oracle + actual C head/decoder and candidate C selector; not FPGA or camera accuracy",
+  "images": 27,
+  "model_sha256": "31bb15fdd676ae7ba7426bf2449380a621ad3d8e784a2bcff9aae5279d159fac",
+  "held_out_test_used": false,
+  "confidence": 0.25,
+  "iou_match": 0.5,
+  "nms_iou": 0.45,
+  "max_det": 32,
+  "AP_not_computed": "outputs below confidence .25 were not retained",
+  "fixed_conf025_iou050": {
+    "kitchen": {
+      "TP": 0,
+      "FP": 2,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": null
+    },
+    "recyclable": {
+      "TP": 5,
+      "FP": 6,
+      "GT": 11,
+      "precision": 0.45454545454545453,
+      "recall": 0.45454545454545453
+    },
+    "hazardous": {
+      "TP": 0,
+      "FP": 2,
+      "GT": 0,
+      "precision": 0.0,
+      "recall": null
+    },
+    "other": {
+      "TP": 4,
+      "FP": 12,
+      "GT": 12,
+      "precision": 0.25,
+      "recall": 0.3333333333333333
+    },
+    "hand": {
+      "TP": 0,
+      "FP": 0,
+      "GT": 0,
+      "precision": 0,
+      "recall": null
+    }
+  },
+  "cohorts": {
+    "all": {
+      "images": 27,
+      "selected": 18,
+      "hand_seen": 0,
+      "correct_class_and_iou050": 5,
+      "correct_class": 9,
+      "false_selected": 5
+    },
+    "source/held_taco_reviewed_positive": {
+      "images": 17,
+      "selected": 13,
+      "hand_seen": 0,
+      "correct_class_and_iou050": 5,
+      "correct_class": 9
+    },
+    "has_waste": {
+      "images": 17,
+      "selected": 13,
+      "hand_seen": 0,
+      "correct_class_and_iou050": 5,
+      "correct_class": 9
+    },
+    "group/taco_batch_13": {
+      "images": 9,
+      "selected": 8,
+      "hand_seen": 0,
+      "correct_class_and_iou050": 4,
+      "correct_class": 6
+    },
+    "source/held_taco_reviewed_empty_crop": {
+      "images": 10,
+      "selected": 5,
+      "hand_seen": 0,
+      "false_selected": 5
+    },
+    "no_waste": {
+      "images": 10,
+      "selected": 5,
+      "hand_seen": 0,
+      "false_selected": 5
+    },
+    "group/taco_batch_5": {
+      "images": 18,
+      "selected": 10,
+      "hand_seen": 0,
+      "false_selected": 5,
+      "correct_class_and_iou050": 1,
+      "correct_class": 3
+    }
+  },
+  "numeric_result_sha256": "273562a735fdb2e6059ca83a4079d0f77e54b00fa7a94d06729e733fc0ebda71",
+  "predictions_sha256": "db1f5b8ec631193d34cbe9cafa1c9184f90a892921a7c9d7c8f5fc220a543d54",
+  "manifest_sha256": "f74907981f3dee7ce91fd9a760f244dff8ad751b58959bc8a1e395ed16de2f06",
+  "policy_headers": {
+    "yolo_contact_policy.h": "4efa1e9085405cae8e23de8b547df2e35826c686e1785e0eb150c8eccd52e1de",
+    "yolo_interaction_policy.h": "7f7954a9caa6c223e7c67b0d1823d76142f3d4faf06e3d4edd1b5561b5020596",
+    "yolo_target_policy.h": "553c202879b323c34ad11e3d4700f9d0937ef93985cbb94300d0b7fbeba864ee"
+  }
+}

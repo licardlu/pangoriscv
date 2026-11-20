@@ -38,6 +38,9 @@ def main():
     args = parser.parse_args()
     exp = args.experiment.resolve()
     plan=read(exp/'plan.json')
+    evaluation = read(exp/'evaluation/state.json')
+    candidate_kind = 'full_finetune' if 'full_finetune_quantization' in evaluation else 'qat'
+    candidate_label = '本轮整网训练' if candidate_kind == 'full_finetune' else 'QAT'
     manifest_path = Path(plan.get('manifest',PARENT / 'dataset_004/manifest.json'))
     manifest = read(manifest_path)
     by_identity = {}
@@ -98,6 +101,7 @@ def main():
                 entry['models'][name]['positive_gain'] += bool(waste) and correct and not base
                 entry['models'][name]['positive_loss'] += bool(waste) and base and not correct
     result = dict(status='DEVELOPMENT_COVERAGE_DIAGNOSTIC', final_test_images_or_labels_read=False,
+        candidate_kind=candidate_kind, legacy_candidate_key='tail_qat',
         scope='Saved validation decisions only; not a camera or physical-object-generalization measurement.',
         train_file_identities=len(by_identity), train_source_file_identities={k: len(v) for k, v in sorted(train_source.items())},
         train_class_counts=train_classes, train_context_counts=dict(train_context),
@@ -111,7 +115,7 @@ def main():
         '| 训练类别 | 有该类的独立文件 | 框数 |', '|---|---:|---:|']
     for name, row in train_classes.items():
         lines.append(f"| {name} | {row['images']} | {row['instances']} |")
-    lines += ['', '| 验证来源/场景 | 有物/无物 | 原部署正确/误选 | QAT正确/误选 | QAT新增正确/新增错误 |', '|---|---:|---:|---:|---:|']
+    lines += ['', f'| 验证来源/场景 | 有物/无物 | 原部署正确/误选 | {candidate_label}正确/误选 | {candidate_label}新增正确/新增错误 |', '|---|---:|---:|---:|---:|']
     for group, row in sorted(summary.items()):
         b, c = row['models']['deployed'], row['models']['tail_qat']
         lines.append(f"| {group} | {row['positive_images']}/{row['no_waste_images']} | {b['correct_positive']}/{b['false_selection_no_waste']} | {c['correct_positive']}/{c['false_selection_no_waste']} | {c['positive_gain']}/{c['positive_loss']} |")
